@@ -1,1 +1,1 @@
-# adminscript
+# GAdmin
