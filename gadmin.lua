@@ -77,7 +77,6 @@ end
 -- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
 cfg = get_config()
 alogin = false
-local formCommand, formStarter, form_secondsToHide = "", "", os.clock()
 local players_platform = {}
 -- для информации в спеке --
 in_sp = false
@@ -122,9 +121,10 @@ short_cmds = {
     ar = "kick %s AFK on ROAD",
     ak = "kick %s AFK without ESC",
     ap = "kick %s AFK public place"
-
+    
 }
 
+local formCommand, formStarter, form_secondsToHide = "", "", os.clock()
 
 -- ИМГУИ ПЕРЕМЕННЫЕ
 local show_main_menu = new.bool()
@@ -418,19 +418,22 @@ local formCommands = {
 }
 
 function samp.onServerMessage(color, text)
+    local result, id        = sampGetPlayerIdByCharHandle(PLAYER_PED)
+    local nickname          = sampGetPlayerNickname(id)
+
     text = u8(text)
     if text:find("%[A%] .*%[%d+%]: /.*") and color == 866792362 then
-        formStarter, _formCommand = text:match(u8"%[A%] (.*)%[%d+%]: /(.*)")
-        for i = 1, #formCommands do
-            if _formCommand:find(formCommands[i].." .*") then formCommand = _formCommand end
+        formStarter, formStarterId, _formCommand = text:match(u8"%[A%] (.*)%[(%d+)%]: /(.*)")
+        if formStarterId ~= id then
+            for i = 1, #formCommands do
+                if _formCommand:find(formCommands[i].." .*") then formCommand = _formCommand end
+            end
+            form_secondsToHide = os.clock()
+            admin_form_menu[0] = true
         end
-        form_secondsToHide = os.clock()
-        admin_form_menu[0] = true
     elseif text:find("Администратор.*// "..formStarter) and color == -10270806 then
         admin_form_menu[0], formStarter, formCommand = false, "", ""
     end
-
-    print("color: "..color.." | text: "..text)
 end
 
 function samp.onShowDialog(dialogId, style, title, button1, button2, text)
