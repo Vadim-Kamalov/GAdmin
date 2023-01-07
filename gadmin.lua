@@ -187,10 +187,10 @@ local adminForm = imgui.OnFrame(
                 imgui.TextDisabled(("Это окно исчезнет через %.1f секунд."):format(5 - (os.clock() - form_secondsToHide)))
             imgui.EndGroup()
 
-            -- lua_thread.create(function()
-            --     wait(5000)
-            --     admin_form_menu[0], formStarter, formCommand = false, "", ""
-            -- end)
+            lua_thread.create(function()
+                wait(5000)
+                admin_form_menu[0], formStarter, formCommand = false, "", ""
+            end)
         imgui.End()
 
         imgui.PopStyleVar(1)
@@ -244,7 +244,7 @@ local onlineFrame = imgui.OnFrame(
         imgui.GetStyle().ItemSpacing.y + imgui.GetStyle().WindowPadding.y*2 + imgui.CalcTextSize(temp_online).y + imgui.CalcTextSize(full_online).y}
 
         imgui.SetNextWindowSize(imgui.ImVec2(size[1], size[2]))
-        imgui.SetNextWindowPos(imgui.ImVec2(sizeX - size[1]/2, sizeY - size[2]/2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
+        imgui.SetNextWindowPos(imgui.ImVec2(sizeX - size[1], sizeY - size[2] - 35))
         imgui.Begin("GAdmin_online", show_main_menu, imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoMove + imgui.WindowFlags.NoScrollbar)
 
         imgui.Text(full_online)
