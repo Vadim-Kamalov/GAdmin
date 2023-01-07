@@ -52,7 +52,8 @@ function create_config()
             
         },
         hotkeys = {
-            gadm = {77}
+            gadm = {77},
+            acceptForm = {66} -- B
         },
         gg_msg = "Приятной игры!",
         adm_pass = "",
@@ -76,6 +77,7 @@ end
 -- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
 cfg = get_config()
 alogin = false
+local formCommand, formStarter, form_secondsToHide = "", "", os.clock()
 local players_platform = {}
 -- для информации в спеке --
 in_sp = false
@@ -128,6 +130,7 @@ short_cmds = {
 local show_main_menu = new.bool()
 local show_online_menu = new.bool(true)
 local show_info_menu = new.bool()
+local admin_form_menu = new.bool()
 local car_spec = new.bool(cfg.car_spec)
 local gg_msg = new.char[256](cfg.gg_msg)
 local game_pass = new.char[256](cfg.game_pass)
@@ -147,6 +150,53 @@ end
 imgui.OnInitialize(function()
     imgui.Theme()
 end)
+
+local adminForm = imgui.OnFrame(
+    function() return admin_form_menu[0] end,
+    function(self)
+        self.HideCursor = true
+        imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2, sizeY), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
+        imgui.SetNextWindowSize(imgui.ImVec2(sizeX, 70))
+
+        imgui.PushStyleColor(imgui.Col.WindowBg, imgui.ImVec4(0.07, 0.07, 0.07, 0.50))
+        imgui.PushStyleVarFloat(imgui.StyleVar.FrameRounding, 0)
+        imgui.PushStyleVarFloat(imgui.StyleVar.WindowBorderSize, 0)
+
+        imgui.Begin("admin_form_menu", admin_form_menu, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize)
+            imgui.SetCursorPosY(10)
+            imgui.BeginGroup()
+                imgui.SetCursorPosX(15)
+                imgui.Text("Форма от "..formStarter.." | Выполнить форму - клавиша \""..string.char(cfg.hotkeys.acceptForm[1]).."\"")
+                imgui.SameLine()
+                imgui.SetCursorPosX(sizeX / 2 - imgui.CalcTextSize("/"..formCommand).x / 2)
+                imgui.Text("/"..formCommand)
+
+                if wasKeyPressed(cfg.hotkeys.acceptForm[1]) and not isCursorActive() then
+                    if formCommand:find("pk %d+") then
+                        pk_cmd_id = formCommand:match("pk (%d+)")
+                        sampSendChat("/jail "..pk_cmd_id.." 20 PK`ed // "..formStarter)
+                        admin_form_menu[0], formStarter, formCommand = false, "", ""
+                    else
+                        sampSendChat("/"..formCommand.." // "..formStarter)
+                        admin_form_menu[0], formStarter, formCommand = false, "", ""
+                    end
+                end
+
+                imgui.SameLine()
+                imgui.SetCursorPosX(sizeX / 1.3 - imgui.CalcTextSize("Это окно исчезнет через %.1f секунд.").x / 2)
+                imgui.TextDisabled(("Это окно исчезнет через %.1f секунд."):format(5 - (os.clock() - form_secondsToHide)))
+            imgui.EndGroup()
+
+            -- lua_thread.create(function()
+            --     wait(5000)
+            --     admin_form_menu[0], formStarter, formCommand = false, "", ""
+            -- end)
+        imgui.End()
+
+        imgui.PopStyleVar(1)
+        imgui.PopStyleColor()
+    end
+)
 
 local mainFrame = imgui.OnFrame(
     function() return show_main_menu[0] end,
@@ -355,6 +405,32 @@ end
 
 function samp.onPlayerQuit(id)
     players_platform[id] = nil
+end
+
+local formCommands = {
+    "ban",
+    "jail",
+    "mute",
+    "warn",
+    "iban",
+    "ck",
+    "pk"
+}
+
+function samp.onServerMessage(color, text)
+    text = u8(text)
+    if text:find("%[A%] .*%[%d+%]: /.*") and color == 866792362 then
+        formStarter, _formCommand = text:match(u8"%[A%] (.*)%[%d+%]: /(.*)")
+        for i = 1, #formCommands do
+            if _formCommand:find(formCommands[i].." .*") then formCommand = _formCommand end
+        end
+        form_secondsToHide = os.clock()
+        admin_form_menu[0] = true
+    elseif text:find("Администратор.*// "..formStarter) and color == -10270806 then
+        admin_form_menu[0], formStarter, formCommand = false, "", ""
+    end
+
+    print("color: "..color.." | text: "..text)
 end
 
 function samp.onShowDialog(dialogId, style, title, button1, button2, text)
