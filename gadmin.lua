@@ -185,10 +185,9 @@ local adminForm = imgui.OnFrame(
                 imgui.TextDisabled(("Это окно исчезнет через %.1f секунд."):format(5 - (os.clock() - form_secondsToHide)))
             imgui.EndGroup()
 
-            lua_thread.create(function()
-                wait(5000)
+            if os.clock() - form_secondsToHide >= 5 then
                 admin_form_menu[0], formStarter, formCommand = false, "", ""
-            end)
+            end
         imgui.End()
 
         imgui.PopStyleVar(1)
@@ -198,6 +197,7 @@ local adminForm = imgui.OnFrame(
 
 sampRegisterChatCommand("execute.form", function ()
     admin_form_menu[0], formStarter, formCommand = true, "N/A", "N/A"
+    form_secondsToHide = os.clock()
 end)
 
 local mainFrame = imgui.OnFrame(
@@ -318,7 +318,7 @@ function main()
         nameTagOn()
     end)
 
-    -- сокращенные команды
+    -- сокращенные командыs
     sampRegisterChatCommand("pk", pk_cmd)
     sampRegisterChatCommand("gg", gg_cmd)
     sampRegisterChatCommand("asp", asp_cmd)
@@ -333,7 +333,7 @@ function main()
 
     -- инициализируем все хоткеи
     -- TODO: взять другую либу (либо самому написать :D), ибо это говно
-    hotkey.RegisterCallback("gadm", cfg.hotkeys.gadm, gadm_cmd)
+    -- hotkey.RegisterCallback("gadm", cfg.hotkeys.gadm, gadm_cmd)
 
 
     sampAddChatMessage("GAdmin успешно запущен", -1)
