@@ -51,7 +51,7 @@ function create_config()
         },
         hotkeys = {
             gadm = {77},
-            acceptForm = {66} -- B
+            acceptForm = {73} -- I
         },
         gg_msg = "Приятной игры!",
         adm_pass = "",
@@ -195,8 +195,8 @@ local adminForm = imgui.OnFrame(
     end
 )
 
-sampRegisterChatCommand("execute.form", function ()
-    admin_form_menu[0], formStarter, formCommand = true, "N/A", "N/A"
+sampfuncsRegisterConsoleCommand("execute.form", function ()
+    admin_form_menu[0], formStarter, formCommand = true, "DEBUG_EXECUTE_FORM", "/me DEBUG_EXECUTE_FORM"
     form_secondsToHide = os.clock()
 end)
 
