@@ -1,8 +1,6 @@
 script_name('GAdmin')
 script_version(1.0)
 
--- 123
-
 local mem = require('memory')
 local encoding = require 'encoding'
 local imgui = require 'mimgui'
@@ -198,6 +196,10 @@ local adminForm = imgui.OnFrame(
     end
 )
 
+sampRegisterChatCommand("execute.form", function ()
+    admin_form_menu[0], formStarter, formCommand = true, "N/A", "N/A"
+end)
+
 local mainFrame = imgui.OnFrame(
     function() return show_main_menu[0] end,
     function(player)
@@ -243,8 +245,11 @@ local onlineFrame = imgui.OnFrame(
         size = {imgui.GetStyle().WindowPadding.x*2 + imgui.CalcTextSize(temp_online).x, 
         imgui.GetStyle().ItemSpacing.y + imgui.GetStyle().WindowPadding.y*2 + imgui.CalcTextSize(temp_online).y + imgui.CalcTextSize(full_online).y}
 
+        local onlinePosX, onlinePosY = sizeX - size[1], sizeY - size[2]
+        if admin_form_menu[0] then onlinePosY = sizeY - size[2] - 35 else onlinePosY = sizeY - size[2] end
+
         imgui.SetNextWindowSize(imgui.ImVec2(size[1], size[2]))
-        imgui.SetNextWindowPos(imgui.ImVec2(sizeX - size[1], sizeY - size[2] - 35))
+        imgui.SetNextWindowPos(imgui.ImVec2(onlinePosX, onlinePosY))
         imgui.Begin("GAdmin_online", show_main_menu, imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoMove + imgui.WindowFlags.NoScrollbar)
 
         imgui.Text(full_online)
