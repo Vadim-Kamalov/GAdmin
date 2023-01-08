@@ -196,7 +196,7 @@ local adminForm = imgui.OnFrame(
 )
 
 sampfuncsRegisterConsoleCommand("execute.form", function ()
-    admin_form_menu[0], formStarter, formCommand = true, "DEBUG_EXECUTE_FORM", "/me DEBUG_EXECUTE_FORM"
+    admin_form_menu[0], formStarter, formCommand = true, "DEBUG_EXECUTE_FORM", "me DEBUG_EXECUTE_FORM"
     form_secondsToHide = os.clock()
 end)
 
