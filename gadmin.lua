@@ -157,7 +157,7 @@ function backInSpec()
 end
 
 function forwardInSpec()
-    -- TODO
+    -- TODOD
 end
 
 local actionMenu = imgui.OnFrame(
@@ -519,7 +519,7 @@ function samp.onServerMessage(color, text)
         if text:find("%|.*У вас нет доступа для использования данной команды%.") then
             sampSendChat("/a "..sendFormCommand)
             checkSendFormCommand = false
-            sendFormCommand = false
+            sendFormCommand = ""
             return false
         else
             checkSendFormCommand = false
