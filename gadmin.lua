@@ -161,7 +161,7 @@ function forwardInSpec()
 end
 
 local actionMenu = imgui.OnFrame(
-    function() return show_online_menu[0] end,
+    function() return show_action_menu[0] end,
     function(self)
         imgui.SetNextWindowSize(imgui.ImVec2(700, 70))
         imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2, sizeY / 2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
@@ -174,7 +174,7 @@ local actionMenu = imgui.OnFrame(
 
         local playerSpectateId = info_about
 
-        imgui.Begin("action_menu", show_online_menu, imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoScrollbar)
+        imgui.Begin("action_menu", show_action_menu, imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoScrollbar)
             if imgui.Button("<<", imgui.ImVec2(50, 70)) then backInSpec() end
             imgui.SameLine()
 
