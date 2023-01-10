@@ -80,7 +80,7 @@ sendFormCommand = ""
 checkSendFormCommand = false
 local players_platform = {}
 -- для информации в спеке --
-in_sp = false
+local in_sp = false
 checking_stats = false
 last_checking_stats = 0
 last_speed_check = 0
@@ -126,6 +126,7 @@ short_cmds = {
 }
 
 local formCommand, formStarter, form_secondsToHide = "", "", os.clock()
+local playerSpectateId = info_about
 
 -- ИМГУИ ПЕРЕМЕННЫЕ
 local show_main_menu = new.bool()
@@ -137,10 +138,6 @@ local car_spec = new.bool(cfg.car_spec)
 local gg_msg = new.char[256](cfg.gg_msg)
 local game_pass = new.char[256](cfg.game_pass)
 local adm_pass = new.char[256](cfg.adm_pass)
-
--- для хоткеев
-local gadmKeys = {v = cfg.hotkeys.gadm}
-local acceptFormKeys = {v = cfg.hotkeys.acceptForm}
 
 function imgui.Input()
     -- TODO: написать свой инпут, чтобы не плодить кучу однотипного кода
@@ -157,17 +154,55 @@ imgui.OnInitialize(function()
     imgui.Theme()
 end)
 
-function backInSpec()
-    -- TODO
+function setChatInputEnabledWithText(text)
+    sampSetChatInputEnabled(true)
+    sampSetChatInputText(text)
 end
 
-function forwardInSpec()
-    -- TODOD
-end
+-- todo: сделать переключеие между кнопками, убрать дефолт меню в спеке
+--[[ buttonsPlaceholder[2] : function ]]--
+
+local actionMenuSpawn       = function() sampSendChat("/spawn "..playerSpectateId) end
+local actionMenuGetip       = function() end
+local actionMenuSlap        = function() sampSendChat("/slap "..playerSpectateId) end
+local actionMenuGiveHp      = function() setChatInputEnabledWithText("/sethp "..playerSpectateId.." ") end
+local actionMenuRessurect   = function() sampSendChat("/aheal "..playerSpectateId) end
+local actionMenuKill        = function() sampSendChat("/sethp "..playerSpectateId.." 0") end
+
+local actionMenuAsk         = function() sampSendChat("/ans "..playerSpectateId.." Вы тут? Ответ в /b") end
+local actionMenuFrisk       = function() sampSendMenuSelectRow(5) end
+local actionMenuBack        = function() end
+local actionMenuGetbuycar   = function() setChatInputEnabledWithText("/getbuycar ") end
+local actionMenuRepair      = function() setChatInputEnabledWithText("/vrepair ") end
+local actionMenuStats       = function() sampSendChat("/stats "..playerSpectateId) end
+
+local buttonsPlaceholder = {
+    {   -- First line
+        {"SPAWN", actionMenuSpawn, false},
+        {"GETIP", actionMenuGetip, false},
+        {"SLAP", actionMenuSlap, false},
+        {"GIVE HP", actionMenuGiveHp, false},
+        {"RESSURECT", actionMenuRessurect, false},
+        {"KILL", actionMenuKill, false}
+    },
+
+    {   -- Second line
+        {"*Вы тут?*", actionMenuAsk, false},
+        {"AFRISK", actionMenuFrisk, false},
+        {"КВЕНТА", actionMenuBack, false},
+        {"GETBUYCAR", actionMenuGetbuycar, false},
+        {"REPAIR", actionMenuRepair, false},
+        {"STATS", actionMenuStats, false}
+    }
+}
+
+--[[ actionMenu : show_action_menu ]]--
 
 local actionMenu = imgui.OnFrame(
     function() return show_action_menu[0] end,
     function(self)
+        self.HideCursor = true
+
         imgui.SetNextWindowSize(imgui.ImVec2(700, 70))
         imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2, sizeY / 2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
 
@@ -177,46 +212,32 @@ local actionMenu = imgui.OnFrame(
         imgui.PushStyleVarFloat(imgui.StyleVar.FrameRounding, 0)
         imgui.PushStyleVarFloat(imgui.StyleVar.FrameBorderSize, 0.5)
 
-        local playerSpectateId = info_about
-
         imgui.Begin("action_menu", show_action_menu, imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoScrollbar)
-            if imgui.Button("<<", imgui.ImVec2(50, 70)) then backInSpec() end
+            if imgui.Button("<<", imgui.ImVec2(50, 70)) then sampSendMenuSelectRow(0) end
             imgui.SameLine()
 
             imgui.BeginGroup()
-                if imgui.Button("SPAWN", imgui.ImVec2(100, 35)) then
-                    sampSendChat("/aspawn "..playerSpectateId)
-                end
-                imgui.SameLine()
-                if imgui.Button("GETIP", imgui.ImVec2(100, 35)) then
+                for index = 1, #buttonsPlaceholder[1] do
+                    if imgui.Button(buttonsPlaceholder[1][index][1], imgui.ImVec2(100, 35)) then
+                        buttonsPlaceholder[1][index][2]()
+                    end
 
+                    if index ~= 6 then imgui.SameLine() end
                 end
-                imgui.SameLine()
-                imgui.Button("SLAP", imgui.ImVec2(100, 35))
-                imgui.SameLine()
-                imgui.Button("GIVE HP", imgui.ImVec2(100, 35))
-                imgui.SameLine()
-                imgui.Button("RESSURECT", imgui.ImVec2(100, 35))
-                imgui.SameLine()
-                imgui.Button("KILL", imgui.ImVec2(100, 35))
                 imgui.BeginGroup() -- New line content
-                    imgui.Button("*Вы тут?*", imgui.ImVec2(100, 35))
-                    imgui.SameLine()
-                    imgui.Button("AFRISK", imgui.ImVec2(100, 35))
-                    imgui.SameLine()
-                    imgui.Button("КВЕНТА", imgui.ImVec2(100, 35))
-                    imgui.SameLine()
-                    imgui.Button("GETBUYCAR", imgui.ImVec2(100, 35))
-                    imgui.SameLine()
-                    imgui.Button("VREPAIR", imgui.ImVec2(100, 35))
-                    imgui.SameLine()
-                    imgui.Button("STATS", imgui.ImVec2(100, 35))
+                    for index = 1, #buttonsPlaceholder[2] do
+                        if imgui.Button(buttonsPlaceholder[2][index][1], imgui.ImVec2(100, 35)) then
+                        buttonsPlaceholder[2][index][2]()
+                        end
+                    
+                        if index ~= 6 then imgui.SameLine() end
+                    end
                 imgui.EndGroup()
             imgui.EndGroup()
 
             imgui.SameLine()
 
-            if imgui.Button(">>", imgui.ImVec2(50, 70)) then forwardInSpec() end
+            if imgui.Button(">>", imgui.ImVec2(50, 70)) then sampSendMenuSelectRow(2) end
         imgui.End()
 
         imgui.PopStyleVar(5)
@@ -242,18 +263,6 @@ local adminForm = imgui.OnFrame(
                 imgui.SameLine()
                 imgui.SetCursorPosX(sizeX / 2 - imgui.CalcTextSize("/"..formCommand).x / 2)
                 imgui.Text("/"..formCommand)
-
-                -- if wasKeyPressed(cfg.hotkeys.acceptForm[1]) and not isCursorActive() then
-                --     if formCommand:find("pk %d+") then
-                --         pk_cmd_id = formCommand:match("pk (%d+)")
-                --         sampSendChat("/jail "..pk_cmd_id.." 20 PK`ed // "..formStarter)
-                --         admin_form_menu[0], formStarter, formCommand = false, "", ""
-                --     else
-                --         sampSendChat("/"..formCommand.." // "..formStarter)
-                --         admin_form_menu[0], formStarter, formCommand = false, "", ""
-                --     end
-                -- end
-
                 imgui.SameLine()
                 imgui.SetCursorPosX(sizeX / 1.3 - imgui.CalcTextSize("Это окно исчезнет через %.1f секунд.").x / 2)
                 imgui.TextDisabled(("Это окно исчезнет через %.1f секунд."):format(5 - (os.clock() - form_secondsToHide)))
@@ -306,16 +315,6 @@ local mainFrame = imgui.OnFrame(
             save_config()
         end
 
-        if rkeys.HotKey("Главное меню", gadmKeys) then
-            cfg.hotkeys.gadm = gadmKeys.v
-            rkeys.changeHotKey(openMainMenu, gadmKeys.v)
-            save_config()
-        end
-        if rkeys.HotKey("Принятие формы", acceptFormKeys) then
-            cfg.hotkeys.acceptForm = acceptFormKeys.v
-            rkeys.changeHotKey(acceptForm, acceptFormKeys.v)
-            save_config()
-        end
         imgui.End()
     end
 )
@@ -334,7 +333,7 @@ local onlineFrame = imgui.OnFrame(
 
         imgui.SetNextWindowSize(imgui.ImVec2(size[1], size[2]))
         imgui.SetNextWindowPos(imgui.ImVec2(onlinePosX, onlinePosY))
-        imgui.Begin("GAdmin_online", show_main_menu, imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoMove + imgui.WindowFlags.NoScrollbar)
+        imgui.Begin("GAdmin_online", show_online_menu, imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoMove + imgui.WindowFlags.NoScrollbar)
 
         imgui.Text(full_online)
         imgui.Text(temp_online)
@@ -416,8 +415,6 @@ function main()
 
 
     -- инициализируем все хоткеи
-    -- TODO: взять другую либу (либо самому написать :D), ибо это говно
-    -- hotkey.RegisterCallback("gadm", cfg.hotkeys.gadm, gadm_cmd)
     openMainMenu = rkeys.registerHotKey(cfg.hotkeys.gadm, 1, gadm_cmd)
     acceptForm = rkeys.registerHotKey(cfg.hotkeys.acceptForm, 1, function()
         -- TODO: лучше вынести в отдельную функцию, а не тут объявлять :D
@@ -433,9 +430,7 @@ function main()
         end
     end)
 
-
     sampAddChatMessage("GAdmin успешно запущен", -1)
-
 
     -- инициализируем шрифты для рендера на экране
     local font_flag = require('moonloader').font_flag
@@ -462,6 +457,13 @@ function main()
                     renderFontDrawTextAlign(font, text2, sx, sy + 15, 0xFFFFFFFF, 2)
                 end
             end
+        end
+
+        show_action_menu[0] = show_info_menu[0]
+
+        if in_sp and not isCursorActive() then
+            if wasKeyPressed(1) or wasKeyPressed(37) then sampSendMenuSelectRow(2) end
+            if wasKeyPressed(2) or wasKeyPressed(39) then sampSendMenuSelectRow(0) end
         end
     end
 end
@@ -504,6 +506,10 @@ function samp.onVehicleSync(id, vehid, data)
             players_platform[id] = "Mobile"
         end
     end
+end
+
+function samp.onShowMenu()
+    if show_info_menu[0] then return false end
 end
 
 function samp.onPlayerQuit(id)
@@ -708,7 +714,7 @@ function imgui.Theme()
     imgui.GetStyle().GrabMinSize = 8.0
     imgui.GetStyle().GrabRounding = 8.0
     imgui.GetStyle().WindowPadding = imgui.ImVec2(4.0, 4.0)
-    -- imgui.GetStyle().ButtonTextAlign = imgui.ImVec2(0.0, 0.5)
+    imgui.GetStyle().ButtonTextAlign = imgui.ImVec2(0.0, 0.5)
 
     imgui.GetStyle().Colors[imgui.Col.WindowBg] = imgui.ImVec4(0.14, 0.12, 0.16, 1.00)
     imgui.GetStyle().Colors[imgui.Col.ChildBg] = imgui.ImVec4(0.30, 0.20, 0.39, 0.00)
