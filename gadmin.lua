@@ -728,7 +728,7 @@ function imgui.Theme()
     imgui.GetStyle().GrabMinSize = 8.0
     imgui.GetStyle().GrabRounding = 8.0
     imgui.GetStyle().WindowPadding = imgui.ImVec2(4.0, 4.0)
-    imgui.GetStyle().ButtonTextAlign = imgui.ImVec2(0.0, 0.5)
+    -- imgui.GetStyle().ButtonTextAlign = imgui.ImVec2(0.0, 0.5)
 
     imgui.GetStyle().Colors[imgui.Col.WindowBg] = imgui.ImVec4(0.14, 0.12, 0.16, 1.00)
     imgui.GetStyle().Colors[imgui.Col.ChildBg] = imgui.ImVec4(0.30, 0.20, 0.39, 0.00)
