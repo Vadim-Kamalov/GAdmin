@@ -139,6 +139,10 @@ local gg_msg = new.char[256](cfg.gg_msg)
 local game_pass = new.char[256](cfg.game_pass)
 local adm_pass = new.char[256](cfg.adm_pass)
 
+-- для хоткеев
+local gadmKeys = {v = cfg.hotkeys.gadm}
+local acceptFormKeys = {v = cfg.hotkeys.acceptForm}
+
 function imgui.Input()
     -- TODO: написать свой инпут, чтобы не плодить кучу однотипного кода
 end
@@ -315,6 +319,17 @@ local mainFrame = imgui.OnFrame(
             save_config()
         end
 
+        if rkeys.HotKey("Главное меню", gadmKeys) then
+            cfg.hotkeys.gadm = gadmKeys.v
+            rkeys.changeHotKey(openMainMenu, gadmKeys.v)
+            save_config()
+        end
+        if rkeys.HotKey("Принятие формы", acceptFormKeys) then
+            cfg.hotkeys.acceptForm = acceptFormKeys.v
+            rkeys.changeHotKey(acceptForm, acceptFormKeys.v)
+            save_config()
+        end
+
         imgui.End()
     end
 )
@@ -350,7 +365,6 @@ local infoFrame = imgui.OnFrame(
             player_data["game"] = (players_platform[tonumber(spectate_id)] and players_platform[tonumber(spectate_id)] or "N/A")
             local res, ped = sampGetCharHandleBySampPlayerId(spectate_id)
         end
-
 
         player.HideCursor = true
         imgui.SetNextWindowSize(imgui.ImVec2(100 * column_num, (column_num == 4 and 155 or 287)))
