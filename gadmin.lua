@@ -4,6 +4,7 @@ script_version(1.0)
 local mem = require('memory')
 local encoding = require 'encoding'
 local imgui = require 'mimgui'
+local rkeys = require 'gadmin/rkeys_modif'
 local samp = require 'lib.samp.events'
 local ffi = require 'ffi'
 local new, str, sizeof = imgui.new, ffi.string, ffi.sizeof
@@ -134,6 +135,10 @@ local gg_msg = new.char[256](cfg.gg_msg)
 local game_pass = new.char[256](cfg.game_pass)
 local adm_pass = new.char[256](cfg.adm_pass)
 
+-- для хоткеев
+local gadmKeys = {v = cfg.hotkeys.gadm}
+local acceptFormKeys = {v = cfg.hotkeys.acceptForm}
+
 function imgui.Input()
     -- TODO: написать свой инпут, чтобы не плодить кучу однотипного кода
 end
@@ -169,16 +174,16 @@ local adminForm = imgui.OnFrame(
                 imgui.SetCursorPosX(sizeX / 2 - imgui.CalcTextSize("/"..formCommand).x / 2)
                 imgui.Text("/"..formCommand)
 
-                if wasKeyPressed(cfg.hotkeys.acceptForm[1]) and not isCursorActive() then
-                    if formCommand:find("pk %d+") then
-                        pk_cmd_id = formCommand:match("pk (%d+)")
-                        sampSendChat("/jail "..pk_cmd_id.." 20 PK`ed // "..formStarter)
-                        admin_form_menu[0], formStarter, formCommand = false, "", ""
-                    else
-                        sampSendChat("/"..formCommand.." // "..formStarter)
-                        admin_form_menu[0], formStarter, formCommand = false, "", ""
-                    end
-                end
+                -- if wasKeyPressed(cfg.hotkeys.acceptForm[1]) and not isCursorActive() then
+                --     if formCommand:find("pk %d+") then
+                --         pk_cmd_id = formCommand:match("pk (%d+)")
+                --         sampSendChat("/jail "..pk_cmd_id.." 20 PK`ed // "..formStarter)
+                --         admin_form_menu[0], formStarter, formCommand = false, "", ""
+                --     else
+                --         sampSendChat("/"..formCommand.." // "..formStarter)
+                --         admin_form_menu[0], formStarter, formCommand = false, "", ""
+                --     end
+                -- end
 
                 imgui.SameLine()
                 imgui.SetCursorPosX(sizeX / 1.3 - imgui.CalcTextSize("Это окно исчезнет через %.1f секунд.").x / 2)
@@ -232,6 +237,16 @@ local mainFrame = imgui.OnFrame(
             save_config()
         end
 
+        if rkeys.HotKey("Главное меню", gadmKeys) then
+            cfg.hotkeys.gadm = gadmKeys.v
+            rkeys.changeHotKey(openMainMenu, gadmKeys.v)
+            save_config()
+        end
+        if rkeys.HotKey("Принятие формы", acceptFormKeys) then
+            cfg.hotkeys.acceptForm = acceptFormKeys.v
+            rkeys.changeHotKey(acceptForm, acceptFormKeys.v)
+            save_config()
+        end
         imgui.End()
     end
 )
@@ -334,6 +349,20 @@ function main()
     -- инициализируем все хоткеи
     -- TODO: взять другую либу (либо самому написать :D), ибо это говно
     -- hotkey.RegisterCallback("gadm", cfg.hotkeys.gadm, gadm_cmd)
+    openMainMenu = rkeys.registerHotKey(cfg.hotkeys.gadm, 1, gadm_cmd)
+    acceptForm = rkeys.registerHotKey(cfg.hotkeys.acceptForm, 1, function()
+        -- TODO: лучше вынести в отдельную функцию, а не тут объявлять :D
+        if not isCursorActive() and admin_form_menu[0] then
+            if formCommand:find("pk %d+") then
+                pk_cmd_id = formCommand:match("pk (%d+)")
+                sampSendChat("/jail "..pk_cmd_id.." 20 PK`ed // "..formStarter)
+                admin_form_menu[0], formStarter, formCommand = false, "", ""
+            else
+                sampSendChat("/"..formCommand.." // "..formStarter)
+                admin_form_menu[0], formStarter, formCommand = false, "", ""
+            end
+        end
+    end)
 
 
     sampAddChatMessage("GAdmin успешно запущен", -1)
@@ -434,7 +463,7 @@ function samp.onServerMessage(color, text)
                 if _formCommand:find(formCommands[i].." .*") then formCommand = _formCommand end
             end
             form_secondsToHide = os.clock()
-            admin_form_menu[0] = true
+            admin_form_menu[0] = (#_formCommand > 0)
         end
     elseif text:find("Администратор.*// "..formStarter) and color == -10270806 then
         admin_form_menu[0], formStarter, formCommand = false, "", ""
@@ -589,7 +618,7 @@ function imgui.Theme()
     imgui.GetStyle().GrabMinSize = 8.0
     imgui.GetStyle().GrabRounding = 8.0
     imgui.GetStyle().WindowPadding = imgui.ImVec2(4.0, 4.0)
-    imgui.GetStyle().ButtonTextAlign = imgui.ImVec2(0.0, 0.5)
+    -- imgui.GetStyle().ButtonTextAlign = imgui.ImVec2(0.0, 0.5)
 
     imgui.GetStyle().Colors[imgui.Col.WindowBg] = imgui.ImVec4(0.14, 0.12, 0.16, 1.00)
     imgui.GetStyle().Colors[imgui.Col.ChildBg] = imgui.ImVec4(0.30, 0.20, 0.39, 0.00)
