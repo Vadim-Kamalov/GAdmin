@@ -48,11 +48,11 @@ function create_config()
             sunday = 0
         },
         chats = {
-            
+
         },
         hotkeys = {
             gadm = {77},
-            acceptForm = {66} -- B
+            acceptForm = {73} -- I
         },
         gg_msg = "Приятной игры!",
         adm_pass = "",
@@ -76,6 +76,8 @@ end
 -- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
 cfg = get_config()
 alogin = false
+sendFormCommand = ""
+checkSendFormCommand = false
 local players_platform = {}
 -- для информации в спеке --
 in_sp = false
@@ -120,7 +122,7 @@ short_cmds = {
     ar = "kick %s AFK on ROAD",
     ak = "kick %s AFK without ESC",
     ap = "kick %s AFK public place"
-    
+
 }
 
 local formCommand, formStarter, form_secondsToHide = "", "", os.clock()
@@ -130,6 +132,7 @@ local show_main_menu = new.bool()
 local show_online_menu = new.bool(true)
 local show_info_menu = new.bool()
 local admin_form_menu = new.bool()
+local show_action_menu = new.bool()
 local car_spec = new.bool(cfg.car_spec)
 local gg_msg = new.char[256](cfg.gg_msg)
 local game_pass = new.char[256](cfg.game_pass)
@@ -153,6 +156,72 @@ end
 imgui.OnInitialize(function()
     imgui.Theme()
 end)
+
+function backInSpec()
+    -- TODO
+end
+
+function forwardInSpec()
+    -- TODOD
+end
+
+local actionMenu = imgui.OnFrame(
+    function() return show_action_menu[0] end,
+    function(self)
+        imgui.SetNextWindowSize(imgui.ImVec2(700, 70))
+        imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2, sizeY / 2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
+
+        imgui.PushStyleVarVec2(imgui.StyleVar.WindowPadding, imgui.ImVec2(0, 0))
+        imgui.PushStyleVarVec2(imgui.StyleVar.ItemSpacing, imgui.ImVec2(0, 0))
+        imgui.PushStyleVarVec2(imgui.StyleVar.ButtonTextAlign, imgui.ImVec2(0.5, 0.5))
+        imgui.PushStyleVarFloat(imgui.StyleVar.FrameRounding, 0)
+        imgui.PushStyleVarFloat(imgui.StyleVar.FrameBorderSize, 0.5)
+
+        local playerSpectateId = info_about
+
+        imgui.Begin("action_menu", show_action_menu, imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoScrollbar)
+            if imgui.Button("<<", imgui.ImVec2(50, 70)) then backInSpec() end
+            imgui.SameLine()
+
+            imgui.BeginGroup()
+                if imgui.Button("SPAWN", imgui.ImVec2(100, 35)) then
+                    sampSendChat("/aspawn "..playerSpectateId)
+                end
+                imgui.SameLine()
+                if imgui.Button("GETIP", imgui.ImVec2(100, 35)) then
+
+                end
+                imgui.SameLine()
+                imgui.Button("SLAP", imgui.ImVec2(100, 35))
+                imgui.SameLine()
+                imgui.Button("GIVE HP", imgui.ImVec2(100, 35))
+                imgui.SameLine()
+                imgui.Button("RESSURECT", imgui.ImVec2(100, 35))
+                imgui.SameLine()
+                imgui.Button("KILL", imgui.ImVec2(100, 35))
+                imgui.BeginGroup() -- New line content
+                    imgui.Button("*Вы тут?*", imgui.ImVec2(100, 35))
+                    imgui.SameLine()
+                    imgui.Button("AFRISK", imgui.ImVec2(100, 35))
+                    imgui.SameLine()
+                    imgui.Button("КВЕНТА", imgui.ImVec2(100, 35))
+                    imgui.SameLine()
+                    imgui.Button("GETBUYCAR", imgui.ImVec2(100, 35))
+                    imgui.SameLine()
+                    imgui.Button("VREPAIR", imgui.ImVec2(100, 35))
+                    imgui.SameLine()
+                    imgui.Button("STATS", imgui.ImVec2(100, 35))
+                imgui.EndGroup()
+            imgui.EndGroup()
+
+            imgui.SameLine()
+
+            if imgui.Button(">>", imgui.ImVec2(50, 70)) then forwardInSpec() end
+        imgui.End()
+
+        imgui.PopStyleVar(5)
+    end
+)
 
 local adminForm = imgui.OnFrame(
     function() return admin_form_menu[0] end,
@@ -200,8 +269,8 @@ local adminForm = imgui.OnFrame(
     end
 )
 
-sampRegisterChatCommand("execute.form", function ()
-    admin_form_menu[0], formStarter, formCommand = true, "N/A", "N/A"
+sampfuncsRegisterConsoleCommand("execute.form", function ()
+    admin_form_menu[0], formStarter, formCommand = true, "DEBUG_EXECUTE_FORM", "me DEBUG_EXECUTE_FORM"
     form_secondsToHide = os.clock()
 end)
 
@@ -257,7 +326,7 @@ local onlineFrame = imgui.OnFrame(
         player.HideCursor = true
         local full_online = string.format("Общий онлайн: %02d:%02d:%02d", cfg.online.total / 3600,cfg.online.total / 60 % 60, cfg.online.total % 60)
         local temp_online = string.format("Онлайн за сессию: %02d:%02d:%02d", session_online / 3600, session_online / 60 % 60, session_online % 60)
-        size = {imgui.GetStyle().WindowPadding.x*2 + imgui.CalcTextSize(temp_online).x, 
+        size = {imgui.GetStyle().WindowPadding.x*2 + imgui.CalcTextSize(temp_online).x,
         imgui.GetStyle().ItemSpacing.y + imgui.GetStyle().WindowPadding.y*2 + imgui.CalcTextSize(temp_online).y + imgui.CalcTextSize(full_online).y}
 
         local onlinePosX, onlinePosY = sizeX - size[1], sizeY - size[2]
@@ -327,7 +396,7 @@ function main()
     -- инициализируем все команды
     sampRegisterChatCommand("gadm", gadm_cmd)
     sampRegisterChatCommand("test", function()
-        column_num = column_num % 4 + 2 
+        column_num = column_num % 4 + 2
     end)
     sampRegisterChatCommand("wh", function()
         nameTagOn()
@@ -344,7 +413,7 @@ function main()
             end
         end)
     end
-    
+
 
     -- инициализируем все хоткеи
     -- TODO: взять другую либу (либо самому написать :D), ибо это говно
@@ -366,7 +435,7 @@ function main()
 
 
     sampAddChatMessage("GAdmin успешно запущен", -1)
-    
+
 
     -- инициализируем шрифты для рендера на экране
     local font_flag = require('moonloader').font_flag
@@ -386,7 +455,7 @@ function main()
                     local result, id = sampGetVehicleIdByCarHandle(car)
                     local carmodel = getCarModel(car)
                     local vehname = (getGxtText(getNameOfVehicleModel(carmodel))) -- TODO: там есть названия тачек которые становятся мусором
-                    local sx, sy = convert3DCoordsToScreen(x, y, z)  
+                    local sx, sy = convert3DCoordsToScreen(x, y, z)
                     local text = "ID: {8dff85}" .. id .. " {FFFFFF}HP: {8dff85}" .. hp
                     local text2 = vehname .. " [" .. engine_status .. "{FFFFFF} / " .. door_status .. "{FFFFFF}]"
                     renderFontDrawTextAlign(font, text, sx, sy, 0xFFFFFFFF, 2)
@@ -395,8 +464,8 @@ function main()
             end
         end
     end
-
 end
+
 
 function samp.onUnoccupiedSync(id, data)
     players_platform[id] = "PC"
@@ -451,21 +520,42 @@ local formCommands = {
     "pk"
 }
 
+function samp.onSendCommand(text)
+    for k, v in ipairs(formCommands) do
+        if text:find("/"..v..".*") then
+            checkSendFormCommand = true
+            sendFormCommand = text
+        end
+    end
+end
+
 function samp.onServerMessage(color, text)
     local result, id        = sampGetPlayerIdByCharHandle(PLAYER_PED)
     local nickname          = sampGetPlayerNickname(id)
 
     text = u8(text)
-    if text:find("%[A%] .*%[%d+%]: /.*") and color == 866792362 then
-        formStarter, formStarterId, _formCommand = text:match(u8"%[A%] (.*)%[(%d+)%]: /(.*)")
-        if formStarterId ~= id then
-            for i = 1, #formCommands do
-                if _formCommand:find(formCommands[i].." .*") then formCommand = _formCommand end
+
+    for k, v in ipairs(formCommands) do
+        if text:find("%[A%] .*%[%d+%]: /"..v..".*") and color == 866792362 then
+            formStarter, formStarterId, formCommand = text:match(u8"%[A%] (.*)%[(%d+)%]: /(.*)")
+            if formStarterId ~= id then
+                form_secondsToHide = os.clock()
+                admin_form_menu[0] = true
             end
-            form_secondsToHide = os.clock()
-            admin_form_menu[0] = (#_formCommand > 0)
         end
-    elseif text:find("Администратор.*// "..formStarter) and color == -10270806 then
+    end
+    if checkSendFormCommand then
+        if text:find("%|.*У вас нет доступа для использования данной команды%.") then
+            sampSendChat("/a "..sendFormCommand)
+            checkSendFormCommand = false
+            sendFormCommand = ""
+            return false
+        else
+            checkSendFormCommand = false
+            sendFormCommand = ""
+        end
+    end
+    if text:find("Администратор.*// "..formStarter) and color == -10270806 then
         admin_form_menu[0], formStarter, formCommand = false, "", ""
     end
 end
