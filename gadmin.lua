@@ -51,8 +51,9 @@ function create_config()
 
         },
         hotkeys = {
-            gadm = {77},
-            acceptForm = {73} -- I
+            gadm = {77}, -- M
+            acceptForm = {73}, -- I
+            cursorSpectate = {89} -- Y
         },
         gg_msg = "Приятной игры!",
         adm_pass = "",
@@ -81,6 +82,7 @@ checkSendFormCommand = false
 local players_platform = {}
 -- для информации в спеке --
 local in_sp = false
+local showCursor = false
 checking_stats = false
 last_checking_stats = 0
 last_speed_check = 0
@@ -337,7 +339,7 @@ local mainFrame = imgui.OnFrame(
 local onlineFrame = imgui.OnFrame(
     function() return show_online_menu[0] end,
     function(player)
-        player.HideCursor = true
+        player.HideCursor = not showCursor
         local full_online = string.format("Общий онлайн: %02d:%02d:%02d", cfg.online.total / 3600,cfg.online.total / 60 % 60, cfg.online.total % 60)
         local temp_online = string.format("Онлайн за сессию: %02d:%02d:%02d", session_online / 3600, session_online / 60 % 60, session_online % 60)
         size = {imgui.GetStyle().WindowPadding.x*2 + imgui.CalcTextSize(temp_online).x,
@@ -366,7 +368,7 @@ local infoFrame = imgui.OnFrame(
             local res, ped = sampGetCharHandleBySampPlayerId(spectate_id)
         end
 
-        player.HideCursor = true
+        player.HideCursor = not showCursor
         imgui.SetNextWindowSize(imgui.ImVec2(100 * column_num, (column_num == 4 and 155 or 287)))
         imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2, sizeY / 2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
         imgui.Begin("GAdmin_info", show_info_menu, imgui.WindowFlags.AlwaysAutoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoScrollbar)
@@ -441,6 +443,11 @@ function main()
                 sampSendChat("/"..formCommand.." // "..formStarter)
                 admin_form_menu[0], formStarter, formCommand = false, "", ""
             end
+        end
+    end)
+    rkeys.registerHotKey(cfg.hotkeys.cursorSpectate, 1, function()
+        if in_sp then
+            showCursor = not showCursor
         end
     end)
 
