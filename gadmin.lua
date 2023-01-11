@@ -4,11 +4,12 @@ script_version(1.0)
 local mem = require('memory')
 local encoding = require 'encoding'
 local imgui = require 'mimgui'
+local wm = require("windows.message")
+local vkeys = require("vkeys")
 local rkeys = require 'gadmin/rkeys_modif'
 local samp = require 'lib.samp.events'
 local ffi = require 'ffi'
 local new, str, sizeof = imgui.new, ffi.string, ffi.sizeof
-local hotkey = require('mimhotkey')
 local cjson = require "cjson"
 
 
@@ -51,9 +52,28 @@ function create_config()
 
         },
         hotkeys = {
-            gadm = {77}, -- M
-            acceptForm = {73}, -- I
-            cursorSpectate = {89} -- Y
+            gadm = {77},
+            acceptForm = {73},
+            spectateCursor = {66}
+        },
+        windowsPosition = {
+            actionFrame = {
+                x = select(1, getScreenResolution()) / 100,
+                y = select(2, getScreenResolution()) / 1.1 
+            },
+            playerStatsFrame = {
+                x = select(1, getScreenResolution()) / 1.125,
+                y = select(2, getScreenResolution()) / 1.6
+            },
+            playersNearby = {
+                x = select(1, getScreenResolution()) / 1.125,
+                y = select(2, getScreenResolution()) / 3
+            }
+        },
+        windowsSettings = {
+            playersNearby = {
+                alpha = 0
+            }
         },
         gg_msg = "Приятной игры!",
         adm_pass = "",
@@ -80,9 +100,11 @@ alogin = false
 sendFormCommand = ""
 checkSendFormCommand = false
 local players_platform = {}
+local _showSpectateCursor = true
+local popupId, popupNickname = 0, ""
 -- для информации в спеке --
 local in_sp = false
-local showCursor = false
+changePosition = -1
 checking_stats = false
 last_checking_stats = 0
 last_speed_check = 0
@@ -90,6 +112,7 @@ spectate_id = -1
 info_about = -1
 spec_textdraw = -1
 player_data = {}
+intWindows = {"actionFrame", "playerStatsFrame", "playersNearby"}
 info_show = {
     {"hp", "Здоровье"},
     {"armour", "Броня"},
@@ -128,7 +151,6 @@ short_cmds = {
 }
 
 local formCommand, formStarter, form_secondsToHide = "", "", os.clock()
-local playerSpectateId = info_about
 
 -- ИМГУИ ПЕРЕМЕННЫЕ
 local show_main_menu = new.bool()
@@ -136,6 +158,7 @@ local show_online_menu = new.bool(true)
 local show_info_menu = new.bool()
 local admin_form_menu = new.bool()
 local show_action_menu = new.bool()
+local playersNearby = new.bool()
 local car_spec = new.bool(cfg.car_spec)
 local gg_msg = new.char[256](cfg.gg_msg)
 local game_pass = new.char[256](cfg.game_pass)
@@ -143,6 +166,7 @@ local adm_pass = new.char[256](cfg.adm_pass)
 
 -- для хоткеев
 local gadmKeys = {v = cfg.hotkeys.gadm}
+local showSpectateCursor = {v = cfg.hotkeys.spectateCursor}
 local acceptFormKeys = {v = cfg.hotkeys.acceptForm}
 
 function imgui.Input()
@@ -165,40 +189,44 @@ function setChatInputEnabledWithText(text)
     sampSetChatInputText(text)
 end
 
--- todo: сделать переключеие между кнопками, убрать дефолт меню в спеке
 --[[ buttonsPlaceholder[2] : function ]]--
 
-local actionMenuSpawn       = function() sampSendChat("/spawn "..playerSpectateId) end
+local actionMenuSpawn       = function() sampSendChat("/spawn "..info_about) end
 local actionMenuGetip       = function() end
-local actionMenuSlap        = function() sampSendChat("/slap "..playerSpectateId) end
-local actionMenuGiveHp      = function() setChatInputEnabledWithText("/sethp "..playerSpectateId.." ") end
-local actionMenuRessurect   = function() sampSendChat("/aheal "..playerSpectateId) end
-local actionMenuKill        = function() sampSendChat("/sethp "..playerSpectateId.." 0") end
+local actionMenuSlap        = function() sampSendChat("/slap "..info_about) end
+local actionMenuGiveHp      = function() setChatInputEnabledWithText("/sethp "..info_about.." ") end
+local actionMenuRessurect   = function() sampSendChat("/aheal "..info_about) end
+local actionMenuKill        = function() sampSendChat("/sethp "..info_about.." 0") end
 
-local actionMenuAsk         = function() sampSendChat("/ans "..playerSpectateId.." Вы тут? Ответ в /b") end
+local actionMenuAsk         = function() sampSendChat("/ans "..info_about.." Вы тут? Ответ в /b") end
 local actionMenuFrisk       = function() sampSendMenuSelectRow(5) end
 local actionMenuBack        = function() end
 local actionMenuGetbuycar   = function() setChatInputEnabledWithText("/getbuycar ") end
 local actionMenuRepair      = function() setChatInputEnabledWithText("/vrepair ") end
-local actionMenuStats       = function() sampSendChat("/stats "..playerSpectateId) end
+local actionMenuStats       = function() sampSendChat("/stats "..info_about) end
+local actionMenuPame        = function() sampSendChat("/pame "..info_about) end
+local actionMenuSwitch      = function() sampSendMenuSelectRow(1) end
 
 local buttonsPlaceholder = {
     {   -- First line
-        {"SPAWN", actionMenuSpawn, false},
-        {"GETIP", actionMenuGetip, false},
-        {"SLAP", actionMenuSlap, false},
-        {"GIVE HP", actionMenuGiveHp, false},
-        {"RESSURECT", actionMenuRessurect, false},
-        {"KILL", actionMenuKill, false}
+        {"SPAWN", actionMenuSpawn},
+        {"GETIP", actionMenuGetip},
+        {"SLAP", actionMenuSlap},
+        {"GIVE HP", actionMenuGiveHp},
+        {"RESSURECT", actionMenuRessurect},
+        {"KILL", actionMenuKill},
+        {"PAME", actionMenuPame}
+
     },
 
     {   -- Second line
-        {"*Вы тут?*", actionMenuAsk, false},
-        {"AFRISK", actionMenuFrisk, false},
-        {"КВЕНТА", actionMenuBack, false},
-        {"GETBUYCAR", actionMenuGetbuycar, false},
-        {"REPAIR", actionMenuRepair, false},
-        {"STATS", actionMenuStats, false}
+        {"*Вы тут?*", actionMenuAsk},
+        {"AFRISK", actionMenuFrisk},
+        {"КВЕНТА", actionMenuBack},
+        {"GETBUYCAR", actionMenuGetbuycar},
+        {"REPAIR", actionMenuRepair},
+        {"STATS", actionMenuStats},
+        {"SWITCH", actionMenuSwitch}
     }
 }
 
@@ -207,10 +235,10 @@ local buttonsPlaceholder = {
 local actionMenu = imgui.OnFrame(
     function() return show_action_menu[0] end,
     function(self)
-        self.HideCursor = true
+        self.HideCursor = _showSpectateCursor
 
-        imgui.SetNextWindowSize(imgui.ImVec2(700, 70))
-        imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2, sizeY / 2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
+        imgui.SetNextWindowSize(imgui.ImVec2(800, 70))
+        imgui.SetNextWindowPos(imgui.ImVec2(cfg.windowsPosition.actionFrame.x, cfg.windowsPosition.actionFrame.y))
 
         imgui.PushStyleVarVec2(imgui.StyleVar.WindowPadding, imgui.ImVec2(0, 0))
         imgui.PushStyleVarVec2(imgui.StyleVar.ItemSpacing, imgui.ImVec2(0, 0))
@@ -218,7 +246,7 @@ local actionMenu = imgui.OnFrame(
         imgui.PushStyleVarFloat(imgui.StyleVar.FrameRounding, 0)
         imgui.PushStyleVarFloat(imgui.StyleVar.FrameBorderSize, 0.5)
 
-        imgui.Begin("action_menu", show_action_menu, imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoScrollbar)
+        imgui.Begin("action_menu", show_action_menu, imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoScrollbar + imgui.WindowFlags.NoMove)
             if imgui.Button("<<", imgui.ImVec2(50, 70)) then sampSendMenuSelectRow(0) end
             imgui.SameLine()
 
@@ -228,7 +256,7 @@ local actionMenu = imgui.OnFrame(
                         buttonsPlaceholder[1][index][2]()
                     end
 
-                    if index ~= 6 then imgui.SameLine() end
+                    if index ~= 7 then imgui.SameLine() end
                 end
                 imgui.BeginGroup() -- New line content
                     for index = 1, #buttonsPlaceholder[2] do
@@ -236,7 +264,7 @@ local actionMenu = imgui.OnFrame(
                         buttonsPlaceholder[2][index][2]()
                         end
                     
-                        if index ~= 6 then imgui.SameLine() end
+                        if index ~= 7 then imgui.SameLine() end
                     end
                 imgui.EndGroup()
             imgui.EndGroup()
@@ -250,15 +278,79 @@ local actionMenu = imgui.OnFrame(
     end
 )
 
+local playersNearbyFrame = imgui.OnFrame(
+    function() return playersNearby[0] end,
+    function(self)
+        self.HideCursor = _showSpectateCursor
+
+        imgui.SetNextWindowPos(imgui.ImVec2(cfg.windowsPosition.playersNearby.x, cfg.windowsPosition.playersNearby.y))
+        imgui.SetNextWindowSize(imgui.ImVec2(200, 500))
+
+        imgui.PushStyleVarFloat(imgui.StyleVar.WindowBorderSize, 0)
+        imgui.PushStyleColor(imgui.Col.ScrollbarBg, imgui.ImVec4(0.07, 0.07, 0.07, 0))
+        imgui.PushStyleColor(imgui.Col.ScrollbarGrab, imgui.ImVec4(0.07, 0.07, 0.07, 0.30))
+        imgui.PushStyleColor(imgui.Col.WindowBg, imgui.ImVec4(0.07, 0.07, 0.07, 0))
+
+        imgui.Begin("playersNearby", playersNearby, imgui.WindowFlags.NoMove + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar)
+            if changePosition == 3 then
+                somePlayers = {"VANYA", "El_Capone", "DZONE", "Tyler_Carter", "Samuel_Jones", "Anthony_Hughes", "Christopher_Rivera", "Devin_Johnson", "Julian_Hall", "Xavier_Gray", "Gavin_Jenkins", "Jacob_Baker", "Alex_Hill", "Antonio_Parker", "Alexander_Phillips", "Luke_Jones", "Aidan_Butler", "Alexander_Phillips", "Samuel_Jones", "Anthony_Hughes", "Christopher_Rivera", "Devin_Johnson", "Julian_Hall", "Xavier_Gray", "Gavin_Jenkins", "Samuel_Jones", "Anthony_Hughes", "Christopher_Rivera", "Devin_Johnson", "Julian_Hall", "Xavier_Gray", "Gavin_Jenkins"}
+                for i = 1, #somePlayers do
+                    imgui.SetCursorPosX(100 - imgui.CalcTextSize(somePlayers[i]).x / 2)
+                    imgui.Text(somePlayers[i])
+                end
+            else
+                for _, player in ipairs(getAllChars()) do
+                    result, id = sampGetPlayerIdByCharHandle(player)
+                    nickname = sampGetPlayerNickname(id)
+
+                    if id ~= select(2, sampGetPlayerIdByCharHandle(PLAYER_PED)) and id ~= tonumber(info_about) then
+                        imgui.SetCursorPosX(100 - imgui.CalcTextSize(("%s[%s}"):format(nickname, id)).x / 2)
+                        imgui.Text(("%s[%s]"):format(nickname, id))
+                        if imgui.IsItemClicked() then
+                            imgui.OpenPopup("playerInfo")
+                            popupId, popupNickname = id, nickname
+                        end
+                    end
+                end
+            end
+            
+            imgui.PushStyleVarVec2(imgui.StyleVar.WindowPadding, imgui.ImVec2(0, 0))
+            if imgui.BeginPopup("playerInfo") then
+                imgui.PushStyleVarFloat(imgui.StyleVar.FrameRounding, 0)
+                    imgui.BeginGroup()
+                        imgui.PushStyleVarVec2(imgui.StyleVar.ItemSpacing, imgui.ImVec2(0, 0))
+                            thisPlayerInfo = popupNickname.."["..popupId.."]"
+
+                            imgui.SetCursorPos(imgui.ImVec2(100 - imgui.CalcTextSize(thisPlayerInfo).x / 2, 5))
+                            imgui.Text(thisPlayerInfo)
+                            imgui.SetCursorPosY(10 + imgui.CalcTextSize(popupNickname).y)
+                            if imgui.Button("STATS", imgui.ImVec2(200, 30)) then sampSendChat("/stats "..popupId); imgui.CloseCurrentPopup() end
+                            if imgui.Button("PAME", imgui.ImVec2(200, 30)) then sampSendChat("/pame "..popupId); imgui.CloseCurrentPopup() end
+                            if imgui.Button("SPEC", imgui.ImVec2(200, 30)) then sampSendChat("/sp "..popupId); imgui.CloseCurrentPopup() end
+                        imgui.PopStyleVar()
+                    imgui.EndGroup()
+                imgui.PopStyleVar()
+            end
+            imgui.PopStyleVar()
+
+        imgui.EndPopup()
+        imgui.End()
+
+        imgui.PopStyleVar()
+        imgui.PopStyleColor(3)
+    end
+)
+
 local adminForm = imgui.OnFrame(
     function() return admin_form_menu[0] end,
     function(self)
-        self.HideCursor = true
+        self.HideCursor = _showSpectateCursor
         imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2, sizeY), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
         imgui.SetNextWindowSize(imgui.ImVec2(sizeX, 70))
 
         imgui.PushStyleColor(imgui.Col.WindowBg, imgui.ImVec4(0.07, 0.07, 0.07, 0.50))
         imgui.PushStyleVarFloat(imgui.StyleVar.FrameRounding, 0)
+        imgui.PushStyleVarFloat(imgui.StyleVar.WindowRounding, 0)
         imgui.PushStyleVarFloat(imgui.StyleVar.WindowBorderSize, 0)
 
         imgui.Begin("admin_form_menu", admin_form_menu, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize)
@@ -279,15 +371,10 @@ local adminForm = imgui.OnFrame(
             end
         imgui.End()
 
-        imgui.PopStyleVar(1)
+        imgui.PopStyleVar(2)
         imgui.PopStyleColor()
     end
 )
-
-sampfuncsRegisterConsoleCommand("execute.form", function ()
-    admin_form_menu[0], formStarter, formCommand = true, "DEBUG_EXECUTE_FORM", "me DEBUG_EXECUTE_FORM"
-    form_secondsToHide = os.clock()
-end)
 
 local mainFrame = imgui.OnFrame(
     function() return show_main_menu[0] end,
@@ -332,6 +419,37 @@ local mainFrame = imgui.OnFrame(
             save_config()
         end
 
+        if rkeys.HotKey("Открытие курсора в /sp", showSpectateCursor) then
+            cfg.hotkeys.spectateCursor = acceptFormKeys.v
+            rkeys.changeHotKey(showSpectateCursor, showSpectateCursor.v)
+            save_config()
+        end
+
+        if imgui.Button("Настроить позицию окон") then
+            imgui.OpenPopup("windowsPosition")
+        end
+
+        imgui.PushStyleVarVec2(imgui.StyleVar.WindowPadding, imgui.ImVec2(0, 0))
+        if imgui.BeginPopupModal("windowsPosition", nil, imgui.WindowFlags.NoResize + imgui.WindowFlags.NoMove + imgui.WindowFlags.NoTitleBar) then
+            imgui.PushStyleVarFloat(imgui.StyleVar.FrameRounding, 0)
+            
+            imgui.BeginGroup()
+                imgui.PushStyleVarVec2(imgui.StyleVar.ItemSpacing, imgui.ImVec2(0, 0))
+                if imgui.Button("Окно быстрых действий в /sp", imgui.ImVec2(300, 50)) then
+                    changePosition = 1
+                elseif imgui.Button("Окно со статистикой игрока в /sp", imgui.ImVec2(300, 50)) then
+                    changePosition = 2
+                elseif imgui.Button("Окно с ближайшими игроками в /sp", imgui.ImVec2(300, 50)) then
+                    changePosition = 3
+                elseif imgui.Button("Закрыть окно", imgui.ImVec2(300, 50)) then imgui.CloseCurrentPopup() end
+                imgui.PopStyleVar()
+            imgui.EndGroup()
+
+            imgui.PopStyleVar()
+        end
+        imgui.PopStyleVar()
+
+        imgui.EndPopup() -- Should be here
         imgui.End()
     end
 )
@@ -339,7 +457,7 @@ local mainFrame = imgui.OnFrame(
 local onlineFrame = imgui.OnFrame(
     function() return show_online_menu[0] end,
     function(player)
-        player.HideCursor = not showCursor
+        player.HideCursor = _showSpectateCursor
         local full_online = string.format("Общий онлайн: %02d:%02d:%02d", cfg.online.total / 3600,cfg.online.total / 60 % 60, cfg.online.total % 60)
         local temp_online = string.format("Онлайн за сессию: %02d:%02d:%02d", session_online / 3600, session_online / 60 % 60, session_online % 60)
         size = {imgui.GetStyle().WindowPadding.x*2 + imgui.CalcTextSize(temp_online).x,
@@ -348,12 +466,16 @@ local onlineFrame = imgui.OnFrame(
         local onlinePosX, onlinePosY = sizeX - size[1], sizeY - size[2]
         if admin_form_menu[0] then onlinePosY = sizeY - size[2] - 35 else onlinePosY = sizeY - size[2] end
 
+        imgui.PushStyleVarFloat(imgui.StyleVar.WindowRounding, 0)
+
         imgui.SetNextWindowSize(imgui.ImVec2(size[1], size[2]))
         imgui.SetNextWindowPos(imgui.ImVec2(onlinePosX, onlinePosY))
         imgui.Begin("GAdmin_online", show_online_menu, imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoMove + imgui.WindowFlags.NoScrollbar)
 
         imgui.Text(full_online)
         imgui.Text(temp_online)
+
+        imgui.PopStyleVar()
 
         imgui.End()
     end
@@ -368,10 +490,10 @@ local infoFrame = imgui.OnFrame(
             local res, ped = sampGetCharHandleBySampPlayerId(spectate_id)
         end
 
-        player.HideCursor = not showCursor
+        player.HideCursor = _showSpectateCursor
         imgui.SetNextWindowSize(imgui.ImVec2(100 * column_num, (column_num == 4 and 155 or 287)))
-        imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2, sizeY / 2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
-        imgui.Begin("GAdmin_info", show_info_menu, imgui.WindowFlags.AlwaysAutoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoScrollbar)
+        imgui.SetNextWindowPos(imgui.ImVec2(cfg.windowsPosition.playerStatsFrame.x, cfg.windowsPosition.playerStatsFrame.y))
+        imgui.Begin("GAdmin_info", show_info_menu, imgui.WindowFlags.AlwaysAutoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoScrollbar + imgui.WindowFlags.NoMove)
 
         imgui.CenterText(tostring(player_data["nick"]) .. "[" .. spectate_id .. "]")
         imgui.Columns(column_num, "##player_info", true)
@@ -403,6 +525,37 @@ local infoFrame = imgui.OnFrame(
     end
 )
 
+function onWindowMessage(msg, wparam, lparam)
+    if msg == wm.WM_SYSKEYDOWN or msg == wm.WM_KEYDOWN then
+        if show_main_menu[0] and wparam == vkeys.VK_ESCAPE and not isPauseMenuActive() then
+            consumeWindowMessage(true, false)
+            show_main_menu[0] = false
+        end
+    elseif msg == wm.WM_LBUTTONUP and changePosition ~= -1 then
+        cfg.windowsPosition[intWindows[changePosition]].x,
+        cfg.windowsPosition[intWindows[changePosition]].y = bit.band(lparam, 0xFFFF), bit.band(bit.rshift(lparam, 16), 0xFFFF)
+
+        save_config()
+        sampAddChatMessage("Настройки сохранены", -1)
+        showCursor(false, false)
+        displayHud(true)
+        displayRadar(true)
+        consumeWindowMessage(true, false)
+
+        changePosition = -1
+        show_action_menu[0], show_info_menu[0], playersNearby[0] = false, false, false
+        show_main_menu[0] = true
+    elseif msg == wm.WM_RBUTTONUP and changePosition ~= -1 then
+        sampAddChatMessage("Отменено", -1)
+        show_main_menu[0] = true
+        displayHud(true)
+        displayRadar(true)
+        showCursor(false, false)
+                
+        changePosition = -1
+        show_action_menu[0], show_info_menu[0] = false, false
+    end
+end
 
 function main()
     if not isSampfuncsLoaded() or not isSampLoaded() then return end
@@ -431,25 +584,9 @@ function main()
 
 
     -- инициализируем все хоткеи
-    openMainMenu = rkeys.registerHotKey(cfg.hotkeys.gadm, 1, gadm_cmd)
-    acceptForm = rkeys.registerHotKey(cfg.hotkeys.acceptForm, 1, function()
-        -- TODO: лучше вынести в отдельную функцию, а не тут объявлять :D
-        if not isCursorActive() and admin_form_menu[0] then
-            if formCommand:find("pk %d+") then
-                pk_cmd_id = formCommand:match("pk (%d+)")
-                sampSendChat("/jail "..pk_cmd_id.." 20 PK`ed // "..formStarter)
-                admin_form_menu[0], formStarter, formCommand = false, "", ""
-            else
-                sampSendChat("/"..formCommand.." // "..formStarter)
-                admin_form_menu[0], formStarter, formCommand = false, "", ""
-            end
-        end
-    end)
-    rkeys.registerHotKey(cfg.hotkeys.cursorSpectate, 1, function()
-        if in_sp then
-            showCursor = not showCursor
-        end
-    end)
+    openMainMenu =      rkeys.registerHotKey(cfg.hotkeys.gadm, 1, gadm_cmd)
+    showCursorInSpec =  rkeys.registerHotKey(cfg.hotkeys.spectateCursor, 2, changeSpecCursorMode)
+    acceptForm =        rkeys.registerHotKey(cfg.hotkeys.acceptForm, 1, sendFormCommand)
 
     sampAddChatMessage("GAdmin успешно запущен", -1)
 
@@ -480,11 +617,29 @@ function main()
             end
         end
 
-        show_action_menu[0] = show_info_menu[0]
+        show_action_menu[0], playersNearby[0] = show_info_menu[0], show_action_menu[0]
 
-        if in_sp and not isCursorActive() then
+        if in_sp and not isCursorActive() and not sampIsChatInputActive() and not isSampfuncsConsoleActive() and not sampIsDialogActive() then
             if wasKeyPressed(1) or wasKeyPressed(37) then sampSendMenuSelectRow(2) end
             if wasKeyPressed(2) or wasKeyPressed(39) then sampSendMenuSelectRow(0) end
+        end
+
+        if changePosition ~= -1 then
+            if in_sp then
+                sampAddChatMessage("Сперва нужно покинуть /sp", -1)
+                changePosition = -1
+            else
+                showCursor(true, true)
+                displayHud(false)
+                displayRadar(false)
+                currentX, currentY = getCursorPos()
+
+                cfg.windowsPosition[intWindows[changePosition]].x = currentX
+                cfg.windowsPosition[intWindows[changePosition]].y = currentY
+                
+                show_main_menu[0] = false
+                show_action_menu[0], show_info_menu[0], playersNearby[0] = true, true, true
+            end
         end
     end
 end
@@ -529,9 +684,9 @@ function samp.onVehicleSync(id, vehid, data)
     end
 end
 
-function samp.onShowMenu()
-    if show_info_menu[0] then return false end
-end
+-- function samp.onShowMenu()
+    -- if show_info_menu[0] then return false end
+-- end
 
 function samp.onPlayerQuit(id)
     players_platform[id] = nil
@@ -677,7 +832,24 @@ lua_thread.create(function()
     end
 end)
 
+function changeSpecCursorMode()
+    if show_info_menu[0] then
+        _showSpectateCursor = not _showSpectateCursor
+    end
+end
 
+function sendFormCommand()
+    if not isCursorActive() and admin_form_menu[0] then
+        if formCommand:find("pk %d+") then
+            pk_cmd_id = formCommand:match("pk (%d+)")
+            sampSendChat("/jail "..pk_cmd_id.." 20 PK`ed // "..formStarter)
+            admin_form_menu[0], formStarter, formCommand = false, "", ""
+        else
+            sampSendChat("/"..formCommand.." // "..formStarter)
+            admin_form_menu[0], formStarter, formCommand = false, "", ""
+        end
+    end
+end
 
 function pk_cmd(arg)
     local id = arg:match("(%d+)")
@@ -708,6 +880,13 @@ function asp_cmd(arg)
     end
 end
 
+-- Debug console commands
+
+sampfuncsRegisterConsoleCommand("execute.form", function ()
+    admin_form_menu[0], formStarter, formCommand = true, "DEBUG_EXECUTE_FORM", "me DEBUG_EXECUTE_FORM"
+    form_secondsToHide = os.clock()
+end)
+
 -- ниже лучше ничего не трогать
 sendchat = sampSendChat
 addchatmessage = sampAddChatMessage
@@ -724,52 +903,86 @@ end
 
 function imgui.Theme()
     imgui.SwitchContext()
-    imgui.GetStyle().FramePadding = imgui.ImVec2(3.5, 3.5)
-    imgui.GetStyle().FrameRounding = 8
-    imgui.GetStyle().ChildRounding = 8
-    imgui.GetStyle().WindowTitleAlign = imgui.ImVec2(0.5, 0.5)
-    imgui.GetStyle().WindowRounding = 4
-    imgui.GetStyle().ItemSpacing = imgui.ImVec2(5.0, 4.0)
-    imgui.GetStyle().ScrollbarSize = 13.0
-    imgui.GetStyle().ScrollbarRounding = 8
-    imgui.GetStyle().GrabMinSize = 8.0
-    imgui.GetStyle().GrabRounding = 8.0
-    imgui.GetStyle().WindowPadding = imgui.ImVec2(4.0, 4.0)
-    -- imgui.GetStyle().ButtonTextAlign = imgui.ImVec2(0.0, 0.5)
+    --==[ STYLE ]==--
+    imgui.GetStyle().WindowPadding = imgui.ImVec2(5, 5)
+    imgui.GetStyle().FramePadding = imgui.ImVec2(5, 5)
+    imgui.GetStyle().ItemSpacing = imgui.ImVec2(5, 5)
+    imgui.GetStyle().ItemInnerSpacing = imgui.ImVec2(2, 2)
+    imgui.GetStyle().TouchExtraPadding = imgui.ImVec2(0, 0)
+    imgui.GetStyle().IndentSpacing = 0
+    imgui.GetStyle().ScrollbarSize = 10
+    imgui.GetStyle().GrabMinSize = 10
 
-    imgui.GetStyle().Colors[imgui.Col.WindowBg] = imgui.ImVec4(0.14, 0.12, 0.16, 1.00)
-    imgui.GetStyle().Colors[imgui.Col.ChildBg] = imgui.ImVec4(0.30, 0.20, 0.39, 0.00)
-    imgui.GetStyle().Colors[imgui.Col.PopupBg] = imgui.ImVec4(0.05, 0.05, 0.10, 0.90)
-    imgui.GetStyle().Colors[imgui.Col.Border] = imgui.ImVec4(0.89, 0.85, 0.92, 0.30)
-    imgui.GetStyle().Colors[imgui.Col.BorderShadow] = imgui.ImVec4(0.00, 0.00, 0.00, 0.00)
-    imgui.GetStyle().Colors[imgui.Col.FrameBg] = imgui.ImVec4(0.30, 0.20, 0.39, 1.00)
-    imgui.GetStyle().Colors[imgui.Col.FrameBgHovered] = imgui.ImVec4(0.41, 0.19, 0.63, 0.68)
-    imgui.GetStyle().Colors[imgui.Col.FrameBgActive] = imgui.ImVec4(0.41, 0.19, 0.63, 1.00)
-    imgui.GetStyle().Colors[imgui.Col.TitleBg] = imgui.ImVec4(0.41, 0.19, 0.63, 0.45)
-    imgui.GetStyle().Colors[imgui.Col.TitleBgCollapsed] = imgui.ImVec4(0.41, 0.19, 0.63, 0.35)
-    imgui.GetStyle().Colors[imgui.Col.TitleBgActive] = imgui.ImVec4(0.41, 0.19, 0.63, 0.78)
-    imgui.GetStyle().Colors[imgui.Col.MenuBarBg] = imgui.ImVec4(0.30, 0.20, 0.39, 0.57)
-    imgui.GetStyle().Colors[imgui.Col.ScrollbarBg] = imgui.ImVec4(0.30, 0.20, 0.39, 1.00)
-    imgui.GetStyle().Colors[imgui.Col.ScrollbarGrab] = imgui.ImVec4(0.41, 0.19, 0.63, 0.31)
-    imgui.GetStyle().Colors[imgui.Col.ScrollbarGrabHovered] = imgui.ImVec4(0.41, 0.19, 0.63, 0.78)
-    imgui.GetStyle().Colors[imgui.Col.ScrollbarGrabActive] = imgui.ImVec4(0.41, 0.19, 0.63, 1.00)
-    imgui.GetStyle().Colors[imgui.Col.CheckMark] = imgui.ImVec4(0.56, 0.61, 1.00, 1.00)
-    imgui.GetStyle().Colors[imgui.Col.SliderGrab] = imgui.ImVec4(0.41, 0.19, 0.63, 0.24)
-    imgui.GetStyle().Colors[imgui.Col.SliderGrabActive] = imgui.ImVec4(0.41, 0.19, 0.63, 1.00)
-    imgui.GetStyle().Colors[imgui.Col.Button] = imgui.ImVec4(0.41, 0.19, 0.63, 0.44)
-    imgui.GetStyle().Colors[imgui.Col.ButtonHovered] = imgui.ImVec4(0.41, 0.19, 0.63, 0.86)
-    imgui.GetStyle().Colors[imgui.Col.ButtonActive] = imgui.ImVec4(0.64, 0.33, 0.94, 1.00)
-    imgui.GetStyle().Colors[imgui.Col.Header] = imgui.ImVec4(0.41, 0.19, 0.63, 0.76)
-    imgui.GetStyle().Colors[imgui.Col.HeaderHovered] = imgui.ImVec4(0.41, 0.19, 0.63, 0.86)
-    imgui.GetStyle().Colors[imgui.Col.HeaderActive] = imgui.ImVec4(0.41, 0.19, 0.63, 1.00)
-    imgui.GetStyle().Colors[imgui.Col.ResizeGrip] = imgui.ImVec4(0.41, 0.19, 0.63, 0.20)
-    imgui.GetStyle().Colors[imgui.Col.ResizeGripHovered] = imgui.ImVec4(0.41, 0.19, 0.63, 0.78)
-    imgui.GetStyle().Colors[imgui.Col.ResizeGripActive] = imgui.ImVec4(0.41, 0.19, 0.63, 1.00)
-    imgui.GetStyle().Colors[imgui.Col.PlotLines] = imgui.ImVec4(0.89, 0.85, 0.92, 0.63)
-    imgui.GetStyle().Colors[imgui.Col.PlotLinesHovered] = imgui.ImVec4(0.41, 0.19, 0.63, 1.00)
-    imgui.GetStyle().Colors[imgui.Col.PlotHistogram] = imgui.ImVec4(0.89, 0.85, 0.92, 0.63)
-    imgui.GetStyle().Colors[imgui.Col.PlotHistogramHovered] = imgui.ImVec4(0.41, 0.19, 0.63, 1.00)
-    imgui.GetStyle().Colors[imgui.Col.TextSelectedBg] = imgui.ImVec4(0.41, 0.19, 0.63, 0.43)
+    --==[ BORDER ]==--
+    imgui.GetStyle().WindowBorderSize = 1
+    imgui.GetStyle().ChildBorderSize = 1
+    imgui.GetStyle().PopupBorderSize = 1
+    imgui.GetStyle().FrameBorderSize = 1
+    imgui.GetStyle().TabBorderSize = 1
+
+    --==[ ROUNDING ]==--
+    imgui.GetStyle().WindowRounding = 5
+    imgui.GetStyle().ChildRounding = 5
+    imgui.GetStyle().FrameRounding = 5
+    imgui.GetStyle().PopupRounding = 5
+    imgui.GetStyle().ScrollbarRounding = 5
+    imgui.GetStyle().GrabRounding = 5
+    imgui.GetStyle().TabRounding = 5
+
+    --==[ ALIGN ]==--
+    imgui.GetStyle().WindowTitleAlign = imgui.ImVec2(0.5, 0.5)
+    imgui.GetStyle().ButtonTextAlign = imgui.ImVec2(0.5, 0.5)
+    imgui.GetStyle().SelectableTextAlign = imgui.ImVec2(0.5, 0.5)
+    
+    --==[ COLORS ]==--
+    imgui.GetStyle().Colors[imgui.Col.Text]                   = imgui.ImVec4(1.00, 1.00, 1.00, 1.00)
+    imgui.GetStyle().Colors[imgui.Col.TextDisabled]           = imgui.ImVec4(0.50, 0.50, 0.50, 1.00)
+    imgui.GetStyle().Colors[imgui.Col.WindowBg]               = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)
+    imgui.GetStyle().Colors[imgui.Col.ChildBg]                = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)
+    imgui.GetStyle().Colors[imgui.Col.PopupBg]                = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)
+    imgui.GetStyle().Colors[imgui.Col.Border]                 = imgui.ImVec4(0.25, 0.25, 0.26, 0.54)
+    imgui.GetStyle().Colors[imgui.Col.BorderShadow]           = imgui.ImVec4(0.00, 0.00, 0.00, 0.00)
+    imgui.GetStyle().Colors[imgui.Col.FrameBg]                = imgui.ImVec4(0.12, 0.12, 0.12, 1.00)
+    imgui.GetStyle().Colors[imgui.Col.FrameBgHovered]         = imgui.ImVec4(0.25, 0.25, 0.26, 1.00)
+    imgui.GetStyle().Colors[imgui.Col.FrameBgActive]          = imgui.ImVec4(0.25, 0.25, 0.26, 1.00)
+    imgui.GetStyle().Colors[imgui.Col.TitleBg]                = imgui.ImVec4(0.12, 0.12, 0.12, 1.00)
+    imgui.GetStyle().Colors[imgui.Col.TitleBgActive]          = imgui.ImVec4(0.12, 0.12, 0.12, 1.00)
+    imgui.GetStyle().Colors[imgui.Col.TitleBgCollapsed]       = imgui.ImVec4(0.12, 0.12, 0.12, 1.00)
+    imgui.GetStyle().Colors[imgui.Col.MenuBarBg]              = imgui.ImVec4(0.12, 0.12, 0.12, 1.00)
+    imgui.GetStyle().Colors[imgui.Col.ScrollbarBg]            = imgui.ImVec4(0.12, 0.12, 0.12, 1.00)
+    imgui.GetStyle().Colors[imgui.Col.ScrollbarGrab]          = imgui.ImVec4(0.00, 0.00, 0.00, 1.00)
+    imgui.GetStyle().Colors[imgui.Col.ScrollbarGrabHovered]   = imgui.ImVec4(0.41, 0.41, 0.41, 1.00)
+    imgui.GetStyle().Colors[imgui.Col.ScrollbarGrabActive]    = imgui.ImVec4(0.51, 0.51, 0.51, 1.00)
+    imgui.GetStyle().Colors[imgui.Col.CheckMark]              = imgui.ImVec4(1.00, 1.00, 1.00, 1.00)
+    imgui.GetStyle().Colors[imgui.Col.SliderGrab]             = imgui.ImVec4(0.21, 0.20, 0.20, 1.00)
+    imgui.GetStyle().Colors[imgui.Col.SliderGrabActive]       = imgui.ImVec4(0.21, 0.20, 0.20, 1.00)
+    imgui.GetStyle().Colors[imgui.Col.Button]                 = imgui.ImVec4(0.12, 0.12, 0.12, 1.00)
+    imgui.GetStyle().Colors[imgui.Col.ButtonHovered]          = imgui.ImVec4(0.21, 0.20, 0.20, 1.00)
+    imgui.GetStyle().Colors[imgui.Col.ButtonActive]           = imgui.ImVec4(0.41, 0.41, 0.41, 1.00)
+    imgui.GetStyle().Colors[imgui.Col.Header]                 = imgui.ImVec4(0.12, 0.12, 0.12, 1.00)
+    imgui.GetStyle().Colors[imgui.Col.HeaderHovered]          = imgui.ImVec4(0.20, 0.20, 0.20, 1.00)
+    imgui.GetStyle().Colors[imgui.Col.HeaderActive]           = imgui.ImVec4(0.47, 0.47, 0.47, 1.00)
+    imgui.GetStyle().Colors[imgui.Col.Separator]              = imgui.ImVec4(0.12, 0.12, 0.12, 1.00)
+    imgui.GetStyle().Colors[imgui.Col.SeparatorHovered]       = imgui.ImVec4(0.12, 0.12, 0.12, 1.00)
+    imgui.GetStyle().Colors[imgui.Col.SeparatorActive]        = imgui.ImVec4(0.12, 0.12, 0.12, 1.00)
+    imgui.GetStyle().Colors[imgui.Col.ResizeGrip]             = imgui.ImVec4(1.00, 1.00, 1.00, 0.25)
+    imgui.GetStyle().Colors[imgui.Col.ResizeGripHovered]      = imgui.ImVec4(1.00, 1.00, 1.00, 0.67)
+    imgui.GetStyle().Colors[imgui.Col.ResizeGripActive]       = imgui.ImVec4(1.00, 1.00, 1.00, 0.95)
+    imgui.GetStyle().Colors[imgui.Col.Tab]                    = imgui.ImVec4(0.12, 0.12, 0.12, 1.00)
+    imgui.GetStyle().Colors[imgui.Col.TabHovered]             = imgui.ImVec4(0.28, 0.28, 0.28, 1.00)
+    imgui.GetStyle().Colors[imgui.Col.TabActive]              = imgui.ImVec4(0.30, 0.30, 0.30, 1.00)
+    imgui.GetStyle().Colors[imgui.Col.TabUnfocused]           = imgui.ImVec4(0.07, 0.10, 0.15, 0.97)
+    imgui.GetStyle().Colors[imgui.Col.TabUnfocusedActive]     = imgui.ImVec4(0.14, 0.26, 0.42, 1.00)
+    imgui.GetStyle().Colors[imgui.Col.PlotLines]              = imgui.ImVec4(0.61, 0.61, 0.61, 1.00)
+    imgui.GetStyle().Colors[imgui.Col.PlotLinesHovered]       = imgui.ImVec4(1.00, 0.43, 0.35, 1.00)
+    imgui.GetStyle().Colors[imgui.Col.PlotHistogram]          = imgui.ImVec4(0.90, 0.70, 0.00, 1.00)
+    imgui.GetStyle().Colors[imgui.Col.PlotHistogramHovered]   = imgui.ImVec4(1.00, 0.60, 0.00, 1.00)
+    imgui.GetStyle().Colors[imgui.Col.TextSelectedBg]         = imgui.ImVec4(1.00, 0.00, 0.00, 0.35)
+    imgui.GetStyle().Colors[imgui.Col.DragDropTarget]         = imgui.ImVec4(1.00, 1.00, 0.00, 0.90)
+    imgui.GetStyle().Colors[imgui.Col.NavHighlight]           = imgui.ImVec4(0.26, 0.59, 0.98, 1.00)
+    imgui.GetStyle().Colors[imgui.Col.NavWindowingHighlight]  = imgui.ImVec4(1.00, 1.00, 1.00, 0.70)
+    imgui.GetStyle().Colors[imgui.Col.NavWindowingDimBg]      = imgui.ImVec4(0.80, 0.80, 0.80, 0.20)
+    imgui.GetStyle().Colors[imgui.Col.ModalWindowDimBg]       = imgui.ImVec4(0.00, 0.00, 0.00, 0.70)
 end
 
 function renderFontDrawTextAlign(font, text, x, y, color, align)
