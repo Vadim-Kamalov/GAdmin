@@ -284,7 +284,7 @@ local playersNearbyFrame = imgui.OnFrame(
         self.HideCursor = _showSpectateCursor
 
         imgui.SetNextWindowPos(imgui.ImVec2(cfg.windowsPosition.playersNearby.x, cfg.windowsPosition.playersNearby.y))
-        imgui.SetNextWindowSize(imgui.ImVec2(200, 500))
+        imgui.SetNextWindowSize(imgui.ImVec2(200, 350))
 
         imgui.PushStyleVarFloat(imgui.StyleVar.WindowBorderSize, 0)
         imgui.PushStyleColor(imgui.Col.ScrollbarBg, imgui.ImVec4(0.07, 0.07, 0.07, 0))
