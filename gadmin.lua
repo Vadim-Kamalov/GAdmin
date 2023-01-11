@@ -301,9 +301,11 @@ local playersNearbyFrame = imgui.OnFrame(
             else
                 for _, player in ipairs(getAllChars()) do
                     result, id = sampGetPlayerIdByCharHandle(player)
-                    nickname = sampGetPlayerNickname(id)
+                    if result then
+                        nickname = sampGetPlayerNickname(id)
+                    end
 
-                    if id ~= select(2, sampGetPlayerIdByCharHandle(PLAYER_PED)) and id ~= tonumber(info_about) then
+                    if result and id ~= select(2, sampGetPlayerIdByCharHandle(PLAYER_PED)) and id ~= tonumber(info_about) then
                         imgui.SetCursorPosX(100 - imgui.CalcTextSize(("%s[%s}"):format(nickname, id)).x / 2)
                         imgui.Text(("%s[%s]"):format(nickname, id))
                         if imgui.IsItemClicked() then
