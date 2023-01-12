@@ -54,7 +54,8 @@ function create_config()
         hotkeys = {
             gadm = {77},
             acceptForm = {73},
-            spectateCursor = {66}
+            spectateCursor = {66},
+            specReload = {85}
         },
         windowsPosition = {
             actionFrame = {
@@ -72,7 +73,8 @@ function create_config()
         },
         windowsSettings = {
             playersNearby = {
-                alpha = 0
+                use = false,
+                alpha = 0.0
             }
         },
         gg_msg = "Приятной игры!",
@@ -159,6 +161,8 @@ local show_info_menu = new.bool()
 local admin_form_menu = new.bool()
 local show_action_menu = new.bool()
 local playersNearby = new.bool()
+local playersNerbyTransparent = new.int(cfg.windowsSettings.playersNearby.alpha)
+local playersNearbyCheckbox = new.bool(cfg.windowsSettings.playersNearby.use)
 local car_spec = new.bool(cfg.car_spec)
 local gg_msg = new.char[256](cfg.gg_msg)
 local game_pass = new.char[256](cfg.game_pass)
@@ -168,6 +172,7 @@ local adm_pass = new.char[256](cfg.adm_pass)
 local gadmKeys = {v = cfg.hotkeys.gadm}
 local showSpectateCursor = {v = cfg.hotkeys.spectateCursor}
 local acceptFormKeys = {v = cfg.hotkeys.acceptForm}
+local specReloadKeys = {v = cfg.hotkeys.specReload}
 
 function imgui.Input()
     -- TODO: написать свой инпут, чтобы не плодить кучу однотипного кода
@@ -232,6 +237,8 @@ local buttonsPlaceholder = {
 
 --[[ actionMenu : show_action_menu ]]--
 
+sampfuncsRegisterConsoleCommand("execute.cursor", function() print(_showSpectateCursor) end)
+
 local actionMenu = imgui.OnFrame(
     function() return show_action_menu[0] end,
     function(self)
@@ -247,13 +254,14 @@ local actionMenu = imgui.OnFrame(
         imgui.PushStyleVarFloat(imgui.StyleVar.FrameBorderSize, 0.5)
 
         imgui.Begin("action_menu", show_action_menu, imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoScrollbar + imgui.WindowFlags.NoMove)
-            if imgui.Button("<<", imgui.ImVec2(50, 70)) then sampSendMenuSelectRow(0) end
+            if imgui.Button("<<", imgui.ImVec2(50, 70)) then sampSendMenuSelectRow(2) end
             imgui.SameLine()
 
             imgui.BeginGroup()
                 for index = 1, #buttonsPlaceholder[1] do
                     if imgui.Button(buttonsPlaceholder[1][index][1], imgui.ImVec2(100, 35)) then
                         buttonsPlaceholder[1][index][2]()
+                        if not _showSpectateCursor then _showSpectateCursor = true end
                     end
 
                     if index ~= 7 then imgui.SameLine() end
@@ -261,7 +269,8 @@ local actionMenu = imgui.OnFrame(
                 imgui.BeginGroup() -- New line content
                     for index = 1, #buttonsPlaceholder[2] do
                         if imgui.Button(buttonsPlaceholder[2][index][1], imgui.ImVec2(100, 35)) then
-                        buttonsPlaceholder[2][index][2]()
+                            buttonsPlaceholder[2][index][2]()
+                            if not _showSpectateCursor and index ~= 1 then _showSpectateCursor = true end
                         end
                     
                         if index ~= 7 then imgui.SameLine() end
@@ -271,7 +280,7 @@ local actionMenu = imgui.OnFrame(
 
             imgui.SameLine()
 
-            if imgui.Button(">>", imgui.ImVec2(50, 70)) then sampSendMenuSelectRow(2) end
+            if imgui.Button(">>", imgui.ImVec2(50, 70)) then sampSendMenuSelectRow(0) end
         imgui.End()
 
         imgui.PopStyleVar(5)
@@ -284,12 +293,12 @@ local playersNearbyFrame = imgui.OnFrame(
         self.HideCursor = _showSpectateCursor
 
         imgui.SetNextWindowPos(imgui.ImVec2(cfg.windowsPosition.playersNearby.x, cfg.windowsPosition.playersNearby.y))
-        imgui.SetNextWindowSize(imgui.ImVec2(200, 350))
+        imgui.SetNextWindowSize(imgui.ImVec2(200, 287))
 
         imgui.PushStyleVarFloat(imgui.StyleVar.WindowBorderSize, 0)
-        imgui.PushStyleColor(imgui.Col.ScrollbarBg, imgui.ImVec4(0.07, 0.07, 0.07, 0))
+        imgui.PushStyleColor(imgui.Col.ScrollbarBg, imgui.ImVec4(0.07, 0.07, 0.07, cfg.windowsSettings.playersNearby.alpha))
         imgui.PushStyleColor(imgui.Col.ScrollbarGrab, imgui.ImVec4(0.07, 0.07, 0.07, 0.30))
-        imgui.PushStyleColor(imgui.Col.WindowBg, imgui.ImVec4(0.07, 0.07, 0.07, 0))
+        imgui.PushStyleColor(imgui.Col.WindowBg, imgui.ImVec4(0.07, 0.07, 0.07, cfg.windowsSettings.playersNearby.alpha))
 
         imgui.Begin("playersNearby", playersNearby, imgui.WindowFlags.NoMove + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar)
             if changePosition == 3 then
@@ -326,9 +335,19 @@ local playersNearbyFrame = imgui.OnFrame(
                             imgui.SetCursorPos(imgui.ImVec2(100 - imgui.CalcTextSize(thisPlayerInfo).x / 2, 5))
                             imgui.Text(thisPlayerInfo)
                             imgui.SetCursorPosY(10 + imgui.CalcTextSize(popupNickname).y)
-                            if imgui.Button("STATS", imgui.ImVec2(200, 30)) then sampSendChat("/stats "..popupId); imgui.CloseCurrentPopup() end
-                            if imgui.Button("PAME", imgui.ImVec2(200, 30)) then sampSendChat("/pame "..popupId); imgui.CloseCurrentPopup() end
-                            if imgui.Button("SPEC", imgui.ImVec2(200, 30)) then sampSendChat("/sp "..popupId); imgui.CloseCurrentPopup() end
+                            if imgui.Button("STATS", imgui.ImVec2(200, 30)) then
+                                sampSendChat("/stats "..popupId); imgui.CloseCurrentPopup()
+                                if not _showSpectateCursor then _showSpectateCursor = true end
+                                print(_showSpectateCursor)
+                            end
+                            if imgui.Button("PAME", imgui.ImVec2(200, 30)) then
+                                sampSendChat("/pame "..popupId); imgui.CloseCurrentPopup()
+                                if not _showSpectateCursor then _showSpectateCursor = true end
+                            end
+                            if imgui.Button("SPEC", imgui.ImVec2(200, 30)) then
+                                sampSendChat("/sp "..popupId); imgui.CloseCurrentPopup()
+                                if not _showSpectateCursor then _showSpectateCursor = true end
+                            end
                         imgui.PopStyleVar()
                     imgui.EndGroup()
                 imgui.PopStyleVar()
@@ -427,8 +446,24 @@ local mainFrame = imgui.OnFrame(
             save_config()
         end
 
+        if rkeys.HotKey("Spec reload", specReloadKeys) then
+            cfg.hotkeys.specReload = specReloadKeys.v
+            rkeys.changeHotKey(_specReload, specReloadKeys.v)
+            save_config()
+        end
+
         if imgui.Button("Настроить позицию окон") then
             imgui.OpenPopup("windowsPosition")
+        end
+
+        if imgui.Checkbox("Отображение ближайших игроков в /sp", playersNearbyCheckbox) then
+            cfg.windowsSettings.playersNearby.use = playersNearbyCheckbox[0]
+            save_config()
+        end
+
+        if imgui.SliderInt("Прозрачность окна с ближайшими игроками", playersNerbyTransparent, 0, 100) then
+            cfg.windowsSettings.playersNearby.alpha = playersNerbyTransparent[0] / 100
+            save_config()
         end
 
         imgui.PushStyleVarVec2(imgui.StyleVar.WindowPadding, imgui.ImVec2(0, 0))
@@ -589,6 +624,7 @@ function main()
     openMainMenu =      rkeys.registerHotKey(cfg.hotkeys.gadm, 1, gadm_cmd)
     showCursorInSpec =  rkeys.registerHotKey(cfg.hotkeys.spectateCursor, 2, changeSpecCursorMode)
     acceptForm =        rkeys.registerHotKey(cfg.hotkeys.acceptForm, 1, sendFormCommand)
+    _specReload =        rkeys.registerHotKey(cfg.hotkeys.specReload, 1, specReload)
 
     sampAddChatMessage("GAdmin успешно запущен", -1)
 
@@ -619,7 +655,8 @@ function main()
             end
         end
 
-        show_action_menu[0], playersNearby[0] = show_info_menu[0], show_action_menu[0]
+        show_action_menu[0] = show_info_menu[0]
+        if show_action_menu[0] and cfg.windowsSettings.playersNearby.use then playersNearby[0] = true else playersNearby[0] = false end
 
         if in_sp and not isCursorActive() and not sampIsChatInputActive() and not isSampfuncsConsoleActive() and not sampIsDialogActive() then
             if wasKeyPressed(1) or wasKeyPressed(37) then sampSendMenuSelectRow(2) end
@@ -695,13 +732,13 @@ function samp.onPlayerQuit(id)
 end
 
 local formCommands = {
-    "ban",
-    "jail",
-    "mute",
-    "warn",
-    "iban",
-    "ck",
-    "pk"
+    "ban %d+ %d+ .*",
+    "jail %d+ %d+ .*",
+    "mute %d+ %d+ .*",
+    "warn %d+ .*",
+    "iban %d+ %d+ .*",
+    "ck %d+",
+    "pk %d+"
 }
 
 function samp.onSendCommand(text)
@@ -720,7 +757,7 @@ function samp.onServerMessage(color, text)
     text = u8(text)
 
     for k, v in ipairs(formCommands) do
-        if text:find("%[A%] .*%[%d+%]: /"..v..".*") and color == 866792362 then
+        if text:find("%[A%] .*%[%d+%]: /"..v) and color == 866792362 then
             formStarter, formStarterId, formCommand = text:match(u8"%[A%] (.*)%[(%d+)%]: /(.*)")
             if formStarterId ~= id then
                 form_secondsToHide = os.clock()
@@ -833,6 +870,12 @@ lua_thread.create(function()
         cfg.online[week_name] = cfg.online[week_name] + 1
     end
 end)
+
+function specReload()
+    if in_sp and not sampIsChatInputActive() and not isCursorActive() then
+        sampSendMenuSelectRow(1)
+    end
+end
 
 function changeSpecCursorMode()
     if show_info_menu[0] then
