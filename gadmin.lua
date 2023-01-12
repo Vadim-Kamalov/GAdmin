@@ -293,7 +293,7 @@ local playersNearbyFrame = imgui.OnFrame(
         self.HideCursor = _showSpectateCursor
 
         imgui.SetNextWindowPos(imgui.ImVec2(cfg.windowsPosition.playersNearby.x, cfg.windowsPosition.playersNearby.y))
-        imgui.SetNextWindowSize(imgui.ImVec2(200, 287))
+        imgui.SetNextWindowSize(imgui.ImVec2(250, 287))
 
         imgui.PushStyleVarFloat(imgui.StyleVar.WindowBorderSize, 0)
         imgui.PushStyleColor(imgui.Col.ScrollbarBg, imgui.ImVec4(0.07, 0.07, 0.07, cfg.windowsSettings.playersNearby.alpha))
@@ -310,14 +310,25 @@ local playersNearbyFrame = imgui.OnFrame(
             else
                 for _, player in ipairs(getAllChars()) do
                     result, id = sampGetPlayerIdByCharHandle(player)
+                    
                     color = sampGetPlayerColor(id)
                     if result then
                         nickname = sampGetPlayerNickname(id)
+                        resultDistance, handle = sampGetCharHandleBySampPlayerId(id)
+                        resultDistanceSpec, handleSpec = sampGetCharHandleBySampPlayerId(tonumber(info_about))
+                        if resultDistance then
+                            distanceA1, distanceA2, distanceA3 = getCharCoordinates(handle)
+                            if resultDistanceSpec then distanceB1, distanceB2, distanceB3 = getCharCoordinates(handleSpec) end
+                        end
                     end
 
                     if result and id ~= select(2, sampGetPlayerIdByCharHandle(PLAYER_PED)) and id ~= tonumber(info_about) then
-                        imgui.SetCursorPosX(100 - imgui.CalcTextSize(("%s[%s}"):format(nickname, id)).x / 2)
-                        imgui.TextColored(hexToImVec4(("%06X"):format(bit.band(color, 0xFFFFFF))), ("%s[%s]"):format(nickname, id))
+                        imgui.SetCursorPosX(250 / 2 - imgui.CalcTextSize((
+                            nickname.."["..id.."][X: "..math.floor(getDistanceBetweenCoords3d(distanceA1, distanceA2, distanceA3, distanceB1, distanceB2, distanceB3)).."]"
+                        )).x / 2)
+                        imgui.TextColored(hexToImVec4(("%06X"):format(bit.band(color, 0xFFFFFF))), ("%s[%s] [X: %1.f]"):format(nickname, id,
+                            getDistanceBetweenCoords3d(distanceA1, distanceA2, distanceA3, distanceB1, distanceB2, distanceB3)
+                        ))
                         if imgui.IsItemClicked() then
                             imgui.OpenPopup("playerInfo")
                             popupId, popupNickname = id, nickname
