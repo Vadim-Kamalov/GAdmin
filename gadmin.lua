@@ -74,7 +74,7 @@ function create_config()
         windowsSettings = {
             playersNearby = {
                 use = false,
-                alpha = 0.0
+                alpha = 0
             }
         },
         gg_msg = "Приятной игры!",
@@ -310,13 +310,14 @@ local playersNearbyFrame = imgui.OnFrame(
             else
                 for _, player in ipairs(getAllChars()) do
                     result, id = sampGetPlayerIdByCharHandle(player)
+                    color = sampGetPlayerColor(id)
                     if result then
                         nickname = sampGetPlayerNickname(id)
                     end
 
                     if result and id ~= select(2, sampGetPlayerIdByCharHandle(PLAYER_PED)) and id ~= tonumber(info_about) then
                         imgui.SetCursorPosX(100 - imgui.CalcTextSize(("%s[%s}"):format(nickname, id)).x / 2)
-                        imgui.Text(("%s[%s]"):format(nickname, id))
+                        imgui.TextColored(hexToImVec4(("%06X"):format(bit.band(color, 0xFFFFFF))), ("%s[%s]"):format(nickname, id))
                         if imgui.IsItemClicked() then
                             imgui.OpenPopup("playerInfo")
                             popupId, popupNickname = id, nickname
@@ -923,6 +924,13 @@ function asp_cmd(arg)
             sampSendChat("/a взял на слежку " .. id .. " ID.")
         end)
     end
+end
+
+function hexToImVec4(hex, aplha)
+    alpha = alpa or 1.00
+    return imgui.ImVec4(
+        tonumber("0x"..hex:sub(1,2)) / 255, tonumber("0x"..hex:sub(3,4)) / 255, tonumber("0x"..hex:sub(5,6)) / 255, alpha
+    )
 end
 
 -- Debug console commands
