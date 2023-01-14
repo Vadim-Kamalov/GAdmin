@@ -107,6 +107,7 @@ checkSendFormCommand = false
 local players_platform = {}
 local _showSpectateCursor = true
 local popupId, popupNickname = 0, ""
+local changeTheme = {}
 -- для информации в спеке --
 local in_sp = false
 changePosition = -1
@@ -414,172 +415,6 @@ local playersNearbyFrame = imgui.OnFrame(
 
 local selectedTab = 1
 
-local _newMainFrame = imgui.OnFrame(
-    function() return newMainFrame[0] end,
-    function(self)
-        imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2, sizeY / 2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
-        imgui.SetNextWindowSize(imgui.ImVec2(800, 450))
-
-        local result, id = sampGetPlayerIdByCharHandle(PLAYER_PED)
-        local nickname = sampGetPlayerNickname(id)
-
-        --[[ Style ]]--
-        imgui.PushStyleVarVec2(imgui.StyleVar.WindowPadding, imgui.ImVec2(0, 0))
-        imgui.PushStyleVarVec2(imgui.StyleVar.FramePadding, imgui.ImVec2(0, 0))
-        imgui.PushStyleVarVec2(imgui.StyleVar.ItemSpacing, imgui.ImVec2(0, 0))
-        imgui.PushStyleVarFloat(imgui.StyleVar.ChildRounding, 0)
-        imgui.PushStyleVarFloat(imgui.StyleVar.FrameBorderSize, 0)
-        imgui.PushStyleVarFloat(imgui.StyleVar.ChildBorderSize, 0)
-        imgui.PushStyleVarFloat(imgui.StyleVar.WindowRounding, 0)
-        imgui.PushStyleVarFloat(imgui.StyleVar.WindowBorderSize, 0)
-
-        --[[ Color ]]--
-        imgui.PushStyleColor(imgui.Col.ChildBg, hexToImVec4("21242A"))
-        imgui.PushStyleColor(imgui.Col.WindowBg, hexToImVec4("171C20"))
-        
-        --[[ Font ]]--
-        imgui.PushFont(font_12)
-
-        --[[ Elements ]]--
-        -- todo: убрать повторяющиеся функции (кнопки)
-
-        local activeButton = function(text, ImVec2_size, ImVec2_position, alignX, alignY)
-            alignX = alignX or 0.5
-            alignY = alignY or 0.5
-
-            imgui.BeginGroup()
-                imgui.PushStyleColor(imgui.Col.Button, hexToImVec4("007EEA"))
-                imgui.PushStyleColor(imgui.Col.ButtonHovered, hexToImVec4("004C8D"))
-                imgui.PushStyleColor(imgui.Col.ButtonActive, hexToImVec4("004C8D"))
-                imgui.PushStyleVarVec2(imgui.StyleVar.ButtonTextAlign, imgui.ImVec2(alignX, alignY))
-                    imgui.SetCursorPos(ImVec2_position)
-                    imgui.Button(text, ImVec2_size)
-                imgui.PopStyleColor(2)
-                imgui.PopStyleVar()
-            imgui.EndGroup()
-            return imgui.IsItemClicked()
-        end
-
-        local inActiveButton = function(text, groupWidth, y, alignX, alignY)
-            alignX = alignX or 0.5
-            alignY = alignY or 0.5
-
-            imgui.BeginGroup()
-                imgui.PushStyleColor(imgui.Col.Button, hexToImVec4("21242A"))
-                imgui.PushStyleColor(imgui.Col.ButtonHovered, hexToImVec4("007EEA"))
-                imgui.PushStyleColor(imgui.Col.ButtonActive, hexToImVec4("004C8D"))
-                imgui.PushStyleVarVec2(imgui.StyleVar.ButtonTextAlign, imgui.ImVec2(alignX, alignY))
-                    imgui.SetCursorPos(imgui.ImVec2((groupWidth / 2 - imgui.CalcTextSize(text).x / 2) - 10, y))
-                    imgui.Button(text, imgui.ImVec2(imgui.CalcTextSize(text).x + 26, imgui.CalcTextSize(text).y + 10))
-                imgui.PopStyleVar()
-                imgui.PopStyleColor(2)
-            imgui.EndGroup()
-
-            return imgui.IsItemClicked()
-        end
-
-        local defaultButton = function(text, ImVec2_position, ImVec2_size, font, alignX, alignY)
-            alignX = alignX or 0.5
-            alignY = alignY or 0.5
-
-            imgui.PushStyleColor(imgui.Col.Button, hexToImVec4("444751"))
-            imgui.PushStyleColor(imgui.Col.ButtonHovered, hexToImVec4("303238"))
-            imgui.PushStyleColor(imgui.Col.ButtonActive, hexToImVec4("444751"))
-            imgui.PushStyleVarVec2(imgui.StyleVar.ButtonTextAlign, imgui.ImVec2(alignX, alignY))
-            imgui.PushFont(font)
-                imgui.SetCursorPos(ImVec2_position)
-                imgui.Button(text, ImVec2_size)
-            imgui.PopFont()
-            imgui.PopStyleVar()
-            imgui.PopStyleColor(2)
-
-            return imgui.IsItemClicked()
-        end
-
-        --[[ Tables ]]--
-        local inActiveButtonData = {
-            {"Быстрые клавиши", 49},
-            {"Дополнительные окна", 84},
-            {"Цвета ImGui", 118}
-        }
-
-        --[[ Frame ]]--
-        
-        imgui.Begin("newMainFrame", newMainFrame, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoMove)
-            imgui.BeginChild("topNavbar", imgui.ImVec2(0, 50), true)
-                imgui.BeginGroup()  -- Title
-                    imgui.PushFont(font_20)
-                        imgui.SetCursorPos(imgui.ImVec2(53.31, 13))
-                        imgui.Text("GAdmin")
-                    imgui.PopFont()
-                    imgui.SameLine()
-                    imgui.SetCursorPos(imgui.ImVec2(132, 20))
-                    imgui.TextColored(hexToImVec4("444751"), "v"..thisScript().version)
-                imgui.EndGroup()
-
-                imgui.BeginGroup() -- topNavbar buttons
-                    defaultButton("", imgui.ImVec2(199.43, 15), imgui.ImVec2(114.29, 22), font_12)
-                    defaultButton("", imgui.ImVec2(338.86, 15), imgui.ImVec2(114.29, 22), font_12)
-                    defaultButton("", imgui.ImVec2(478.29, 15), imgui.ImVec2(114.29, 22), font_12)
-                imgui.EndGroup()
-
-                defaultButton("INFO", imgui.ImVec2(681, 10), imgui.ImVec2(70, 30), font_15, 0.54, 0.4)
-                if defaultButton("x", imgui.ImVec2(759, 10), imgui.ImVec2(30, 30), font_20, 0.55, 0.06) then
-                    newMainFrame[0] = false
-                end
-            imgui.EndChild()
-
-            imgui.BeginChild("leftNavbar", imgui.ImVec2(200, 0), true)
-                activeButton("Главная", imgui.ImVec2(173.33, 29), imgui.ImVec2(13.33, 11))
-                for i = 1, #inActiveButtonData do
-                    if inActiveButton(inActiveButtonData[i][1], 200, inActiveButtonData[i][2]) then print("123123") end
-                end 
-            imgui.EndChild()
-            imgui.SameLine()
-
-            imgui.BeginGroup() -- Content frame
-                imgui.PushStyleVarFloat(imgui.StyleVar.ChildRounding, 5)
-
-                if selectedTab == 1 then
-                    imgui.SetCursorPos(imgui.ImVec2(220, 75))
-                    imgui.BeginChild("passwordFrame", imgui.ImVec2(275, 161), true)
-
-                    imgui.EndChild()
-                    imgui.SetCursorPos(imgui.ImVec2(520, 75))
-                    imgui.BeginChild("onlineAndLogoutFrame", imgui.ImVec2(247, 119), true)
-                    local full_online = string.format("%02d:%02d:%02d", cfg.online.total / 3600,cfg.online.total / 60 % 60, cfg.online.total % 60)
-                    local temp_online = string.format("%02d:%02d:%02d", session_online / 3600, session_online / 60 % 60, session_online % 60)
-
-                        imgui.PushFont(font_15)
-                            imgui.SetCursorPos(imgui.ImVec2(247 / 2 - imgui.CalcTextSize(nickname.."["..id.."]").x / 2, 9))
-                            imgui.Text(nickname.."["..id.."]")
-                        imgui.PopFont()
-                        imgui.SetCursorPos(imgui.ImVec2(16, 38))
-                        imgui.Text(("Общий онлайн                    %s\nОнлайн за сессию             %s"):format(full_online, temp_online)) -- :)
-                        if activeButton("Выйти из админки", imgui.ImVec2(227, 19), imgui.ImVec2(10, 90), 0.5, 0) then
-                            sampSendChat("/alogout")
-                        end
-                    imgui.EndChild()
-                    imgui.SetCursorPos(imgui.ImVec2(220, 261))
-                    imgui.BeginChild("someFrame1", imgui.ImVec2(275, 160), true)
-
-                    imgui.EndChild()
-                    imgui.SetCursorPos(imgui.ImVec2(520, 219))
-                    imgui.BeginChild("someFrame2", imgui.ImVec2(247, 202), true)
-
-                    imgui.EndChild()
-                end
-
-                imgui.PopStyleVar()
-            imgui.EndGroup()
-        imgui.End()
-
-        imgui.PopFont()
-        imgui.PopStyleVar(6)
-        imgui.PopStyleColor(1)
-    end
-)
-
 local adminForm = imgui.OnFrame(
     function() return admin_form_menu[0] end,
     function(self)
@@ -800,6 +635,164 @@ local infoFrame = imgui.OnFrame(
     end
 )
 
+local _newMainFrame = imgui.OnFrame(
+    function() return newMainFrame[0] end,
+    function(self)
+        imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2, sizeY / 2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
+        imgui.SetNextWindowSize(imgui.ImVec2(800, 450))
+
+        local result, id = sampGetPlayerIdByCharHandle(PLAYER_PED)
+        local nickname = sampGetPlayerNickname(id)
+
+        local newMainFrameChange = {
+            {"ImVec2", "WindowPadding", change = {0, 0}, reset = {5, 5}},
+            {"ImVec2", "FramePadding", change = {0, 0}, reset = {5, 5}},
+            {"ImVec2", "ItemSpacing", change = {0, 0}, reset = {5, 5}},
+            {"Int", "ChildRounding", change = 0, reset = 5},
+            {"Int", "FrameBorderSize", change = 0, reset = 1},
+            {"Int", "ChildBorderSize", change = 0, reset = 1},
+            {"Int", "WindowRounding", change = 0, reset = 5},
+            {"Int", "WindowBorderSize", change = 0, reset = 1},
+            {"ImVec4", "ChildBg", change = hexToImVec4("21242A"), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
+            {"ImVec4", "WindowBg", change = hexToImVec4("171C20"), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)}
+        }
+
+        changeTheme:applySettings(newMainFrameChange)
+        imgui.PushFont(font_12)
+        
+        local button = function(text, ImVec2_size, ImVec2_position, mode, font, alignX, alignY)
+            local alignX = alignX or 0.5
+            local alignY = alignY or 0.5
+
+            local _font = {
+                ["font_12"] = font_12,
+                ["font_15"] = font_15,
+                ["font_20"] = font_20
+            }
+            
+            local colors = {
+                ["active"] = {"007EEA", "004C8D", "004C8D"},
+                ["default"] = {"444751", "303238", "444751"}
+            }
+
+            imgui.BeginGroup()
+                imgui.PushStyleVarVec2(imgui.StyleVar.ButtonTextAlign, imgui.ImVec2(alignX, alignY))
+                imgui.PushFont(_font[font])
+
+                imgui.PushStyleColor(imgui.Col.Button, hexToImVec4(colors[mode][1]))
+                imgui.PushStyleColor(imgui.Col.ButtonHovered, hexToImVec4(colors[mode][2]))
+                imgui.PushStyleColor(imgui.Col.ButtonActive, hexToImVec4(colors[mode][3]))
+
+                imgui.SetCursorPos(ImVec2_position)
+                imgui.Button(text, ImVec2_size)
+                
+                imgui.PopStyleColor(2)
+                imgui.PopFont()
+                imgui.PopStyleVar()
+            imgui.EndGroup()
+
+            return imgui.IsItemClicked()
+        end
+
+        local inActiveButton = function(text, groupWidth, y, alignX, alignY)
+            alignX = alignX or 0.5
+            alignY = alignY or 0.5
+
+            imgui.BeginGroup()
+                imgui.PushStyleColor(imgui.Col.Button, hexToImVec4("21242A"))
+                imgui.PushStyleColor(imgui.Col.ButtonHovered, hexToImVec4("007EEA"))
+                imgui.PushStyleColor(imgui.Col.ButtonActive, hexToImVec4("004C8D"))
+                imgui.PushStyleVarVec2(imgui.StyleVar.ButtonTextAlign, imgui.ImVec2(alignX, alignY))
+                    imgui.SetCursorPos(imgui.ImVec2((groupWidth / 2 - imgui.CalcTextSize(text).x / 2) - 10, y))
+                    imgui.Button(text, imgui.ImVec2(imgui.CalcTextSize(text).x + 26, imgui.CalcTextSize(text).y + 10))
+                imgui.PopStyleVar()
+                imgui.PopStyleColor(2)
+            imgui.EndGroup()
+
+            return imgui.IsItemClicked()
+        end
+
+        --[[ Tables ]]--
+        local inActiveButtonData = {
+            {"Быстрые клавиши", 49},
+            {"Дополнительные окна", 84},
+            {"Цвета ImGui", 118}
+        }
+
+        --[[ Frame ]]--
+        
+        imgui.Begin("newMainFrame", newMainFrame, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoMove)
+            imgui.BeginChild("topNavbar", imgui.ImVec2(0, 50), true)
+                imgui.BeginGroup()  -- Title
+                    imgui.PushFont(font_20)
+                        imgui.SetCursorPos(imgui.ImVec2(53.31, 13))
+                        imgui.Text("GAdmin")
+                    imgui.PopFont()
+                    imgui.SameLine()
+                    imgui.SetCursorPos(imgui.ImVec2(132, 20))
+                    imgui.TextColored(hexToImVec4("444751"), "v"..thisScript().version)
+                imgui.EndGroup()
+
+                imgui.BeginGroup() -- topNavbar buttons
+                    button("", imgui.ImVec2(114.29, 22), imgui.ImVec2(199.43, 15), "default", "font_12")
+                    button("", imgui.ImVec2(114.29, 22), imgui.ImVec2(338.86, 15), "default", "font_12")
+                    button("", imgui.ImVec2(114.29, 22), imgui.ImVec2(478.29, 15), "default", "font_12")
+                imgui.EndGroup()
+
+                button("INFO", imgui.ImVec2(70, 30), imgui.ImVec2(681, 10), "default", "font_15", 0.54, 0.4)
+                if button("x", imgui.ImVec2(30, 30), imgui.ImVec2(760, 10), "default", "font_20", 0.55, 0.06) then
+                    newMainFrame[0] = false
+                end
+            imgui.EndChild()
+
+            imgui.BeginChild("leftNavbar", imgui.ImVec2(200, 0), true)
+                button("Главная", imgui.ImVec2(173.33, 29), imgui.ImVec2(13.33, 11), "active")
+                for i = 1, #inActiveButtonData do
+                    if inActiveButton(inActiveButtonData[i][1], 200, inActiveButtonData[i][2]) then print("123123") end
+                end 
+            imgui.EndChild()
+            imgui.SameLine()
+
+            imgui.BeginGroup() -- Content frame
+                imgui.GetStyle().ChildRounding = 5
+
+                if selectedTab == 1 then
+                    imgui.SetCursorPos(imgui.ImVec2(220, 75))
+                    imgui.BeginChild("passwordFrame", imgui.ImVec2(275, 161), true)
+
+                    imgui.EndChild()
+                    imgui.SetCursorPos(imgui.ImVec2(520, 75))
+                    imgui.BeginChild("onlineAndLogoutFrame", imgui.ImVec2(247, 119), true)
+                    local full_online = string.format("%02d:%02d:%02d", cfg.online.total / 3600,cfg.online.total / 60 % 60, cfg.online.total % 60)
+                    local temp_online = string.format("%02d:%02d:%02d", session_online / 3600, session_online / 60 % 60, session_online % 60)
+
+                        imgui.PushFont(font_15)
+                            imgui.SetCursorPos(imgui.ImVec2(247 / 2 - imgui.CalcTextSize(nickname.."["..id.."]").x / 2, 9))
+                            imgui.Text(nickname.."["..id.."]")
+                        imgui.PopFont()
+                        imgui.SetCursorPos(imgui.ImVec2(16, 38))
+                        imgui.Text(("Общий онлайн                    %s\nОнлайн за сессию             %s"):format(full_online, temp_online)) -- :)
+                        if button("Выйти из админки", imgui.ImVec2(227, 19), imgui.ImVec2(10, 90), "active") then
+                            sampSendChat("/alogout")
+                        end
+                    imgui.EndChild()
+                    imgui.SetCursorPos(imgui.ImVec2(220, 261))
+                    imgui.BeginChild("someFrame1", imgui.ImVec2(275, 160), true)
+
+                    imgui.EndChild()
+                    imgui.SetCursorPos(imgui.ImVec2(520, 219))
+                    imgui.BeginChild("someFrame2", imgui.ImVec2(247, 202), true)
+
+                    imgui.EndChild()
+                end
+            imgui.EndGroup()
+        imgui.End()
+
+        imgui.PopFont()
+        changeTheme:resetDefault(newMainFrameChange)
+    end
+)
+
 function onWindowMessage(msg, wparam, lparam)
     if msg == wm.WM_SYSKEYDOWN or msg == wm.WM_KEYDOWN then
         if show_main_menu[0] and wparam == vkeys.VK_ESCAPE and not isPauseMenuActive() then
@@ -831,6 +824,7 @@ function onWindowMessage(msg, wparam, lparam)
         show_action_menu[0], show_info_menu[0] = false, false
     end
 end
+
 
 function main()
     if not isSampfuncsLoaded() or not isSampLoaded() then return end
@@ -1216,6 +1210,29 @@ function sampAddChatMessage(text, color)
     addchatmessage(u8:decode(text), color)
 end
 
+function changeTheme:applySettings(table)
+    for i = 1, #table do
+        if table[i][1] == "ImVec2" then
+            imgui.GetStyle()[table[i][2]] = imgui.ImVec2(table[i].change[1], table[i].change[2])
+        elseif table[i][1] == "Int" then
+            imgui.GetStyle()[table[i][2]] = table[i].change
+        elseif table[i][1] == "ImVec4" then
+            imgui.GetStyle().Colors[imgui.Col[table[i][2]]] = table[i].change
+        end
+    end
+end
+
+function changeTheme:resetDefault(table)
+    for i = 1, #table do
+        if table[i][1] == "ImVec2" then
+            imgui.GetStyle()[table[i][2]] = imgui.ImVec2(table[i].reset[1], table[i].reset[2])
+        elseif table[i][1] == "Int" then
+            imgui.GetStyle()[table[i][2]] = table[i].reset
+        elseif table[i][1] == "ImVec4" then
+            imgui.GetStyle().Colors[imgui.Col[table[i][2]]] = table[i].reset
+        end
+    end
+end
 
 function imgui.Theme()
     imgui.SwitchContext()
