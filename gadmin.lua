@@ -75,6 +75,9 @@ function create_config()
             playersNearby = {
                 use = false,
                 alpha = 0
+            },
+            playerStatsFrame = {
+                mode = 1
             }
         },
         gg_msg = "Приятной игры!",
@@ -115,21 +118,47 @@ info_about = -1
 spec_textdraw = -1
 player_data = {}
 intWindows = {"actionFrame", "playerStatsFrame", "playersNearby"}
-info_show = {
-    {"hp", "Здоровье"},
-    {"armour", "Броня"},
-    {"speed", "Скорость"},
-    {"ping", "Пинг"},
-    {"money", "Наличные"},
-    {"bank", "На банке"},
-    {"fraction", "Фракция"},
-    {"transport", "Транспорт"},
-    {"house", "Дом"},
-    {"reg_date", "Регистрация"},
-    {"vip", "Вип"},
-    {"game", "Игра"}
+infoMode = tonumber(cfg.windowsSettings.playerStatsFrame.mode)
+infoData = {
+    {
+        columnsNum = 4,
+        columnsSize = {70, 100, 85, 145},
+        size = {400, 170, 217},
+        main = {{"hp", "Здоровье"},
+                {"armour", "Броня"},
+                {"speed", "Скорость"},
+                {"ping", "Пинг"},
+                {"money", "Наличные"},
+                {"bank", "На банке"},
+                {"fraction", "Фракция"},
+                {"transport", "Транспорт"},
+                {"house", "Дом"},
+                {"reg_date", "Регистрация"},
+                {"vip", "Вип"},
+                {"game", "Игра"}},
+        car = {{"car_hp", "HP car"},
+               {"car_engine", "Двигатель"}}
+    },
+    {
+        columnsNum = 2,
+        columnsSize = {100, 100},
+        size = {200, 313, 385},
+        main = {{"hp", "Здоровье"},
+                {"armour", "Броня"},
+                {"speed", "Скорость"},
+                {"ping", "Пинг"},
+                {"money", "Наличные"},
+                {"bank", "На банке"},
+                {"fraction", "Фракция"},
+                {"transport", "Транспорт"},
+                {"house", "Дом"},
+                {"reg_date", "Регистрация"},
+                {"vip", "Вип"},
+                {"game", "Игра"}},
+        car = {{"car_hp", "HP car"},
+               {"car_engine", "Двигатель"}}
+    },
 }
-column_num = 4
 ----------------------------
 sizeX, sizeY = getScreenResolution()
 session_online = 0
@@ -718,47 +747,52 @@ local infoFrame = imgui.OnFrame(
 
         player.HideCursor = _showSpectateCursor
         -- imgui.SetNextWindowSizeX
-        imgui.SetNextWindowSize(imgui.ImVec2(100 * column_num, (column_num == 4 and 170 or 315)))
+        local info = infoData[infoMode]
+        imgui.SetNextWindowSize(imgui.ImVec2(info.size[1], (player_data["car"] and info.size[3] or info.size[2])))
         imgui.SetNextWindowPos(imgui.ImVec2(cfg.windowsPosition.playerStatsFrame.x, cfg.windowsPosition.playerStatsFrame.y))
         imgui.Begin("GAdmin_info", show_info_menu, imgui.WindowFlags.AlwaysAutoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoScrollbar + imgui.WindowFlags.NoMove)
 
         imgui.CenterText(tostring(player_data["nick"]) .. "[" .. spectate_id .. "]")
-        imgui.Columns(column_num, "##player_info", true)
-        for i = 1, 4 do imgui.NextColumn() imgui.SetColumnWidth(-1, 70) end
+        imgui.Columns(info.columnsNum, "##player_info", true)
+        for i = 1, 4 do imgui.NextColumn() end
         imgui.Separator()
-        if column_num == 4 then
-            imgui.SetColumnWidth(0, 70)
-            imgui.SetColumnWidth(1, 100)
-            imgui.SetColumnWidth(2, 85)
-            imgui.SetColumnWidth(3, 145)
-        else
-            imgui.SetColumnWidth(0, 100)
-            imgui.SetColumnWidth(1, 100)
+        for num, size in pairs(info.columnsSize) do
+            imgui.SetColumnWidth(num, size)
         end
-        for k, v in pairs(info_show) do
+        for k, v in pairs(info.main) do
             imgui.Text(v[2])
             imgui.NextColumn()
             imgui.Text(tostring(player_data[v[1]]))
             imgui.NextColumn()
-            if (k % 2 == 0 and column_num == 4 or (column_num == 2)) and k ~= #info_show then
+            if (k % (info.columnsNum / 2) == 0) and k ~= #info.main then
                 imgui.Separator()
             end
         end
 
         imgui.Columns(1)
         imgui.Separator()
-        imgui.CenterText(tostring(player_data["nick"]) .. "[" .. spectate_id .. "]")
-        imgui.Columns(column_num, "##player_info", true)
-        for i = 1, 4 do imgui.NextColumn() imgui.SetColumnWidth(-1, 70) end
-        imgui.Separator()
-        if column_num == 4 then
-            imgui.SetColumnWidth(0, 70)
-            imgui.SetColumnWidth(1, 100)
-            imgui.SetColumnWidth(2, 85)
-            imgui.SetColumnWidth(3, 145)
-        else
-            imgui.SetColumnWidth(0, 100)
-            imgui.SetColumnWidth(1, 100)
+        if player_data["car"] and info.car then
+            local car = player_data["car"]
+            imgui.CenterText(player_data["car_name"] .. "[" .. player_data["car_id"] .. "]")
+            imgui.Columns(info.columnsNum, "##player_cars_info", true)
+            for i = 1, 4 do imgui.NextColumn() end
+            imgui.Separator()
+            for num, size in pairs(info.columnsSize) do
+                imgui.SetColumnWidth(num, size)
+            end
+
+            for k, v in pairs(info.car) do
+                imgui.Text(v[2])
+                imgui.NextColumn()
+                imgui.Text(tostring(player_data[v[1]]))
+                imgui.NextColumn()
+                if (k % (info.columnsNum / 2) == 0) and k ~= #info.car then
+                    imgui.Separator()
+                end
+            end
+
+            imgui.Columns(1)
+            imgui.Separator()
         end
 
 
@@ -804,8 +838,10 @@ function main()
 
     -- инициализируем все команды
     sampRegisterChatCommand("gadm", gadm_cmd)
-    sampRegisterChatCommand("test", function()
-        column_num = column_num % 4 + 2
+    sampRegisterChatCommand("test", function(arg)
+        infoMode = tonumber(arg:match("(%d+)"))
+        cfg.windowsSettings.playerStatsFrame.mode = infoMode
+        save_config()
     end)
     sampRegisterChatCommand("wh", function()
         nameTagOn()
@@ -849,7 +885,7 @@ function main()
                     local hp = getCarHealth(car)
                     local result, id = sampGetVehicleIdByCarHandle(car)
                     local carmodel = getCarModel(car)
-                    local vehname = (getGxtText(getNameOfVehicleModel(carmodel))) -- TODO: там есть названия тачек которые становятся мусором
+                    local vehname = getCarName(carmodel)
                     local sx, sy = convert3DCoordsToScreen(x, y, z)
                     local text = "ID: {8dff85}" .. id .. " {FFFFFF}HP: {8dff85}" .. hp
                     local text2 = vehname .. " [" .. engine_status .. "{FFFFFF} / " .. door_status .. "{FFFFFF}]"
@@ -1012,6 +1048,26 @@ function samp.onShowDialog(dialogId, style, title, button1, button2, text)
         player_data["vip"] = text:match("Премиум аккаунт: (.-)\n")
         player_data["reg_date"] = text:match("Дата регистрации: (.-)\n")
 
+        res, player_data["ped"] = sampGetCharHandleBySampPlayerId(info_about)
+        if not res then player_data["ped"] = PLAYER_PED end
+
+        if isCharInAnyCar(player_data["ped"]) then
+            player_data["car"] = storeCarCharIsInNoSave(player_data["ped"])
+            local car = player_data["car"]
+            player_data["car_hp"] = getCarHealth(car)
+            player_data["car_model"] = getCarModel(car)
+            player_data["car_name"] = getCarName(player_data["car_model"])
+            res, player_data["car_id"] = sampGetVehicleIdByCarHandle(car)
+            player_data["car_engine"] = isCarEngineOn(car) and "Заведён" or "Заглушен"
+        else
+            player_data["car"] = nil
+            player_data["car_hp"] = nil
+            player_data["car_model"] = nil
+            player_data["car_name"] = nil
+            player_data["car_id"] = nil
+            player_data["car_engine"] = nil
+        end
+
         sampSendDialogResponse(dialogId, 0, 0, "")
         checking_stats = false
         return false
@@ -1024,7 +1080,7 @@ function change_sp(new_id)
     show_info_menu[0] = in_sp
     lua_thread.create(function()
         wait(1)
-        if new_id ~= info_about and os.clock() - last_checking_stats > 1 and not sampIsDialogActive() then
+        if new_id ~= info_about and os.clock() - last_checking_stats > 1 and not sampIsDialogActive() and not checking_stats then
             checking_stats = true
             sampSendMenuSelectRow(3) -- sampSendChat("/stats " .. spectate_id)
             last_checking_stats = os.clock()
@@ -1274,6 +1330,28 @@ function nameTagOff()
 	mem.setint8(pStSet + 47, NTwalls)
 	mem.setint8(pStSet + 56, NTshow)
 	nameTag = false
+end
+
+function getCarName(id)
+    id = tonumber(id)
+    car_nums = {525, 552, 437, 582, 431, 510,
+    490, 488, 497, 420, 416,
+    472, 528, 406, 407, 408, 428,
+    438, 443, 471, 485, 486, 524,
+    530, 531, 532, 544, 571,
+    572, 574, 596, 597, 598, 509}
+    car_names = {"Towtruck", "Utility Van", "Coach", "Newsvan", "Bus", "Mountain Bike",
+    "FBI Rancher", "SAN News Maverick", "Police Maverick", "Taxi", "Ambulance",
+    "Coastguard", "FBI Truck", "Dumper", "Firetruck", "Trashmaster", "Securicar",
+    "Cabbie", "Packer", "Quad", "Baggage", "Dozer", "Cement Truck",
+    "Forklift", "Tractor", "Combine Harvester", "Firetruck LA", "Kart",
+    "Mower", "Sweeper", "Police Car (LSPD)", "Police Car (SFPD)","Police Car (LVPD)", "Bike"}
+    for k, v in pairs(car_nums) do
+        if id == v then 
+            return car_names[k]
+        end
+    end
+    return getGxtText(getNameOfVehicleModel(id))
 end
 
 function onReceivePacket(id)
