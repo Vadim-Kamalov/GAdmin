@@ -127,7 +127,7 @@ info_show = {
     {"vip", "Вип"},
     {"game", "Игра"}
 }
-column_num = 2
+column_num = 4
 ----------------------------
 sizeX, sizeY = getScreenResolution()
 session_online = 0
@@ -493,13 +493,14 @@ local infoFrame = imgui.OnFrame(
         end
 
         player.HideCursor = _showSpectateCursor
-        imgui.SetNextWindowSize(imgui.ImVec2(100 * column_num, (column_num == 4 and 155 or 287)))
+        -- imgui.SetNextWindowSizeX
+        imgui.SetNextWindowSize(imgui.ImVec2(100 * column_num, (column_num == 4 and 170 or 315)))
         imgui.SetNextWindowPos(imgui.ImVec2(cfg.windowsPosition.playerStatsFrame.x, cfg.windowsPosition.playerStatsFrame.y))
         imgui.Begin("GAdmin_info", show_info_menu, imgui.WindowFlags.AlwaysAutoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoScrollbar + imgui.WindowFlags.NoMove)
 
         imgui.CenterText(tostring(player_data["nick"]) .. "[" .. spectate_id .. "]")
         imgui.Columns(column_num, "##player_info", true)
-        for i = 1, 4 do imgui.NextColumn() end
+        for i = 1, 4 do imgui.NextColumn() imgui.SetColumnWidth(-1, 70) end
         imgui.Separator()
         if column_num == 4 then
             imgui.SetColumnWidth(0, 70)
@@ -522,6 +523,20 @@ local infoFrame = imgui.OnFrame(
 
         imgui.Columns(1)
         imgui.Separator()
+        imgui.CenterText(tostring(player_data["nick"]) .. "[" .. spectate_id .. "]")
+        imgui.Columns(column_num, "##player_info", true)
+        for i = 1, 4 do imgui.NextColumn() imgui.SetColumnWidth(-1, 70) end
+        imgui.Separator()
+        if column_num == 4 then
+            imgui.SetColumnWidth(0, 70)
+            imgui.SetColumnWidth(1, 100)
+            imgui.SetColumnWidth(2, 85)
+            imgui.SetColumnWidth(3, 145)
+        else
+            imgui.SetColumnWidth(0, 100)
+            imgui.SetColumnWidth(1, 100)
+        end
+
 
         imgui.End()
     end
@@ -718,6 +733,10 @@ function samp.onServerMessage(color, text)
     local nickname          = sampGetPlayerNickname(id)
 
     text = u8(text)
+
+    if text:find("Вы успешно авторизовались как администратор") or text:find("Вы уже авторизировались") and color == -1 then
+        alogin = true
+    end
 
     for k, v in ipairs(formCommands) do
         if text:find("%[A%] .*%[%d+%]: /"..v..".*") and color == 866792362 then
@@ -1016,4 +1035,10 @@ function nameTagOff()
 	mem.setint8(pStSet + 47, NTwalls)
 	mem.setint8(pStSet + 56, NTshow)
 	nameTag = false
+end
+
+function onReceivePacket(id)
+    if (id == 36 or id == 32 or id == 37) then -- closed conn, wrong srv pass, banned
+        alogin = false
+    end
 end
