@@ -107,6 +107,7 @@ checkSendFormCommand = false
 local players_platform = {}
 local _showSpectateCursor = true
 local popupId, popupNickname = 0, ""
+local selectedTab = 1
 local changeTheme = {}
 -- для информации в спеке --
 local in_sp = false
@@ -193,6 +194,8 @@ local show_action_menu = new.bool()
 local newMainFrame = new.bool()
 local playersNearby = new.bool()
 local playersNerbyTransparent = new.int(cfg.windowsSettings.playersNearby.alpha)
+local aloginOnEnter = new.bool()
+local autologin = new.bool()
 local playersNearbyCheckbox = new.bool(cfg.windowsSettings.playersNearby.use)
 local car_spec = new.bool(cfg.car_spec)
 local gg_msg = new.char[256](cfg.gg_msg)
@@ -224,6 +227,7 @@ imgui.OnInitialize(function()
     font_15 = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(Exo2Font_Regular, 20.0, nil, glyph_ranges)
     font_20 = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(Exo2Font_Regular, 25.0, nil, glyph_ranges)
 
+    imgui.GetIO().IniFilename = nil
     imgui.Theme()
 end)
 
@@ -422,12 +426,16 @@ local adminForm = imgui.OnFrame(
         imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2, sizeY), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
         imgui.SetNextWindowSize(imgui.ImVec2(sizeX, 70))
 
-        imgui.PushStyleColor(imgui.Col.WindowBg, imgui.ImVec4(0.07, 0.07, 0.07, 0.50))
-        imgui.PushStyleVarFloat(imgui.StyleVar.FrameRounding, 0)
-        imgui.PushStyleVarFloat(imgui.StyleVar.WindowRounding, 0)
-        imgui.PushStyleVarFloat(imgui.StyleVar.WindowBorderSize, 0)
+        local adminFormStyle = {
+            {"ImVec4", "WindowBg", change = imgui.ImVec4(0.07, 0.07, 0.07, 0.50), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
+            {"Int", "WindowRounding", change = 0, reset = 5},
+            {"Int", "FrameRounding", change = 0, reset = 5},
+            {"Int", "WindowBorderSize", change = 0, reset = 1}
+        }
 
-        imgui.Begin("admin_form_menu", admin_form_menu, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize)
+        changeTheme:applySettings(adminFormStyle)
+
+        imgui.Begin("admin_form_menu", admin_form_menu, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoMove)
             imgui.SetCursorPosY(10)
             imgui.BeginGroup()
                 imgui.SetCursorPosX(15)
@@ -444,9 +452,7 @@ local adminForm = imgui.OnFrame(
                 admin_form_menu[0], formStarter, formCommand = false, "", ""
             end
         imgui.End()
-
-        imgui.PopStyleVar(2)
-        imgui.PopStyleColor()
+        changeTheme:resetDefault(adminFormStyle)
     end
 )
 
@@ -482,24 +488,24 @@ local mainFrame = imgui.OnFrame(
             save_config()
         end
 
-        if rkeys.HotKey("Главное меню", gadmKeys) then
+        if rkeys.HotKey("Главное меню", gadmKeys, imgui.ImVec2(100, 20)) then
             cfg.hotkeys.gadm = gadmKeys.v
             rkeys.changeHotKey(openMainMenu, gadmKeys.v)
             save_config()
         end
-        if rkeys.HotKey("Принятие формы", acceptFormKeys) then
+        if rkeys.HotKey("Принятие формы", acceptFormKeys, imgui.ImVec2(100, 20)) then
             cfg.hotkeys.acceptForm = acceptFormKeys.v
             rkeys.changeHotKey(acceptForm, acceptFormKeys.v)
             save_config()
         end
 
-        if rkeys.HotKey("Открытие курсора в /sp", showSpectateCursor) then
+        if rkeys.HotKey("Открытие курсора в /sp", showSpectateCursor, imgui.ImVec2(100, 20)) then
             cfg.hotkeys.spectateCursor = acceptFormKeys.v
             rkeys.changeHotKey(showSpectateCursor, showSpectateCursor.v)
             save_config()
         end
 
-        if rkeys.HotKey("Spec reload", specReloadKeys) then
+        if rkeys.HotKey("Spec reload", specReloadKeys, imgui.ImVec2(100, 20)) then
             cfg.hotkeys.specReload = specReloadKeys.v
             rkeys.changeHotKey(_specReload, specReloadKeys.v)
             save_config()
@@ -654,7 +660,8 @@ local _newMainFrame = imgui.OnFrame(
             {"Int", "WindowRounding", change = 0, reset = 5},
             {"Int", "WindowBorderSize", change = 0, reset = 1},
             {"ImVec4", "ChildBg", change = hexToImVec4("21242A"), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
-            {"ImVec4", "WindowBg", change = hexToImVec4("171C20"), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)}
+            {"ImVec4", "WindowBg", change = hexToImVec4("171C20"), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
+            {"ImVec4", "FrameBg", change = hexToImVec4("444751"), reset = imgui.ImVec4(0.12, 0.12, 0.12, 1.00)}
         }
 
         changeTheme:applySettings(newMainFrameChange)
@@ -663,6 +670,7 @@ local _newMainFrame = imgui.OnFrame(
         local button = function(text, ImVec2_size, ImVec2_position, mode, font, alignX, alignY)
             local alignX = alignX or 0.5
             local alignY = alignY or 0.5
+            click = false
 
             local _font = {
                 ["font_12"] = font_12,
@@ -685,38 +693,45 @@ local _newMainFrame = imgui.OnFrame(
 
                 imgui.SetCursorPos(ImVec2_position)
                 imgui.Button(text, ImVec2_size)
+                click = imgui.IsItemClicked()
                 
                 imgui.PopStyleColor(2)
                 imgui.PopFont()
                 imgui.PopStyleVar()
             imgui.EndGroup()
 
-            return imgui.IsItemClicked()
+            return click
         end
 
-        local inActiveButton = function(text, groupWidth, y, alignX, alignY)
-            alignX = alignX or 0.5
-            alignY = alignY or 0.5
+        local navbarLeftButton = function(text, ImVec2_size --[[ active ]], ImVec2_position --[[ active ]], i)
+            mode = selectedTab == i and 1 or 2
+            click = false
 
-            imgui.BeginGroup()
-                imgui.PushStyleColor(imgui.Col.Button, hexToImVec4("21242A"))
-                imgui.PushStyleColor(imgui.Col.ButtonHovered, hexToImVec4("007EEA"))
-                imgui.PushStyleColor(imgui.Col.ButtonActive, hexToImVec4("004C8D"))
-                imgui.PushStyleVarVec2(imgui.StyleVar.ButtonTextAlign, imgui.ImVec2(alignX, alignY))
-                    imgui.SetCursorPos(imgui.ImVec2((groupWidth / 2 - imgui.CalcTextSize(text).x / 2) - 10, y))
-                    imgui.Button(text, imgui.ImVec2(imgui.CalcTextSize(text).x + 26, imgui.CalcTextSize(text).y + 10))
-                imgui.PopStyleVar()
-                imgui.PopStyleColor(2)
-            imgui.EndGroup()
+            local navbarColors = {
+                {"007EEA", "004C8D", "004C8D"},
+                {"21242A", "007EEA", "004C8D"}
+            }
 
-            return imgui.IsItemClicked()
+            imgui.PushStyleColor(imgui.Col.Button, hexToImVec4(navbarColors[mode][1]))
+            imgui.PushStyleColor(imgui.Col.ButtonHovered, hexToImVec4(navbarColors[mode][2]))
+            imgui.PushStyleColor(imgui.Col.ButtonActive, hexToImVec4(navbarColors[mode][3]))
+                imgui.SetCursorPos(ImVec2_position)
+                if imgui.Button(text, ImVec2_size) then selectedTab = i end
+                click = imgui.IsItemClicked()
+            imgui.PopStyleColor(2)
+
+            return click
         end
 
         --[[ Tables ]]--
-        local inActiveButtonData = {
-            {"Быстрые клавиши", 49},
-            {"Дополнительные окна", 84},
-            {"Цвета ImGui", 118}
+        local changeSelectedTabButtons = {
+            --[1]: string = text,
+            -- [2]: integer = ImVec2_position,
+
+            {"Главная", imgui.ImVec2(15, 11)},
+            {"Быстрые клавиши", imgui.ImVec2(15, 49)},
+            {"Дополнительные окна", imgui.ImVec2(15, 84)},
+            {"Цвета ImGui", imgui.ImVec2(15, 118)}
         }
 
         --[[ Frame ]]--
@@ -746,10 +761,9 @@ local _newMainFrame = imgui.OnFrame(
             imgui.EndChild()
 
             imgui.BeginChild("leftNavbar", imgui.ImVec2(200, 0), true)
-                button("Главная", imgui.ImVec2(173.33, 29), imgui.ImVec2(13.33, 11), "active")
-                for i = 1, #inActiveButtonData do
-                    if inActiveButton(inActiveButtonData[i][1], 200, inActiveButtonData[i][2]) then print("123123") end
-                end 
+                for i, v in ipairs(changeSelectedTabButtons) do
+                    navbarLeftButton(v[1], imgui.ImVec2(173.33, 29), v[2], i)
+                end
             imgui.EndChild()
             imgui.SameLine()
 
@@ -759,7 +773,34 @@ local _newMainFrame = imgui.OnFrame(
                 if selectedTab == 1 then
                     imgui.SetCursorPos(imgui.ImVec2(220, 75))
                     imgui.BeginChild("passwordFrame", imgui.ImVec2(275, 161), true)
+                    imgui.PushItemWidth(245)
+                        imgui.SetCursorPos(imgui.ImVec2(15, 14))
+                        imgui.PushStyleVarVec2(imgui.StyleVar.FramePadding, imgui.ImVec2(5, 5))
+                            if imgui.InputText("##playerPasswordInput", game_pass, ffi.sizeof(game_pass)) then
+                                cfg.game_pass = str(game_pass)
+                                save_config()
+                            elseif string.len(ffi.string(game_pass)) == 0 then
+                                imgui.SetCursorPos(imgui.ImVec2(73, 17))
+                                imgui.Text("Пароль от аккаунта")
+                            end
 
+                            imgui.SetCursorPos(imgui.ImVec2(15, 51))
+                            if imgui.InputText("##adminPasswordInput", adm_pass, ffi.sizeof(adm_pass)) then
+                                cfg.adm_pass = str(adm_pass)
+                                save_config()
+                            elseif string.len(ffi.string(adm_pass)) == 0 then
+                                imgui.SetCursorPos(imgui.ImVec2(74, 55))
+                                imgui.Text("Пароль от админки")
+                            end
+                        imgui.PopStyleVar()
+                    imgui.PopItemWidth()
+                    imgui.PushStyleVarVec2(imgui.StyleVar.FramePadding, imgui.ImVec2(5, 5))
+                        imgui.SetCursorPos(imgui.ImVec2(15, 88))
+                        imgui.Checkbox(" Вводить /alogin при входе", aloginOnEnter)
+
+                        imgui.SetCursorPos(imgui.ImVec2(15, 124))
+                        imgui.Checkbox(" Автоматический вход", autologin)
+                    imgui.PopStyleVar()
                     imgui.EndChild()
                     imgui.SetCursorPos(imgui.ImVec2(520, 75))
                     imgui.BeginChild("onlineAndLogoutFrame", imgui.ImVec2(247, 119), true)
@@ -784,6 +825,8 @@ local _newMainFrame = imgui.OnFrame(
                     imgui.BeginChild("someFrame2", imgui.ImVec2(247, 202), true)
 
                     imgui.EndChild()
+                elseif selectedTab == 2 then
+                    imgui.BeginChild()
                 end
             imgui.EndGroup()
         imgui.End()
