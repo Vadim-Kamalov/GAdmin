@@ -8,8 +8,8 @@
    - added automatic (un)registration, changing keys (using imgui hotkey)
    - added automatic check of registered keys (using imgui hotkey)
    - added a onKeyError(id, key) event that is called when:
-      ‚Ä¢ [id: 1] keys is registered
-      ‚Ä¢ [id: 2] keys are locked for use 
+      ò [id: 1] keys is registered
+      ò [id: 2] keys are locked for use 
    (using imgui hotkey)  
    
    Original: rkeys.lua v1.1.0 & imgui_addon by DonHomka
@@ -28,8 +28,8 @@ vkeys.key_names[vkeys.VK_LSHIFT] = "LShift"
 vkeys.key_names[vkeys.VK_RSHIFT] = "RShift"
 vkeys.key_names[vkeys.VK_LCONTROL] = "LCtrl"
 vkeys.key_names[vkeys.VK_RCONTROL] = "RCtrl"
-vkeys.key_names[vkeys.VK_RBUTTON] = "√è√ä√å"
-vkeys.key_names[vkeys.VK_LBUTTON] = "√ã√ä√å"
+vkeys.key_names[vkeys.VK_RBUTTON] = "òòò"
+vkeys.key_names[vkeys.VK_LBUTTON] = "òòò"
 vkeys.key_names[vkeys.VK_MBUTTON] = "Scroll"
 
 local tHotKey = {}
@@ -52,8 +52,8 @@ local module = {}
 module._MODKEYS = tModKeys
 module._VERSION = "1.2.0"
 module._SETTINGS = {
-	noKeysMessage = "√ç√•√≤",
-	waitKeysMessage = "√ç√†√¶√¨√®√≤√•"
+	noKeysMessage = "òòò",
+	waitKeysMessage = "òòòòòòò"
 }
 
 local keysDown = {
