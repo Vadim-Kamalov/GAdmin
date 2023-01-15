@@ -8,8 +8,8 @@
    - added automatic (un)registration, changing keys (using imgui hotkey)
    - added automatic check of registered keys (using imgui hotkey)
    - added a onKeyError(id, key) event that is called when:
-      ï [id: 1] keys is registered
-      ï [id: 2] keys are locked for use 
+      ‚Ä¢ [id: 1] keys is registered
+      ‚Ä¢ [id: 2] keys are locked for use 
    (using imgui hotkey)  
    
    Original: rkeys.lua v1.1.0 & imgui_addon by DonHomka
@@ -28,8 +28,8 @@ vkeys.key_names[vkeys.VK_LSHIFT] = "LShift"
 vkeys.key_names[vkeys.VK_RSHIFT] = "RShift"
 vkeys.key_names[vkeys.VK_LCONTROL] = "LCtrl"
 vkeys.key_names[vkeys.VK_RCONTROL] = "RCtrl"
-vkeys.key_names[vkeys.VK_RBUTTON] = "œ Ã"
-vkeys.key_names[vkeys.VK_LBUTTON] = "À Ã"
+vkeys.key_names[vkeys.VK_RBUTTON] = "√è√ä√å"
+vkeys.key_names[vkeys.VK_LBUTTON] = "√ã√ä√å"
 vkeys.key_names[vkeys.VK_MBUTTON] = "Scroll"
 
 local tHotKey = {}
@@ -52,8 +52,8 @@ local module = {}
 module._MODKEYS = tModKeys
 module._VERSION = "1.2.0"
 module._SETTINGS = {
-	noKeysMessage = "ÕÂÚ",
-	waitKeysMessage = "Õ‡ÊÏËÚÂ"
+	noKeysMessage = "√ç√•√≤",
+	waitKeysMessage = "√ç√†√¶√¨√®√≤√•"
 }
 
 local keysDown = {
@@ -79,7 +79,7 @@ local lastTick = os.clock()
 local tickState = false
 
 
-module.HotKey = function(name, keys, width, callback)
+module.HotKey = function(name, keys, ImVec2_size, callback)
    local width = width or 90
    local name = tostring(name)
 	local bool = false
@@ -130,7 +130,7 @@ module.HotKey = function(name, keys, width, callback)
     imgui.PushStyleColor(imgui.Col.Button, imgui.GetStyle().Colors[imgui.Col.FrameBg])
     imgui.PushStyleColor(imgui.Col.ButtonHovered, imgui.GetStyle().Colors[imgui.Col.FrameBgHovered])
     imgui.PushStyleColor(imgui.Col.ButtonActive, imgui.GetStyle().Colors[imgui.Col.FrameBgActive])
-    if imgui.Button((tostring(sKeys):len() == 0 and u8(module._SETTINGS.noKeysMessage) or u8(sKeys)), imgui.ImVec2(width, 0)) and edit ~= name then
+    if imgui.Button((tostring(sKeys):len() == 0 and u8(module._SETTINGS.noKeysMessage) or u8(sKeys)), ImVec2_size) and edit ~= name then
         edit = name
     end
     imgui.SameLine()
