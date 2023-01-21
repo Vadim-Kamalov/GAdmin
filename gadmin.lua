@@ -60,7 +60,7 @@ function create_config()
         windowsPosition = {
             actionFrame = {
                 x = select(1, getScreenResolution()) / 100,
-                y = select(2, getScreenResolution()) / 1.1 
+                y = select(2, getScreenResolution()) / 1.1
             },
             playerStatsFrame = {
                 x = select(1, getScreenResolution()) / 1.125,
@@ -83,8 +83,9 @@ function create_config()
         gg_msg = "Приятной игры!",
         adm_pass = "",
         game_pass = "",
-        car_spec = false
-
+        car_spec = false,
+        autoEnter = false,
+        aloginOnEnter = false
     }
     save_config(def_data)
 end
@@ -107,6 +108,7 @@ checkSendFormCommand = false
 local players_platform = {}
 local _showSpectateCursor = true
 local popupId, popupNickname = 0, ""
+local selectedTab = 1
 local changeTheme = {}
 -- для информации в спеке --
 local in_sp = false
@@ -193,6 +195,8 @@ local show_action_menu = new.bool()
 local newMainFrame = new.bool()
 local playersNearby = new.bool()
 local playersNerbyTransparent = new.int(cfg.windowsSettings.playersNearby.alpha)
+local aloginOnEnter = new.bool()
+local autologin = new.bool()
 local playersNearbyCheckbox = new.bool(cfg.windowsSettings.playersNearby.use)
 local car_spec = new.bool(cfg.car_spec)
 local gg_msg = new.char[256](cfg.gg_msg)
@@ -224,6 +228,7 @@ imgui.OnInitialize(function()
     font_15 = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(Exo2Font_Regular, 20.0, nil, glyph_ranges)
     font_20 = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(Exo2Font_Regular, 25.0, nil, glyph_ranges)
 
+    imgui.GetIO().IniFilename = nil
     imgui.Theme()
 end)
 
@@ -311,7 +316,7 @@ local actionMenu = imgui.OnFrame(
                             buttonsPlaceholder[2][index][2]()
                             if not _showSpectateCursor and index ~= 1 then _showSpectateCursor = true end
                         end
-                    
+
                         if index ~= 7 then imgui.SameLine() end
                     end
                 imgui.EndGroup()
@@ -349,7 +354,7 @@ local playersNearbyFrame = imgui.OnFrame(
             else
                 for _, player in ipairs(getAllChars()) do
                     result, id = sampGetPlayerIdByCharHandle(player)
-                    
+
                     color = sampGetPlayerColor(id)
                     if result then
                         nickname = sampGetPlayerNickname(id)
@@ -375,7 +380,7 @@ local playersNearbyFrame = imgui.OnFrame(
                     end
                 end
             end
-            
+
             imgui.PushStyleVarVec2(imgui.StyleVar.WindowPadding, imgui.ImVec2(0, 0))
             if imgui.BeginPopup("playerInfo") then
                 imgui.PushStyleVarFloat(imgui.StyleVar.FrameRounding, 0)
@@ -422,12 +427,16 @@ local adminForm = imgui.OnFrame(
         imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2, sizeY), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
         imgui.SetNextWindowSize(imgui.ImVec2(sizeX, 70))
 
-        imgui.PushStyleColor(imgui.Col.WindowBg, imgui.ImVec4(0.07, 0.07, 0.07, 0.50))
-        imgui.PushStyleVarFloat(imgui.StyleVar.FrameRounding, 0)
-        imgui.PushStyleVarFloat(imgui.StyleVar.WindowRounding, 0)
-        imgui.PushStyleVarFloat(imgui.StyleVar.WindowBorderSize, 0)
+        local adminFormStyle = {
+            {"ImVec4", "WindowBg", change = imgui.ImVec4(0.07, 0.07, 0.07, 0.50), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
+            {"Int", "WindowRounding", change = 0, reset = 5},
+            {"Int", "FrameRounding", change = 0, reset = 5},
+            {"Int", "WindowBorderSize", change = 0, reset = 1}
+        }
 
-        imgui.Begin("admin_form_menu", admin_form_menu, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize)
+        changeTheme:applySettings(adminFormStyle)
+
+        imgui.Begin("admin_form_menu", admin_form_menu, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoMove)
             imgui.SetCursorPosY(10)
             imgui.BeginGroup()
                 imgui.SetCursorPosX(15)
@@ -444,9 +453,7 @@ local adminForm = imgui.OnFrame(
                 admin_form_menu[0], formStarter, formCommand = false, "", ""
             end
         imgui.End()
-
-        imgui.PopStyleVar(2)
-        imgui.PopStyleColor()
+        changeTheme:resetDefault(adminFormStyle)
     end
 )
 
@@ -482,24 +489,24 @@ local mainFrame = imgui.OnFrame(
             save_config()
         end
 
-        if rkeys.HotKey("Главное меню", gadmKeys) then
+        if rkeys.HotKey("Главное меню", gadmKeys, imgui.ImVec2(100, 20)) then
             cfg.hotkeys.gadm = gadmKeys.v
             rkeys.changeHotKey(openMainMenu, gadmKeys.v)
             save_config()
         end
-        if rkeys.HotKey("Принятие формы", acceptFormKeys) then
+        if rkeys.HotKey("Принятие формы", acceptFormKeys, imgui.ImVec2(100, 20)) then
             cfg.hotkeys.acceptForm = acceptFormKeys.v
             rkeys.changeHotKey(acceptForm, acceptFormKeys.v)
             save_config()
         end
 
-        if rkeys.HotKey("Открытие курсора в /sp", showSpectateCursor) then
+        if rkeys.HotKey("Открытие курсора в /sp", showSpectateCursor, imgui.ImVec2(100, 20)) then
             cfg.hotkeys.spectateCursor = acceptFormKeys.v
             rkeys.changeHotKey(showSpectateCursor, showSpectateCursor.v)
             save_config()
         end
 
-        if rkeys.HotKey("Spec reload", specReloadKeys) then
+        if rkeys.HotKey("Spec reload", specReloadKeys, imgui.ImVec2(100, 20)) then
             cfg.hotkeys.specReload = specReloadKeys.v
             rkeys.changeHotKey(_specReload, specReloadKeys.v)
             save_config()
@@ -522,7 +529,7 @@ local mainFrame = imgui.OnFrame(
         imgui.PushStyleVarVec2(imgui.StyleVar.WindowPadding, imgui.ImVec2(0, 0))
         if imgui.BeginPopupModal("windowsPosition", nil, imgui.WindowFlags.NoResize + imgui.WindowFlags.NoMove + imgui.WindowFlags.NoTitleBar) then
             imgui.PushStyleVarFloat(imgui.StyleVar.FrameRounding, 0)
-            
+
             imgui.BeginGroup()
                 imgui.PushStyleVarVec2(imgui.StyleVar.ItemSpacing, imgui.ImVec2(0, 0))
                 if imgui.Button("Окно быстрых действий в /sp", imgui.ImVec2(300, 50)) then
@@ -671,22 +678,24 @@ local _newMainFrame = imgui.OnFrame(
             {"Int", "WindowRounding", change = 0, reset = 5},
             {"Int", "WindowBorderSize", change = 0, reset = 1},
             {"ImVec4", "ChildBg", change = hexToImVec4("21242A"), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
-            {"ImVec4", "WindowBg", change = hexToImVec4("171C20"), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)}
+            {"ImVec4", "WindowBg", change = hexToImVec4("171C20"), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
+            {"ImVec4", "FrameBg", change = hexToImVec4("444751"), reset = imgui.ImVec4(0.12, 0.12, 0.12, 1.00)}
         }
 
         changeTheme:applySettings(newMainFrameChange)
         imgui.PushFont(font_12)
-        
+
         local button = function(text, ImVec2_size, ImVec2_position, mode, font, alignX, alignY)
             local alignX = alignX or 0.5
             local alignY = alignY or 0.5
+            click = false
 
             local _font = {
                 ["font_12"] = font_12,
                 ["font_15"] = font_15,
                 ["font_20"] = font_20
             }
-            
+
             local colors = {
                 ["active"] = {"007EEA", "004C8D", "004C8D"},
                 ["default"] = {"444751", "303238", "444751"}
@@ -702,42 +711,49 @@ local _newMainFrame = imgui.OnFrame(
 
                 imgui.SetCursorPos(ImVec2_position)
                 imgui.Button(text, ImVec2_size)
-                
+                click = imgui.IsItemClicked()
+
                 imgui.PopStyleColor(2)
                 imgui.PopFont()
                 imgui.PopStyleVar()
             imgui.EndGroup()
 
-            return imgui.IsItemClicked()
+            return click
         end
 
-        local inActiveButton = function(text, groupWidth, y, alignX, alignY)
-            alignX = alignX or 0.5
-            alignY = alignY or 0.5
+        local navbarLeftButton = function(text, ImVec2_size --[[ active ]], ImVec2_position --[[ active ]], i)
+            mode = selectedTab == i and 1 or 2
+            click = false
 
-            imgui.BeginGroup()
-                imgui.PushStyleColor(imgui.Col.Button, hexToImVec4("21242A"))
-                imgui.PushStyleColor(imgui.Col.ButtonHovered, hexToImVec4("007EEA"))
-                imgui.PushStyleColor(imgui.Col.ButtonActive, hexToImVec4("004C8D"))
-                imgui.PushStyleVarVec2(imgui.StyleVar.ButtonTextAlign, imgui.ImVec2(alignX, alignY))
-                    imgui.SetCursorPos(imgui.ImVec2((groupWidth / 2 - imgui.CalcTextSize(text).x / 2) - 10, y))
-                    imgui.Button(text, imgui.ImVec2(imgui.CalcTextSize(text).x + 26, imgui.CalcTextSize(text).y + 10))
-                imgui.PopStyleVar()
-                imgui.PopStyleColor(2)
-            imgui.EndGroup()
+            local navbarColors = {
+                {"007EEA", "004C8D", "004C8D"},
+                {"21242A", "007EEA", "004C8D"}
+            }
 
-            return imgui.IsItemClicked()
+            imgui.PushStyleColor(imgui.Col.Button, hexToImVec4(navbarColors[mode][1]))
+            imgui.PushStyleColor(imgui.Col.ButtonHovered, hexToImVec4(navbarColors[mode][2]))
+            imgui.PushStyleColor(imgui.Col.ButtonActive, hexToImVec4(navbarColors[mode][3]))
+                imgui.SetCursorPos(ImVec2_position)
+                if imgui.Button(text, ImVec2_size) then selectedTab = i end
+                click = imgui.IsItemClicked()
+            imgui.PopStyleColor(2)
+
+            return click
         end
 
         --[[ Tables ]]--
-        local inActiveButtonData = {
-            {"Быстрые клавиши", 49},
-            {"Дополнительные окна", 84},
-            {"Цвета ImGui", 118}
+        local changeSelectedTabButtons = {
+            --[1]: string = text,
+            -- [2]: integer = ImVec2_position,
+
+            {"Главная", imgui.ImVec2(15, 11)},
+            {"Быстрые клавиши", imgui.ImVec2(15, 49)},
+            {"Дополнительные окна", imgui.ImVec2(15, 84)},
+            {"Цвета ImGui", imgui.ImVec2(15, 118)}
         }
 
         --[[ Frame ]]--
-        
+
         imgui.Begin("newMainFrame", newMainFrame, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoMove)
             imgui.BeginChild("topNavbar", imgui.ImVec2(0, 50), true)
                 imgui.BeginGroup()  -- Title
@@ -763,10 +779,9 @@ local _newMainFrame = imgui.OnFrame(
             imgui.EndChild()
 
             imgui.BeginChild("leftNavbar", imgui.ImVec2(200, 0), true)
-                button("Главная", imgui.ImVec2(173.33, 29), imgui.ImVec2(13.33, 11), "active")
-                for i = 1, #inActiveButtonData do
-                    if inActiveButton(inActiveButtonData[i][1], 200, inActiveButtonData[i][2]) then print("123123") end
-                end 
+                for i, v in ipairs(changeSelectedTabButtons) do
+                    navbarLeftButton(v[1], imgui.ImVec2(173.33, 29), v[2], i)
+                end
             imgui.EndChild()
             imgui.SameLine()
 
@@ -776,7 +791,40 @@ local _newMainFrame = imgui.OnFrame(
                 if selectedTab == 1 then
                     imgui.SetCursorPos(imgui.ImVec2(220, 75))
                     imgui.BeginChild("passwordFrame", imgui.ImVec2(275, 161), true)
+                    imgui.PushItemWidth(245)
+                        imgui.SetCursorPos(imgui.ImVec2(15, 14))
+                        imgui.PushStyleVarVec2(imgui.StyleVar.FramePadding, imgui.ImVec2(5, 5))
+                            if imgui.InputText("##playerPasswordInput", game_pass, ffi.sizeof(game_pass)) then
+                                cfg.game_pass = str(game_pass)
+                                save_config()
+                            elseif string.len(ffi.string(game_pass)) == 0 then
+                                imgui.SetCursorPos(imgui.ImVec2(73, 17))
+                                imgui.Text("Пароль от аккаунта")
+                            end
 
+                            imgui.SetCursorPos(imgui.ImVec2(15, 51))
+                            if imgui.InputText("##adminPasswordInput", adm_pass, ffi.sizeof(adm_pass)) then
+                                cfg.adm_pass = str(adm_pass)
+                                save_config()
+                            elseif string.len(ffi.string(adm_pass)) == 0 then
+                                imgui.SetCursorPos(imgui.ImVec2(74, 55))
+                                imgui.Text("Пароль от админки")
+                            end
+                        imgui.PopStyleVar()
+                    imgui.PopItemWidth()
+                    imgui.PushStyleVarVec2(imgui.StyleVar.FramePadding, imgui.ImVec2(5, 5))
+                        imgui.SetCursorPos(imgui.ImVec2(15, 88))
+                        if imgui.Checkbox(" Вводить /alogin при входе", aloginOnEnter) then
+                            cfg.aloginOnEnter = aloginOnEnter[0]
+                            save_config()
+                        end
+
+                        imgui.SetCursorPos(imgui.ImVec2(15, 124))
+                        if imgui.Checkbox(" Автоматический вход", autologin) then
+                            cfg.autoEnter = autologin[0]
+                            save_config()
+                        end
+                    imgui.PopStyleVar()
                     imgui.EndChild()
                     imgui.SetCursorPos(imgui.ImVec2(520, 75))
                     imgui.BeginChild("onlineAndLogoutFrame", imgui.ImVec2(247, 119), true)
@@ -801,6 +849,8 @@ local _newMainFrame = imgui.OnFrame(
                     imgui.BeginChild("someFrame2", imgui.ImVec2(247, 202), true)
 
                     imgui.EndChild()
+                elseif selectedTab == 2 then
+                    -- Some code 
                 end
             imgui.EndGroup()
         imgui.End()
@@ -836,7 +886,7 @@ function onWindowMessage(msg, wparam, lparam)
         displayHud(true)
         displayRadar(true)
         showCursor(false, false)
-                
+
         changePosition = -1
         show_action_menu[0], show_info_menu[0] = false, false
     end
@@ -844,8 +894,14 @@ end
 
 
 function main()
-    if not isSampfuncsLoaded() or not isSampLoaded() then return end
-    while not isSampAvailable() do wait(100) end
+    while not isSampAvailable() do wait(0) end
+
+    if sampGetCurrentServerAddress() == "46.174.48.194" then
+        sampAddChatMessage("GAdmin успешно запущен", -1) 
+    else
+        sampAddChatMessage("GAdmin работает только на sa.gambit-rp.ru", -1)
+        script:unload()
+    end
 
     -- инициализируем все команды
     sampRegisterChatCommand("gadm", gadm_cmd)
@@ -877,7 +933,6 @@ function main()
     acceptForm =        rkeys.registerHotKey(cfg.hotkeys.acceptForm, 1, sendFormCommand)
     _specReload =        rkeys.registerHotKey(cfg.hotkeys.specReload, 1, specReload)
 
-    sampAddChatMessage("GAdmin успешно запущен", -1)
 
     -- инициализируем шрифты для рендера на экране
     local font_flag = require('moonloader').font_flag
@@ -926,11 +981,20 @@ function main()
 
                 cfg.windowsPosition[intWindows[changePosition]].x = currentX
                 cfg.windowsPosition[intWindows[changePosition]].y = currentY
-                
+
                 show_main_menu[0] = false
                 show_action_menu[0], show_info_menu[0], playersNearby[0] = true, true, true
             end
         end
+
+        -- if cfg.aloginOnEnter and string.len(cfg.adm_pass) ~= 0 then
+        --     local result, id = sampGetPlayerIdByCharHandle(PLAYER_PED)
+
+        --     if result and sampGetPlayerScore(id) == 1 then
+        --         sampSendChat("/alogin")
+        --         break
+        --     end
+        -- end
     end
 end
 
@@ -973,10 +1037,6 @@ function samp.onVehicleSync(id, vehid, data)
         end
     end
 end
-
--- function samp.onShowMenu()
-    -- if show_info_menu[0] then return false end
--- end
 
 function samp.onPlayerQuit(id)
     players_platform[id] = nil
@@ -1037,17 +1097,21 @@ function samp.onServerMessage(color, text)
 end
 
 function samp.onShowDialog(dialogId, style, title, button1, button2, text)
-    -- TODO: тут надо просто в самом начале text button1 button2 и title в utf8 перевести
-    if style == 3 and text:find(u8:decode"Для продолжения игры, Вам необходимо авторизоваться") and #cfg.game_pass > 3 then
-        sampSendDialogResponse(dialogId, 1, 0, cfg.game_pass)
-        return false
+    -- local title, button1, button2, text = u8(title), u8(button1), u8(button2), u8(text)
+
+    if cfg.autoEnter and string.len(cfg.game_pass) > 3 and style == 3 then
+        if u8(text):find("Для продолжения игры, Вам необходимо авторизоваться") then
+            sampSendDialogResponse(dialogId, 1, 0, cfg.game_pass)
+            return false
+        end
     end
-    if style == 3 and button1 == u8:decode"Далее" and button2 == u8:decode"Отмена" and text:find(u8:decode"{4a86b6}Авторизация") and text:find(u8:decode"{FFFFFF}Введите пароль:") and #cfg.adm_pass > 3 then
+
+    if style == 3 and button1 == "Далее" and button2 == "Отмена" and text:find("{4a86b6}Авторизация") and text:find("{FFFFFF}Введите пароль:") then
         sampSendDialogResponse(dialogId, 1, 0, cfg.adm_pass)
         return false
     end
 
-    if text:find(u8:decode("Информация о игроке")) and checking_stats then
+    if u8(text):find(("Информация о игроке")) and checking_stats then
         print("i have checked stats")
         text = u8(text)
         text = text:gsub("{......}", "")
@@ -1264,7 +1328,7 @@ function imgui.Theme()
     imgui.GetStyle().WindowTitleAlign = imgui.ImVec2(0.5, 0.5)
     imgui.GetStyle().ButtonTextAlign = imgui.ImVec2(0.5, 0.5)
     imgui.GetStyle().SelectableTextAlign = imgui.ImVec2(0.5, 0.5)
-    
+
     --==[ COLORS ]==--
     imgui.GetStyle().Colors[imgui.Col.Text]                   = imgui.ImVec4(1.00, 1.00, 1.00, 1.00)
     imgui.GetStyle().Colors[imgui.Col.TextDisabled]           = imgui.ImVec4(0.50, 0.50, 0.50, 1.00)
@@ -1362,7 +1426,7 @@ function getCarName(id)
     "Forklift", "Tractor", "Combine Harvester", "Firetruck LA", "Kart",
     "Mower", "Sweeper", "Police Car (LSPD)", "Police Car (SFPD)","Police Car (LVPD)", "Bike"}
     for k, v in pairs(car_nums) do
-        if id == v then 
+        if id == v then
             return car_names[k]
         end
     end
