@@ -970,14 +970,14 @@ function main()
             end
         end
 
-        if cfg.aloginOnEnter and string.len(cfg.adm_pass) ~= 0 then
-            local result, id = sampGetPlayerIdByCharHandle(PLAYER_PED)
+        -- if cfg.aloginOnEnter and string.len(cfg.adm_pass) ~= 0 then
+        --     local result, id = sampGetPlayerIdByCharHandle(PLAYER_PED)
 
-            if result and sampGetPlayerScore(id) == 1 then
-                sampSendChat("/alogin")
-                break
-            end
-        end
+        --     if result and sampGetPlayerScore(id) == 1 then
+        --         sampSendChat("/alogin")
+        --         break
+        --     end
+        -- end
     end
 end
 
@@ -1020,10 +1020,6 @@ function samp.onVehicleSync(id, vehid, data)
         end
     end
 end
-
--- function samp.onShowMenu()
-    -- if show_info_menu[0] then return false end
--- end
 
 function samp.onPlayerQuit(id)
     players_platform[id] = nil
@@ -1084,10 +1080,10 @@ function samp.onServerMessage(color, text)
 end
 
 function samp.onShowDialog(dialogId, style, title, button1, button2, text)
-    title, button1, button2, text = u8(title), u8(button1), u8(button2), u8(text)
+    -- local title, button1, button2, text = u8(title), u8(button1), u8(button2), u8(text)
 
     if cfg.autoEnter and string.len(cfg.game_pass) > 3 and style == 3 then
-        if text:find("Для продолжения игры, Вам необходимо авторизоваться") then
+        if u8(text):find("Для продолжения игры, Вам необходимо авторизоваться") then
             sampSendDialogResponse(dialogId, 1, 0, cfg.game_pass)
             return false
         end
@@ -1098,7 +1094,7 @@ function samp.onShowDialog(dialogId, style, title, button1, button2, text)
         return false
     end
 
-    if text:find(("Информация о игроке")) and checking_stats then
+    if u8(text):find(("Информация о игроке")) and checking_stats then
         print("i have checked stats")
         text = u8(text)
         text = text:gsub("{......}", "")
