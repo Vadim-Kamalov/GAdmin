@@ -578,6 +578,23 @@ local infoFrame = imgui.OnFrame(
             player_data["armour"] = sampGetPlayerArmor(spectate_id)
             player_data["game"] = (players_platform[tonumber(spectate_id)] and players_platform[tonumber(spectate_id)] or "N/A")
             local res, ped = sampGetCharHandleBySampPlayerId(spectate_id)
+            if res then player_data["ped"] = ped end
+            if res and isCharInAnyCar(player_data["ped"]) then
+                player_data["car"] = storeCarCharIsInNoSave(player_data["ped"])
+                local car = player_data["car"]
+                player_data["car_hp"] = getCarHealth(car)
+                player_data["car_model"] = getCarModel(car)
+                player_data["car_name"] = getCarName(player_data["car_model"])
+                res, player_data["car_id"] = sampGetVehicleIdByCarHandle(car)
+                player_data["car_engine"] = isCarEngineOn(car) and "Заведён" or "Заглушен"
+            else
+                player_data["car"] = nil
+                player_data["car_hp"] = nil
+                player_data["car_model"] = nil
+                player_data["car_name"] = nil
+                player_data["car_id"] = nil
+                player_data["car_engine"] = nil
+            end
         end
 
         player.HideCursor = _showSpectateCursor
@@ -1042,25 +1059,6 @@ function samp.onShowDialog(dialogId, style, title, button1, button2, text)
         player_data["vip"] = text:match("Премиум аккаунт: (.-)\n")
         player_data["reg_date"] = text:match("Дата регистрации: (.-)\n")
 
-        res, player_data["ped"] = sampGetCharHandleBySampPlayerId(info_about)
-        if not res then player_data["ped"] = PLAYER_PED end
-
-        if isCharInAnyCar(player_data["ped"]) then
-            player_data["car"] = storeCarCharIsInNoSave(player_data["ped"])
-            local car = player_data["car"]
-            player_data["car_hp"] = getCarHealth(car)
-            player_data["car_model"] = getCarModel(car)
-            player_data["car_name"] = getCarName(player_data["car_model"])
-            res, player_data["car_id"] = sampGetVehicleIdByCarHandle(car)
-            player_data["car_engine"] = isCarEngineOn(car) and "Заведён" or "Заглушен"
-        else
-            player_data["car"] = nil
-            player_data["car_hp"] = nil
-            player_data["car_model"] = nil
-            player_data["car_name"] = nil
-            player_data["car_id"] = nil
-            player_data["car_engine"] = nil
-        end
 
         sampSendDialogResponse(dialogId, 0, 0, "")
         checking_stats = false
