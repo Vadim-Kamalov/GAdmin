@@ -222,16 +222,6 @@ function getPlayerIdByNickname(name)
     end
 end
 
-function getTableLength(table)
-    local tableLength = 0
-
-    for _, _ in pairs(table) do
-        tableLength = tableLength + 1
-    end
- 
-    return tableLength
-end
-
 function imgui.CenterText(text)
     local width = imgui.GetWindowWidth()
     local calc = imgui.CalcTextSize(text)
@@ -1218,12 +1208,12 @@ function spectate(arg)
             end
 
             if sendSpec then
-                if getTableLength(findedNicknames) == 1 then
+                if #findedNicknames == 1 then
                     sampSendChat("/sp "..getPlayerIdByNickname(findedNicknames[1]))
-                elseif getTableLength(findedNicknames) == 0 then
+                elseif #findedNicknames == 0 then
                     sampAddChatMessage("{FFFF00}|{FFFFFF} По {4a86b6}"..arg.."{FFFFFF} не найдено совпадений", -1)
                 else
-                    sampAddChatMessage(("{4a86b6}[SP]{ffffff} По %s найдено %s совпадений:"):format(arg, getTableLength(findedNicknames)), -1)
+                    sampAddChatMessage(("{4a86b6}[SP]{ffffff} По %s найдено %s совпадений:"):format(arg, #findedNicknames), -1)
                     for i = 1, #findedNicknames do
                         sampAddChatMessage("{FFFF00}|{FFFFFF} "..findedNicknames[i].." {4a86b6}["..getPlayerIdByNickname(findedNicknames[i]).."]", -1)
                     end
