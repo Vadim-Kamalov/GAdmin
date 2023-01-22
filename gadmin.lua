@@ -12,7 +12,6 @@ local ffi = require 'ffi'
 local new, str, sizeof = imgui.new, ffi.string, ffi.sizeof
 local cjson = require "cjson"
 
-
 encoding.default = 'cp1251'
 local u8 = encoding.UTF8
 
@@ -83,8 +82,9 @@ function create_config()
         gg_msg = "Приятной игры!",
         adm_pass = "",
         game_pass = "",
-        car_spec = false
-
+        car_spec = false,
+        autoEnter = false,
+        aloginOnEnter = false
     }
     save_config(def_data)
 end
@@ -180,6 +180,7 @@ short_cmds = {
     ar = "kick %s AFK on ROAD",
     ak = "kick %s AFK without ESC",
     ap = "kick %s AFK public place"
+
 }
 
 local formCommand, formStarter, form_secondsToHide = "", "", os.clock()
@@ -209,6 +210,26 @@ local specReloadKeys = {v = cfg.hotkeys.specReload}
 
 function imgui.Input()
     -- TODO: написать свой инпут, чтобы не плодить кучу однотипного кода
+end
+
+function getPlayerIdByNickname(name)
+    for i = 0, sampGetMaxPlayerId(false) do
+        if sampIsPlayerConnected(i) then
+            if sampGetPlayerNickname(i):lower() == tostring(name):lower() then
+                return i
+            end
+        end
+    end
+end
+
+function getTableLength(table)
+    local tableLength = 0
+
+    for _, _ in pairs(table) do
+        tableLength = tableLength + 1
+    end
+ 
+    return tableLength
 end
 
 function imgui.CenterText(text)
@@ -583,6 +604,23 @@ local infoFrame = imgui.OnFrame(
             player_data["armour"] = sampGetPlayerArmor(spectate_id)
             player_data["game"] = (players_platform[tonumber(spectate_id)] and players_platform[tonumber(spectate_id)] or "N/A")
             local res, ped = sampGetCharHandleBySampPlayerId(spectate_id)
+            if res then player_data["ped"] = ped end
+            if res and isCharInAnyCar(player_data["ped"]) then
+                player_data["car"] = storeCarCharIsInNoSave(player_data["ped"])
+                local car = player_data["car"]
+                player_data["car_hp"] = getCarHealth(car)
+                player_data["car_model"] = getCarModel(car)
+                player_data["car_name"] = getCarName(player_data["car_model"])
+                res, player_data["car_id"] = sampGetVehicleIdByCarHandle(car)
+                player_data["car_engine"] = isCarEngineOn(car) and "Заведён" or "Заглушен"
+            else
+                player_data["car"] = nil
+                player_data["car_hp"] = nil
+                player_data["car_model"] = nil
+                player_data["car_name"] = nil
+                player_data["car_id"] = nil
+                player_data["car_engine"] = nil
+            end
         end
 
         player.HideCursor = _showSpectateCursor
@@ -795,10 +833,16 @@ local _newMainFrame = imgui.OnFrame(
                     imgui.PopItemWidth()
                     imgui.PushStyleVarVec2(imgui.StyleVar.FramePadding, imgui.ImVec2(5, 5))
                         imgui.SetCursorPos(imgui.ImVec2(15, 88))
-                        imgui.Checkbox(" Вводить /alogin при входе", aloginOnEnter)
+                        if imgui.Checkbox(" Вводить /alogin при входе", aloginOnEnter) then
+                            cfg.aloginOnEnter = aloginOnEnter[0]
+                            save_config()
+                        end
 
                         imgui.SetCursorPos(imgui.ImVec2(15, 124))
-                        imgui.Checkbox(" Автоматический вход", autologin)
+                        if imgui.Checkbox(" Автоматический вход", autologin) then
+                            cfg.autoEnter = autologin[0]
+                            save_config()
+                        end
                     imgui.PopStyleVar()
                     imgui.EndChild()
                     imgui.SetCursorPos(imgui.ImVec2(520, 75))
@@ -825,7 +869,7 @@ local _newMainFrame = imgui.OnFrame(
 
                     imgui.EndChild()
                 elseif selectedTab == 2 then
-                    imgui.BeginChild()
+                    -- Some code 
                 end
             imgui.EndGroup()
         imgui.End()
@@ -867,13 +911,19 @@ function onWindowMessage(msg, wparam, lparam)
     end
 end
 
-
 function main()
-    if not isSampfuncsLoaded() or not isSampLoaded() then return end
-    while not isSampAvailable() do wait(100) end
+    while not isSampAvailable() do wait(0) end
+
+    if sampGetCurrentServerAddress() == "46.174.48.194" then
+        sampAddChatMessage("GAdmin успешно запущен", -1) 
+    else
+        sampAddChatMessage("GAdmin работает только на sa.gambit-rp.ru", -1)
+        script:unload()
+    end
 
     -- инициализируем все команды
     sampRegisterChatCommand("gadm", gadm_cmd)
+    sampRegisterChatCommand("sp", spectate)
     sampRegisterChatCommand("test", function(arg)
         infoMode = tonumber(arg:match("(%d+)"))
         cfg.windowsSettings.playerStatsFrame.mode = infoMode
@@ -902,7 +952,6 @@ function main()
     acceptForm =        rkeys.registerHotKey(cfg.hotkeys.acceptForm, 1, sendFormCommand)
     _specReload =        rkeys.registerHotKey(cfg.hotkeys.specReload, 1, specReload)
 
-    sampAddChatMessage("GAdmin успешно запущен", -1)
 
     -- инициализируем шрифты для рендера на экране
     local font_flag = require('moonloader').font_flag
@@ -956,6 +1005,15 @@ function main()
                 show_action_menu[0], show_info_menu[0], playersNearby[0] = true, true, true
             end
         end
+
+        -- if cfg.aloginOnEnter and string.len(cfg.adm_pass) ~= 0 then
+        --     local result, id = sampGetPlayerIdByCharHandle(PLAYER_PED)
+
+        --     if result and sampGetPlayerScore(id) == 1 then
+        --         sampSendChat("/alogin")
+        --         break
+        --     end
+        -- end
     end
 end
 
@@ -999,10 +1057,6 @@ function samp.onVehicleSync(id, vehid, data)
     end
 end
 
--- function samp.onShowMenu()
-    -- if show_info_menu[0] then return false end
--- end
-
 function samp.onPlayerQuit(id)
     players_platform[id] = nil
 end
@@ -1017,11 +1071,11 @@ local formCommands = {
     "pk %d+"
 }
 
-function samp.onSendCommand(text)
+function samp.onSendCommand(command)
     for k, v in ipairs(formCommands) do
-        if text:find("/"..v..".*") then
+        if string.lower(command):find("/"..v..".*") then
             checkSendFormCommand = true
-            sendFormCommand = text
+            sendFormCommand = command
         end
     end
 end
@@ -1059,22 +1113,29 @@ function samp.onServerMessage(color, text)
     if text:find("Администратор.*// "..formStarter) and color == -10270806 then
         admin_form_menu[0], formStarter, formCommand = false, "", ""
     end
+
+    for color in string.gmatch(text, "%x%x%x%x%x%x") do
+        print(color, text)
+    end
 end
 
 function samp.onShowDialog(dialogId, style, title, button1, button2, text)
-    -- TODO: тут надо просто в самом начале text button1 button2 и title в utf8 перевести
-    if style == 3 and text:find(u8:decode"Для продолжения игры, Вам необходимо авторизоваться") and #cfg.game_pass > 3 then
-        sampSendDialogResponse(dialogId, 1, 0, cfg.game_pass)
-        return false
+    local title, button1, button2, text = u8(title), u8(button1), u8(button2), u8(text)
+
+    if cfg.autoEnter and string.len(cfg.game_pass) > 3 and style == 3 then
+        if text:find("Для продолжения игры, Вам необходимо авторизоваться") then
+            sampSendDialogResponse(dialogId, 1, 0, cfg.game_pass)
+            return false
+        end
     end
-    if style == 3 and button1 == u8:decode"Далее" and button2 == u8:decode"Отмена" and text:find(u8:decode"{4a86b6}Авторизация") and text:find(u8:decode"{FFFFFF}Введите пароль:") and #cfg.adm_pass > 3 then
+
+    if style == 3 and button1 == "Далее" and button2 == "Отмена" and text:find(".*{4a86b6}Авторизация.*{FFFFFF}Введите пароль:.*") then
         sampSendDialogResponse(dialogId, 1, 0, cfg.adm_pass)
         return false
     end
 
-    if text:find(u8:decode("Информация о игроке")) and checking_stats then
+    if text:find("Информация о игроке") and checking_stats then
         print("i have checked stats")
-        text = u8(text)
         text = text:gsub("{......}", "")
         player_data["nick"], info_about = text:match("Информация о игроке (.+)%[(%d+)]")
         player_data["money"], player_data["bank"] = text:match("Деньги%: (%$[%-]?%d+)\nБанк%: (%$[%-]?%d+)\n")
@@ -1084,25 +1145,6 @@ function samp.onShowDialog(dialogId, style, title, button1, button2, text)
         player_data["vip"] = text:match("Премиум аккаунт: (.-)\n")
         player_data["reg_date"] = text:match("Дата регистрации: (.-)\n")
 
-        res, player_data["ped"] = sampGetCharHandleBySampPlayerId(info_about)
-        if not res then player_data["ped"] = PLAYER_PED end
-
-        if isCharInAnyCar(player_data["ped"]) then
-            player_data["car"] = storeCarCharIsInNoSave(player_data["ped"])
-            local car = player_data["car"]
-            player_data["car_hp"] = getCarHealth(car)
-            player_data["car_model"] = getCarModel(car)
-            player_data["car_name"] = getCarName(player_data["car_model"])
-            res, player_data["car_id"] = sampGetVehicleIdByCarHandle(car)
-            player_data["car_engine"] = isCarEngineOn(car) and "Заведён" or "Заглушен"
-        else
-            player_data["car"] = nil
-            player_data["car_hp"] = nil
-            player_data["car_model"] = nil
-            player_data["car_name"] = nil
-            player_data["car_id"] = nil
-            player_data["car_engine"] = nil
-        end
 
         sampSendDialogResponse(dialogId, 0, 0, "")
         checking_stats = false
@@ -1152,6 +1194,46 @@ function samp.onTextDrawSetString(id, text)
         player_data["hp"] = tostring(text:match("HP: (%d+)"))
         player_data["ping"] = tostring(text:match("Ping: (%d+)"))
         player_data["speed"] = tostring(text:match("(%d+) / [%-]?%d+"))
+    end
+end
+
+function spectate(arg)
+    local findedNicknames = {}
+    local sendSpec = false
+
+    if arg:find("[0-9]+") then
+        sampSendChat("/sp "..arg)
+    elseif string.lower(arg) == "off" then
+        sampSendChat("/unsp")
+    elseif string.lower(arg):find("[0-9a-z%[%]%(%)%$@_=]+") --[[ SA-MP Nickname RegExp (without A-Z, because argument in lowercase) ]] then
+        if string.len(arg) <= 2 then sampAddChatMessage("{ffff00}|{ffffff} Длина /sp [ nickname ] должна быть больше двух.", -1) else
+            for i = 0, sampGetMaxPlayerId(false) do
+                if sampIsPlayerConnected(i) and sampGetPlayerScore(i) == 1 then
+                    if string.lower(sampGetPlayerNickname(i)):find(".*"..string.lower(arg)) then
+                        table.insert(findedNicknames, sampGetPlayerNickname(i))
+                    end
+                end
+
+                if i == sampGetMaxPlayerId(false) then sendSpec = true end
+            end
+
+            if sendSpec then
+                if getTableLength(findedNicknames) == 1 then
+                    sampSendChat("/sp "..getPlayerIdByNickname(findedNicknames[1]))
+                elseif getTableLength(findedNicknames) == 0 then
+                    sampAddChatMessage("{FFFF00}|{FFFFFF} По {4a86b6}"..arg.."{FFFFFF} не найдено совпадений", -1)
+                else
+                    sampAddChatMessage(("{4a86b6}[SP]{ffffff} По %s найдено %s совпадений:"):format(arg, getTableLength(findedNicknames)), -1)
+                    for i = 1, #findedNicknames do
+                        sampAddChatMessage("{FFFF00}|{FFFFFF} "..findedNicknames[i].." {4a86b6}["..getPlayerIdByNickname(findedNicknames[i]).."]", -1)
+                    end
+                end
+
+                sendSpec = false
+            end
+        end
+    else
+        sampAddChatMessage("{ffff00}|{ffffff} Введите /sp [ id / nickname / off ]", -1)
     end
 end
 
@@ -1237,6 +1319,10 @@ end
 sampfuncsRegisterConsoleCommand("execute.form", function ()
     admin_form_menu[0], formStarter, formCommand = true, "DEBUG_EXECUTE_FORM", "me DEBUG_EXECUTE_FORM"
     form_secondsToHide = os.clock()
+end)
+
+sampfuncsRegisterConsoleCommand("execute.passwords", function()
+    print(cfg.adm_pass, cfg.game_pass)
 end)
 
 -- ниже лучше ничего не трогать
