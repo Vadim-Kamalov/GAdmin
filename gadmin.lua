@@ -79,6 +79,21 @@ function create_config()
                 mode = 1
             }
         },
+        specAdminPanel = {
+            show     = true,
+            width    = 200,
+            pos      = {x = select(1, getScreenResolution()) / 15, y = select(2, getScreenResolution()) / 2},
+            alpha    = 1.00,
+            items    = {
+                {name = "NEXT", action = "{NEXT}", position = 1},
+                {name = "SWITCH", action = "{SWITCH}", position = 2},
+                {name = "BACK", action = "{BACK}", position = 3},
+                {name = "STATS", action = "{STATS}", position = 4},
+                {name = "SESSION", action = "{SESSION}", position = 5},
+                {name = "FRISK", action = "{FRISK}", position = 6},
+                {name = "EXIT", action = "{EXIT}", position = 7}
+            }
+        },
         gg_msg = "Приятной игры!",
         adm_pass = "",
         game_pass = "",
@@ -192,6 +207,7 @@ local show_info_menu = new.bool()
 local admin_form_menu = new.bool()
 local show_action_menu = new.bool()
 local newMainFrame = new.bool()
+local specAdminPanel = new.bool()
 local playersNearby = new.bool()
 local playersNerbyTransparent = new.int(cfg.windowsSettings.playersNearby.alpha)
 local aloginOnEnter = new.bool()
@@ -668,6 +684,111 @@ local infoFrame = imgui.OnFrame(
     end
 )
 
+function sortedTableByPosition()
+    local sortedTable = {}
+    for i = 1, #cfg.specAdminPanel.items do
+        table.insert(sortedTable, cfg.specAdminPanel.items[i].position, cfg.specAdminPanel.items[i])
+    end
+
+    for j = 1, #cfg.specAdminPanel.items do
+        if sortedTable[j] == nil then table.remove(sortedTable, j) end
+    end
+    return sortedTable
+end
+
+local selectedButton = 1
+local specActionsData = {
+    ["NEXT"]        = function() sampSendMenuSelectRow(0) end,
+    ["SWITCH"]      = function() sampSendMenuSelectRow(1) end,
+    ["BACK"]        = function() sampSendMenuSelectRow(2) end,
+    ["STATS"]       = function() sampSendMenuSelectRow(3) end,
+    ["SESSION"]     = function() sampSendMenuSelectRow(4) end,
+    ["FRISK"]       = function() sampSendMenuSelectRow(5) end,
+    ["EXIT"]        = function() sampSendMenuSelectRow(6) end,
+    ["GG"]          = function() sampSendChat("/ans "..info_about.." "..cfg.gg_msg) end
+}
+
+local _specAdminPanel = imgui.OnFrame(
+    function() return specAdminPanel[0] end,
+    function(self)
+        self.HideCursor = _showSpectateCursor
+        local adminPanelSize = 7
+
+        local sortedTable = sortedTableByPosition()
+
+        for i = 1, #cfg.specAdminPanel.items do
+            adminPanelSize = adminPanelSize + 37
+        end
+
+        imgui.SetNextWindowPos(imgui.ImVec2(cfg.specAdminPanel.pos.x, cfg.specAdminPanel.pos.y), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
+        imgui.SetNextWindowSize(imgui.ImVec2(cfg.specAdminPanel.width, adminPanelSize))
+
+        local specAdminPanelChange = {
+            {"ImVec2", "WindowPadding", change = {7, 7}, reset = {5, 5}},
+            {"ImVec2", "ItemSpacing", change = {0, 7}, reset = {5, 5}},
+            {"Int", "FrameBorderSize", change = 0, reset = 1},
+            {"Int", "WindowBorderSize", change = 0, reset = 1},
+            {"ImVec4", "WindowBg", change = hexToImVec4("21242A", cfg.specAdminPanel.alpha), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
+            {"ImVec4", "Button", change = hexToImVec4("444751"), reset = imgui.ImVec4(0.12, 0.12, 0.12, 1.00)},
+            {"ImVec4", "ButtonHovered", change = hexToImVec4("303238"), reset = imgui.ImVec4(0.21, 0.20, 0.20, 1.00)},
+            {"ImVec4", "ButtonActive", change = hexToImVec4("444751"), reset = imgui.ImVec4(0.41, 0.41, 0.41, 1.00)}
+        }
+
+        local doAction = function(i)
+            subAction = string.gsub(cfg.specAdminPanel.items[i].action, "[%{%}]", "")
+            for key, value in pairs(specActionsData) do
+                if key:find(subAction) then value() end
+            end
+        end
+
+        if not isCursorActive() and not sampIsChatInputActive() and not isSampfuncsConsoleActive() and not sampIsDialogActive() then
+            if wasKeyPressed(VK_UP) then
+                if selectedButton == 1 then selectedButton = #sortedTable else
+                    selectedButton = selectedButton - 1
+                end
+            elseif wasKeyPressed(VK_DOWN) then
+                if selectedButton == #sortedTable then selectedButton = 1 else
+                    selectedButton = selectedButton + 1
+                end
+            elseif wasKeyPressed(VK_SPACE) then
+                subAction = string.gsub(sortedTable[selectedButton].action, "[%{%}]", "")
+                for key, value in pairs(specActionsData) do
+                    if key:find(subAction) then value() end
+                end
+                selectedButton = 1
+            end
+        end
+
+        changeTheme:applySettings(specAdminPanelChange)
+        imgui.PushFont(font_20)
+            imgui.Begin("specAdminPanel", specAdminPanel, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoMove)
+                for k, v in pairs(sortedTable) do
+                    imgui.BeginGroup()
+                    math.randomseed(os.clock())
+                        imgui.PushStyleColor(imgui.Col.Button, hexToImVec4(k == selectedButton and "303238" or "444751"))
+                        imgui.PushStyleColor(imgui.Col.ButtonHovered, hexToImVec4(k == selectedButton and "444751" or "303238"))
+                        imgui.PushStyleColor(imgui.Col.ButtonActive, hexToImVec4(k == selectedButton and "303238" or "444751"))
+                            imgui.Button("##"..v.name..math.random(1, 1000000), imgui.ImVec2(186, 30))
+                        imgui.PopStyleColor(2)
+
+                        imgui.SameLine(imgui.GetCursorPos().x + 93 - imgui.CalcTextSize(v.name).x / 2 - 5)
+                        imgui.BeginGroup()
+                            imgui.SetCursorPosY(imgui.GetCursorPos().y - imgui.CalcTextSize(v.name).y / 10)
+                            imgui.Text(v.name)
+                        imgui.EndGroup()
+                    imgui.EndGroup()
+
+
+
+                    if imgui.IsItemClicked() then doAction(k) end
+                end
+            imgui.End()
+
+        imgui.PopFont()
+        changeTheme:resetDefault(specAdminPanelChange)
+    end
+)
+
 local _newMainFrame = imgui.OnFrame(
     function() return newMainFrame[0] end,
     function(self)
@@ -1058,7 +1179,8 @@ local formCommands = {
     "warn %d+ .*",
     "iban %d+ %d+ .*",
     "ck %d+",
-    "pk %d+"
+    "pk %d+",
+    "setworld %d+ %d+"
 }
 
 function samp.onSendCommand(command)
@@ -1068,6 +1190,10 @@ function samp.onSendCommand(command)
             sendFormCommand = command
         end
     end
+end
+
+function samp.onShowMenu()
+    return not cfg.specAdminPanel.show
 end
 
 function samp.onServerMessage(color, text)
@@ -1119,7 +1245,7 @@ function samp.onShowDialog(dialogId, style, title, button1, button2, text)
         end
     end
 
-    if style == 3 and button1 == "Далее" and button2 == "Отмена" and text:find(".*{4a86b6}Авторизация.*{FFFFFF}Введите пароль:.*") then
+    if style == 3 and button1 == "Далее" and button2 == "Отмена" and text:find(".*{4a86b6}Авторизация.*{FFFFFF}Введите пароль:.*") and string.len(cfg.adm_pass) ~= 0 then
         sampSendDialogResponse(dialogId, 1, 0, cfg.adm_pass)
         return false
     end
@@ -1305,6 +1431,8 @@ function hexToImVec4(hex, aplha)
 end
 
 -- Debug console commands
+
+sampfuncsRegisterConsoleCommand("execute.specAdminPanel", function() specAdminPanel[0] = not specAdminPanel[0] end)
 
 sampfuncsRegisterConsoleCommand("execute.form", function ()
     admin_form_menu[0], formStarter, formCommand = true, "DEBUG_EXECUTE_FORM", "me DEBUG_EXECUTE_FORM"
