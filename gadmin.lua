@@ -718,12 +718,9 @@ local _specAdminPanel = imgui.OnFrame(
     function(self)
         self.HideCursor = _showSpectateCursor
 
-        local adminPanelSize = 7
+        local adminPanelSize = 37 * #cfg.specAdminPanel.items + 7
         local sortedTable = sortedTableByPosition()
 
-        for i = 1, #cfg.specAdminPanel.items do
-            adminPanelSize = adminPanelSize + 37
-        end
 
         imgui.SetNextWindowPos(imgui.ImVec2(cfg.specAdminPanel.pos.x, cfg.specAdminPanel.pos.y), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
         imgui.SetNextWindowSize(imgui.ImVec2(cfg.specAdminPanel.width, adminPanelSize))
@@ -767,7 +764,7 @@ local _specAdminPanel = imgui.OnFrame(
         changeTheme:applySettings(specAdminPanelChange)
         imgui.PushFont(font_20)
             imgui.Begin("specAdminPanel", specAdminPanel, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoMove)
-                for k, v in pairs(sortedTable) do
+                for k, v in pairs(cfg.specAdminPanel.items) do
                     imgui.BeginGroup()
                     math.randomseed(os.clock())
                         imgui.PushStyleColor(imgui.Col.Button, hexToImVec4(k == selectedButton and "303238" or "444751"))
