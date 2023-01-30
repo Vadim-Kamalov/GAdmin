@@ -764,7 +764,7 @@ local _specAdminPanel = imgui.OnFrame(
         changeTheme:applySettings(specAdminPanelChange)
         imgui.PushFont(font_20)
             imgui.Begin("specAdminPanel", specAdminPanel, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoMove)
-                for k, v in pairs(cfg.specAdminPanel.items) do
+                for k, v in pairs(sortedTable) do
                     imgui.BeginGroup()
                     math.randomseed(os.clock())
                         imgui.PushStyleColor(imgui.Col.Button, hexToImVec4(k == selectedButton and "303238" or "444751"))
