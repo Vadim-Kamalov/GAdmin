@@ -215,7 +215,7 @@ gnomeIcons.loadIcons = function(iconSize)
     
     config.MergeMode = true
     imgui.GetIO().Fonts:AddFontFromFileTTF("trebucbd.ttf", iconSize or 14.0, nil, glyph_ranges)
-    icon = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(compressedGnomeIconsFont, fontsize or 14.0, config, iconRanges)
+    icon = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(compressedGnomeIconsFont, iconSize or 14.0, config, iconRanges)
 end
 
 local function unicodeToUtf8(code)
