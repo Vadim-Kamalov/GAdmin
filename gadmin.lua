@@ -39,6 +39,14 @@ function save_config(data)
     file:close()
 end
 
+function textWithFont(text, font, ImVec2_pos)
+    imgui.PushFont(font)
+        if ImVec2_pos then imgui.SetCursorPos(ImVec2_pos) end
+        imgui.Text(text)    
+    imgui.PopFont()
+end
+
+
 function create_config()
     def_data = {
         online = {
@@ -265,6 +273,7 @@ local show_main_menu = new.bool()
 local answerGps = new.bool()
 local show_online_menu = new.bool(true)
 local playerChecker = new.bool()
+local notification = new.bool()
 local show_info_menu = new.bool()
 local admin_form_menu = new.bool()
 local show_action_menu = new.bool()
@@ -326,7 +335,8 @@ imgui.OnInitialize(function()
     bold18 = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellBold, 26.0, nil, glyph_ranges)
     bold25 = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellBold, 33.0, nil, glyph_ranges)
     regular9 = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellRegular, 16.0, nil, glyph_ranges)   
-    regular15 = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellRegular, 23.0, nil, glyph_ranges)   
+    regular15 = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellRegular, 23.0, nil, glyph_ranges)
+    regulat12 = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellRegular, 20.0, nil, glyph_ranges)
 
     bold = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellBold, 25.0, nil, glyph_ranges)
     regular = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellRegular, 25.0, nil, glyph_ranges)
@@ -409,6 +419,59 @@ local actionMenu = imgui.OnFrame(
     end
 )
 
+local notificationInit = {
+    icon = gnomeIcons.ICON_WARNING,
+    title = "Notification Initialize",
+    firstLine = "Notification Initialize Description | 1st line",
+    secondLine = "Notification Initialize Description | 2nd line",
+    secondsToHide = 5,
+    systemTime = os.clock(),
+    positionY = 0
+}
+
+local notificationFrame = imgui.OnFrame(
+    function() return notification[0] end,
+    function(self)
+        self.HideCursor = _showSpectateCursor
+
+        imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2 - 250, notificationInit.positionY))
+        imgui.SetNextWindowSize(imgui.ImVec2(500, 75))
+
+        local notificationStyle = {
+            {"ImVec2", "FramePadding", change = {0, 0}, reset = {5, 5}},
+            {"ImVec2", "WindowPadding", change = {0, 0}, reset = {5, 5}},
+            {"ImVec2", "ItemSpacing", change = {0, 0}, reset = {5, 5}},
+            {"ImVec2", "ItemInnerSpacing", change = {0, 0}, reset = {2, 2}},
+            {"Int", "WindowBorderSize", change = 0, reset = 1},
+            {"ImVec4", "WindowBg", change = hexToImVec4("303030"), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)}
+        }
+
+        changeTheme:applySettings(notificationStyle)
+
+        imgui.Begin("Notification", notification, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoMove)
+            imgui.SetCursorPos(imgui.ImVec2(15, 32))
+            imgui.Text(notificationInit.icon == -1 and gnomeIcons.ICON_LIGHTBULB_FILLED or notification.icon)
+
+            textWithFont(notificationInit.title, bold18, imgui.ImVec2(53, 6))
+            textWithFont(notificationInit.firstLine, regular12, imgui.ImVec2(53, 36))
+            textWithFont(notificationInit.secondLine, regular12, imgui.ImVec2(53, 52))
+
+            if os.clock() - notificationInit.systemTime >= notificationInit.secondsToHide then
+                lua_thread.create(function()
+                    while notificationInit.positionY ~= -80 do
+                        wait(5)
+                        notificationInit.positionY = notificationInit.positionY - 40
+                    end
+                end)
+            end
+
+            if notificationInit.positionY == -80 then notification[0] = false end
+        imgui.End()
+
+        changeTheme:resetDefault(notificationStyle)
+    end
+)
+
 local playersNearbyFrame = imgui.OnFrame(
     function() return playersNearby[0] end,
     function(self)
@@ -419,11 +482,11 @@ local playersNearbyFrame = imgui.OnFrame(
 
         local playersNearbyAlpha = {
             {"ImVec4", "ScrollbarBg", change = imgui.ImVec4(0.07, 0.07, 0.07, cfg.windowsSettings.playersNearby.alpha), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
-            {"ImVec4", "WindowBg", change = imgui.ImVec4(0.07, 0.07, 0.07, cfg.windowsSettings.playersNearby.alpha), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)}
+            {"ImVec4", "WindowBg", change = imgui.ImVec4(0.07, 0.07, 0.07, cfg.windowsSettings.playersNearby.alpha), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
+            {"Int", "WindowBorderSize", change = 0, reset = 1}
         }
 
         changeTheme:applySettings(playersNearbyAlpha)
-        changeTheme:applySettings(infoFrameStyle)
 
         imgui.Begin("playersNearby", playersNearby, imgui.WindowFlags.NoMove + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar)
             if changePosition == 3 then
@@ -493,7 +556,6 @@ local playersNearbyFrame = imgui.OnFrame(
         imgui.EndPopup()
         imgui.End()
 
-        changeTheme:resetDefault(infoFrameStyle)
         changeTheme:resetDefault(playersNearbyAlpha)
     end
 )
@@ -816,7 +878,8 @@ local _specAdminPanel = imgui.OnFrame(
             {"ImVec4", "WindowBg", change = hexToImVec4("21242A", cfg.specAdminPanel.alpha), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
             {"ImVec4", "Button", change = hexToImVec4("444751"), reset = imgui.ImVec4(0.12, 0.12, 0.12, 1.00)},
             {"ImVec4", "ButtonHovered", change = hexToImVec4("303238"), reset = imgui.ImVec4(0.21, 0.20, 0.20, 1.00)},
-            {"ImVec4", "ButtonActive", change = hexToImVec4("444751"), reset = imgui.ImVec4(0.41, 0.41, 0.41, 1.00)}
+            {"ImVec4", "ButtonActive", change = hexToImVec4("444751"), reset = imgui.ImVec4(0.41, 0.41, 0.41, 1.00)},
+            {"ImVec2", "ButtonTextAlign", change = {0.5, 0.5}, reset = {0.5, 0.5}}
         }
 
         local doAction = function(i)
@@ -845,7 +908,7 @@ local _specAdminPanel = imgui.OnFrame(
         end
 
         changeTheme:applySettings(specAdminPanelChange)
-        imgui.PushFont(font_20)
+        imgui.PushFont(bold15)
             imgui.Begin("specAdminPanel", specAdminPanel, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoMove)
                 for k, v in pairs(sortedTable) do
                     imgui.BeginGroup()
@@ -858,7 +921,7 @@ local _specAdminPanel = imgui.OnFrame(
 
                         imgui.SameLine(imgui.GetCursorPos().x + 93 - imgui.CalcTextSize(v.name).x / 2 - 5)
                         imgui.BeginGroup()
-                            imgui.SetCursorPosY(imgui.GetCursorPos().y - imgui.CalcTextSize(v.name).y / 10)
+                            imgui.SetCursorPosY(imgui.GetCursorPos().y - 1)
                             imgui.Text(v.name)
                         imgui.EndGroup()
                     imgui.EndGroup()
@@ -882,13 +945,6 @@ local mainWindow = imgui.OnFrame(
     function(self)
         imgui.SetNextWindowSize(imgui.ImVec2(900, 500))
         imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2, sizeY / 2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
-
-        local textWithFont = function(text, font, ImVec2_pos)
-            imgui.PushFont(font)
-                if ImVec2_pos then imgui.SetCursorPos(ImVec2_pos) end
-                imgui.Text(text)
-            imgui.PopFont()
-        end
 
         local activeMenuButtonStyle = {
             {"ImVec4", "Button", change = hexToImVec4("303030"), reset = hexToImVec4("242424")},
@@ -1521,14 +1577,41 @@ function asp_cmd(arg)
     end
 end
 
+function sendNotification(icon, title, firstLine, secondLine, secondsToHide)
+    notification[0] = true
+    notificationInit = {
+        icon = icon,
+        title = title,
+        firstLine = firstLine,
+        secondLine = secondLine,
+        secondsToHide = tonumber(secondsToHide),
+        systemTime = os.clock(),
+        positionY = 0
+    }
+
+    lua_thread.create(function()
+        while notificationInit.positionY ~= 40 do
+            wait(1)
+            notificationInit.positionY = notificationInit.positionY + 5
+        end
+    end)
+end
+
 function hexToImVec4(hex, aplha)
     local alpha = alpha or 1.00
     return imgui.ImVec4(
         tonumber("0x"..hex:sub(1,2)) / 255, tonumber("0x"..hex:sub(3,4)) / 255, tonumber("0x"..hex:sub(5,6)) / 255, alpha
     )
 end
-
 -- Debug console commands
+sampfuncsRegisterConsoleCommand("execute.notification", function(arg)
+    if string.find(arg, "\".*\" \".*\" \".*\" %d+") then
+        local title, firstLine, secondLine, secondsToHide = string.match(arg, "\"(.*)\" \"(.*)\" \"(.*)\" (%d+)")
+        sendNotification(-1, title, firstLine, secondLine, secondsToHide)
+    else
+        print("execute.notification usage: execute.notification \"[title : String]\" \"[1st line : String]\" \"[2nd line : String]\" [secondsToHide : Int]")
+    end
+end)
 
 sampfuncsRegisterConsoleCommand("execute.specAction", function(arg)
     doSpecActions(arg)
