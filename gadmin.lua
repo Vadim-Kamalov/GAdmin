@@ -29,6 +29,14 @@ function get_config()
     return data
 end
 
+function concatedHotkeys(_table)
+    local newTable = {}
+    for i = 1, #_table do
+        table.insert(newTable, vkeys.id_to_name(_table[i]))
+    end
+    return table.concat(newTable, " + ")
+end
+
 function save_config(data)
     if data == nil then
         data = cfg
@@ -63,7 +71,8 @@ function create_config()
             gadm = {77},
             acceptForm = {73},
             spectateCursor = {66},
-            specReload = {85}
+            specReload = {85},
+            disconnectSpecCopy = {0x12, 0x41}-- Alt + A
         },
         windowsPosition = {
             actionFrame = {
@@ -294,6 +303,7 @@ local gadmKeys = {v = cfg.hotkeys.gadm}
 local showSpectateCursor = {v = cfg.hotkeys.spectateCursor}
 local acceptFormKeys = {v = cfg.hotkeys.acceptForm}
 local specReloadKeys = {v = cfg.hotkeys.specReload}
+local spDisconnectCopy = {v = cfg.hotkeys.disconnectSpecCopy}
 
 function imgui.Input()
     -- TODO: написать свой инпут, чтобы не плодить кучу однотипного кода
@@ -426,7 +436,8 @@ local notificationInit = {
     secondLine = "Notification Initialize Description | 2nd line",
     secondsToHide = 5,
     systemTime = os.clock(),
-    positionY = 0
+    positionY = 0,
+    aplha = 1
 }
 
 local notificationFrame = imgui.OnFrame(
@@ -450,13 +461,14 @@ local notificationFrame = imgui.OnFrame(
 
         imgui.Begin("Notification", notification, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoMove)
             imgui.SetCursorPos(imgui.ImVec2(15, 32))
-            imgui.Text(notificationInit.icon == -1 and gnomeIcons.ICON_LIGHTBULB_FILLED or notification.icon)
+            imgui.Text(notificationInit.icon == -1 and gnomeIcons.ICON_LIGHTBULB_FILLED or notificationInit.icon)
 
             textWithFont(notificationInit.title, bold18, imgui.ImVec2(53, 6))
             textWithFont(notificationInit.firstLine, regular12, imgui.ImVec2(53, 36))
             textWithFont(notificationInit.secondLine, regular12, imgui.ImVec2(53, 52))
 
             if os.clock() - notificationInit.systemTime >= notificationInit.secondsToHide then
+                notificationInit.secondsToHide = 999
                 lua_thread.create(function()
                     while notificationInit.positionY ~= -80 do
                         wait(5)
@@ -582,7 +594,7 @@ local adminForm = imgui.OnFrame(
             imgui.SetCursorPosY(10)
             imgui.BeginGroup()
                 imgui.SetCursorPosX(15)
-                imgui.Text("Форма от "..formStarter.." | Выполнить форму - клавиша \""..string.char(cfg.hotkeys.acceptForm[1]).."\"")
+                imgui.Text("Форма от "..formStarter.." | Выполнить форму - "..concatedHotkeys(cfg.hotkeys.acceptForm))
                 imgui.SameLine()
                 imgui.SetCursorPosX(sizeX / 2 - imgui.CalcTextSize("/"..formCommand).x / 2)
                 imgui.Text("/"..formCommand)
@@ -626,8 +638,17 @@ local mainFrame = imgui.OnFrame(
             cfg.adm_pass = str(adm_pass)
             save_config()
         end
-        if imgui.Checkbox("Информация о машинах в спеке", car_spec) then
-            cfg.car_spec = car_spec[0]
+        if imgui.Button("Настроить позицию окон") then
+            imgui.OpenPopup("windowsPosition")
+        end
+
+        if imgui.Checkbox("Отображение ближайших игроков в /sp", playersNearbyCheckbox) then
+            cfg.windowsSettings.playersNearby.use = playersNearbyCheckbox[0]
+            save_config()
+        end
+
+        if imgui.SliderInt("Прозрачность окна с ближайшими игроками", playersNerbyTransparent, 0, 100) then
+            cfg.windowsSettings.playersNearby.alpha = playersNerbyTransparent[0] / 100
             save_config()
         end
 
@@ -654,17 +675,9 @@ local mainFrame = imgui.OnFrame(
             save_config()
         end
 
-        if imgui.Button("Настроить позицию окон") then
-            imgui.OpenPopup("windowsPosition")
-        end
-
-        if imgui.Checkbox("Отображение ближайших игроков в /sp", playersNearbyCheckbox) then
-            cfg.windowsSettings.playersNearby.use = playersNearbyCheckbox[0]
-            save_config()
-        end
-
-        if imgui.SliderInt("Прозрачность окна с ближайшими игроками", playersNerbyTransparent, 0, 100) then
-            cfg.windowsSettings.playersNearby.alpha = playersNerbyTransparent[0] / 100
+        if rkeys.HotKey("Копировать никнейм за которым следите при его выходе", spDisconnectCopy, imgui.ImVec2(100, 20)) then
+            cfg.hotkeys.specReload = spDisconnectCopy.v
+            rkeys.changeHotKey(specDisconnectCopy, spDisconnectCopy.v)
             save_config()
         end
 
@@ -1087,7 +1100,7 @@ function onWindowMessage(msg, wparam, lparam)
         cfg.windowsPosition[intWindows[changePosition]].y = bit.band(lparam, 0xFFFF), bit.band(bit.rshift(lparam, 16), 0xFFFF)
 
         save_config()
-        sampAddChatMessage("Настройки сохранены", -1)
+        sendNotification(gnomeIcons.ICON_COLLAPSE, "Настройки сохранены.", "Позиция окна успешно сохранена!", "", 5)
         showCursor(false, false)
         displayHud(true)
         displayRadar(true)
@@ -1097,7 +1110,7 @@ function onWindowMessage(msg, wparam, lparam)
         show_action_menu[0], show_info_menu[0], playersNearby[0] = false, false, false
         show_main_menu[0] = true
     elseif msg == wm.WM_RBUTTONUP and changePosition ~= -1 then
-        sampAddChatMessage("Отменено", -1)
+        sendNotification(gnomeIcons.ICON_COLLAPSE, "Отменено.", "Смена позиции окна отменена.", "", 5)
         show_main_menu[0] = true
         displayHud(true)
         displayRadar(true)
@@ -1145,10 +1158,11 @@ function main()
 
 
     -- инициализируем все хоткеи
-    openMainMenu =      rkeys.registerHotKey(cfg.hotkeys.gadm, 1, gadm_cmd)
-    showCursorInSpec =  rkeys.registerHotKey(cfg.hotkeys.spectateCursor, 2, changeSpecCursorMode)
-    acceptForm =        rkeys.registerHotKey(cfg.hotkeys.acceptForm, 1, sendFormCommand)
+    openMainMenu =       rkeys.registerHotKey(cfg.hotkeys.gadm, 1, gadm_cmd)
+    showCursorInSpec =   rkeys.registerHotKey(cfg.hotkeys.spectateCursor, 1, changeSpecCursorMode)
+    acceptForm =         rkeys.registerHotKey(cfg.hotkeys.acceptForm, 1, sendFormCommand)
     _specReload =        rkeys.registerHotKey(cfg.hotkeys.specReload, 1, specReload)
+    specDisconnectCopy = rkeys.registerHotKey(cfg.hotkeys.disconnectSpecCopy, 1, spectateDisconnectCopy)
 
     -- инициализируем шрифты для рендера на экране
     local font_flag = require('moonloader').font_flag
@@ -1521,6 +1535,7 @@ function reconnect(delay)
     local delay = tonumber(delay) or 1
 
     sampDisconnectWithReason(quit)
+    sendNotification(gnomeIcons.ICON_WARNING, "Переподключение.", "Переподключение через "..tostring(delay).." секунд.", "", delay)
     lua_thread.create(function()
         wait(delay * 1000)
         sampSetGamestate(1)
@@ -1595,6 +1610,45 @@ function sendNotification(icon, title, firstLine, secondLine, secondsToHide)
             notificationInit.positionY = notificationInit.positionY + 5
         end
     end)
+end
+
+local spectateDisconnectNickname = nil
+
+function samp.onDisplayGameText(style, time, text)
+    if text:find("~b~Player.*") then
+        sendNotification(
+            gnomeIcons.ICON_PERSON,
+            player_data["nick"].." отключился.",
+            "Скопировать его ник - "..concatedHotkeys(cfg.hotkeys.disconnectSpecCopy),
+            "Скопировать можно только в течении 10 секунд.",
+            10
+        )
+
+        spectateDisconnectNickname = player_data["nick"]
+
+        lua_thread.create(function()
+            while true do
+                wait(0)
+                if os.clock() - notificationInit.systemTime >= notificationInit.secondsToHide then
+                    spectateDisconnectNickname = nil
+                    break
+                end
+            end
+        end)
+
+        return false
+    end
+end
+
+function spectateDisconnectCopy()
+    if spectateDisconnectNickname then
+        if setClipboardText(spectateDisconnectNickname) then
+            sendNotification(gnomeIcons.ICON_PERSON, "Никнейм игрока скопирован!", spectateDisconnectNickname.." записан в буфер обмена.", "", 5)
+            spectateDisconnectNickname = nil
+        end
+    else
+        sendNotification(gnomeIcons.ICON_CLOSE, "Ошибка!", "Никто не отключался,", "или прошло 10 секунд с момента отключения игрока.", 5)
+    end
 end
 
 function hexToImVec4(hex, aplha)
