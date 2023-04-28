@@ -1,17 +1,17 @@
-script_name('GAdmin')
-script_version("1.0")
+script_name     "GAdmin"
+script_version  "1.0"
 
 local mem = require('memory')
-local encoding = require 'encoding'
+local encoding = require('encoding')
 local imgui = require('mimgui')
 local gnomeIcons = require("gadmin/gnome-icons")
 local wm = require("windows.message")
 local vkeys = require("vkeys")
-local rkeys = require 'gadmin/rkeys_modif'
-local samp = require 'lib.samp.events'
-local ffi = require 'ffi'
+local rkeys = require('gadmin/rkeys_modif')
+local samp = require('lib.samp.events')
+local ffi = require('ffi')
 local new, str, sizeof = imgui.new, ffi.string, ffi.sizeof
-local cjson = require "cjson"
+local cjson = require("cjson")
 
 encoding.default = 'cp1251'
 local u8 = encoding.UTF8
@@ -27,14 +27,6 @@ function get_config()
     data = cjson.decode(file:read("*a"))
     file:close()
     return data
-end
-
-function concatedHotkeys(_table)
-    local newTable = {}
-    for i = 1, #_table do
-        table.insert(newTable, vkeys.id_to_name(_table[i]))
-    end
-    return table.concat(newTable, " + ")
 end
 
 function save_config(data)
@@ -53,7 +45,6 @@ function textWithFont(text, font, ImVec2_pos)
         imgui.Text(text)    
     imgui.PopFont()
 end
-
 
 function create_config()
     def_data = {
@@ -146,10 +137,10 @@ end
 -- create_config()
 
 -- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
-cfg = get_config()
-alogin = false
-sendFormCommand = ""
-checkSendFormCommand = false
+local cfg = get_config()
+local alogin = false
+local sendFormCommand = ""
+local checkSendFormCommand = false
 local players_platform = {}
 local _showSpectateCursor = true
 local popupId, popupNickname = 0, ""
@@ -157,17 +148,17 @@ local selectedTab = 1
 local changeTheme = {}
 -- для информации в спеке --
 local in_sp = false
-changePosition = -1
-checking_stats = false
-last_checking_stats = 0
-last_speed_check = 0
-spectate_id = -1
-info_about = -1
-spec_textdraw = -1
-player_data = {}
-intWindows = {"actionFrame", "playerStatsFrame", "playersNearby"}
-infoMode = tonumber(cfg.windowsSettings.playerStatsFrame.mode)
-infoData = {
+local changePosition = -1
+local checking_stats = false
+local last_checking_stats = 0
+local last_speed_check = 0
+local spectate_id = -1
+local info_about = -1
+local spec_textdraw = -1
+local player_data = {}
+local intWindows = {"actionFrame", "playerStatsFrame", "playersNearby"}
+local infoMode = tonumber(cfg.windowsSettings.playerStatsFrame.mode)
+local infoData = {
     {
         columnsNum = 4,
         columnsSize = {70, 100, 85, 145},
@@ -207,56 +198,10 @@ infoData = {
                {"car_engine", "Двигатель"}}
     },
 }
-weaponsNames = {
-    [0] = "Fist",
-    [1] = "Brass Knuckles",
-    [2] = "Golf Club",
-    [3] = "Nite Stick",
-    [4] = "Knife",
-    [5] = "Baseball Bat",
-    [6] = "Shovel",
-    [7] = "Pool Cue",
-    [8] = "Katana",
-    [9] = "Chainsaw",
-    [10] = "Dildo",
-    [11] = "Dildo",
-    [12] = "Vibrator",
-    [13] = "Vibrator",
-    [14] = "Flowers",
-    [15] = "Cane",
-    [16] = "Grenade",
-    [17] = "Teargas",
-    [18] = "Molotov Cocktail",
-    [22] = "Colt 45",
-    [23] = "Silenced Pistol",
-    [24] = "Desert Eagle",
-    [25] = "Shotgun",
-    [26] = "Sawn-off Shotgun",
-    [27] = "Combat Shotgun",
-    [28] = "UZI",
-    [29] = "MP5",
-    [30] = "AK-47",
-    [31] = "M4",
-    [32] = "TEC9",
-    [33] = "Rifle",
-    [34] = "Sniper Rifle",
-    [35] = "Rocket Launcher",
-    [36] = "Heat Seeker",
-    [37] = "Flamethrower",
-    [38] = "Minigun",
-    [39] = "Satchel Explosives",
-    [40] = "Bomb",
-    [41] = "Spray Can",
-    [42] = "Fire Extinguisher",
-    [43] = "Camera",
-    [44] = "Night Vision",
-    [45] = "Thermal Goggles",
-    [46] = "Parachute"
-}
 ----------------------------
-sizeX, sizeY = getScreenResolution()
-session_online = 0
-short_cmds = {
+local sizeX, sizeY = getScreenResolution()
+local session_online = 0
+local short_cmds = {
     vr = "vrepair %s",
     vs = "vspawn %s",
     as = "aspawn %s",
@@ -594,7 +539,7 @@ local adminForm = imgui.OnFrame(
             imgui.SetCursorPosY(10)
             imgui.BeginGroup()
                 imgui.SetCursorPosX(15)
-                imgui.Text("Форма от "..formStarter.." | Выполнить форму - "..concatedHotkeys(cfg.hotkeys.acceptForm))
+                imgui.Text("Форма от "..formStarter.." | Выполнить форму - "..rkeys.getKeysName(cfg.hotkeys.acceptForm))
                 imgui.SameLine()
                 imgui.SetCursorPosX(sizeX / 2 - imgui.CalcTextSize("/"..formCommand).x / 2)
                 imgui.Text("/"..formCommand)
@@ -1199,7 +1144,7 @@ function main()
                 local screenPosX, screenPosY = convert3DCoordsToScreen(posX, posY, posZ)
 
                 if charResult then
-                    renderFontDrawTextAlign(font, weaponsNames[getCurrentCharWeapon(player)], screenPosX, screenPosY, 0xFFFFFFFF, 2)
+                    renderFontDrawTextAlign(font, require("game/weapons").names[getCurrentCharWeapon(player)], screenPosX, screenPosY, 0xFFFFFFFF, 2)
                 end
             end
         end
@@ -1243,45 +1188,6 @@ function main()
     end
 end
 
-
-function samp.onUnoccupiedSync(id, data)
-    players_platform[id] = "PC"
-end
-
-function samp.onPlayerSync(id, data)
-    if data.keysData == 160 then
-        players_platform[id] = "PC"
-    end
-    if data.specialAction ~= 0 and data.specialAction ~= 1 then
-        players_platform[id] = "PC"
-    end
-    if data.leftRightKeys ~= nil then
-        if data.leftRightKeys ~= 128 and data.leftRightKeys ~= 65408 then
-            players_platform[id] = "Mobile"
-        else
-            if players_platform[id] ~= "Mobile" then
-                players_platform[id] = "PC"
-            end
-        end
-    end
-    if data.upDownKeys ~= nil then
-        if data.upDownKeys ~= 128 and data.upDownKeys ~= 65408 then
-            players_platform[id] = "Mobile"
-        else
-            if players_platform[id] ~= "Mobile" then
-                players_platform[id] = "PC"
-            end
-        end
-    end
-end
-
-function samp.onVehicleSync(id, vehid, data)
-    if data.leftRightKeys ~= 0 then
-        if data.leftRightKeys ~= 128 and data.leftRightKeys ~= 65408 then
-            players_platform[id] = "Mobile"
-        end
-    end
-end
 
 function samp.onPlayerQuit(id)
     players_platform[id] = nil
@@ -1457,6 +1363,7 @@ function samp.onTextDrawSetString(id, text)
         change_sp(text:match("%((%d+)%)"))
     end
     if text:find("HP") and text:find("Ping") then
+        players_platform[tonumber(info_about)] = #text:match("Android: (.+)") == 2 and "Mobile" or "PC"
         player_data["hp"] = tostring(text:match("HP: (%d+)"))
         player_data["ping"] = tostring(text:match("Ping: (%d+)"))
         player_data["speed"] = tostring(text:match("(%d+) / [%-]?%d+"))
@@ -1619,7 +1526,7 @@ function samp.onDisplayGameText(style, time, text)
         sendNotification(
             gnomeIcons.ICON_PERSON,
             player_data["nick"].." отключился.",
-            "Скопировать его ник - "..concatedHotkeys(cfg.hotkeys.disconnectSpecCopy),
+            "Скопировать его ник - "..rkeys.getKeysName(cfg.hotkeys.disconnectSpecCopy),
             "Скопировать можно только в течении 10 секунд.",
             10
         )
