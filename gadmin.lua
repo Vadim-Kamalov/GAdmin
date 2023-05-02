@@ -107,12 +107,12 @@ function create_config()
         checker = {
             show                = true,
             showOfflinePlayers  = true,
-            width               = 200,
+            height              = 400,
             pos                 = {
                 x = select(1, getScreenResolution()) / 2,
                 y = select(2, getScreenResolution()) / 2
             },
-            alpha               = 1.00,
+            alpha               = 0.30,
             players             = {}
         },
         gg_msg = "Приятной игры!",
@@ -226,7 +226,7 @@ local formCommand, formStarter, form_secondsToHide = "", "", os.clock()
 local show_main_menu = new.bool()
 local answerGps = new.bool()
 local show_online_menu = new.bool(true)
-local playerChecker = new.bool()
+local playerChecker = new.bool(true)
 local notification = new.bool()
 local show_info_menu = new.bool()
 local admin_form_menu = new.bool()
@@ -262,6 +262,7 @@ function getPlayerIdByNickname(name)
             end
         end
     end
+    return -1
 end
 
 function imgui.CenterText(text)
@@ -371,6 +372,60 @@ local actionMenu = imgui.OnFrame(
         imgui.End()
 
         imgui.PopStyleVar(5)
+    end
+)
+
+local checkerFrame = imgui.OnFrame(
+    function() return playerChecker[0] and cfg.checker.show end,
+    function(self)
+        self.HideCursor         = _showSpectateCursor
+        self.windowProperties   = {
+            {"ImVec4", "ScrollbarBg", change = imgui.ImVec4(0.07, 0.07, 0.07, cfg.checker.alpha), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
+            {"ImVec4", "WindowBg", change = imgui.ImVec4(0.07, 0.07, 0.07, cfg.checker.alpha), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
+            {"Int", "WindowBorderSize", change = 0, reset = 1}
+        }
+
+        imgui.SetNextWindowPos(imgui.ImVec2(cfg.checker.pos.x, cfg.checker.pos.y))
+        imgui.SetNextWindowSize(imgui.ImVec2(250, cfg.checker.height))
+        changeTheme:applySettings(self.windowProperties)
+    
+        imgui.Begin("Checker Frame", playerChecker, imgui.WindowFlags.NoResize + imgui.WindowFlags.NoMove + imgui.WindowFlags.NoTitleBar)
+            for index, player in ipairs(cfg.checker.players) do
+                imgui.BeginGroup()
+                    if sampIsPlayerConnected(getPlayerIdByNickname(player)) then
+                        imgui.TextColored(hexToImVec4("66CC33"), "[ONLINE]")
+                        imgui.SameLine(75)
+                    else
+                        if cfg.checker.showOfflinePlayers then
+                            imgui.TextColored(hexToImVec4("FF0033"), "[OFFLINE]")
+                            imgui.SameLine(75)
+                        end
+                    end
+                    imgui.Text(u8"%s%s%s", player, sampIsPlayerConnected(getPlayerIdByNickname(player)) and "[" .. tostring(getPlayerIdByNickname(player) .. "]") or "")
+                    if imgui.IsItemClicked() then
+                        sendNotification(
+                            gnomeIcons.ICON_PERSON,
+                            sampIsPlayerConnected(getPlayerIdByNickname(player)) and "Айди игрока скопирован!" or "Никнейм игрока скопирован!",
+                            "Скопировано у игрока \"" .. player .. "\"",
+                            "",
+                            5
+                        )
+                        if sampIsPlayerConnected(getPlayerIdByNickname(player)) then
+                            setClipboardText(tostring(getPlayerIdByNickname(player)))
+                        else
+                            setClipboardText(player)
+                        end
+                    elseif imgui.IsItemHovered() then
+                        local rect          = imgui.GetItemRectMax()
+                        local playerTag     = sampIsPlayerConnected(getPlayerIdByNickname(player)) and "[" .. tostring(getPlayerIdByNickname(player))  .. "]" or ""
+                        local textSize      = imgui.CalcTextSize(player .. playerTag)
+                        imgui.GetWindowDrawList():AddLine(imgui.ImVec2(rect.x - textSize.x, rect.y + 3), imgui.ImVec2(rect.x, rect.y + 3), -1, 2)
+                    end
+                imgui.EndGroup()
+                -- TODO: We can align this group by `width / 2 - textSize.x / 2`.
+            end
+        imgui.End()
+        changeTheme:resetDefault(self.windowProperties)
     end
 )
 
@@ -1591,6 +1646,10 @@ end)
 
 sampfuncsRegisterConsoleCommand("execute.cursor", function() print(_showSpectateCursor) end)
 sampfuncsRegisterConsoleCommand("execute.newMenu", function() newMainFrame[0] = not newMainFrame[0] end)
+sampfuncsRegisterConsoleCommand("execute.addChecker", function(nickname)
+    table.insert(cfg.checker.players, nickname)
+    save_config(cfg)
+end)
 
 -- ниже лучше ничего не трогать
 sendchat = sampSendChat
