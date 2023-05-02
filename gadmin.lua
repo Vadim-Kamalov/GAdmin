@@ -226,7 +226,7 @@ local formCommand, formStarter, form_secondsToHide = "", "", os.clock()
 local show_main_menu = new.bool()
 local answerGps = new.bool()
 local show_online_menu = new.bool(true)
-local playerChecker = new.bool(true)
+local playerChecker = new.bool()
 local notification = new.bool()
 local show_info_menu = new.bool()
 local admin_form_menu = new.bool()
@@ -1508,7 +1508,7 @@ function sendFormCommand()
     if not isCursorActive() and admin_form_menu[0] then
         if formCommand:find("pk %d+") then
             pk_cmd_id = formCommand:match("pk (%d+)")
-            sampSendChat("/jail "..pk_cmd_id.." 20 PK`ed // "..formStarter)
+            sampSendChat("/jail "..pk_cmd_id.." 90 PK`ed // "..formStarter)
             admin_form_menu[0], formStarter, formCommand = false, "", ""
         elseif formCommand:find("ck %d+") then
             ck_cmd_id = formCommand:match("ck (%d+)")
@@ -1529,7 +1529,7 @@ function pk_cmd(arg)
     local id = arg:match("(%d+)")
     if id ~= nil then
         lua_thread.create(function()
-            sampSendChat("/jail " .. id .. " 20 PK`ed")
+            sampSendChat("/jail " .. id .. " 90 PK`ed")
             wait(CMD_DELAY)
             sampSendChat("/aheal " .. id)
         end)
