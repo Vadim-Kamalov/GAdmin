@@ -1,3 +1,43 @@
+--[[
+
+    A file that contains all the icons used in `admin.lua`,
+    a list of all the icons is contained in the `gnomeIcons` table,
+    where the key is the icon name and the value is the unicode of the icon.
+
+    For example, we need to get icon with people. We can use next:
+    ```lua
+        local gnomeIcons = require("gnome.gnome-icons")
+
+        imgui.OnInitialize(function()
+            local iconSize = 24 -- Default is 14.0.
+            gnomeIcons.loadIcons(iconSize)
+        end)
+
+        -- Somewhere in ImGui window:
+        imgui.Text(gnomeIcons.ICON_PERSON)
+        -- Since `gnomeIcons` table is represented as metatable, we can simply enter key of this icon.
+    ```
+    Total items count that you can use is 200.
+
+
+    GAdmin - Script for administators on gambit-rp.ru
+    Copyright (C) 2023 The Contributors.
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+]]--
+
 local gnomeIcons = {
     ["ICON_XLS_DOCUMENT"] = "\u{F000}",
     ["ICON_WORD_DOCUMENT"] = "\u{F001}",
