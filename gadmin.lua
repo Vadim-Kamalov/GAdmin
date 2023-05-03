@@ -1337,6 +1337,7 @@ function samp.onServerMessage(color, text)
             sendFormCommand = ""
         end
     end
+
     if text:find("Администратор.*// "..formStarter) and color == -10270806 then
         admin_form_menu[0], formStarter, formCommand = false, "", ""
     end
@@ -1545,11 +1546,15 @@ function sendFormCommand()
     if not isCursorActive() and admin_form_menu[0] then
         if formCommand:find("pk %d+") then
             pk_cmd_id = formCommand:match("pk (%d+)")
-            sampSendChat("/jail "..pk_cmd_id.." 90 PK`ed // "..formStarter)
+            sampSendChat("/ans " .. pk_cmd_id .. " PK by " .. formStarter)
+            lua_thread.create(function()
+                wait(CMD_DELAY)
+                sampSendChat("/pk "..pk_cmd_id)
+            end)
             admin_form_menu[0], formStarter, formCommand = false, "", ""
         elseif formCommand:find("ck %d+") then
             ck_cmd_id = formCommand:match("ck (%d+)")
-            sampSendChat("/ans "..ck_cmd_id.."CK by "..formStarter)
+            sampSendChat("/ans "..ck_cmd_id.." CK by "..formStarter)
             lua_thread.create(function()
                 wait(CMD_DELAY)
                 sampSendChat("/ck "..ck_cmd_id)
