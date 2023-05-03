@@ -2,7 +2,7 @@
 
 This repository contains the source code of the **gadmin** script, as well as all libraries written/modified specifically for this script.
 Also contains all imports (tables, functions, etc.). If you find an error related to the script, create a topic with the error in the appropriate [section](https://github.com/Vadim-Kamalov/GAdmin/issues). This source code is available to everyone under the standart [GNU General Public License v3 (GPLv3)](https://github.com/Vadim-Kamalov/GAdmin/blob/main/LICENSE).
-<br>
+<br><br>
 Before creating a topic with a specific error, make sure that you
 
 - have the MoonLoader >= **v026.5-beta**;
