@@ -34,7 +34,7 @@ local rkeys = require('gadmin/rkeys_modif')
 local samp = require('lib.samp.events')
 local ffi = require('ffi')
 local new, str, sizeof = imgui.new, ffi.string, ffi.sizeof
-local cjson = require("cjson")
+local neatJSON = require("neatjson")
 
 encoding.default = 'cp1251'
 local u8 = encoding.UTF8
@@ -47,19 +47,15 @@ CMD_DELAY = 800
 
 function get_config()
     file = io.open("moonloader/config/gadmin.json", "r")
-    data = cjson.decode(file:read("*a"))
+    data = decodeJson(file:read("*a"))
     file:close()
     return data
 end
 
-function save_config(data)
-    if data == nil then
-        data = cfg
-    end
-    data = cjson.encode(data)
-    file = io.open("moonloader/config/gadmin.json", "w")
-    file:write(data)
-    file:close()
+function save_config(tabl)
+    local handle = assert(io.open("moonloader/config/gadmin.json", "w"))
+    handle:write(neatJSON(cfg, {sort = true, wrap = 40}))
+    handle:close()
 end
 
 function textWithFont(text, font, ImVec2_pos)
@@ -100,6 +96,10 @@ function create_config()
             playersNearby = {
                 x = select(1, getScreenResolution()) / 1.125,
                 y = select(2, getScreenResolution()) / 3
+            },
+            playerChecker = {
+                x = select(1, getScreenResolution()) / 2,
+                y = select(2, getScreenResolution()) / 2
             }
         },
         windowsSettings = {
@@ -131,10 +131,6 @@ function create_config()
             show                = true,
             showOfflinePlayers  = true,
             height              = 400,
-            pos                 = {
-                x = select(1, getScreenResolution()) / 2,
-                y = select(2, getScreenResolution()) / 2
-            },
             alpha               = 0.30,
             players             = {}
         },
@@ -146,7 +142,10 @@ function create_config()
         aloginOnEnter = false,
         showGunInfo = false
     }
-    save_config(def_data)
+
+    local handle = assert(io.open("moonloader/config/gadmin.json", "w"))
+    handle:write(neatJSON(def_data, {sort = true, wrap = 40}))
+    handle:close()
 end
 
 if not doesFileExist('moonloader\\config\\gadmin.json') then
@@ -156,11 +155,15 @@ if not doesFileExist('moonloader\\config\\gadmin.json') then
     create_config()
 end
 
+local cfg = get_config()
+function save_config(tabl)
+    local handle = assert(io.open("moonloader/config/gadmin.json", "w"))
+    handle:write(neatJSON(tabl or cfg, {sort = true, wrap = 40}))
+    handle:close()
+end
+
 -- ВРЕМЕННО
 -- create_config()
-
--- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
-local cfg = get_config()
 local alogin = false
 local sendFormCommand = ""
 local checkSendFormCommand = false
@@ -179,7 +182,7 @@ local spectate_id = -1
 local info_about = -1
 local spec_textdraw = -1
 local player_data = {}
-local intWindows = {"actionFrame", "playerStatsFrame", "playersNearby"}
+local intWindows = {"actionFrame", "playerStatsFrame", "playersNearby", "playerChecker"}
 local infoMode = tonumber(cfg.windowsSettings.playerStatsFrame.mode)
 local infoData = {
     {
@@ -408,7 +411,7 @@ local checkerFrame = imgui.OnFrame(
             {"Int", "WindowBorderSize", change = 0, reset = 1}
         }
 
-        imgui.SetNextWindowPos(imgui.ImVec2(cfg.checker.pos.x, cfg.checker.pos.y))
+        imgui.SetNextWindowPos(imgui.ImVec2(cfg.windowsPosition.playerChecker.x, cfg.windowsPosition.playerChecker.y))
         imgui.SetNextWindowSize(imgui.ImVec2(250, cfg.checker.height))
         changeTheme:applySettings(self.windowProperties)
     
@@ -710,13 +713,22 @@ local mainFrame = imgui.OnFrame(
 
             imgui.BeginGroup()
                 imgui.PushStyleVarVec2(imgui.StyleVar.ItemSpacing, imgui.ImVec2(0, 0))
-                if imgui.Button("Окно быстрых действий в /sp", imgui.ImVec2(300, 50)) then
-                    changePosition = 1
-                elseif imgui.Button("Окно со статистикой игрока в /sp", imgui.ImVec2(300, 50)) then
-                    changePosition = 2
-                elseif imgui.Button("Окно с ближайшими игроками в /sp", imgui.ImVec2(300, 50)) then
-                    changePosition = 3
-                elseif imgui.Button("Закрыть окно", imgui.ImVec2(300, 50)) then imgui.CloseCurrentPopup() end
+                    local windowSizeTags = {
+                        "Окно быстрых действий в /sp",
+                        "Окно со статистикой игрока в /sp",
+                        "Окно с ближайшими игроками в /sp",
+                        "Чекер"
+                    }
+
+                    for index, tag in ipairs(windowSizeTags) do
+                        if imgui.Button(tag, imgui.ImVec2(300, 50)) then
+                            changePosition = index
+                        end
+                    end
+
+                    if imgui.Button("Закрыть окно", imgui.ImVec2(300, 50)) then
+                        imgui.CloseCurrentPopup()
+                    end
                 imgui.PopStyleVar()
             imgui.EndGroup()
 
@@ -1130,7 +1142,7 @@ function onWindowMessage(msg, wparam, lparam)
         consumeWindowMessage(true, false)
 
         changePosition = -1
-        show_action_menu[0], show_info_menu[0], playersNearby[0] = false, false, false
+        show_action_menu[0], show_info_menu[0], playersNearby[0], playerChecker[0] = false, false, false, false
         show_main_menu[0] = true
     elseif msg == wm.WM_RBUTTONUP and changePosition ~= -1 then
         sendNotification(gnomeIcons.ICON_COLLAPSE, "Отменено.", "Смена позиции окна отменена.", "", 5)
@@ -1140,7 +1152,7 @@ function onWindowMessage(msg, wparam, lparam)
         showCursor(false, false)
 
         changePosition = -1
-        show_action_menu[0], show_info_menu[0] = false, false
+        show_action_menu[0], show_info_menu[0], playersNearby[0], playerChecker[0] = false, false, false, false
     end
 end
 
@@ -1250,7 +1262,7 @@ function main()
                 cfg.windowsPosition[intWindows[changePosition]].y = currentY
 
                 show_main_menu[0] = false
-                show_action_menu[0], show_info_menu[0], playersNearby[0] = true, true, true
+                show_action_menu[0], show_info_menu[0], playersNearby[0], playerChecker[0] = true, true, true, true
             end
         end
 
@@ -1441,10 +1453,12 @@ function samp.onTextDrawSetString(id, text)
         change_sp(text:match("%((%d+)%)"))
     end
     if text:find("HP") and text:find("Ping") then
-        players_platform[tonumber(info_about)] = #text:match("Android: (.+)") == 2 and "Mobile" or "PC"
         player_data["hp"] = tostring(text:match("HP: (%d+)"))
         player_data["ping"] = tostring(text:match("Ping: (%d+)"))
         player_data["speed"] = tostring(text:match("(%d+) / [%-]?%d+"))
+    end
+    if text:find("Android: .+") then
+        players_platform[tonumber(info_about)] = #text:match("Android: (.+)") == 2 and "Mobile" or "PC"
     end
 end
 
@@ -1671,8 +1685,9 @@ sampfuncsRegisterConsoleCommand("execute.cursor", function() print(_showSpectate
 sampfuncsRegisterConsoleCommand("execute.newMenu", function() newMainFrame[0] = not newMainFrame[0] end)
 sampfuncsRegisterConsoleCommand("execute.addChecker", function(nickname)
     table.insert(cfg.checker.players, nickname)
-    save_config(cfg)
+    save_config()
 end)
+sampfuncsRegisterConsoleCommand("execute.checker", function() playerChecker[0] = not playerChecker[0] end)
 
 -- ниже лучше ничего не трогать
 sendchat = sampSendChat

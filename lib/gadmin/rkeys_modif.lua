@@ -80,8 +80,8 @@ local module = {}
 module._MODKEYS = tModKeys
 module._VERSION = "1.2.0"
 module._SETTINGS = {
-	noKeysMessage = "???",
-	waitKeysMessage = "???????"
+	noKeysMessage = "N/A",
+	waitKeysMessage = "Waiting"
 }
 
 local keysDown = {
@@ -111,7 +111,7 @@ module.HotKey = function(name, keys, ImVec2_size, callback)
    local width = width or 90
    local name = tostring(name)
 	local bool = false
-   	local sKeys = table.concat(module.getKeysName(keys.v), " + ")
+   	local sKeys = module.getKeysName(keys.v)
 
 	if #save > 0 and tostring(save[1]) == name then
 		if #save[2] ~= 0 and table.concat(save[2], " ") ~= table.concat(keys.v, " ") and module.isHotKeyDefined(save[2]) then
@@ -134,7 +134,7 @@ module.HotKey = function(name, keys, ImVec2_size, callback)
 			end
 			keys.v = save[2]
 			save = {}
-			sKeys = table.concat(module.getKeysName(keys.v), " + ")
+			sKeys = module.getKeysName(keys.v)
 			bool = true
 		end
     elseif edit ~= nil and tostring(edit) == name then
@@ -145,14 +145,14 @@ module.HotKey = function(name, keys, ImVec2_size, callback)
             end
         sKeys = tickState and module._SETTINGS.waitKeysMessage or " "
         else
-			local r, res = pcall(table.concat, module.getKeysName(tCurKeyList), " + ")
+			local r, res = pcall(module.getKeysName(tCurKeyList))
 			if not r or not res then
 				print(r, res, tCurKeyList)
 				for k,v in pairs(tCurKeyList) do
 					print(k,v)
 				end
 			end
-            sKeys = table.concat(module.getKeysName(tCurKeyList), " + ")
+            sKeys = module.getKeysName(tCurKeyList)
         end
     end
     imgui.PushStyleColor(imgui.Col.Button, imgui.GetStyle().Colors[imgui.Col.FrameBg])
