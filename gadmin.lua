@@ -52,7 +52,7 @@ function get_config()
     return data
 end
 
-function save_config(tabl)
+function save_config()
     local handle = assert(io.open("moonloader/config/gadmin.json", "w"))
     handle:write(neatJSON(cfg, {sort = true, wrap = 40}))
     handle:close()
@@ -60,7 +60,9 @@ end
 
 function textWithFont(text, font, ImVec2_pos)
     imgui.PushFont(font)
-        if ImVec2_pos then imgui.SetCursorPos(ImVec2_pos) end
+        if ImVec2_pos then
+            imgui.SetCursorPos(ImVec2_pos)
+        end
         imgui.Text(text)    
     imgui.PopFont()
 end
@@ -243,23 +245,20 @@ local short_cmds = {
     ar = "kick %s AFK on ROAD",
     ak = "kick %s AFK without ESC",
     ap = "kick %s AFK public place"
-
 }
 
-local formCommand, formStarter, form_secondsToHide = "", "", os.clock()
+local formCommand = "" 
+local formStarter = ""
+local form_secondsToHide = os.clock()
 
 -- ИМГУИ ПЕРЕМЕННЫЕ
 local show_main_menu = new.bool()
 local answerGps = new.bool()
 local show_online_menu = new.bool(true)
-local playerChecker = new.bool()
 local notification = new.bool()
-local show_info_menu = new.bool()
 local admin_form_menu = new.bool()
-local show_action_menu = new.bool()
 local newMainFrame = new.bool()
 local specAdminPanel = new.bool()
-local playersNearby = new.bool()
 local playersNerbyTransparent = new.int(cfg.windowsSettings.playersNearby.alpha)
 local aloginOnEnter = new.bool()
 local autologin = new.bool()
@@ -268,6 +267,35 @@ local car_spec = new.bool(cfg.car_spec)
 local gg_msg = new.char[256](cfg.gg_msg)
 local game_pass = new.char[256](cfg.game_pass)
 local adm_pass = new.char[256](cfg.adm_pass)
+
+-- If you want to add an imgui window(that can resize), then add to this array an table with the following:
+-- {title = String, jsonKey = String, it = ImBool}
+local movableWindows = {
+    {
+        title   = "Окно быстрых действий в /sp",
+        jsonKey = "actionFrame",
+        it      = new.bool()
+    }, {
+        title   = "Окно со статистикой игрока в /sp",
+        jsonKey = "playerStatsFrame",
+        it      = new.bool()
+    }, {
+        title   = "Окно с ближайшими игроками в /sp",
+        jsonKey = "playersNearby",
+        it      = new.bool()
+    }, {
+        title   = "Чекер",
+        jsonKey = "playerChecker",
+        it      = new.bool()
+    }
+}
+
+local movEnum = {
+    action  = 1,
+    stats   = 2,
+    nearby  = 3,
+    checker = 4
+}
 
 -- для хоткеев
 local gadmKeys = {v = cfg.hotkeys.gadm}
@@ -305,6 +333,10 @@ function getBodyPartCoordinates(id, handle)
     return vec[0], vec[1], vec[2]
 end
 
+function stopForm()
+    admin_form_menu[0], formStarter, formCommand = false, "", ""
+end
+
 imgui.OnInitialize(function()
     gnomeIcons.loadIcons(30)
 
@@ -318,7 +350,6 @@ imgui.OnInitialize(function()
     bold25 = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellBold, 33.0, nil, glyph_ranges)
     regular9 = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellRegular, 16.0, nil, glyph_ranges)   
     regular15 = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellRegular, 23.0, nil, glyph_ranges)
-    regulat12 = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellRegular, 20.0, nil, glyph_ranges)
 
     bold = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellBold, 25.0, nil, glyph_ranges)
     regular = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellRegular, 25.0, nil, glyph_ranges)
@@ -331,78 +362,70 @@ function setChatInputEnabledWithText(text)
     sampSetChatInputText(text)
 end
 
-local buttonsPlaceholder = {
-    {
-        ["SPAWN"]       = function() sampSendChat("/spawn "..info_about) end,
-        ["GETIP"]       = function() end,
-        ["SLAP"]        = function() sampSendChat("/slap "..info_about) end,
-        ["GIVE HP"]     = function() setChatInputEnabledWithText("/sethp "..info_about.." ") end,
-        ["RESSURECT"]   = function() sampSendChat("/aheal "..info_about) end,
-        ["KILL"]        = function() sampSendChat("/sethp "..info_about.." 0") end,
-        ["PAME"]        = function() sampSendChat("/pame "..info_about) end
-    },
-
-
-    {
-        ["*Вы тут?*"]   = function() sampSendChat("/ans "..info_about.." Вы тут? Ответ в /b") end,
-        ["AFRISK"]      = function() sampSendMenuSelectRow(5) end,
-        ["КВЕНТА"]      = function() end,
-        ["GETBUYCAR"]   = function() setChatInputEnabledWithText("/getbuycar ") end,
-        ["REPAIR"]      = function() setChatInputEnabledWithText("/vrepair ") end,
-        ["STATS"]       = function() sampSendChat("/stats "..info_about) end,
-        ["SWITCH"]      = function() sampSendMenuSelectRow(1) end
-    }
-}
-
 local actionMenu = imgui.OnFrame(
-    function() return show_action_menu[0] end,
+    function() return movableWindows[movEnum.stats].it[0] end,
     function(self)
         self.HideCursor = _showSpectateCursor
+        self.Buttons    = {
+            {
+                ["SPAWN"]       = function() sampSendChat("/spawn "..info_about) end,
+                ["GETIP"]       = function() end,
+                ["SLAP"]        = function() sampSendChat("/slap "..info_about) end,
+                ["GIVE HP"]     = function() setChatInputEnabledWithText("/sethp "..info_about.." ") end,
+                ["RESSURECT"]   = function() sampSendChat("/aheal "..info_about) end,
+                ["KILL"]        = function() sampSendChat("/sethp "..info_about.." 0") end,
+                ["PAME"]        = function() sampSendChat("/pame "..info_about) end
+            }, {
+                ["*Вы тут?*"]   = function() sampSendChat("/ans "..info_about.." Вы тут? Ответ в /b") end,
+                ["AFRISK"]      = function() sampSendMenuSelectRow(5) end,
+                ["КВЕНТА"]      = function() end,
+                ["GETBUYCAR"]   = function() setChatInputEnabledWithText("/getbuycar ") end,
+                ["REPAIR"]      = function() setChatInputEnabledWithText("/vrepair ") end,
+                ["STATS"]       = function() sampSendChat("/stats "..info_about) end,
+                ["SWITCH"]      = function() sampSendMenuSelectRow(1) end
+            }
+        }
 
         imgui.SetNextWindowSize(imgui.ImVec2(800, 70))
         imgui.SetNextWindowPos(imgui.ImVec2(cfg.windowsPosition.actionFrame.x, cfg.windowsPosition.actionFrame.y))
-
         imgui.PushStyleVarVec2(imgui.StyleVar.WindowPadding, imgui.ImVec2(0, 0))
         imgui.PushStyleVarVec2(imgui.StyleVar.ItemSpacing, imgui.ImVec2(0, 0))
         imgui.PushStyleVarVec2(imgui.StyleVar.ButtonTextAlign, imgui.ImVec2(0.5, 0.5))
         imgui.PushStyleVarFloat(imgui.StyleVar.FrameRounding, 0)
         imgui.PushStyleVarFloat(imgui.StyleVar.FrameBorderSize, 0.5)
-
-        imgui.Begin("action_menu", show_action_menu, imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoScrollbar + imgui.WindowFlags.NoMove)
-            if imgui.Button("<<", imgui.ImVec2(50, 70)) then sampSendMenuSelectRow(2) end
-            imgui.SameLine()
-
-            imgui.BeginGroup()
-                for k, v in pairs(buttonsPlaceholder[1]) do
-                    if imgui.Button(k, imgui.ImVec2(100, 35)) then v()
-                        if not _showSpectateCursor then _showSpectateCursor = true end
-                    end
-
-                    imgui.SameLine()
+            imgui.Begin("action_menu", movableWindows[movEnum.action].it, imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoScrollbar + imgui.WindowFlags.NoMove)
+                if imgui.Button("<<", imgui.ImVec2(50, 70)) then
+                    sampSendMenuSelectRow(2)
                 end
-                imgui.NewLine()
-                imgui.BeginGroup() -- New line content
-                    for k, v in pairs(buttonsPlaceholder[2]) do
+                imgui.SameLine()
+                imgui.BeginGroup()
+                    for k, v in pairs(self.Buttons[1]) do
                         if imgui.Button(k, imgui.ImVec2(100, 35)) then v()
-                            if not _showSpectateCursor and index ~= 1 then _showSpectateCursor = true end
+                            if not _showSpectateCursor then _showSpectateCursor = true end
                         end
-
                         imgui.SameLine()
                     end
+                    imgui.NewLine()
+                    imgui.BeginGroup()
+                        for k, v in pairs(self.Buttons[2]) do
+                            if imgui.Button(k, imgui.ImVec2(100, 35)) then v()
+                                if not _showSpectateCursor and index ~= 1 then _showSpectateCursor = true end
+                            end
+                            imgui.SameLine()
+                        end
+                    imgui.EndGroup()
                 imgui.EndGroup()
-            imgui.EndGroup()
-
-            imgui.SameLine()
-
-            if imgui.Button(">>", imgui.ImVec2(50, 70)) then sampSendMenuSelectRow(0) end
-        imgui.End()
-
+                imgui.SameLine()
+                if imgui.Button(">>", imgui.ImVec2(50, 70)) then
+                    sampSendMenuSelectRow(0)
+                end
+            imgui.End()
         imgui.PopStyleVar(5)
     end
 )
 
 local checkerFrame = imgui.OnFrame(
-    function() return playerChecker[0] and cfg.checker.show end,
+    function() return movableWindows[movEnum.checker].it[0] == cfg.checker.show end,
     function(self)
         self.HideCursor         = _showSpectateCursor
         self.windowProperties   = {
@@ -415,7 +438,7 @@ local checkerFrame = imgui.OnFrame(
         imgui.SetNextWindowSize(imgui.ImVec2(250, cfg.checker.height))
         changeTheme:applySettings(self.windowProperties)
     
-        imgui.Begin("Checker Frame", playerChecker, imgui.WindowFlags.NoResize + imgui.WindowFlags.NoMove + imgui.WindowFlags.NoTitleBar)
+        imgui.Begin("Checker Frame", movableWindows[movEnum.checker].it, imgui.WindowFlags.NoResize + imgui.WindowFlags.NoMove + imgui.WindowFlags.NoTitleBar)
             for index, player in ipairs(cfg.checker.players) do
                 imgui.BeginGroup()
                     if sampIsPlayerConnected(getPlayerIdByNickname(player)) then
@@ -474,7 +497,7 @@ local notificationFrame = imgui.OnFrame(
         imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2 - 250, notificationInit.positionY))
         imgui.SetNextWindowSize(imgui.ImVec2(500, 75))
 
-        local notificationStyle = {
+        self.notificationStyle = {
             {"ImVec2", "FramePadding", change = {0, 0}, reset = {5, 5}},
             {"ImVec2", "WindowPadding", change = {0, 0}, reset = {5, 5}},
             {"ImVec2", "ItemSpacing", change = {0, 0}, reset = {5, 5}},
@@ -483,15 +506,15 @@ local notificationFrame = imgui.OnFrame(
             {"ImVec4", "WindowBg", change = hexToImVec4("303030"), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)}
         }
 
-        changeTheme:applySettings(notificationStyle)
+        changeTheme:applySettings(self.notificationStyle)
 
         imgui.Begin("Notification", notification, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoMove)
             imgui.SetCursorPos(imgui.ImVec2(15, 32))
             imgui.Text(notificationInit.icon == -1 and gnomeIcons.ICON_LIGHTBULB_FILLED or notificationInit.icon)
 
             textWithFont(notificationInit.title, bold18, imgui.ImVec2(53, 6))
-            textWithFont(notificationInit.firstLine, regular12, imgui.ImVec2(53, 36))
-            textWithFont(notificationInit.secondLine, regular12, imgui.ImVec2(53, 52))
+            textWithFont(notificationInit.firstLine, NULL, imgui.ImVec2(53, 36))
+            textWithFont(notificationInit.secondLine, NULL, imgui.ImVec2(53, 52))
 
             if os.clock() - notificationInit.systemTime >= notificationInit.secondsToHide then
                 notificationInit.secondsToHide = 999
@@ -506,12 +529,12 @@ local notificationFrame = imgui.OnFrame(
             if notificationInit.positionY == -80 then notification[0] = false end
         imgui.End()
 
-        changeTheme:resetDefault(notificationStyle)
+        changeTheme:resetDefault(self.notificationStyle)
     end
 )
 
 local playersNearbyFrame = imgui.OnFrame(
-    function() return playersNearby[0] end,
+    function() return movableWindows[movEnum.stats].it[0] == cfg.windowsSettings.playersNearby.use end,
     function(self)
         self.HideCursor = _showSpectateCursor
 
@@ -526,7 +549,7 @@ local playersNearbyFrame = imgui.OnFrame(
 
         changeTheme:applySettings(playersNearbyAlpha)
 
-        imgui.Begin("playersNearby", playersNearby, imgui.WindowFlags.NoMove + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar)
+        imgui.Begin("playersNearby", movableWindows[movEnum.nearby].it, imgui.WindowFlags.NoMove + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar)
             if changePosition == 3 then
                 somePlayers = {"VANYA", "El_Capone", "DZONE", "Tyler_Carter", "Samuel_Jones", "Anthony_Hughes", "Christopher_Rivera", "Devin_Johnson", "Julian_Hall", "Xavier_Gray", "Gavin_Jenkins", "Jacob_Baker", "Alex_Hill", "Antonio_Parker", "Alexander_Phillips", "Luke_Jones", "Aidan_Butler", "Alexander_Phillips", "Samuel_Jones", "Anthony_Hughes", "Christopher_Rivera", "Devin_Johnson", "Julian_Hall", "Xavier_Gray", "Gavin_Jenkins", "Samuel_Jones", "Anthony_Hughes", "Christopher_Rivera", "Devin_Johnson", "Julian_Hall", "Xavier_Gray", "Gavin_Jenkins"}
                 for i = 1, #somePlayers do
@@ -629,9 +652,7 @@ local adminForm = imgui.OnFrame(
                 imgui.TextDisabled(("Это окно исчезнет через %.1f секунд."):format(5 - (os.clock() - form_secondsToHide)))
             imgui.EndGroup()
 
-            if os.clock() - form_secondsToHide >= 5 then
-                admin_form_menu[0], formStarter, formCommand = false, "", ""
-            end
+            if os.clock() - form_secondsToHide >= 5 then stopForm() end
         imgui.End()
         changeTheme:resetDefault(adminFormStyle)
     end
@@ -710,33 +731,22 @@ local mainFrame = imgui.OnFrame(
         imgui.PushStyleVarVec2(imgui.StyleVar.WindowPadding, imgui.ImVec2(0, 0))
         if imgui.BeginPopupModal("windowsPosition", nil, imgui.WindowFlags.NoResize + imgui.WindowFlags.NoMove + imgui.WindowFlags.NoTitleBar) then
             imgui.PushStyleVarFloat(imgui.StyleVar.FrameRounding, 0)
-
             imgui.BeginGroup()
                 imgui.PushStyleVarVec2(imgui.StyleVar.ItemSpacing, imgui.ImVec2(0, 0))
-                    local windowSizeTags = {
-                        "Окно быстрых действий в /sp",
-                        "Окно со статистикой игрока в /sp",
-                        "Окно с ближайшими игроками в /sp",
-                        "Чекер"
-                    }
-
-                    for index, tag in ipairs(windowSizeTags) do
-                        if imgui.Button(tag, imgui.ImVec2(300, 50)) then
+                    for index, value in ipairs(movableWindows) do
+                        if imgui.Button(value.title, imgui.ImVec2(300, 50)) then
                             changePosition = index
                         end
                     end
-
                     if imgui.Button("Закрыть окно", imgui.ImVec2(300, 50)) then
                         imgui.CloseCurrentPopup()
                     end
                 imgui.PopStyleVar()
             imgui.EndGroup()
-
             imgui.PopStyleVar()
         end
         imgui.PopStyleVar()
-
-        imgui.EndPopup() -- Should be here
+        imgui.EndPopup()
         imgui.End()
     end
 )
@@ -769,7 +779,7 @@ local onlineFrame = imgui.OnFrame(
 )
 
 local infoFrame = imgui.OnFrame(
-    function() return show_info_menu[0] end,
+    function() return movableWindows[movEnum.stats].it[0] end,
     function(player)
         if sampIsPlayerConnected(tonumber(spectate_id)) then
             player_data["armour"] = sampGetPlayerArmor(spectate_id)
@@ -798,7 +808,7 @@ local infoFrame = imgui.OnFrame(
         local info = infoData[infoMode]
         imgui.SetNextWindowSize(imgui.ImVec2(info.size[1], (player_data["car"] and info.size[3] or info.size[2])))
         imgui.SetNextWindowPos(imgui.ImVec2(cfg.windowsPosition.playerStatsFrame.x, cfg.windowsPosition.playerStatsFrame.y))
-        imgui.Begin("GAdmin_info", show_info_menu, imgui.WindowFlags.AlwaysAutoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoScrollbar + imgui.WindowFlags.NoMove)
+        imgui.Begin("GAdmin_info", movableWindows[movEnum.stats].it, imgui.WindowFlags.AlwaysAutoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoScrollbar + imgui.WindowFlags.NoMove)
 
         imgui.CenterText(tostring(player_data["nick"]) .. "[" .. spectate_id .. "]")
         imgui.Columns(info.columnsNum, "##player_info", true)
@@ -853,7 +863,6 @@ function sortedTableByPosition()
     for i = 1, #cfg.specAdminPanel.items do
         table.insert(sortedTable, cfg.specAdminPanel.items[i].position, cfg.specAdminPanel.items[i])
     end
-
     for j = 1, #cfg.specAdminPanel.items do
         if sortedTable[j] == nil then table.remove(sortedTable, j) end
     end
@@ -861,7 +870,6 @@ function sortedTableByPosition()
 end
 
 local ARGUMENT_REGEXP = [[{.*="(.*)"}]]
-
 local selectedButton = 1
 local specActionsData = {
     -- DEFAULT_FUNCTIONS [1-8]
@@ -904,16 +912,22 @@ function doSpecActions(action)
 end
 
 local _specAdminPanel = imgui.OnFrame(
-    function() return specAdminPanel[0] end,
+    function() return movableWindows[movEnum.stats].it[0] == cfg.specAdminPanel.show end,
     function(self)
         self.HideCursor = _showSpectateCursor
 
-        local adminPanelSize = 7
-        local sortedTable = sortedTableByPosition()
+        local adminPanelSize = 7 + #cfg.specAdminPanel.items * 37
+        local sortedTable = (function()
+            local sortedTable = {}
+            for i = 1, #cfg.specAdminPanel.items do
+                table.insert(sortedTable, cfg.specAdminPanel.items[i].position, cfg.specAdminPanel.items[i])
+            end
 
-        for i = 1, #cfg.specAdminPanel.items do
-            adminPanelSize = adminPanelSize + 37
-        end
+            for j = 1, #cfg.specAdminPanel.items do
+                if sortedTable[j] == nil then table.remove(sortedTable, j) end
+            end
+            return sortedTable
+        end)()
 
         imgui.SetNextWindowPos(imgui.ImVec2(cfg.specAdminPanel.pos.x, cfg.specAdminPanel.pos.y), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
         imgui.SetNextWindowSize(imgui.ImVec2(cfg.specAdminPanel.width, adminPanelSize))
@@ -960,20 +974,16 @@ local _specAdminPanel = imgui.OnFrame(
             imgui.Begin("specAdminPanel", specAdminPanel, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoMove)
                 for k, v in pairs(sortedTable) do
                     imgui.BeginGroup()
-                    math.randomseed(os.clock())
                         imgui.PushStyleColor(imgui.Col.Button, hexToImVec4(k == selectedButton and "303238" or "444751"))
                         imgui.PushStyleColor(imgui.Col.ButtonHovered, hexToImVec4(k == selectedButton and "444751" or "303238"))
                         imgui.PushStyleColor(imgui.Col.ButtonActive, hexToImVec4(k == selectedButton and "303238" or "444751"))
-                            imgui.Button("##"..v.name..math.random(1, 1000000), imgui.ImVec2(186, 30))
+                            imgui.Button("##IMGUI_".. v.name, imgui.ImVec2(186, 30))
                         imgui.PopStyleColor(2)
 
                         imgui.SameLine(imgui.GetCursorPos().x + 93 - imgui.CalcTextSize(v.name).x / 2 - 5)
-                        imgui.BeginGroup()
-                            imgui.SetCursorPosY(imgui.GetCursorPos().y - 1)
-                            imgui.Text(v.name)
-                        imgui.EndGroup()
+                        imgui.SetCursorPosY(imgui.GetCursorPos().y - 1)
+                        imgui.Text(v.name)
                     imgui.EndGroup()
-
                     if imgui.IsItemClicked() then doAction(k) end
                 end
             imgui.End()
@@ -1125,35 +1135,39 @@ local mainWindow = imgui.OnFrame(
 )
 
 function onWindowMessage(msg, wparam, lparam)
+    local resetPosition = function()
+        showCursor(false, false)
+        displayHud(true)
+        displayRadar(true)
+        
+        show_main_menu[0] = true
+        changePosition    = -1
+
+        for _, window in ipairs(movableWindows) do
+            window.it[0] = false
+        end
+    end
+
     if msg == wm.WM_SYSKEYDOWN or msg == wm.WM_KEYDOWN then
         if show_main_menu[0] and wparam == vkeys.VK_ESCAPE and not isPauseMenuActive() then
             consumeWindowMessage(true, false)
             show_main_menu[0] = false
         end
     elseif msg == wm.WM_LBUTTONUP and changePosition ~= -1 then
-        cfg.windowsPosition[intWindows[changePosition]].x,
-        cfg.windowsPosition[intWindows[changePosition]].y = bit.band(lparam, 0xFFFF), bit.band(bit.rshift(lparam, 16), 0xFFFF)
+        cfg.windowsPosition[movableWindows[changePosition].jsonKey].x,
+        cfg.windowsPosition[movableWindows[changePosition].jsonKey].y = bit.band(lparam, 0xFFFF), bit.band(bit.rshift(lparam, 16), 0xFFFF)
 
-        save_config()
         sendNotification(gnomeIcons.ICON_COLLAPSE, "Настройки сохранены.", "Позиция окна успешно сохранена!", "", 5)
-        showCursor(false, false)
-        displayHud(true)
-        displayRadar(true)
-        consumeWindowMessage(true, false)
-
-        changePosition = -1
-        show_action_menu[0], show_info_menu[0], playersNearby[0], playerChecker[0] = false, false, false, false
-        show_main_menu[0] = true
+        save_config()
+        resetPosition()
     elseif msg == wm.WM_RBUTTONUP and changePosition ~= -1 then
         sendNotification(gnomeIcons.ICON_COLLAPSE, "Отменено.", "Смена позиции окна отменена.", "", 5)
-        show_main_menu[0] = true
-        displayHud(true)
-        displayRadar(true)
-        showCursor(false, false)
-
-        changePosition = -1
-        show_action_menu[0], show_info_menu[0], playersNearby[0], playerChecker[0] = false, false, false, false
+        resetPosition()
     end
+end
+
+function isNotCursorActive()
+    return not isCursorActive() and not sampIsChatInputActive() and not isSampfuncsConsoleActive() and not sampIsDialogActive()
 end
 
 function main()
@@ -1174,15 +1188,14 @@ function main()
         cfg.windowsSettings.playerStatsFrame.mode = infoMode
         save_config()
     end)
-    sampRegisterChatCommand("wh", function()
-        nameTagOn()
-    end)
+    sampRegisterChatCommand("wh", nameTagOn)
 
     -- сокращенные командыs
     sampRegisterChatCommand("pk", pk_cmd)
     sampRegisterChatCommand("rec", reconnect)
     sampRegisterChatCommand("gg", gg_cmd)
     sampRegisterChatCommand("asp", asp_cmd)
+
     for k, v in pairs(short_cmds) do
         sampRegisterChatCommand(k, function(arg)
             if arg then
@@ -1190,7 +1203,6 @@ function main()
             end
         end)
     end
-
 
     -- инициализируем все хоткеи
     openMainMenu =       rkeys.registerHotKey(cfg.hotkeys.gadm, 1, gadm_cmd)
@@ -1202,7 +1214,6 @@ function main()
     -- инициализируем шрифты для рендера на экране
     local font_flag = require('moonloader').font_flag
     local font = renderCreateFont('Verdana', 10, font_flag.BOLD + font_flag.SHADOW)
-
 
     while true do
         wait(0)
@@ -1226,7 +1237,7 @@ function main()
             end
         end
 
-        if show_info_menu[0] and cfg.showGunInfo then
+        if movableWindows[movEnum.stats].it[0] and cfg.showGunInfo then
             for _, player in ipairs(getAllChars()) do
                 local idResult, id = sampGetPlayerIdByCharHandle(player)
                 local charResult, char = sampGetCharHandleBySampPlayerId(id)
@@ -1234,16 +1245,12 @@ function main()
                 local screenPosX, screenPosY = convert3DCoordsToScreen(posX, posY, posZ)
 
                 if charResult then
-                    renderFontDrawTextAlign(font, require("game/weapons").names[getCurrentCharWeapon(player)], screenPosX, screenPosY, 0xFFFFFFFF, 2)
+                    renderFontDrawTextAlign(font, require("game.weapons").names[getCurrentCharWeapon(player)], screenPosX, screenPosY, 0xFFFFFFFF, 2)
                 end
             end
         end
 
-        if cfg.specAdminPanel.show then specAdminPanel[0] = show_info_menu[0] end
-        show_action_menu[0] = show_info_menu[0]
-        if cfg.windowsSettings.playersNearby.use then playersNearby[0] = show_info_menu[0] else playersNearby[0] = false end
-
-        if in_sp and not isCursorActive() and not sampIsChatInputActive() and not isSampfuncsConsoleActive() and not sampIsDialogActive() then
+        if in_sp and isNotCursorActive() then
             if wasKeyPressed(1) or wasKeyPressed(37) then sampSendMenuSelectRow(2) end
             if wasKeyPressed(2) or wasKeyPressed(39) then sampSendMenuSelectRow(0) end
         end
@@ -1256,13 +1263,15 @@ function main()
                 showCursor(true, true)
                 displayHud(false)
                 displayRadar(false)
-                currentX, currentY = getCursorPos()
 
-                cfg.windowsPosition[intWindows[changePosition]].x = currentX
-                cfg.windowsPosition[intWindows[changePosition]].y = currentY
+                currentX, currentY  = getCursorPos()
+                show_main_menu[0]   = false
+                cfg.windowsPosition[movableWindows[changePosition].jsonKey].x = currentX
+                cfg.windowsPosition[movableWindows[changePosition].jsonKey].y = currentY
 
-                show_main_menu[0] = false
-                show_action_menu[0], show_info_menu[0], playersNearby[0], playerChecker[0] = true, true, true, true
+                for _, window in ipairs(movableWindows) do
+                    window.it[0] = true
+                end
             end
         end
 
@@ -1293,6 +1302,22 @@ local formCommands = {
     "pk %d+",
     "setworld %d+ %d+"
 }
+
+function onScriptTerminate(LuaScript, quitGame)
+    if LuaScript == thisScript() and not quitGame then
+        for _, v in ipairs {
+            "",
+            "{ff5f5f}GAdmin завершил свою работу.",
+            "",
+            "Что-то пошло не так, и скрипт завершил свою работу. Пожалуйста, создайте {ff5f5f}баг-репорт",
+            "по ссылке ниже, приложив свой {ff5f5f}moonloader.log{ffffff} из папки со скриптом:",
+            "{ff5f5f}https://github.com/Vadim-Kamalov/GAdmin/issues{FFFFFF} (перед созданием прочтите {ff5f5f}README.md{ffffff} из репозитория)",
+            "",
+            "{ff5f5f}Спасибо!",
+            ""
+        } do sampAddChatMessage(v, -1) end
+    end
+end
 
 function samp.onSendCommand(command)
     for k, v in ipairs(formCommands) do
@@ -1339,42 +1364,34 @@ function samp.onServerMessage(color, text)
     end
 
     if text:find("Администратор.*// "..formStarter) and color == -10270806 then
-        admin_form_menu[0], formStarter, formCommand = false, "", ""
+        stopForm()
     end
 
-    for color in string.gmatch(text, "%x%x%x%x%x%x") do
-        print(color, text)
-    end
+    print(string.gsub(text, "{(%x%x%x%x%x%x)}", "#%1"))
 end
 
-function getIdByMatchedNickname(nickname)
+function getIdByMatchedNickname(nickname, lengthException)
     local result, playerId = false, -1
 
     if string.lower(nickname):find("[0-9a-z%[%]%(%)%$@_=]+") --[[ SA-MP Nickname RegExp (without A-Z, because argument in lowercase) ]] then
-        if string.len(nickname) <= 2 then sampAddChatMessage("{ffff00}|{ffffff} Длина /sp [ nickname ] должна быть больше двух.", -1) else
+        if string.len(nickname) <= 2 then sampAddChatMessage("{ffff00}|{ffffff} " .. lengthException, -1) else
             for i = 0, sampGetMaxPlayerId(false) do
                 if sampIsPlayerConnected(i) and sampGetPlayerScore(i) == 1 then
-                    if string.lower(sampGetPlayerNickname(i)):find(".*"..string.lower(nickname)) then
+                    if string.lower(sampGetPlayerNickname(i)):find(string.lower(nickname)) then
                         table.insert(findedNicknames, sampGetPlayerNickname(i))
                     end
                 end
-
-                if i == sampGetMaxPlayerId(false) then sendSpec = true end
             end
 
-            if sendSpec then
-                if #findedNicknames == 1 then
-                    result, playerId = true, getPlayerIdByNickname(findedNicknames[i])
-                elseif #findedNicknames == 0 then
-                    sampAddChatMessage("{FFFF00}|{FFFFFF} По {4a86b6}"..nickname.."{FFFFFF} не найдено совпадений", -1)
-                else
-                    sampAddChatMessage(("{4a86b6}[SP]{ffffff} По %s найдено %s совпадений:"):format(nickname, #findedNicknames), -1)
-                    for i = 1, #findedNicknames do
-                        sampAddChatMessage("{FFFF00}|{FFFFFF} "..findedNicknames[i].." {4a86b6}["..getPlayerIdByNickname(findedNicknames[i]).."]", -1)
-                    end
+            if #findedNicknames == 1 then
+                result, playerId = true, getPlayerIdByNickname(findedNicknames[i])
+            elseif #findedNicknames == 0 then
+                sampAddChatMessage("{FFFF00}|{FFFFFF} По {4a86b6}"..nickname.."{FFFFFF} не найдено совпадений", -1)
+            else
+                sampAddChatMessage(("{FFFF00}|{ffffff} По %s найдено %s совпадений:"):format(nickname, #findedNicknames), -1)
+                for _, v in ipairs(findedNicknames) do
+                    sampAddChatMessage("{FFFF00}|{FFFFFF} " .. v .. " {4a86b6}[" .. getPlayerIdByNickname(v) .. "]", -1)
                 end
-
-                sendSpec = false
             end
         end
     end
@@ -1408,7 +1425,6 @@ function samp.onShowDialog(dialogId, style, title, button1, button2, text)
         player_data["vip"] = text:match("Премиум аккаунт: (.-)\n")
         player_data["reg_date"] = text:match("Дата регистрации: (.-)\n")
 
-
         sampSendDialogResponse(dialogId, 0, 0, "")
         checking_stats = false
         return false
@@ -1418,7 +1434,7 @@ end
 function change_sp(new_id)
     spectate_id = new_id
     in_sp = true
-    show_info_menu[0] = in_sp
+    movableWindows[movEnum.stats].it[0] = in_sp
     lua_thread.create(function()
         wait(1)
         if new_id ~= info_about and os.clock() - last_checking_stats > 1 and not sampIsDialogActive() and not checking_stats then
@@ -1443,7 +1459,7 @@ end
 function samp.onTextDrawHide(id)
     if id == spec_textdraw then
         in_sp = false
-        show_info_menu[0] = in_sp
+        movableWindows[movEnum.stats].it[0] = in_sp
         spectate_id = -1
     end
 end
@@ -1464,39 +1480,14 @@ function samp.onTextDrawSetString(id, text)
 end
 
 function spectate(arg)
-    local findedNicknames = {}
-    local sendSpec = false
-
     if arg:find("[0-9]+") then
         sampSendChat("/sp "..arg)
     elseif string.lower(arg) == "off" then
         sampSendChat("/unsp")
     elseif string.lower(arg):find("[0-9a-z%[%]%(%)%$@_=]+") --[[ SA-MP Nickname RegExp (without A-Z, because argument in lowercase) ]] then
-        if string.len(arg) <= 2 then sampAddChatMessage("{ffff00}|{ffffff} Длина /sp [ nickname ] должна быть больше двух.", -1) else
-            for i = 0, sampGetMaxPlayerId(false) do
-                if sampIsPlayerConnected(i) and sampGetPlayerScore(i) == 1 then
-                    if string.lower(sampGetPlayerNickname(i)):find(".*"..string.lower(arg)) then
-                        table.insert(findedNicknames, sampGetPlayerNickname(i))
-                    end
-                end
-
-                if i == sampGetMaxPlayerId(false) then sendSpec = true end
-            end
-
-            if sendSpec then
-                if #findedNicknames == 1 then
-                    sampSendChat("/sp "..getPlayerIdByNickname(findedNicknames[1]))
-                elseif #findedNicknames == 0 then
-                    sampAddChatMessage("{FFFF00}|{FFFFFF} По {4a86b6}"..arg.."{FFFFFF} не найдено совпадений", -1)
-                else
-                    sampAddChatMessage(("{4a86b6}[SP]{ffffff} По %s найдено %s совпадений:"):format(arg, #findedNicknames), -1)
-                    for i = 1, #findedNicknames do
-                        sampAddChatMessage("{FFFF00}|{FFFFFF} "..findedNicknames[i].." {4a86b6}["..getPlayerIdByNickname(findedNicknames[i]).."]", -1)
-                    end
-                end
-
-                sendSpec = false
-            end
+        local result, player = getIdByMatchedNickname(arg)
+        if result then
+            sampSendChat("/sp " .. tostring(player))
         end
     else
         sampAddChatMessage("{ffff00}|{ffffff} Введите /sp [ id / nickname / off ]", -1)
@@ -1526,7 +1517,7 @@ function specReload()
 end
 
 function changeSpecCursorMode()
-    if show_info_menu[0] then
+    if movableWindows[movEnum.stats].it[0] then
         _showSpectateCursor = not _showSpectateCursor
     end
 end
@@ -1551,7 +1542,7 @@ function sendFormCommand()
                 wait(CMD_DELAY)
                 sampSendChat("/pk "..pk_cmd_id)
             end)
-            admin_form_menu[0], formStarter, formCommand = false, "", ""
+            stopForm()
         elseif formCommand:find("ck %d+") then
             ck_cmd_id = formCommand:match("ck (%d+)")
             sampSendChat("/ans "..ck_cmd_id.." CK by "..formStarter)
@@ -1559,10 +1550,10 @@ function sendFormCommand()
                 wait(CMD_DELAY)
                 sampSendChat("/ck "..ck_cmd_id)
             end)
-            admin_form_menu[0], formStarter, formCommand = false, "", ""
+            stopForm()
         else
             sampSendChat("/"..formCommand.." // "..formStarter)
-            admin_form_menu[0], formStarter, formCommand = false, "", ""
+            stopForm()
         end
     end
 end
@@ -1671,13 +1662,7 @@ sampfuncsRegisterConsoleCommand("execute.notification", function(arg)
     end
 end)
 
-sampfuncsRegisterConsoleCommand("execute.specAction", function(arg)
-    doSpecActions(arg)
-end)
-
-sampfuncsRegisterConsoleCommand("execute.specAdminPanel", function() specAdminPanel[0] = not specAdminPanel[0] end)
-
-sampfuncsRegisterConsoleCommand("execute.form", function ()
+sampfuncsRegisterConsoleCommand("execute.form", function()
     admin_form_menu[0], formStarter, formCommand = true, "DEBUG_EXECUTE_FORM", "me DEBUG_EXECUTE_FORM"
     form_secondsToHide = os.clock()
 end)
@@ -1686,13 +1671,17 @@ sampfuncsRegisterConsoleCommand("execute.passwords", function()
     print(cfg.adm_pass, cfg.game_pass)
 end)
 
-sampfuncsRegisterConsoleCommand("execute.cursor", function() print(_showSpectateCursor) end)
-sampfuncsRegisterConsoleCommand("execute.newMenu", function() newMainFrame[0] = not newMainFrame[0] end)
 sampfuncsRegisterConsoleCommand("execute.addChecker", function(nickname)
     table.insert(cfg.checker.players, nickname)
     save_config()
 end)
-sampfuncsRegisterConsoleCommand("execute.checker", function() playerChecker[0] = not playerChecker[0] end)
+
+sampfuncsRegisterConsoleCommand("execute.checker", function() movableWindows[movEnum.checker].it[0] = not movableWindows[movEnum.checker].it[0] end)
+sampfuncsRegisterConsoleCommand("execute.cursor", function() print(_showSpectateCursor) end)
+sampfuncsRegisterConsoleCommand("execute.newMenu", function() newMainFrame[0] = not newMainFrame[0] end)
+sampfuncsRegisterConsoleCommand("execute.specAction", doSpecActions)
+sampfuncsRegisterConsoleCommand("execute.specAdminPanel", function() specAdminPanel[0] = not specAdminPanel[0] end)
+sampfuncsRegisterConsoleCommand("execute.scriptCrash", executeScriptCrash)
 
 -- ниже лучше ничего не трогать
 sendchat = sampSendChat
@@ -1701,7 +1690,6 @@ addchatmessage = sampAddChatMessage
 function sampSendChat(text)
     sendchat(u8:decode(text))
 end
-
 
 function sampAddChatMessage(text, color)
     addchatmessage(u8:decode(text), color)
@@ -1736,7 +1724,6 @@ function imgui.Theme()
     local ImVec2, ImVec4 = imgui.ImVec2, imgui.ImVec4
 
     imgui.SwitchContext()
-    --==[ STYLE ]==--
     style.WindowPadding     = ImVec2(5, 5)
     style.FramePadding      = ImVec2(5, 5)
     style.ItemSpacing       = ImVec2(5, 5)
@@ -1746,14 +1733,12 @@ function imgui.Theme()
     style.ScrollbarSize     = 10
     style.GrabMinSize       = 10
 
-    --==[ BORDER ]==--
     style.WindowBorderSize  = 1
     style.ChildBorderSize   = 1
     style.PopupBorderSize   = 1
     style.FrameBorderSize   = 1
     style.TabBorderSize     = 1
 
-    --==[ ROUNDING ]==--
     style.WindowRounding    = 5
     style.ChildRounding     = 5
     style.FrameRounding     = 5
@@ -1762,12 +1747,9 @@ function imgui.Theme()
     style.GrabRounding      = 5
     style.TabRounding       = 5
 
-    --==[ ALIGN ]==--
-    style.WindowTitleAlign      = ImVec2(0.5, 0.5)
     style.ButtonTextAlign       = ImVec2(0.5, 0.5)
     style.SelectableTextAlign   = ImVec2(0.5, 0.5)
 
-    --==[ COLORS ]==--
     colors[color.Text]                   = ImVec4(1.00, 1.00, 1.00, 1.00)
     colors[color.TextDisabled]           = ImVec4(0.50, 0.50, 0.50, 1.00)
     colors[color.WindowBg]               = ImVec4(0.07, 0.07, 0.07, 1.00)
