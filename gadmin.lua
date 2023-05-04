@@ -440,38 +440,39 @@ local checkerFrame = imgui.OnFrame(
     
         imgui.Begin("Checker Frame", movableWindows[movEnum.checker].it, imgui.WindowFlags.NoResize + imgui.WindowFlags.NoMove + imgui.WindowFlags.NoTitleBar)
             for index, player in ipairs(cfg.checker.players) do
+                imgui.SetCursorPosX(
+                    125 - imgui.CalcTextSize("[OFFLINE]" .. player .. (sampIsPlayerConnected(getPlayerIdByNickname(player)) and "[" .. tostring(getPlayerIdByNickname(player) .. "]") or "")).x / 2
+                )
                 imgui.BeginGroup()
                     if sampIsPlayerConnected(getPlayerIdByNickname(player)) then
                         imgui.TextColored(hexToImVec4("66CC33"), "[ONLINE]")
-                        imgui.SameLine(75)
                     else
                         if cfg.checker.showOfflinePlayers then
                             imgui.TextColored(hexToImVec4("FF0033"), "[OFFLINE]")
-                            imgui.SameLine(75)
                         end
                     end
-                    imgui.Text(u8"%s%s%s", player, sampIsPlayerConnected(getPlayerIdByNickname(player)) and "[" .. tostring(getPlayerIdByNickname(player) .. "]") or "")
-                    if imgui.IsItemClicked() then
-                        sendNotification(
-                            gnomeIcons.ICON_PERSON,
-                            sampIsPlayerConnected(getPlayerIdByNickname(player)) and "Айди игрока скопирован!" or "Никнейм игрока скопирован!",
-                            "Скопировано у игрока \"" .. player .. "\"",
-                            "",
-                            5
-                        )
-                        if sampIsPlayerConnected(getPlayerIdByNickname(player)) then
-                            setClipboardText(tostring(getPlayerIdByNickname(player)))
-                        else
-                            setClipboardText(player)
-                        end
-                    elseif imgui.IsItemHovered() then
-                        local rect          = imgui.GetItemRectMax()
-                        local playerTag     = sampIsPlayerConnected(getPlayerIdByNickname(player)) and "[" .. tostring(getPlayerIdByNickname(player))  .. "]" or ""
-                        local textSize      = imgui.CalcTextSize(player .. playerTag)
-                        imgui.GetWindowDrawList():AddLine(imgui.ImVec2(rect.x - textSize.x, rect.y + 3), imgui.ImVec2(rect.x, rect.y + 3), -1, 2)
-                    end
+                    imgui.SameLine()
+                    imgui.Text((u8"%s%s"):format(player, sampIsPlayerConnected(getPlayerIdByNickname(player)) and "[" .. tostring(getPlayerIdByNickname(player) .. "]") or ""))
                 imgui.EndGroup()
-                -- TODO: We can align this group by `width / 2 - textSize.x / 2`.
+                if imgui.IsItemClicked() then
+                    sendNotification(
+                        gnomeIcons.ICON_PERSON,
+                        sampIsPlayerConnected(getPlayerIdByNickname(player)) and "Айди игрока скопирован!" or "Никнейм игрока скопирован!",
+                        "Скопировано у игрока \"" .. player .. "\"",
+                        "",
+                        5
+                    )
+                    if sampIsPlayerConnected(getPlayerIdByNickname(player)) then
+                        setClipboardText(tostring(getPlayerIdByNickname(player)))
+                    else
+                        setClipboardText(player)
+                    end
+                elseif imgui.IsItemHovered() then
+                    local rect          = imgui.GetItemRectMax()
+                    local playerTag     = sampIsPlayerConnected(getPlayerIdByNickname(player)) and "[" .. tostring(getPlayerIdByNickname(player))  .. "]" or ""
+                    local textSize      = imgui.CalcTextSize(player .. playerTag)
+                    imgui.GetWindowDrawList():AddLine(imgui.ImVec2(rect.x - textSize.x, rect.y + 3), imgui.ImVec2(rect.x, rect.y + 3), -1, 2)
+                end
             end
         imgui.End()
         changeTheme:resetDefault(self.windowProperties)
@@ -493,10 +494,6 @@ local notificationFrame = imgui.OnFrame(
     function() return notification[0] end,
     function(self)
         self.HideCursor = _showSpectateCursor
-
-        imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2 - 250, notificationInit.positionY))
-        imgui.SetNextWindowSize(imgui.ImVec2(500, 75))
-
         self.notificationStyle = {
             {"ImVec2", "FramePadding", change = {0, 0}, reset = {5, 5}},
             {"ImVec2", "WindowPadding", change = {0, 0}, reset = {5, 5}},
@@ -507,6 +504,8 @@ local notificationFrame = imgui.OnFrame(
         }
 
         changeTheme:applySettings(self.notificationStyle)
+        imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2 - 250, notificationInit.positionY))
+        imgui.SetNextWindowSize(imgui.ImVec2(500, 75))
 
         imgui.Begin("Notification", notification, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoMove)
             imgui.SetCursorPos(imgui.ImVec2(15, 32))
