@@ -1399,6 +1399,7 @@ end
 
 function getIdByMatchedNickname(nickname, lengthException)
     local result, playerId = false, -1
+    local findedNicknames  = {}
 
     if string.lower(nickname):find("[0-9a-z%[%]%(%)%$@_=]+") --[[ SA-MP Nickname RegExp (without A-Z, because argument in lowercase) ]] then
         if string.len(nickname) <= 2 then sampAddChatMessage("{ffff00}|{ffffff} " .. lengthException, -1) else
