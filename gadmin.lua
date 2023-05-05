@@ -1513,7 +1513,7 @@ function spectate(arg)
     elseif string.lower(arg) == "off" then
         sampSendChat("/unsp")
     elseif string.lower(arg):find("[0-9a-z%[%]%(%)%$@_=]+") --[[ SA-MP Nickname RegExp (without A-Z, because argument in lowercase) ]] then
-        local result, player = getIdByMatchedNickname(arg)
+        local result, player = getIdByMatchedNickname(arg, "Длина /sp [ nickname ] должна быть больше двух.")
         if result then
             sampSendChat("/sp " .. tostring(player))
         end
