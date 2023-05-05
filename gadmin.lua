@@ -6,7 +6,7 @@
     GAdmin - Script for administators on gambit-rp.ru
     Copyright (C) 2023 The Contributors.
 
-    This program is free software: you can redistribute it and/or modify
+This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
@@ -38,6 +38,7 @@ local neatJSON = require("neatjson")
 
 encoding.default = 'cp1251'
 local u8 = encoding.UTF8
+local sizeX, sizeY = getScreenResolution()
 
 -- FFI functions
 local getBonePosition = ffi.cast("int (__thiscall*)(void*, float*, int, bool)", 0x5E4280)
@@ -67,6 +68,24 @@ function textWithFont(text, font, ImVec2_pos)
     imgui.PopFont()
 end
 
+function imgui.SafeText(text, alpha, color)
+    if alpha <= 15 then
+        local pos = imgui.GetCursorPos()
+        imgui.SetCursorPos(imgui.ImVec2(pos.x + 1, pos.y))
+        imgui.TextColored(imgui.ImVec4(0, 0, 0, 1), text)
+        imgui.SetCursorPos(imgui.ImVec2(pos.x - 1, pos.y))
+        imgui.TextColored(imgui.ImVec4(0, 0, 0, 1), text)
+        imgui.SetCursorPos(imgui.ImVec2(pos.x, pos.y + 1))
+        imgui.TextColored(imgui.ImVec4(0, 0, 0, 1), text)
+        imgui.SetCursorPos(imgui.ImVec2(pos.x, pos.y - 1))
+        imgui.TextColored(imgui.ImVec4(0, 0, 0, 1), text)
+        imgui.SetCursorPos(pos)
+        imgui.TextColored(color or imgui.ImVec4(1, 1, 1, 1) --[[ White ]], text)
+    else
+        imgui.TextColored(color or imgui.ImVec4(1, 1, 1, 1) --[[ White ]], text)
+    end
+end
+
 function create_config()
     def_data = {
         online = {
@@ -84,25 +103,14 @@ function create_config()
             acceptForm = {73},
             spectateCursor = {66},
             specReload = {85},
-            disconnectSpecCopy = {0x12, 0x41}-- Alt + A
+            disconnectSpecCopy = {0x12, 0x41} -- Alt + A
         },
         windowsPosition = {
-            actionFrame = {
-                x = select(1, getScreenResolution()) / 100,
-                y = select(2, getScreenResolution()) / 1.1
-            },
-            playerStatsFrame = {
-                x = select(1, getScreenResolution()) / 1.125,
-                y = select(2, getScreenResolution()) / 1.6
-            },
-            playersNearby = {
-                x = select(1, getScreenResolution()) / 1.125,
-                y = select(2, getScreenResolution()) / 3
-            },
-            playerChecker = {
-                x = select(1, getScreenResolution()) / 2,
-                y = select(2, getScreenResolution()) / 2
-            }
+            actionFrame         = {x = sizeX / 100, y = sizeY / 1.1},
+            playerStatsFrame    = {x = sizeX / 1.125, y = sizeY / 1.6},
+            playersNearby       = {x = sizeX / 1.125, y = sizeY / 3},
+            playerChecker       = {x = sizeX / 2, y = sizeY / 2},
+            actionMenu          = {x = sizeX / 15, y = sizeY / 2}
         },
         windowsSettings = {
             playersNearby = {
@@ -116,7 +124,6 @@ function create_config()
         specAdminPanel = {
             show     = true,
             width    = 200,
-            pos      = {x = select(1, getScreenResolution()) / 15, y = select(2, getScreenResolution()) / 2},
             alpha    = 1.00,
             items    = {
                 {name = "NEXT", action = "{NEXT}", position = 1},
@@ -174,6 +181,7 @@ local _showSpectateCursor = true
 local popupId, popupNickname = 0, ""
 local selectedTab = 1
 local changeTheme = {}
+local playerTime
 -- для информации в спеке --
 local in_sp = false
 local changePosition = -1
@@ -227,8 +235,8 @@ local infoData = {
     },
 }
 ----------------------------
-local sizeX, sizeY = getScreenResolution()
 local session_online = 0
+local formPlayer = ""
 local short_cmds = {
     vr = "vrepair %s",
     vs = "vspawn %s",
@@ -287,14 +295,19 @@ local movableWindows = {
         title   = "Чекер",
         jsonKey = "playerChecker",
         it      = new.bool()
+    }, {
+        title   = "Админ панель в /sp",
+        jsonKey = "actionMenu",
+        it      = new.bool()
     }
 }
 
 local movEnum = {
-    action  = 1,
-    stats   = 2,
-    nearby  = 3,
-    checker = 4
+    action      = 1,
+    stats       = 2,
+    nearby      = 3,
+    checker     = 4,
+    adminPanel  = 5
 }
 
 -- для хоткеев
@@ -334,7 +347,8 @@ function getBodyPartCoordinates(id, handle)
 end
 
 function stopForm()
-    admin_form_menu[0], formStarter, formCommand = false, "", ""
+    admin_form_menu[0], formPlayer = false, ""
+    formStarter = "" formCommand = "", ""
 end
 
 imgui.OnInitialize(function()
@@ -445,14 +459,14 @@ local checkerFrame = imgui.OnFrame(
                 )
                 imgui.BeginGroup()
                     if sampIsPlayerConnected(getPlayerIdByNickname(player)) then
-                        imgui.TextColored(hexToImVec4("66CC33"), "[ONLINE]")
+                        imgui.SafeText("[ONLINE]", cfg.checker.alpha, hexToImVec4("66CC33"))
                     else
                         if cfg.checker.showOfflinePlayers then
-                            imgui.TextColored(hexToImVec4("FF0033"), "[OFFLINE]")
+                            imgui.SafeText("[OFFLINE]", cfg.checker.alpha, hexToImVec4("FF0033"))
                         end
                     end
                     imgui.SameLine()
-                    imgui.Text((u8"%s%s"):format(player, sampIsPlayerConnected(getPlayerIdByNickname(player)) and "[" .. tostring(getPlayerIdByNickname(player) .. "]") or ""))
+                    imgui.SafeText((u8"%s%s"):format(player, sampIsPlayerConnected(getPlayerIdByNickname(player)) and "[" .. tostring(getPlayerIdByNickname(player) .. "]") or ""), cfg.checker.alpha)
                 imgui.EndGroup()
                 if imgui.IsItemClicked() then
                     sendNotification(
@@ -550,12 +564,18 @@ local playersNearbyFrame = imgui.OnFrame(
 
         imgui.Begin("playersNearby", movableWindows[movEnum.nearby].it, imgui.WindowFlags.NoMove + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar)
             if changePosition == 3 then
-                somePlayers = {"VANYA", "El_Capone", "DZONE", "Tyler_Carter", "Samuel_Jones", "Anthony_Hughes", "Christopher_Rivera", "Devin_Johnson", "Julian_Hall", "Xavier_Gray", "Gavin_Jenkins", "Jacob_Baker", "Alex_Hill", "Antonio_Parker", "Alexander_Phillips", "Luke_Jones", "Aidan_Butler", "Alexander_Phillips", "Samuel_Jones", "Anthony_Hughes", "Christopher_Rivera", "Devin_Johnson", "Julian_Hall", "Xavier_Gray", "Gavin_Jenkins", "Samuel_Jones", "Anthony_Hughes", "Christopher_Rivera", "Devin_Johnson", "Julian_Hall", "Xavier_Gray", "Gavin_Jenkins"}
-                for i = 1, #somePlayers do
-                    imgui.SetCursorPosX(100 - imgui.CalcTextSize(somePlayers[i]).x / 2)
-                    imgui.Text(somePlayers[i])
+                for _, v in ipairs {
+                    "VANYA", "El_Capone", "DZONE", "Tyler_Carter", "Samuel_Jones", "Anthony_Hughes",
+                    "Christopher_Rivera", "Devin_Johnson", "Julian_Hall", "Xavier_Gray", "Gavin_Jenkins",
+                    "Jacob_Baker", "Alex_Hill", "Antonio_Parker", "Alexander_Phillips", "Luke_Jones",
+                    "Aidan_Butler", "Alexander_Phillips", "Samuel_Jones", "Anthony_Hughes", "Christopher_Rivera",
+                    "Devin_Johnson", "Julian_Hall", "Xavier_Gray", "Gavin_Jenkins", "Samuel_Jones", "Anthony_Hughes",
+                    "Christopher_Rivera", "Devin_Johnson", "Julian_Hall", "Xavier_Gray", "Gavin_Jenkins"
+                } do
+                    imgui.SetCursorPosX(100 - imgui.CalcTextSize(v).x / 2)
+                    imgui.SafeText(v, cfg.windowsSettings.playersNearby.alpha)
                 end
-            else
+            elseif isSampAvailable() then
                 for _, player in ipairs(getAllChars()) do
                     result, id = sampGetPlayerIdByCharHandle(player)
 
@@ -574,9 +594,9 @@ local playersNearbyFrame = imgui.OnFrame(
                         imgui.SetCursorPosX(250 / 2 - imgui.CalcTextSize((
                             nickname.."["..id.."][X: "..math.floor(getDistanceBetweenCoords3d(distanceA1, distanceA2, distanceA3, distanceB1, distanceB2, distanceB3)).."]"
                         )).x / 2)
-                        imgui.TextColored(hexToImVec4(("%06X"):format(bit.band(color, 0xFFFFFF))), ("%s[%s] [X: %1.f]"):format(nickname, id,
+                        imgui.SafeText(("%s[%s] [X: %1.f]"):format(nickname, id,
                             getDistanceBetweenCoords3d(distanceA1, distanceA2, distanceA3, distanceB1, distanceB2, distanceB3)
-                        ))
+                        ), cfg.windowsSettings.playersNearby.alpha, hexToImVec4(("%06X"):format(bit.band(color, 0xFFFFFF))))
                         if imgui.IsItemClicked() then
                             imgui.OpenPopup("playerInfo")
                             popupId, popupNickname = id, nickname
@@ -928,7 +948,7 @@ local _specAdminPanel = imgui.OnFrame(
             return sortedTable
         end)()
 
-        imgui.SetNextWindowPos(imgui.ImVec2(cfg.specAdminPanel.pos.x, cfg.specAdminPanel.pos.y), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
+        imgui.SetNextWindowPos(imgui.ImVec2(cfg.windowsPosition.actionMenu.x, cfg.windowsPosition.actionMenu.y))
         imgui.SetNextWindowSize(imgui.ImVec2(cfg.specAdminPanel.width, adminPanelSize))
 
         local specAdminPanelChange = {
@@ -970,7 +990,7 @@ local _specAdminPanel = imgui.OnFrame(
 
         changeTheme:applySettings(specAdminPanelChange)
         imgui.PushFont(bold15)
-            imgui.Begin("specAdminPanel", specAdminPanel, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoMove)
+            imgui.Begin("specAdminPanel", movableWindows[movEnum.adminPanel].it, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoMove)
                 for k, v in pairs(sortedTable) do
                     imgui.BeginGroup()
                         imgui.PushStyleColor(imgui.Col.Button, hexToImVec4(k == selectedButton and "303238" or "444751"))
@@ -1188,6 +1208,8 @@ function main()
         save_config()
     end)
     sampRegisterChatCommand("wh", nameTagOn)
+    sampRegisterChatCommand("st", setTime)
+    sampRegisterChatCommand("sw", setWeather)
 
     -- сокращенные командыs
     sampRegisterChatCommand("pk", pk_cmd)
@@ -1254,6 +1276,10 @@ function main()
             if wasKeyPressed(2) or wasKeyPressed(39) then sampSendMenuSelectRow(0) end
         end
 
+        if playerTime then
+            setTimeOfDay(playerTime, 0)
+        end
+
         if changePosition ~= -1 then
             if in_sp then
                 sampAddChatMessage("Сперва нужно покинуть /sp", -1)
@@ -1292,14 +1318,14 @@ function samp.onPlayerQuit(id)
 end
 
 local formCommands = {
-    "ban %d+ %d+ .*",
-    "jail %d+ %d+ .*",
-    "mute %d+ %d+ .*",
-    "warn %d+ .*",
-    "iban %d+ %d+ .*",
-    "ck %d+",
-    "pk %d+",
-    "setworld %d+ %d+"
+    "ban (%d+) %d+ .*",
+    "jail (%d+) %d+ .*",
+    "mute (%d+) %d+ .*",
+    "warn (%d+) .*",
+    "iban (%d+) %d+ .*",
+    "ck (%d+)",
+    "pk (%d+)",
+    "setworld (%d+) %d+"
 }
 
 function onScriptTerminate(LuaScript, quitGame)
@@ -1339,17 +1365,23 @@ function samp.onServerMessage(color, text)
 
     if text:find("Вы успешно авторизовались как администратор") or text:find("Вы уже авторизировались") and color == -1 then
         alogin = true
+    elseif text:find("Администратор.*// "..formStarter) and color == -10270806 then
+        stopForm()
+    elseif text:find("^Администратор .* установил <.*> персонажу " .. formPlayer .. "$") then
+        stopForm()
     end
 
     for k, v in ipairs(formCommands) do
         if text:find("%[A%] .*%[%d+%]: /"..v) and color == 866792362 then
             formStarter, formStarterId, formCommand = text:match(u8"%[A%] (.*)%[(%d+)%]: /(.*)")
+
             if formStarterId ~= id then
                 form_secondsToHide = os.clock()
                 admin_form_menu[0] = true
             end
         end
     end
+
     if checkSendFormCommand then
         if text:find("%|.*У вас нет доступа для использования данной команды%.") then
             sampSendChat("/a "..sendFormCommand)
@@ -1360,10 +1392,6 @@ function samp.onServerMessage(color, text)
             checkSendFormCommand = false
             sendFormCommand = ""
         end
-    end
-
-    if text:find("Администратор.*// "..formStarter) and color == -10270806 then
-        stopForm()
     end
 
     print(string.gsub(text, "{(%x%x%x%x%x%x)}", "#%1"))
@@ -1534,32 +1562,58 @@ end
 
 function sendFormCommand()
     if not isCursorActive() and admin_form_menu[0] then
-        if formCommand:find("pk %d+") then
-            pk_cmd_id = formCommand:match("pk (%d+)")
-            sampSendChat("/ans " .. pk_cmd_id .. " PK by " .. formStarter)
+        if formCommand:find("pk %d+") or formCommand:find("ck %d+") then
+            playerId    = formCommand:match("pk (%d+)")
+            command     = formCommand:match("(.+) %d+")
+            formPlayer  = sampGetPlayerNickname(tonumber(pk_cmd_id))
             lua_thread.create(function()
+                sampSendChat(string.format("/ans %s %s by %s", playerId, string.upper(command), formStarter))
                 wait(CMD_DELAY)
-                sampSendChat("/pk "..pk_cmd_id)
-            end)
-            stopForm()
-        elseif formCommand:find("ck %d+") then
-            ck_cmd_id = formCommand:match("ck (%d+)")
-            sampSendChat("/ans "..ck_cmd_id.." CK by "..formStarter)
-            lua_thread.create(function()
-                wait(CMD_DELAY)
-                sampSendChat("/ck "..ck_cmd_id)
+                sampSendChat("/" .. command .. " " .. playerId)
             end)
             stopForm()
         else
-            sampSendChat("/"..formCommand.." // "..formStarter)
+            if sampIsPlayerConnected(tonumber(formCommand:match("^.+ (%d+)"))) then
+                sampSendChat("/"..formCommand.." // "..formStarter)
+            else
+                sampSendChat("/a " .. formStarter .. ", этот игрок не в сети.")
+            end
             stopForm()
         end
     end
 end
 
+function setTime(hour)
+    local default
+    local hour = tonumber(hour)
+    local timeSet = function(enable)
+        if enable and default == nil then
+            default = readMemory(sampGetBase() + 0x9C0A0, 4, true)
+		    writeMemory(sampGetBase() + 0x9C0A0, 4, 0x000008C2, true)
+        elseif not enable and default ~= nil then
+            writeMemory(sampGetBase() + 0x9C0A0, 4, default, true)
+		    default = nil
+        end
+    end
+
+    if hour and hour >= 0 and hour <= 23 then
+        playerTime = hour
+        timeSet(true)
+    else
+        timeSet(false)
+        playerTime = nil
+    end
+end
+
+function setWeather(weather)
+    local weather = tonumber(weather)
+    if weather and weather >= 0 and weather <= 45 then
+        forceWeatherNow(weather)
+    end
+end
+
 function pk_cmd(arg)
-    local id = arg:match("(%d+)")
-    if id ~= nil then
+    if tonumber(id) and sampIsPlayerConnected(tonumber(id)) then
         lua_thread.create(function()
             sampSendChat("/jail " .. id .. " 90 PK`ed")
             wait(CMD_DELAY)
@@ -1569,15 +1623,13 @@ function pk_cmd(arg)
 end
 
 function gg_cmd(arg)
-    local id = arg:match("(%d+)")
-    if id ~= nil then
+    if tonumber(id) and sampIsPlayerConnected(tonumber(id)) then
         sampSendChat("/ans " .. id .. " " .. cfg.gg_msg)
     end
 end
 
 function asp_cmd(arg)
-    local id = arg:match("(%d+)")
-    if id ~= nil then
+    if tonumber(id) and sampIsPlayerConnected(tonumber(id)) then
         lua_thread.create(function()
             sampSendChat("/sp " .. id)
             wait(CMD_DELAY)
