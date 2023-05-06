@@ -6,7 +6,7 @@
     GAdmin - Script for administators on gambit-rp.ru
     Copyright (C) 2023 The Contributors.
 
-This program is free software: you can redistribute it and/or modify
+    This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
@@ -103,14 +103,15 @@ function create_config()
             acceptForm = {73},
             spectateCursor = {66},
             specReload = {85},
-            disconnectSpecCopy = {0x12, 0x41} -- Alt + A
+            disconnectSpecCopy = {0x12, VK_Q} -- Alt + Q
         },
         windowsPosition = {
             actionFrame         = {x = sizeX / 100, y = sizeY / 1.1},
             playerStatsFrame    = {x = sizeX / 1.125, y = sizeY / 1.6},
             playersNearby       = {x = sizeX / 1.125, y = sizeY / 3},
             playerChecker       = {x = sizeX / 2, y = sizeY / 2},
-            actionMenu          = {x = sizeX / 15, y = sizeY / 2}
+            actionMenu          = {x = sizeX / 15, y = sizeY / 2},
+            reportWindow        = {x = sizeX / 2, y = sizeX / 2}
         },
         windowsSettings = {
             playersNearby = {
@@ -149,7 +150,13 @@ function create_config()
         car_spec = false,
         autoEnter = false,
         aloginOnEnter = false,
-        showGunInfo = false
+        showGunInfo = false,
+        mentionColor = "4A86B6",
+        reportWindow = {
+            use     = false,
+            alpha   = 30,
+            size    = {500, 300}
+        }
     }
 
     local handle = assert(io.open("moonloader/config/gadmin.json", "w"))
@@ -299,6 +306,10 @@ local movableWindows = {
         title   = "Админ панель в /sp",
         jsonKey = "actionMenu",
         it      = new.bool()
+    }, {
+        title   = "Окно с репортами/вопросами",
+        jsonKey = "reportWindow",
+        it      = new.bool()
     }
 }
 
@@ -307,7 +318,8 @@ local movEnum = {
     stats       = 2,
     nearby      = 3,
     checker     = 4,
-    adminPanel  = 5
+    adminPanel  = 5,
+    report      = 6
 }
 
 -- для хоткеев
@@ -376,6 +388,29 @@ function setChatInputEnabledWithText(text)
     sampSetChatInputText(text)
 end
 
+local reportData = {
+    messages    = {},
+    size        = imgui.ImVec2(table.unpack(cfg.reportWindow.size))
+}
+
+local reportWindow = imgui.OnFrame(
+    function() return cfg.reportWindow.use end,
+    function(self)
+        self.HideCursor = _showSpectateCursor
+
+        imgui.SetNextWindowPos(imgui.ImVec2(cfg.windowsPosition.reportWindow.x, cfg.windowsPosition.reportWindow.y))
+        imgui.SetNextWindowSize(reportData.size)
+
+        imgui.Begin("Report window", movableWindows[movEnum.report].it, imgui.WindowFlags.NoMove + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize)
+            imgui.PushTextWrapPos(reportData.size.x)
+                for i, v in ipairs(reportData.messages) do
+                    imgui.SafeText(v.text, cfg.reportWindow.alpha, hexToImVec4(v.hex))
+                end
+            imgui.PopTextWrapPos()
+        imgui.End()
+    end
+)
+
 local actionMenu = imgui.OnFrame(
     function() return movableWindows[movEnum.stats].it[0] end,
     function(self)
@@ -402,6 +437,7 @@ local actionMenu = imgui.OnFrame(
 
         imgui.SetNextWindowSize(imgui.ImVec2(800, 70))
         imgui.SetNextWindowPos(imgui.ImVec2(cfg.windowsPosition.actionFrame.x, cfg.windowsPosition.actionFrame.y))
+
         imgui.PushStyleVarVec2(imgui.StyleVar.WindowPadding, imgui.ImVec2(0, 0))
         imgui.PushStyleVarVec2(imgui.StyleVar.ItemSpacing, imgui.ImVec2(0, 0))
         imgui.PushStyleVarVec2(imgui.StyleVar.ButtonTextAlign, imgui.ImVec2(0.5, 0.5))
@@ -891,8 +927,6 @@ end
 local ARGUMENT_REGEXP = [[{.*="(.*)"}]]
 local selectedButton = 1
 local specActionsData = {
-    -- DEFAULT_FUNCTIONS [1-8]
-
     ["NEXT"]        = function() sampSendMenuSelectRow(0) end,
     ["SWITCH"]      = function() sampSendMenuSelectRow(1) end,
     ["BACK"]        = function() sampSendMenuSelectRow(2) end,
@@ -901,23 +935,14 @@ local specActionsData = {
     ["FRISK"]       = function() sampSendMenuSelectRow(5) end,
     ["EXIT"]        = function() sampSendMenuSelectRow(6) end,
     ["GG"]          = function() sampSendChat("/ans "..info_about.." "..cfg.gg_msg) end,
-
-    -- SPEC_PLAYER_INFO_FUNCTIONS [8-13]
-
     ["SP_ID"]       = function() return info_about end,
     ["SP_NICK"]     = function() return sampGetPlayerNickname(tonumber(info_about)) end,
     ["SP_HP"]       = function() return sampGetPlayerHealth(tonumber(info_about)) end,
     ["SP_ARM"]      = function() return sampGetPlayerArmor(tonumber(info_about)) end,
     ["SP_PING"]     = function() return sampGetPlayerPing(tonumber(info_about)) end,
-
-    -- CAR_FUNCTIONS [13-16]
-
     ["SP_CAR_HEALTH"]   = function() return player_data["car_hp"] end,
     ["SP_CAR_NAME"]     = function() return player_data["car_name"] end,
     ["SP_CAR_ENGINE"]   = function() return player_data["car_engine"] end,
-
-    -- ARGUMENT_FUNCTIONS [16-19]
-       
     [ [[SEND_CHAT]] ]            = function(arg) sampSendChat(arg:match(ARGUMENT_REGEXP)) end,
     [ [[ADD_CHAT_MESSAGE]] ]     = function(arg) sampAddChatMessage(arg:match(ARGUMENT_REGEXP), -1) end,
     [ [[SEND_SP_ANSWER]] ]       = function(arg) sampSendChat("/sp "..info_about.." "..arg:match(ARGUMENT_REGEXP)) end
@@ -1258,14 +1283,15 @@ function main()
             end
         end
 
-        if movableWindows[movEnum.stats].it[0] and cfg.showGunInfo then
+        if cfg.showGunInfo then
             for _, player in ipairs(getAllChars()) do
                 local idResult, id = sampGetPlayerIdByCharHandle(player)
                 local charResult, char = sampGetCharHandleBySampPlayerId(id)
-                local posX, posY, posZ = getBodyPartCoordinates(2, player)
-                local screenPosX, screenPosY = convert3DCoordsToScreen(posX, posY, posZ)
+                local x, y, z = getBodyPartCoordinates(2, player)
+                local myx, myy, myz = getCharCoordinates(PLAYER_PED)
+                local screenPosX, screenPosY = convert3DCoordsToScreen(x, y, z)
 
-                if charResult then
+                if charResult and isCharOnScreen(char) and getDistanceBetweenCoords3d(x, y, z, myx, myy, myz) < 50 then
                     renderFontDrawTextAlign(font, require("game.weapons").names[getCurrentCharWeapon(player)], screenPosX, screenPosY, 0xFFFFFFFF, 2)
                 end
             end
@@ -1361,7 +1387,8 @@ function samp.onServerMessage(color, text)
     local result, id        = sampGetPlayerIdByCharHandle(PLAYER_PED)
     local nickname          = sampGetPlayerNickname(id)
 
-    text = u8(text)
+    local text  = u8(text)
+    local hex   = bit.tohex(bit.rshift(color, 8), 6)
 
     if text:find("Вы успешно авторизовались как администратор") or text:find("Вы уже авторизировались") and color == -1 then
         alogin = true
@@ -1369,6 +1396,19 @@ function samp.onServerMessage(color, text)
         stopForm()
     elseif text:find("^Администратор .* установил <.*> персонажу " .. formPlayer .. "$") then
         stopForm()
+    elseif text:find("%[A%] .*%[%d+%]:.*@" .. tostring(id)) or
+           text:find("%[A%] .*%[%d+%]:.*@" .. nickname) and
+           color == 866792362
+    then
+        return {color, "{" .. cfg.mentionColor .."}" .. u8(text)}    
+    elseif text:find("^%[A%] Жалоба от .*%[%d+%]: .*") then
+        if cfg.reportWindow.use then
+            table.insert(reportData.messages, {
+                text = text,
+                hex = tostring(hex)
+            })
+            return false
+        end
     end
 
     for k, v in ipairs(formCommands) do
@@ -1394,7 +1434,7 @@ function samp.onServerMessage(color, text)
         end
     end
 
-    print(string.gsub(text, "{(%x%x%x%x%x%x)}", "#%1"))
+    print("COLOR:", bit.tohex(bit.rshift(color, 8), 6), "| DEF:", color, "|", string.gsub(text, "{(%x%x%x%x%x%x)}", "#%1"))
 end
 
 function getIdByMatchedNickname(nickname, lengthException)
@@ -1405,14 +1445,19 @@ function getIdByMatchedNickname(nickname, lengthException)
         if string.len(nickname) <= 2 then sampAddChatMessage("{ffff00}|{ffffff} " .. lengthException, -1) else
             for i = 0, sampGetMaxPlayerId(false) do
                 if sampIsPlayerConnected(i) and sampGetPlayerScore(i) == 1 then
-                    if string.lower(sampGetPlayerNickname(i)):find(string.lower(nickname)) then
+                    -- Convert found nickname to lower and nickname (which is argument) to lower,
+                    -- then convert last to displayed(for example, "[" in string will converted by "%[") string.
+
+                    local playerNickname    = string.lower(sampGetPlayerNickname(i))
+                    local argumentNickname  = string.gsub(string.lower(nickname), "[%[%]%(%)%$]", "%%%0")
+                    if playerNickname:find(argumentNickname) then
                         table.insert(findedNicknames, sampGetPlayerNickname(i))
                     end
                 end
             end
 
             if #findedNicknames == 1 then
-                result, playerId = true, getPlayerIdByNickname(findedNicknames[i])
+                result, playerId = true, getPlayerIdByNickname(findedNicknames[1])
             elseif #findedNicknames == 0 then
                 sampAddChatMessage("{FFFF00}|{FFFFFF} По {4a86b6}"..nickname.."{FFFFFF} не найдено совпадений", -1)
             else
@@ -1545,7 +1590,7 @@ function specReload()
 end
 
 function changeSpecCursorMode()
-    if movableWindows[movEnum.stats].it[0] then
+    if isNotCursorActive() or not _showSpectateCursor then
         _showSpectateCursor = not _showSpectateCursor
     end
 end
@@ -1613,7 +1658,7 @@ function setWeather(weather)
     end
 end
 
-function pk_cmd(arg)
+function pk_cmd(id)
     if tonumber(id) and sampIsPlayerConnected(tonumber(id)) then
         lua_thread.create(function()
             sampSendChat("/jail " .. id .. " 90 PK`ed")
@@ -1623,13 +1668,13 @@ function pk_cmd(arg)
     end
 end
 
-function gg_cmd(arg)
+function gg_cmd(id)
     if tonumber(id) and sampIsPlayerConnected(tonumber(id)) then
         sampSendChat("/ans " .. id .. " " .. cfg.gg_msg)
     end
 end
 
-function asp_cmd(arg)
+function asp_cmd(id)
     if tonumber(id) and sampIsPlayerConnected(tonumber(id)) then
         lua_thread.create(function()
             sampSendChat("/sp " .. id)
