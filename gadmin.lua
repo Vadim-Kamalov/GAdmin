@@ -40,8 +40,35 @@ encoding.default = 'cp1251'
 local u8 = encoding.UTF8
 local sizeX, sizeY = getScreenResolution()
 
--- FFI functions
+-- FFI
 local getBonePosition = ffi.cast("int (__thiscall*)(void*, float*, int, bool)", 0x5E4280)
+ffi.cdef[[
+    struct stKillEntry
+    {
+	    char					szKiller[25];
+	    char					szVictim[25];
+	    uint32_t				clKillerColor;      // D3DCOLOR
+	    uint32_t				clVictimColor;      // D3DCOLOR
+	    uint8_t					byteType;
+    } __attribute__ ((packed));
+
+    struct stKillInfo
+    {
+	    int						iEnabled;
+	    struct stKillEntry		killEntry[5];
+	    int 					iLongestNickLength;
+  	    int 					iOffsetX;
+  	    int 					iOffsetY;
+	    void			    	*pD3DFont;          // ID3DXFont
+	    void		    		*pWeaponFont1;      // ID3DXFont
+	    void		   	    	*pWeaponFont2;      // ID3DXFont
+	    void					*pSprite;
+	    void					*pD3DDevice;
+	    int 					iAuxFontInited;
+        void 		    		*pAuxFont1;         // ID3DXFont
+        void 			    	*pAuxFont2;         // ID3DXFont
+    } __attribute__ ((packed));
+]]
 
 -- КОНСТАНТЫ
 CMD_DELAY = 800
@@ -99,11 +126,11 @@ function create_config()
             sunday = 0
         },
         hotkeys = {
-            gadm = {77},
+            gadm = {300},
             acceptForm = {73},
             spectateCursor = {66},
             specReload = {85},
-            disconnectSpecCopy = {0x12, VK_Q} -- Alt + Q
+            disconnectSpecCopy = {0x12, vkeys.VK_Q} -- Alt + Q
         },
         windowsPosition = {
             actionFrame         = {x = sizeX / 100, y = sizeY / 1.1},
@@ -151,13 +178,15 @@ function create_config()
         autoEnter = false,
         aloginOnEnter = false,
         showGunInfo = false,
+        deathNotifyInChat = false,
+        showIdInKillList = false,
         mentionColor = "4A86B6",
         reportWindow = {
             use     = false,
             alpha   = 30,
             size    = {500, 300}
         }
-    }
+    } 
 
     local handle = assert(io.open("moonloader/config/gadmin.json", "w"))
     handle:write(neatJSON(def_data, {sort = true, wrap = 40}))
@@ -475,7 +504,7 @@ local actionMenu = imgui.OnFrame(
 )
 
 local checkerFrame = imgui.OnFrame(
-    function() return movableWindows[movEnum.checker].it[0] == cfg.checker.show end,
+    function() return movableWindows[movEnum.checker].it[0] and cfg.checker.show end,
     function(self)
         self.HideCursor         = _showSpectateCursor
         self.windowProperties   = {
@@ -583,7 +612,7 @@ local notificationFrame = imgui.OnFrame(
 )
 
 local playersNearbyFrame = imgui.OnFrame(
-    function() return movableWindows[movEnum.stats].it[0] == cfg.windowsSettings.playersNearby.use end,
+    function() return movableWindows[movEnum.stats].it[0] and cfg.windowsSettings.playersNearby.use end,
     function(self)
         self.HideCursor = _showSpectateCursor
 
@@ -956,7 +985,7 @@ function doSpecActions(action)
 end
 
 local _specAdminPanel = imgui.OnFrame(
-    function() return movableWindows[movEnum.stats].it[0] == cfg.specAdminPanel.show end,
+    function() return movableWindows[movEnum.stats].it[0] and cfg.specAdminPanel.show end,
     function(self)
         self.HideCursor = _showSpectateCursor
 
@@ -1021,10 +1050,10 @@ local _specAdminPanel = imgui.OnFrame(
                         imgui.PushStyleColor(imgui.Col.Button, hexToImVec4(k == selectedButton and "303238" or "444751"))
                         imgui.PushStyleColor(imgui.Col.ButtonHovered, hexToImVec4(k == selectedButton and "444751" or "303238"))
                         imgui.PushStyleColor(imgui.Col.ButtonActive, hexToImVec4(k == selectedButton and "303238" or "444751"))
-                            imgui.Button("##IMGUI_".. v.name, imgui.ImVec2(186, 30))
+                            imgui.Button("##IMGUI_".. v.name, imgui.ImVec2(cfg.specAdminPanel.width - 14, 30))
                         imgui.PopStyleColor(2)
 
-                        imgui.SameLine(imgui.GetCursorPos().x + 93 - imgui.CalcTextSize(v.name).x / 2 - 5)
+                        imgui.SameLine(cfg.specAdminPanel.width / 2 - imgui.CalcTextSize(v.name).x / 2 - 7)
                         imgui.SetCursorPosY(imgui.GetCursorPos().y - 1)
                         imgui.Text(v.name)
                     imgui.EndGroup()
@@ -1379,6 +1408,59 @@ function samp.onSendCommand(command)
     end
 end
 
+function samp.onPlayerDeathNotification(killerId, killedId, reason)
+    local kill = ffi.cast("struct stKillInfo*", sampGetKillInfoPtr())
+    local _, myid = sampGetPlayerIdByCharHandle(PLAYER_PED)
+    local killerNickname = (sampIsPlayerConnected(killerId) or killerId == myid) and sampGetPlayerNickname(killerId) or nil
+    local killedNickname = (sampIsPlayerConnected(killedId) or killedId == myid) and sampGetPlayerNickname(killedId) or nil
+
+    local gameModule = require("game.weapons")
+    local reasonKilledBy = (function(id)
+        local DIE_BY_FALL_ID   = 54
+        local DIE_BY_CAR_ID    = 49
+        if id == DIE_BY_FALL_ID or id == DIE_BY_CAR_ID then
+            return ({
+                [DIE_BY_CAR_ID] = "убит машиной",
+                [DIE_BY_FALL_ID] = "убит падением"
+            })[id]
+        else
+            if (id >= 0 and id <= 18) or (id >= 22 and id <= 46) then
+                return "убит с " .. gameModule.get_name(id)
+            end
+        end
+        return "неизвестно"
+    end)(reason)
+
+    if cfg.deathNotifyInChat then
+        sampAddChatMessage((function()
+            if killerId == 65535 then -- Killed by `killedId`
+                return string.format("[A] %s[%s] погиб. Причина - %s.", killedNickname, killedId, reasonKilledBy)
+            else
+                return string.format(
+                    "[A] %s[%s] убит от рук %s[%s]. Причина - %s.",
+                    killedNickname,
+                    killedId,
+                    killerNickname,
+                    killerId,
+                    reasonKilledBy
+                )
+            end
+        end)(), 0xAFAFAF)
+    end
+
+    if cfg.showIdInKillList then
+        lua_thread.create(function()
+            wait(0)
+            if killerNickname then
+                kill.killEntry[4].szKiller = ffi.new("char[25]", string.sub(killerNickname .. "[" .. killerId .. "]", 1, 24))
+            end
+            if killedNickname then
+                kill.killEntry[4].szVictim = ffi.new("char[25]", string.sub(killedNickname .. "[" .. killedId .. "]", 1, 24))
+            end
+        end)
+    end
+end
+
 function samp.onShowMenu()
     return not cfg.specAdminPanel.show
 end
@@ -1445,12 +1527,7 @@ function getIdByMatchedNickname(nickname, lengthException)
         if string.len(nickname) <= 2 then sampAddChatMessage("{ffff00}|{ffffff} " .. lengthException, -1) else
             for i = 0, sampGetMaxPlayerId(false) do
                 if sampIsPlayerConnected(i) and sampGetPlayerScore(i) == 1 then
-                    -- Convert found nickname to lower and nickname (which is argument) to lower,
-                    -- then convert last to displayed(for example, "[" in string will converted by "%[") string.
-
-                    local playerNickname    = string.lower(sampGetPlayerNickname(i))
-                    local argumentNickname  = string.gsub(string.lower(nickname), "[%[%]%(%)%$]", "%%%0")
-                    if playerNickname:find(argumentNickname) then
+                    if string.lower(sampGetPlayerNickname(i)):find(string.lower(nickname), 1, true) then
                         table.insert(findedNicknames, sampGetPlayerNickname(i))
                     end
                 end
