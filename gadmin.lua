@@ -24,20 +24,30 @@
 script_name     "GAdmin"
 script_version  "1.0"
 
-local mem = require('memory')
-local encoding = require('encoding')
-local imgui = require('mimgui')
-local gnomeIcons = require("gadmin/gnome-icons")
-local wm = require("windows.message")
-local vkeys = require("vkeys")
-local rkeys = require('gadmin/rkeys_modif')
-local samp = require('lib.samp.events')
-local ffi = require('ffi')
-local new, str, sizeof = imgui.new, ffi.string, ffi.sizeof
-local neatJSON = require("neatjson")
+local loadLib = function(name)
+    local lib, err = pcall(require, name)
+    if not lib then
+        sampfuncsLog("{FF5F5F}GAdmin >> {FFFFFF}The GAdmin script can't find library \"" .. name .. "\":" .. err)
+        sampfuncsLog("{FF5F5F}GAdmin >> {FFFFFF}Please, reinstall script with all libraries included.")
+        return nil
+    end
+    return lib
+end
+
+local mem           = loadLib("memory")
+local encoding      = loadLib("encoding")
+local imgui         = loadLib("mimgui")
+local gnomeIcons    = loadLib("gadmin/gnome-icons")
+local wm            = loadLib("windows.message")
+local vkeys         = loadLib("vkeys")
+local rkeys         = loadLib("gadmin/rkeys_modif")
+local samp          = loadLib("lib.samp.events")
+local ffi           = loadLib("ffi")
+local neatJSON      = loadLib("neatjson")
 
 encoding.default = 'cp1251'
 local u8 = encoding.UTF8
+local new, str, sizeof = imgui.new, ffi.string, ffi.sizeof
 local sizeX, sizeY = getScreenResolution()
 
 -- FFI
@@ -72,6 +82,14 @@ ffi.cdef[[
 
 -- КОНСТАНТЫ
 CMD_DELAY = 800
+
+function enum(key)
+    return (function(num)
+        for i, v in ipairs(num) do
+            _G[v] = i
+        end
+    end)
+end
 
 function get_config()
     file = io.open("moonloader/config/gadmin.json", "r")
@@ -342,13 +360,13 @@ local movableWindows = {
     }
 }
 
-local movEnum = {
-    action      = 1,
-    stats       = 2,
-    nearby      = 3,
-    checker     = 4,
-    adminPanel  = 5,
-    report      = 6
+enum "MOV_ENUM" {
+    "MOV_ACTION",
+    "MOV_STATS",
+    "MOV_NEARBY",
+    "MOV_CHECKER",
+    "MOV_ADMIN_PANEL",
+    "MOV_REPORT"
 }
 
 -- для хоткеев
@@ -430,7 +448,7 @@ local reportWindow = imgui.OnFrame(
         imgui.SetNextWindowPos(imgui.ImVec2(cfg.windowsPosition.reportWindow.x, cfg.windowsPosition.reportWindow.y))
         imgui.SetNextWindowSize(reportData.size)
 
-        imgui.Begin("Report window", movableWindows[movEnum.report].it, imgui.WindowFlags.NoMove + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize)
+        imgui.Begin("Report window", movableWindows[MOV_REPORT].it, imgui.WindowFlags.NoMove + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize)
             imgui.PushTextWrapPos(reportData.size.x)
                 for i, v in ipairs(reportData.messages) do
                     imgui.SafeText(v.text, cfg.reportWindow.alpha, hexToImVec4(v.hex))
@@ -441,7 +459,7 @@ local reportWindow = imgui.OnFrame(
 )
 
 local actionMenu = imgui.OnFrame(
-    function() return movableWindows[movEnum.stats].it[0] end,
+    function() return movableWindows[MOV_STATS].it[0] end,
     function(self)
         self.HideCursor = _showSpectateCursor
         self.Buttons    = {
@@ -472,7 +490,7 @@ local actionMenu = imgui.OnFrame(
         imgui.PushStyleVarVec2(imgui.StyleVar.ButtonTextAlign, imgui.ImVec2(0.5, 0.5))
         imgui.PushStyleVarFloat(imgui.StyleVar.FrameRounding, 0)
         imgui.PushStyleVarFloat(imgui.StyleVar.FrameBorderSize, 0.5)
-            imgui.Begin("action_menu", movableWindows[movEnum.action].it, imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoScrollbar + imgui.WindowFlags.NoMove)
+            imgui.Begin("action_menu", movableWindows[MOV_ACTION].it, imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoScrollbar + imgui.WindowFlags.NoMove)
                 if imgui.Button("<<", imgui.ImVec2(50, 70)) then
                     sampSendMenuSelectRow(2)
                 end
@@ -504,7 +522,7 @@ local actionMenu = imgui.OnFrame(
 )
 
 local checkerFrame = imgui.OnFrame(
-    function() return movableWindows[movEnum.checker].it[0] and cfg.checker.show end,
+    function() return movableWindows[MOV_CHECKER].it[0] and cfg.checker.show end,
     function(self)
         self.HideCursor         = _showSpectateCursor
         self.windowProperties   = {
@@ -517,7 +535,7 @@ local checkerFrame = imgui.OnFrame(
         imgui.SetNextWindowSize(imgui.ImVec2(250, cfg.checker.height))
         changeTheme:applySettings(self.windowProperties)
     
-        imgui.Begin("Checker Frame", movableWindows[movEnum.checker].it, imgui.WindowFlags.NoResize + imgui.WindowFlags.NoMove + imgui.WindowFlags.NoTitleBar)
+        imgui.Begin("Checker Frame", movableWindows[MOV_CHECKER].it, imgui.WindowFlags.NoResize + imgui.WindowFlags.NoMove + imgui.WindowFlags.NoTitleBar)
             for index, player in ipairs(cfg.checker.players) do
                 imgui.SetCursorPosX(
                     125 - imgui.CalcTextSize("[OFFLINE]" .. player .. (sampIsPlayerConnected(getPlayerIdByNickname(player)) and "[" .. tostring(getPlayerIdByNickname(player) .. "]") or "")).x / 2
@@ -612,7 +630,7 @@ local notificationFrame = imgui.OnFrame(
 )
 
 local playersNearbyFrame = imgui.OnFrame(
-    function() return movableWindows[movEnum.stats].it[0] and cfg.windowsSettings.playersNearby.use end,
+    function() return movableWindows[MOV_STATS].it[0] and cfg.windowsSettings.playersNearby.use end,
     function(self)
         self.HideCursor = _showSpectateCursor
 
@@ -627,7 +645,7 @@ local playersNearbyFrame = imgui.OnFrame(
 
         changeTheme:applySettings(playersNearbyAlpha)
 
-        imgui.Begin("playersNearby", movableWindows[movEnum.nearby].it, imgui.WindowFlags.NoMove + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar)
+        imgui.Begin("playersNearby", movableWindows[MOV_NEARBY].it, imgui.WindowFlags.NoMove + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar)
             if changePosition == 3 then
                 for _, v in ipairs {
                     "VANYA", "El_Capone", "DZONE", "Tyler_Carter", "Samuel_Jones", "Anthony_Hughes",
@@ -863,7 +881,7 @@ local onlineFrame = imgui.OnFrame(
 )
 
 local infoFrame = imgui.OnFrame(
-    function() return movableWindows[movEnum.stats].it[0] end,
+    function() return movableWindows[MOV_STATS].it[0] end,
     function(player)
         if sampIsPlayerConnected(tonumber(spectate_id)) then
             player_data["armour"] = sampGetPlayerArmor(spectate_id)
@@ -892,7 +910,7 @@ local infoFrame = imgui.OnFrame(
         local info = infoData[infoMode]
         imgui.SetNextWindowSize(imgui.ImVec2(info.size[1], (player_data["car"] and info.size[3] or info.size[2])))
         imgui.SetNextWindowPos(imgui.ImVec2(cfg.windowsPosition.playerStatsFrame.x, cfg.windowsPosition.playerStatsFrame.y))
-        imgui.Begin("GAdmin_info", movableWindows[movEnum.stats].it, imgui.WindowFlags.AlwaysAutoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoScrollbar + imgui.WindowFlags.NoMove)
+        imgui.Begin("GAdmin_info", movableWindows[MOV_STATS].it, imgui.WindowFlags.AlwaysAutoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoScrollbar + imgui.WindowFlags.NoMove)
 
         imgui.CenterText(tostring(player_data["nick"]) .. "[" .. spectate_id .. "]")
         imgui.Columns(info.columnsNum, "##player_info", true)
@@ -985,7 +1003,7 @@ function doSpecActions(action)
 end
 
 local _specAdminPanel = imgui.OnFrame(
-    function() return movableWindows[movEnum.stats].it[0] and cfg.specAdminPanel.show end,
+    function() return movableWindows[MOV_STATS].it[0] and cfg.specAdminPanel.show end,
     function(self)
         self.HideCursor = _showSpectateCursor
 
@@ -1044,7 +1062,7 @@ local _specAdminPanel = imgui.OnFrame(
 
         changeTheme:applySettings(specAdminPanelChange)
         imgui.PushFont(bold15)
-            imgui.Begin("specAdminPanel", movableWindows[movEnum.adminPanel].it, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoMove)
+            imgui.Begin("specAdminPanel", movableWindows[MOV_ADMIN_PANEL].it, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoMove)
                 for k, v in pairs(sortedTable) do
                     imgui.BeginGroup()
                         imgui.PushStyleColor(imgui.Col.Button, hexToImVec4(k == selectedButton and "303238" or "444751"))
@@ -1386,16 +1404,14 @@ local formCommands = {
 function onScriptTerminate(LuaScript, quitGame)
     if LuaScript == thisScript() and not quitGame then
         for _, v in ipairs {
-            "",
-            "{ff5f5f}GAdmin завершил свою работу.",
-            "",
-            "Что-то пошло не так, и скрипт завершил свою работу. Пожалуйста, создайте {ff5f5f}баг-репорт",
-            "по ссылке ниже, приложив свой {ff5f5f}moonloader.log{ffffff} из папки со скриптом:",
-            "{ff5f5f}https://github.com/Vadim-Kamalov/GAdmin/issues{FFFFFF} (перед созданием прочтите {ff5f5f}README.md{ffffff} из репозитория)",
-            "",
-            "{ff5f5f}Спасибо!",
-            ""
-        } do sampAddChatMessage(v, -1) end
+            "The GAdmin script crashed.",
+            "Something went wrong and the script stopped working. Please file a bug report in GAdmin repository if the bug is critical:",
+            "   https://github.com/Vadim-Kamalov/GAdmin/issues",
+            "Create a bug report after reading the README.md from the repository.",
+            "You can make the script better by simply submitting a bug report. We look forward to your responsiveness."
+        } do 
+            sampfuncsLog("{FF5F5F}GAdmin << {FFFFFF}" .. v)
+        end
     end
 end
 
@@ -1584,7 +1600,7 @@ end
 function change_sp(new_id)
     spectate_id = new_id
     in_sp = true
-    movableWindows[movEnum.stats].it[0] = in_sp
+    movableWindows[MOV_STATS].it[0] = in_sp
     lua_thread.create(function()
         wait(1)
         if new_id ~= info_about and os.clock() - last_checking_stats > 1 and not sampIsDialogActive() and not checking_stats then
@@ -1609,7 +1625,7 @@ end
 function samp.onTextDrawHide(id)
     if id == spec_textdraw then
         in_sp = false
-        movableWindows[movEnum.stats].it[0] = in_sp
+        movableWindows[MOV_STATS].it[0] = in_sp
         spectate_id = -1
     end
 end
@@ -1850,7 +1866,13 @@ sampfuncsRegisterConsoleCommand("execute.addChecker", function(nickname)
     save_config()
 end)
 
-sampfuncsRegisterConsoleCommand("execute.checker", function() movableWindows[movEnum.checker].it[0] = not movableWindows[movEnum.checker].it[0] end)
+sampfuncsRegisterConsoleCommand("execute.parseDialog", function()
+    for line in string.gmatch(sampGetDialogText(), "\n") do
+        sampfuncsLog(line)
+    end
+end)
+
+sampfuncsRegisterConsoleCommand("execute.checker", function() movableWindows[MOV_CHECKER].it[0] = not movableWindows[MOV_CHECKER].it[0] end)
 sampfuncsRegisterConsoleCommand("execute.cursor", function() print(_showSpectateCursor) end)
 sampfuncsRegisterConsoleCommand("execute.newMenu", function() newMainFrame[0] = not newMainFrame[0] end)
 sampfuncsRegisterConsoleCommand("execute.specAction", doSpecActions)
