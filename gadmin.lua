@@ -24,6 +24,8 @@
 script_name     "GAdmin"
 script_version  "1.0"
 
+gweather = -1
+
 local loadLib = function(name)
     local lib, err = pcall(require, name)
     if not lib then
@@ -156,12 +158,16 @@ function create_config()
             playersNearby       = {x = sizeX / 1.125, y = sizeY / 3},
             playerChecker       = {x = sizeX / 2, y = sizeY / 2},
             actionMenu          = {x = sizeX / 15, y = sizeY / 2},
-            reportWindow        = {x = sizeX / 2, y = sizeX / 2}
+            reportWindow        = {x = sizeX / 2, y = sizeX / 2},
+            onlineFrame         = {x = sizeX, y = sizeY}
         },
         windowsSettings = {
             playersNearby = {
                 use = false,
                 alpha = 0
+            },
+            onlineFrame = {
+                use = true,
             },
             playerStatsFrame = {
                 mode = 1
@@ -325,6 +331,7 @@ local playersNerbyTransparent = new.int(cfg.windowsSettings.playersNearby.alpha)
 local aloginOnEnter = new.bool()
 local autologin = new.bool()
 local playersNearbyCheckbox = new.bool(cfg.windowsSettings.playersNearby.use)
+local onlineFrameCheckbox = new.bool(cfg.windowsSettings.onlineFrame.use)
 local car_spec = new.bool(cfg.car_spec)
 local gg_msg = new.char[256](cfg.gg_msg)
 local game_pass = new.char[256](cfg.game_pass)
@@ -356,6 +363,10 @@ local movableWindows = {
     }, {
         title   = "Окно с репортами/вопросами",
         jsonKey = "reportWindow",
+        it      = new.bool()
+    }, {
+        title   = "Окно с онлайном",
+        jsonKey = "onlineFrame",
         it      = new.bool()
     }
 }
@@ -630,7 +641,7 @@ local notificationFrame = imgui.OnFrame(
 )
 
 local playersNearbyFrame = imgui.OnFrame(
-    function() return movableWindows[MOV_STATS].it[0] and cfg.windowsSettings.playersNearby.use end,
+    function() return (movableWindows[MOV_STATS].it[0] and cfg.windowsSettings.playersNearby.use) or movableWindows[MOV_NEARBY].it[0] end,
     function(self)
         self.HideCursor = _showSpectateCursor
 
@@ -795,6 +806,10 @@ local mainFrame = imgui.OnFrame(
             cfg.windowsSettings.playersNearby.use = playersNearbyCheckbox[0]
             save_config()
         end
+        if imgui.Checkbox("Отображение окна с временем онлайна", onlineFrameCheckbox) then
+            cfg.windowsSettings.onlineFrame.use = onlineFrameCheckbox[0]
+            save_config()
+        end
 
         if imgui.SliderInt("Прозрачность окна с ближайшими игроками", playersNerbyTransparent, 0, 100) then
             cfg.windowsSettings.playersNearby.alpha = playersNerbyTransparent[0] / 100
@@ -854,7 +869,7 @@ local mainFrame = imgui.OnFrame(
 )
 
 local onlineFrame = imgui.OnFrame(
-    function() return show_online_menu[0] end,
+    function() return show_online_menu[0] and cfg.windowsSettings.onlineFrame.use end,
     function(player)
         player.HideCursor = _showSpectateCursor
         local full_online = string.format("Общий онлайн: %02d:%02d:%02d", cfg.online.total / 3600,cfg.online.total / 60 % 60, cfg.online.total % 60)
@@ -862,13 +877,13 @@ local onlineFrame = imgui.OnFrame(
         size = {imgui.GetStyle().WindowPadding.x*2 + imgui.CalcTextSize(temp_online).x,
         imgui.GetStyle().ItemSpacing.y + imgui.GetStyle().WindowPadding.y*2 + imgui.CalcTextSize(temp_online).y + imgui.CalcTextSize(full_online).y}
 
-        local onlinePosX, onlinePosY = sizeX - size[1], sizeY - size[2]
+        
         if admin_form_menu[0] then onlinePosY = sizeY - size[2] - 35 else onlinePosY = sizeY - size[2] end
 
         imgui.PushStyleVarFloat(imgui.StyleVar.WindowRounding, 0)
 
         imgui.SetNextWindowSize(imgui.ImVec2(size[1], size[2]))
-        imgui.SetNextWindowPos(imgui.ImVec2(onlinePosX, onlinePosY))
+        imgui.SetNextWindowPos( imgui.ImVec2(cfg.windowsPosition.onlineFrame.x - size[1], cfg.windowsPosition.onlineFrame.y - size[2]))
         imgui.Begin("GAdmin_online", show_online_menu, imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoMove + imgui.WindowFlags.NoScrollbar)
 
         imgui.Text(full_online)
@@ -1172,14 +1187,14 @@ local mainWindow = imgui.OnFrame(
                         lua_thread.create(function()
                             while menuProperties.width ~= 240 do
                                 wait(1)
-                                menuProperties.width = menuProperties.width + 40
+                                menuProperties.width = menuProperties.width + 20
                             end
                         end)
                     elseif menuProperties.width == 240 then
                         lua_thread.create(function()
                             while menuProperties.width ~= 80 do
                                 wait(1)
-                                menuProperties.width = menuProperties.width - 40
+                                menuProperties.width = menuProperties.width - 20
                             end
                         end)
                     end
@@ -1310,6 +1325,9 @@ function main()
 
     while true do
         wait(0)
+        if gweather ~= -1 then
+            forceWeatherNow(gweather)
+        end
         if car_spec[0] then
             for _, car in pairs(getAllVehicles()) do
                 local x, y, z = getCarCoordinates(car)
@@ -1746,6 +1764,7 @@ end
 
 function setWeather(weather)
     local weather = tonumber(weather)
+    gweather = tonumber(weather)
     if weather and weather >= 0 and weather <= 45 then
         forceWeatherNow(weather)
     end
@@ -1890,7 +1909,6 @@ end
 function sampAddChatMessage(text, color)
     addchatmessage(u8:decode(text), color)
 end
-
 function changeTheme:applySettings(table)
     for i = 1, #table do
         if table[i][1] == "ImVec2" then
