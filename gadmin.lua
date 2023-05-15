@@ -27,11 +27,11 @@ script_version  "1.0"
 local loadLib = function(name)
     local lib, err = pcall(require, name)
     if not lib then
-        sampfuncsLog("{FF5F5F}GAdmin >> {FFFFFF}The GAdmin script can't find library \"" .. name .. "\":" .. err)
-        sampfuncsLog("{FF5F5F}GAdmin >> {FFFFFF}Please, reinstall script with all libraries included.")
+        sampfuncsLog("{FF5F5F}GAdmin << {FFFFFF}The GAdmin script can't find library \"" .. name .. "\", error: " .. err)
+        sampfuncsLog("{FF5F5F}GAdmin << {FFFFFF}Please, reinstall script with all libraries included.")
         return nil
     end
-    return lib
+    return require(name)
 end
 
 local mem           = loadLib("memory")
