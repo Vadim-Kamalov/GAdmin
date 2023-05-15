@@ -1524,7 +1524,7 @@ local formCommands = {
     "jail (%d+) %d+ .*",
     "mute (%d+) %d+ .*",
     "warn (%d+) .*",
-    "iban (%d+) %d+ .*",
+    "iban (%d+) .*",
     "ck (%d+)",
     "pk (%d+)",
     "setworld (%d+) %d+"
