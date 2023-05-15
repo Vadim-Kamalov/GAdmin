@@ -15,11 +15,12 @@ The name of the topic should reflect the whole essence of the error, there shoul
 Please note that if there is an error related to the fact that you have not installed a specific error, then this topic will be ignored and closed in the future.
 <br>
 
-## All script dependencies (libraries, etc.)
+## Script dependencies
 
-- MoonLoader >= **v.026.5-beta**
-- Dear ImGui **v.1.72** (this version in `lib` called as `mimgui`)
-- NeatJSON >= **v0.10.0**
+- MoonLoader    >= **v.026.5-beta**
+- SAMPFUNCS     >= **v5.4.1-final**
+- CLEO          >= **v4.1**
+- All libraries from `LIBRARIES` file
 
 # Contributing
 
@@ -31,5 +32,8 @@ There are many ways in which you can participate in project, for example:
 If you are interested in fixing issues, and contributing directly to the code base, you can creating [pull requests](https://github.com/Vadim-Kamalov/GAdmin/compare).<br>
 Note that the main language that GAdmin is written in is Lua, using the MoonLoader API for the online game San Andreas Multiplayer. For more information see [`CONTRIBUTING.md`](https://github.com/Vadim-Kamalov/GAdmin/blob/main/CONTRIBUTING.md).
 # License
-Copyright (C) 2023 The Contributors.<br>
+Copyright (C) 2023 The Contributors\*.<br>
 Licensed under the [GNU General Public License v3 (GPLv3)](https://github.com/Vadim-Kamalov/GAdmin/blob/main/LICENSE).
+<br>
+<br>
+\* You can find contributors of the GAdmin project in `CONTIBUTORS` file. 
