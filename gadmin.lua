@@ -80,6 +80,8 @@ ffi.cdef[[
         void 		    		*pAuxFont1;         // ID3DXFont
         void 			    	*pAuxFont2;         // ID3DXFont
     } __attribute__ ((packed));
+
+    const char* GetCommandLineA(void);
 ]]
 
 -- КОНСТАНТЫ
@@ -252,7 +254,6 @@ local spectate_id = -1
 local info_about = -1
 local spec_textdraw = -1
 local player_data = {}
-local intWindows = {"actionFrame", "playerStatsFrame", "playersNearby", "playerChecker"}
 local infoMode = tonumber(cfg.windowsSettings.playerStatsFrame.mode)
 local infoData = {
     {
@@ -321,15 +322,12 @@ local form_secondsToHide = os.clock()
 
 -- ИМГУИ ПЕРЕМЕННЫЕ
 local show_main_menu = new.bool()
-local answerGps = new.bool()
 local show_online_menu = new.bool(true)
 local notification = new.bool()
 local admin_form_menu = new.bool()
 local newMainFrame = new.bool()
 local specAdminPanel = new.bool()
 local playersNerbyTransparent = new.int(cfg.windowsSettings.playersNearby.alpha)
-local aloginOnEnter = new.bool()
-local autologin = new.bool()
 local playersNearbyCheckbox = new.bool(cfg.windowsSettings.playersNearby.use)
 local onlineFrameCheckbox = new.bool(cfg.windowsSettings.onlineFrame.use)
 local car_spec = new.bool(cfg.car_spec)
@@ -407,6 +405,119 @@ function imgui.CenterText(text)
     local calc = imgui.CalcTextSize(text)
     imgui.SetCursorPosX(width / 2 - calc.x / 2)
     imgui.Text(text)
+end
+
+function writeScriptInformationIn(path, neatJsonProperties)
+    local mainConfig = (function()
+        local config        = cfg
+        config.adm_pass     = "HIDEN"
+        config.game_pass    = "HIDEN"
+        return config
+    end)()
+
+    local movWindows = (function()
+        local output = {}
+        for _, data in ipairs(movableWindows) do
+            table.insert(output, {title = data.title, jsonKey = data.jsonKey, it = data.it[0]})
+        end
+        return output
+    end)()
+
+    local _, userId    = sampGetPlayerIdByCharHandle(PLAYER_PED)
+    local userNickname = sampGetPlayerNickname(userId)
+
+    local data = {
+        scriptName  = thisScript().fileName,
+        scriptPath  = thisScript().path,
+        scriptId    = thisScript().id,
+        mainConfig  = mainConfig,
+        variables   = {
+            alogin                          = alogin,
+            sendFormCommand                 = sendFormCommand,
+            playersPlatform                 = players_platform,
+            inSp                            = in_sp
+        },
+        imVariables = {
+            main = {
+                bools   = {
+                    show_main_menu          = show_main_menu[0],
+                    notification            = notification[0],
+                    admin_form_menu         = admin_form_menu[0],
+                    newMainFrame            = newMainFrame[0],
+                    specAdminPanel          = specAdminPanel[0],
+                    playersNearbyCheckbox   = playersNearbyCheckbox[0],
+                    onlineFrameCheckbox     = onlineFrameCheckbox[0],
+                    car_spec                = car_spec[0]
+                },
+                int     = {
+                    playersNerbyTransparent = playersNerbyTransparent[0]
+                },
+                char    = {
+                    gg_msg                  = {value = str(gg_msg), size = sizeof(gg_msg)},
+                    game_pass               = {value = "HIDEN",     size = sizeof(game_pass)},
+                    adm_pass                = {value = "HIDEN",     size = sizeof(adm_pass)}
+                }
+            },
+            movableWindows = movWindows
+        },
+        userInfo = {
+            nickname    = userNickname,
+            id          = userId,
+            animation   = sampGetPlayerAnimationId(userId),
+            armor       = sampGetPlayerArmor(userId),
+            color       = sampGetPlayerColor(userId),
+            health      = sampGetPlayerHealth(userId),
+            ping        = sampGetPlayerPing(userId),
+            score       = sampGetPlayerScore(userId),
+            specialAct  = sampGetPlayerSpecialAction(userId)
+        },
+        samp = {
+            launchOptions       = str(ffi.C.GetCommandLineA()),
+            bool                = {
+                cursor          = sampIsCursorActive(),
+                input           = sampIsChatInputActive(),
+                visible         = sampIsChatVisible(),
+                dialog          = sampIsDialogActive(),
+                spawned         = sampIsLocalPlayerSpawned(),
+                connected       = sampIsPlayerConnected(),
+                scoreboard      = sampIsScoreboardOpen()
+            },
+        },
+        log = {
+            sampfuncs   = (function()
+                local logPath = getGameDirectory() .. "\\SAMPFUNCS\\sampfuncs-settings.ini"
+                if doesFileExist(logPath) then
+                    local handle    = io.open(logPath, "r")
+                    local content   = handle:read("*all")
+                    handle:close()
+                    return content
+                else
+                    return "CANT_FIND"
+                end
+            end)(),
+            moonloader  = (function()
+                local logPath = getWorkingDirectory() .. "\\moonloader.log"
+                if doesFileExist(logPath) then
+                    local handle    = io.open(logPath, "r")
+                    local content   = handle:read("*all")
+                    handle:close()
+                    return content
+                else
+                    return "CANT_FIND"
+                end
+            end)()
+        },
+        plugins = {
+            sampfuncs   = doesFileExist(getGameDirectory() .. "\\SAMPFUNCS.asi"),
+            cleo        = doesFileExist(getGameDirectory() .. "\\CLEO.asi"),
+            antistealer = doesFileExist(getGameDirectory() .. "\\!0AntiStealerByDarkP1xel32.ASI")
+        }
+    }
+
+
+    local handle = assert(io.open(path, "w"))
+    handle:write(neatJSON(data, neatJsonProperties or {sort = true, wrap = 80}))
+    handle:close()
 end
 
 function getBodyPartCoordinates(id, handle)
@@ -923,7 +1034,7 @@ local infoFrame = imgui.OnFrame(
 
         player.HideCursor = _showSpectateCursor
         local info = infoData[infoMode]
-        imgui.SetNextWindowSize(imgui.ImVec2(info.size[1], (player_data["car"] and info.size[3] or info.size[2])))
+        imgui.SetNextWindowSizeConstraints(imgui.ImVec2(info.size[1], (player_data["car"] and info.size[3] or info.size[2])), imgui.ImVec2(math.huge, math.huge))
         imgui.SetNextWindowPos(imgui.ImVec2(cfg.windowsPosition.playerStatsFrame.x, cfg.windowsPosition.playerStatsFrame.y))
         imgui.Begin("GAdmin_info", movableWindows[MOV_STATS].it, imgui.WindowFlags.AlwaysAutoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoScrollbar + imgui.WindowFlags.NoMove)
 
@@ -935,9 +1046,9 @@ local infoFrame = imgui.OnFrame(
             imgui.SetColumnWidth(num, size)
         end
         for k, v in pairs(info.main) do
-            imgui.Text(v[2])
+            imgui.TextWrapped(v[2])
             imgui.NextColumn()
-            imgui.Text(tostring(player_data[v[1]]))
+            imgui.TextWrapped(tostring(player_data[v[1]]))
             imgui.NextColumn()
             if (k % (info.columnsNum / 2) == 0) and k ~= #info.main then
                 imgui.Separator()
@@ -957,9 +1068,9 @@ local infoFrame = imgui.OnFrame(
             end
 
             for k, v in pairs(info.car) do
-                imgui.Text(v[2])
+                imgui.TextWrapped(v[2])
                 imgui.NextColumn()
-                imgui.Text(tostring(player_data[v[1]]))
+                imgui.TextWrapped(tostring(player_data[v[1]]))
                 imgui.NextColumn()
                 if (k % (info.columnsNum / 2) == 0) and k ~= #info.car then
                     imgui.Separator()
@@ -1510,7 +1621,7 @@ function samp.onServerMessage(color, text)
         alogin = true
     elseif text:find("Администратор.*// "..formStarter) and color == -10270806 then
         stopForm()
-    elseif text:find("^Администратор .* установил <.*> персонажу " .. formPlayer .. "$") then
+    elseif text:find("^%[A%] .*%[%d+%] ответил .*%[%d+]: CK by " .. formStarter) then
         stopForm()
     elseif text:find("%[A%] .*%[%d+%]:.*@" .. tostring(id)) or
            text:find("%[A%] .*%[%d+%]:.*@" .. nickname) and
@@ -1897,6 +2008,7 @@ sampfuncsRegisterConsoleCommand("execute.newMenu", function() newMainFrame[0] = 
 sampfuncsRegisterConsoleCommand("execute.specAction", doSpecActions)
 sampfuncsRegisterConsoleCommand("execute.specAdminPanel", function() specAdminPanel[0] = not specAdminPanel[0] end)
 sampfuncsRegisterConsoleCommand("execute.scriptCrash", executeScriptCrash)
+sampfuncsRegisterConsoleCommand("execute.scriptInfo", writeScriptInformationIn)
 
 -- ниже лучше ничего не трогать
 sendchat = sampSendChat
