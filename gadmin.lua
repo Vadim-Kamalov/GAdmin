@@ -1523,6 +1523,7 @@ local formCommands = {
     "ban (%d+) %d+ .*",
     "jail (%d+) %d+ .*",
     "mute (%d+) %d+ .*",
+    "bmute (%d+) %d+ .*",
     "warn (%d+) .*",
     "iban (%d+) .*",
     "ck (%d+)",
