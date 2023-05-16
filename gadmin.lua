@@ -4,7 +4,7 @@
     This file created in (mm:dd:yy) 12:23:2022.
 
     GAdmin - Script for administators on gambit-rp.ru
-    Copyright (C) 2023 The Contributors.
+    Copyright (C) 2023 The Contributors*.
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,16 +19,14 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+    * You can find the contributors of the GAdmin project in the < CONTRIBUTORS > file.
+
 ]]--
 
 script_name     "GAdmin"
 script_version  "1.0"
 
 gweather = -1
-local airbreak = {
-    state = false,
-    speed = 1.0
-}
 
 local loadLib = function(name)
     local lib, err = pcall(require, name)
@@ -84,6 +82,8 @@ ffi.cdef[[
         void 		    		*pAuxFont1;         // ID3DXFont
         void 			    	*pAuxFont2;         // ID3DXFont
     } __attribute__ ((packed));
+
+    const char* GetCommandLineA(void);
 ]]
 
 -- КОНСТАНТЫ
@@ -208,7 +208,6 @@ function create_config()
         showGunInfo = false,
         deathNotifyInChat = false,
         showIdInKillList = false,
-        airbreak = false,
         mentionColor = "4A86B6",
         reportWindow = {
             use     = false,
@@ -257,7 +256,6 @@ local spectate_id = -1
 local info_about = -1
 local spec_textdraw = -1
 local player_data = {}
-local intWindows = {"actionFrame", "playerStatsFrame", "playersNearby", "playerChecker"}
 local infoMode = tonumber(cfg.windowsSettings.playerStatsFrame.mode)
 local infoData = {
     {
@@ -326,17 +324,13 @@ local form_secondsToHide = os.clock()
 
 -- ИМГУИ ПЕРЕМЕННЫЕ
 local show_main_menu = new.bool()
-local answerGps = new.bool()
 local show_online_menu = new.bool(true)
 local notification = new.bool()
 local admin_form_menu = new.bool()
 local newMainFrame = new.bool()
 local specAdminPanel = new.bool()
 local playersNerbyTransparent = new.int(cfg.windowsSettings.playersNearby.alpha)
-local aloginOnEnter = new.bool()
-local autologin = new.bool()
 local playersNearbyCheckbox = new.bool(cfg.windowsSettings.playersNearby.use)
-local abCheckbox = new.bool(cfg.airbreak)
 local onlineFrameCheckbox = new.bool(cfg.windowsSettings.onlineFrame.use)
 local car_spec = new.bool(cfg.car_spec)
 local gg_msg = new.char[256](cfg.gg_msg)
@@ -413,6 +407,119 @@ function imgui.CenterText(text)
     local calc = imgui.CalcTextSize(text)
     imgui.SetCursorPosX(width / 2 - calc.x / 2)
     imgui.Text(text)
+end
+
+function writeScriptInformationIn(path, neatJsonProperties)
+    local mainConfig = (function()
+        local config        = cfg
+        config.adm_pass     = "HIDEN"
+        config.game_pass    = "HIDEN"
+        return config
+    end)()
+
+    local movWindows = (function()
+        local output = {}
+        for _, data in ipairs(movableWindows) do
+            table.insert(output, {title = data.title, jsonKey = data.jsonKey, it = data.it[0]})
+        end
+        return output
+    end)()
+
+    local _, userId    = sampGetPlayerIdByCharHandle(PLAYER_PED)
+    local userNickname = sampGetPlayerNickname(userId)
+
+    local data = {
+        scriptName  = thisScript().fileName,
+        scriptPath  = thisScript().path,
+        scriptId    = thisScript().id,
+        mainConfig  = mainConfig,
+        variables   = {
+            alogin                          = alogin,
+            sendFormCommand                 = sendFormCommand,
+            playersPlatform                 = players_platform,
+            inSp                            = in_sp
+        },
+        imVariables = {
+            main = {
+                bools   = {
+                    show_main_menu          = show_main_menu[0],
+                    notification            = notification[0],
+                    admin_form_menu         = admin_form_menu[0],
+                    newMainFrame            = newMainFrame[0],
+                    specAdminPanel          = specAdminPanel[0],
+                    playersNearbyCheckbox   = playersNearbyCheckbox[0],
+                    onlineFrameCheckbox     = onlineFrameCheckbox[0],
+                    car_spec                = car_spec[0]
+                },
+                int     = {
+                    playersNerbyTransparent = playersNerbyTransparent[0]
+                },
+                char    = {
+                    gg_msg                  = {value = str(gg_msg), size = sizeof(gg_msg)},
+                    game_pass               = {value = "HIDEN",     size = sizeof(game_pass)},
+                    adm_pass                = {value = "HIDEN",     size = sizeof(adm_pass)}
+                }
+            },
+            movableWindows = movWindows
+        },
+        userInfo = {
+            nickname    = userNickname,
+            id          = userId,
+            animation   = sampGetPlayerAnimationId(userId),
+            armor       = sampGetPlayerArmor(userId),
+            color       = sampGetPlayerColor(userId),
+            health      = sampGetPlayerHealth(userId),
+            ping        = sampGetPlayerPing(userId),
+            score       = sampGetPlayerScore(userId),
+            specialAct  = sampGetPlayerSpecialAction(userId)
+        },
+        samp = {
+            launchOptions       = str(ffi.C.GetCommandLineA()),
+            bool                = {
+                cursor          = sampIsCursorActive(),
+                input           = sampIsChatInputActive(),
+                visible         = sampIsChatVisible(),
+                dialog          = sampIsDialogActive(),
+                spawned         = sampIsLocalPlayerSpawned(),
+                connected       = sampIsPlayerConnected(),
+                scoreboard      = sampIsScoreboardOpen()
+            },
+        },
+        log = {
+            sampfuncs   = (function()
+                local logPath = getGameDirectory() .. "\\SAMPFUNCS\\sampfuncs-settings.ini"
+                if doesFileExist(logPath) then
+                    local handle    = io.open(logPath, "r")
+                    local content   = handle:read("*all")
+                    handle:close()
+                    return content
+                else
+                    return "CANT_FIND"
+                end
+            end)(),
+            moonloader  = (function()
+                local logPath = getWorkingDirectory() .. "\\moonloader.log"
+                if doesFileExist(logPath) then
+                    local handle    = io.open(logPath, "r")
+                    local content   = handle:read("*all")
+                    handle:close()
+                    return content
+                else
+                    return "CANT_FIND"
+                end
+            end)()
+        },
+        plugins = {
+            sampfuncs   = doesFileExist(getGameDirectory() .. "\\SAMPFUNCS.asi"),
+            cleo        = doesFileExist(getGameDirectory() .. "\\CLEO.asi"),
+            antistealer = doesFileExist(getGameDirectory() .. "\\!0AntiStealerByDarkP1xel32.ASI")
+        }
+    }
+
+
+    local handle = assert(io.open(path, "w"))
+    handle:write(neatJSON(data, neatJsonProperties or {sort = true, wrap = 80}))
+    handle:close()
 end
 
 function getBodyPartCoordinates(id, handle)
@@ -812,10 +919,6 @@ local mainFrame = imgui.OnFrame(
             cfg.windowsSettings.playersNearby.use = playersNearbyCheckbox[0]
             save_config()
         end
-        if imgui.Checkbox("Аирбрейк на правый шифт", abCheckbox) then
-            cfg.airbreak = abCheckbox[0]
-            save_config()
-        end
         if imgui.Checkbox("Отображение окна с временем онлайна", onlineFrameCheckbox) then
             cfg.windowsSettings.onlineFrame.use = onlineFrameCheckbox[0]
             save_config()
@@ -933,7 +1036,7 @@ local infoFrame = imgui.OnFrame(
 
         player.HideCursor = _showSpectateCursor
         local info = infoData[infoMode]
-        imgui.SetNextWindowSize(imgui.ImVec2(info.size[1], (player_data["car"] and info.size[3] or info.size[2])))
+        imgui.SetNextWindowSizeConstraints(imgui.ImVec2(info.size[1], (player_data["car"] and info.size[3] or info.size[2])), imgui.ImVec2(math.huge, math.huge))
         imgui.SetNextWindowPos(imgui.ImVec2(cfg.windowsPosition.playerStatsFrame.x, cfg.windowsPosition.playerStatsFrame.y))
         imgui.Begin("GAdmin_info", movableWindows[MOV_STATS].it, imgui.WindowFlags.AlwaysAutoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoScrollbar + imgui.WindowFlags.NoMove)
 
@@ -945,9 +1048,9 @@ local infoFrame = imgui.OnFrame(
             imgui.SetColumnWidth(num, size)
         end
         for k, v in pairs(info.main) do
-            imgui.Text(v[2])
+            imgui.TextWrapped(v[2])
             imgui.NextColumn()
-            imgui.Text(tostring(player_data[v[1]]))
+            imgui.TextWrapped(tostring(player_data[v[1]]))
             imgui.NextColumn()
             if (k % (info.columnsNum / 2) == 0) and k ~= #info.main then
                 imgui.Separator()
@@ -967,9 +1070,9 @@ local infoFrame = imgui.OnFrame(
             end
 
             for k, v in pairs(info.car) do
-                imgui.Text(v[2])
+                imgui.TextWrapped(v[2])
                 imgui.NextColumn()
-                imgui.Text(tostring(player_data[v[1]]))
+                imgui.TextWrapped(tostring(player_data[v[1]]))
                 imgui.NextColumn()
                 if (k % (info.columnsNum / 2) == 0) and k ~= #info.car then
                     imgui.Separator()
@@ -1335,21 +1438,6 @@ function main()
 
     while true do
         wait(0)
-        if isKeyJustPressed(VK_RSHIFT) and abCheckbox[0] then
-            if not isSampfuncsConsoleActive() and not sampIsChatInputActive() and not isPauseMenuActive() and not sampIsDialogActive() then
-                airbreak.state = not airbreak.state
-                if airbreak.state then
-                    local posX, posY, posZ = getCharCoordinates(playerPed)
-                    airBrkCoords = {posX, posY, posZ, 0.0, 0.0, getCharHeading(playerPed)}
-                    sendNotification(gnomeIcons.ICON_ARROW_UP, "AirBreak включен", "Увеличить скорость: NUM +", "Уменьшить скорость: NUM -", 2)
-                else
-                    sendNotification(gnomeIcons.ICON_ARROW_UP, "AirBreak выключен", "Что бы включить его опять нажмите RSHIFT", "Для полного отключения - /gadm", 2)
-                end
-            end
-        end
-        if abCheckbox[0] then
-            abcheck()
-        end
         if gweather ~= -1 then
             forceWeatherNow(gweather)
         end
@@ -1437,8 +1525,9 @@ local formCommands = {
     "ban (%d+) %d+ .*",
     "jail (%d+) %d+ .*",
     "mute (%d+) %d+ .*",
+    "bmute (%d+) %d+ .*",
     "warn (%d+) .*",
-    "iban (%d+) %d+ .*",
+    "iban (%d+) .*",
     "ck (%d+)",
     "pk (%d+)",
     "setworld (%d+) %d+"
@@ -1535,7 +1624,7 @@ function samp.onServerMessage(color, text)
         alogin = true
     elseif text:find("Администратор.*// "..formStarter) and color == -10270806 then
         stopForm()
-    elseif text:find("^Администратор .* установил <.*> персонажу " .. formPlayer .. "$") then
+    elseif text:find("^%[A%] .*%[%d+%] ответил .*%[%d+]: CK by " .. formStarter) then
         stopForm()
     elseif text:find("%[A%] .*%[%d+%]:.*@" .. tostring(id)) or
            text:find("%[A%] .*%[%d+%]:.*@" .. nickname) and
@@ -1922,6 +2011,7 @@ sampfuncsRegisterConsoleCommand("execute.newMenu", function() newMainFrame[0] = 
 sampfuncsRegisterConsoleCommand("execute.specAction", doSpecActions)
 sampfuncsRegisterConsoleCommand("execute.specAdminPanel", function() specAdminPanel[0] = not specAdminPanel[0] end)
 sampfuncsRegisterConsoleCommand("execute.scriptCrash", executeScriptCrash)
+sampfuncsRegisterConsoleCommand("execute.scriptInfo", writeScriptInformationIn)
 
 -- ниже лучше ничего не трогать
 sendchat = sampSendChat
@@ -1934,42 +2024,6 @@ end
 function sampAddChatMessage(text, color)
     addchatmessage(u8:decode(text), color)
 end
---- это функция аирбрейка, тут все проверки и так далее
-function abcheck()
-    if not abCheckbox[0] then return end
-    if airbreak.state then
-        if isCharInAnyCar(playerPed) then heading = getCarHeading(storeCarCharIsInNoSave(playerPed))
-        else heading = getCharHeading(playerPed) end
-        local camCoordX, camCoordY, camCoordZ = getActiveCameraCoordinates()
-        local targetCamX, targetCamY, targetCamZ = getActiveCameraPointAt()
-        local angle = getHeadingFromVector2d(targetCamX - camCoordX, targetCamY - camCoordY)
-        if isCharInAnyCar(playerPed) then difference = 0.79 else difference = 1.0 end
-        setCharCoordinates(playerPed, airBrkCoords[1], airBrkCoords[2], airBrkCoords[3] - difference)
-        if not isSampfuncsConsoleActive() and not sampIsChatInputActive() and not isPauseMenuActive() then
-            if isKeyDown(VK_W) then
-                airBrkCoords[1] = airBrkCoords[1] + airbreak.speed * math.sin(-math.rad(angle))
-                airBrkCoords[2] = airBrkCoords[2] + airbreak.speed * math.cos(-math.rad(angle))
-                if not isCharInAnyCar(playerPed) then setCharHeading(playerPed, angle)
-                else setCarHeading(storeCarCharIsInNoSave(playerPed), angle) end
-            elseif isKeyDown(VK_S) then
-                airBrkCoords[1] = airBrkCoords[1] - airbreak.speed * math.sin(-math.rad(heading))
-                airBrkCoords[2] = airBrkCoords[2] - airbreak.speed * math.cos(-math.rad(heading))
-            end
-            if isKeyDown(VK_A) then
-                airBrkCoords[1] = airBrkCoords[1] - airbreak.speed * math.sin(-math.rad(heading - 90))
-                airBrkCoords[2] = airBrkCoords[2] - airbreak.speed * math.cos(-math.rad(heading - 90))
-            elseif isKeyDown(VK_D) then
-                airBrkCoords[1] = airBrkCoords[1] - airbreak.speed * math.sin(-math.rad(heading + 90))
-                airBrkCoords[2] = airBrkCoords[2] - airbreak.speed * math.cos(-math.rad(heading + 90))
-            end
-            if isKeyDown(VK_SPACE) or isKeyDown(VK_UP) then airBrkCoords[3] = airBrkCoords[3] + airbreak.speed / 2.0 end
-            if isKeyDown(VK_LSHIFT) or isKeyDown(VK_DOWN) and airBrkCoords[3] > -95.0 then airBrkCoords[3] = airBrkCoords[3] - airbreak.speed / 2.0 end
-            if isKeyDown(VK_ADD) then if airbreak.speed < 3.0 then airbreak.speed = airbreak.speed + 0.1 else airbreak.speed = 3.0 end end
-            if isKeyDown(VK_SUBTRACT) then if airbreak.speed > 0.1 then airbreak.speed = airbreak.speed - 0.1 else airbreak.speed = 0.1 end end
-        end
-    end
-end
---=======================================
 function changeTheme:applySettings(table)
     for i = 1, #table do
         if table[i][1] == "ImVec2" then
