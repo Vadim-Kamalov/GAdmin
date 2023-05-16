@@ -27,6 +27,11 @@ script_name     "GAdmin"
 script_version  "1.0"
 
 gweather = -1
+local airbreak = {
+    state = false,
+    speed = 1.0
+}
+
 
 local loadLib = function(name)
     local lib, err = pcall(require, name)
@@ -207,6 +212,7 @@ function create_config()
         aloginOnEnter = false,
         showGunInfo = false,
         deathNotifyInChat = false,
+        airbreak = false,
         showIdInKillList = false,
         mentionColor = "4A86B6",
         reportWindow = {
@@ -332,6 +338,7 @@ local specAdminPanel = new.bool()
 local playersNerbyTransparent = new.int(cfg.windowsSettings.playersNearby.alpha)
 local playersNearbyCheckbox = new.bool(cfg.windowsSettings.playersNearby.use)
 local onlineFrameCheckbox = new.bool(cfg.windowsSettings.onlineFrame.use)
+local abCheckbox = new.bool(cfg.airbreak)
 local car_spec = new.bool(cfg.car_spec)
 local gg_msg = new.char[256](cfg.gg_msg)
 local game_pass = new.char[256](cfg.game_pass)
@@ -919,6 +926,10 @@ local mainFrame = imgui.OnFrame(
             cfg.windowsSettings.playersNearby.use = playersNearbyCheckbox[0]
             save_config()
         end
+        if imgui.Checkbox("Аирбрейк на правый шифт", abCheckbox) then
+            cfg.airbreak = abCheckbox[0]
+            save_config()
+        end
         if imgui.Checkbox("Отображение окна с временем онлайна", onlineFrameCheckbox) then
             cfg.windowsSettings.onlineFrame.use = onlineFrameCheckbox[0]
             save_config()
@@ -1438,6 +1449,21 @@ function main()
 
     while true do
         wait(0)
+        if isKeyJustPressed(VK_RSHIFT) and abCheckbox[0] then
+            if not isSampfuncsConsoleActive() and not sampIsChatInputActive() and not isPauseMenuActive() and not sampIsDialogActive() then
+                airbreak.state = not airbreak.state
+                if airbreak.state then
+                    local posX, posY, posZ = getCharCoordinates(playerPed)
+                    airBrkCoords = {posX, posY, posZ, 0.0, 0.0, getCharHeading(playerPed)}
+                    sendNotification(gnomeIcons.ICON_ARROW_UP, "AirBreak включен", "Увеличить скорость: NUM +", "Уменьшить скорость: NUM -", 2)
+                else
+                    sendNotification(gnomeIcons.ICON_ARROW_UP, "AirBreak выключен", "Что бы включить его опять нажмите RSHIFT", "Для полного отключения - /gadm", 2)
+                end
+            end
+        end
+        if abCheckbox[0] then
+            abcheck()
+        end
         if gweather ~= -1 then
             forceWeatherNow(gweather)
         end
@@ -2024,6 +2050,46 @@ end
 function sampAddChatMessage(text, color)
     addchatmessage(u8:decode(text), color)
 end
+
+
+--- это функция аирбрейка, тут все проверки и так далее
+function abcheck()
+    if not abCheckbox[0] then return end
+    if airbreak.state then
+        if isCharInAnyCar(playerPed) then heading = getCarHeading(storeCarCharIsInNoSave(playerPed))
+        else heading = getCharHeading(playerPed) end
+        local camCoordX, camCoordY, camCoordZ = getActiveCameraCoordinates()
+        local targetCamX, targetCamY, targetCamZ = getActiveCameraPointAt()
+        local angle = getHeadingFromVector2d(targetCamX - camCoordX, targetCamY - camCoordY)
+        if isCharInAnyCar(playerPed) then difference = 0.79 else difference = 1.0 end
+        setCharCoordinates(playerPed, airBrkCoords[1], airBrkCoords[2], airBrkCoords[3] - difference)
+        if not isSampfuncsConsoleActive() and not sampIsChatInputActive() and not isPauseMenuActive() then
+            if isKeyDown(VK_W) then
+                airBrkCoords[1] = airBrkCoords[1] + airbreak.speed * math.sin(-math.rad(angle))
+                airBrkCoords[2] = airBrkCoords[2] + airbreak.speed * math.cos(-math.rad(angle))
+                if not isCharInAnyCar(playerPed) then setCharHeading(playerPed, angle)
+                else setCarHeading(storeCarCharIsInNoSave(playerPed), angle) end
+            elseif isKeyDown(VK_S) then
+                airBrkCoords[1] = airBrkCoords[1] - airbreak.speed * math.sin(-math.rad(heading))
+                airBrkCoords[2] = airBrkCoords[2] - airbreak.speed * math.cos(-math.rad(heading))
+            end
+            if isKeyDown(VK_A) then
+                airBrkCoords[1] = airBrkCoords[1] - airbreak.speed * math.sin(-math.rad(heading - 90))
+                airBrkCoords[2] = airBrkCoords[2] - airbreak.speed * math.cos(-math.rad(heading - 90))
+            elseif isKeyDown(VK_D) then
+                airBrkCoords[1] = airBrkCoords[1] - airbreak.speed * math.sin(-math.rad(heading + 90))
+                airBrkCoords[2] = airBrkCoords[2] - airbreak.speed * math.cos(-math.rad(heading + 90))
+            end
+            if isKeyDown(VK_SPACE) or isKeyDown(VK_UP) then airBrkCoords[3] = airBrkCoords[3] + airbreak.speed / 2.0 end
+            if isKeyDown(VK_LSHIFT) or isKeyDown(VK_DOWN) and airBrkCoords[3] > -95.0 then airBrkCoords[3] = airBrkCoords[3] - airbreak.speed / 2.0 end
+            if isKeyDown(VK_ADD) then if airbreak.speed < 3.0 then airbreak.speed = airbreak.speed + 0.1 else airbreak.speed = 3.0 end end
+            if isKeyDown(VK_SUBTRACT) then if airbreak.speed > 0.1 then airbreak.speed = airbreak.speed - 0.1 else airbreak.speed = 0.1 end end
+        end
+    end
+end
+--=======================================
+
+
 function changeTheme:applySettings(table)
     for i = 1, #table do
         if table[i][1] == "ImVec2" then
