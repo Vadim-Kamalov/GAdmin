@@ -31,6 +31,7 @@ local airbreak = {
     state = false,
     speed = 1.0
 }
+time = 0
 
 
 local loadLib = function(name)
@@ -595,7 +596,7 @@ local actionMenu = imgui.OnFrame(
         self.HideCursor = _showSpectateCursor
         self.Buttons    = {
             {
-                ["SPAWN"]       = function() sampSendChat("/spawn "..info_about) end,
+                ["SPAWN"]       = function() sampSendChat("/aspawn "..info_about) end,
                 ["GETIP"]       = function() end,
                 ["SLAP"]        = function() sampSendChat("/slap "..info_about) end,
                 ["GIVE HP"]     = function() setChatInputEnabledWithText("/sethp "..info_about.." ") end,
@@ -928,6 +929,9 @@ local mainFrame = imgui.OnFrame(
         end
         if imgui.Checkbox("Аирбрейк на правый шифт", abCheckbox) then
             cfg.airbreak = abCheckbox[0]
+            if not abCheckbox then
+                airbreak.state = false
+            end
             save_config()
         end
         if imgui.Checkbox("Отображение окна с временем онлайна", onlineFrameCheckbox) then
@@ -1455,10 +1459,17 @@ function main()
                 if airbreak.state then
                     local posX, posY, posZ = getCharCoordinates(playerPed)
                     airBrkCoords = {posX, posY, posZ, 0.0, 0.0, getCharHeading(playerPed)}
-                    sendNotification(gnomeIcons.ICON_ARROW_UP, "AirBreak включен", "Увеличить скорость: NUM +", "Уменьшить скорость: NUM -", 2)
+                    if time <= os.time() then
+                        sendNotification(gnomeIcons.ICON_ARROW_UP, "AirBreak включен", "Увеличить скорость: NUM +", "Уменьшить скорость: NUM -", 2)
+                        time = os.time()+0.0001
+                    end
                 else
-                    sendNotification(gnomeIcons.ICON_ARROW_UP, "AirBreak выключен", "Что бы включить его опять нажмите RSHIFT", "Для полного отключения - /gadm", 2)
+                    if time <= os.time() then
+                        sendNotification(gnomeIcons.ICON_ARROW_UP, "AirBreak выключен", "Что бы включить его опять нажмите RSHIFT", "Для полного отключения - /gadm", 2)
+                        time = os.time()+0.0001
+                    end
                 end
+                
             end
         end
         if abCheckbox[0] then
