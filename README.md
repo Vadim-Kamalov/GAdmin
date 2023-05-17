@@ -1,39 +1,34 @@
-# GAdmin - Lua script to simplify administration on the SAMP server sa.gambit-rp.ru.
+# GAdmin - Lua скрипт облегчающий работу администраторов на проекте Gambit - RP
 
-This repository contains the source code of the **gadmin** script, as well as all libraries written/modified specifically for this script.
-Also contains all imports (tables, functions, etc.). If you find an error related to the script, create a topic with the error in the appropriate [section](https://github.com/Vadim-Kamalov/GAdmin/issues). This source code is available to everyone under the standart [GNU General Public License v3 (GPLv3)](https://github.com/Vadim-Kamalov/GAdmin/blob/main/LICENSE).
+Этот репозиторий(как и исходный код) доступен для всех под стандартной [GNU General Public License v3 (GPLv3)](https://github.com/Vadim-Kamalov/GAdmin/blob/main/LICENSE) лицензией, он  содержит исходный код скрипта **`gadmin.lua`**, а также всех написанных/измененных библиотек для скрипта.
+Репозиторий также используется для баг репортов связанные со скриптом, или [запросов на изменение исходного кода](https://github.com/Vadim-Kamalov/GAdmin/pulls).
+### Если вы нашли ошибку
+В случае если вы нашли ошибку связанную со скриптом, вы можете создать баг репорт в соответствующем [разделе](https://github.com/Vadim-Kamalov/GAdmin/issues).
 <br>
-Before creating a topic with a specific error, make sure that you
+Перед созданием баг репорта, убедитесь что вы
 
-- have the MoonLoader >= **v026.5-beta**;
-- have the latest, stable version of the script (you can get it in the `Release` section);
-- have all the libraries listed below;
-- did not create the same topic with the error that was found earlier;
-- attached your `moonloader.log` from folder, where `gadmin.lua` stores.
+- имеете последнюю, стабильную версию скрипта(вы можете получить последнюю версию в разделе `Release`);
+- имеете все библиотеки, которые прописаны в файле [`LIBRARIES`](https://github.com/Vadim-Kamalov/GAdmin/blob/main/LIBRARIES);
+- не создали одинаковый или подобный баг репорт, который уже создали ранее.
 
-The name of the topic should reflect the whole essence of the error, there should be no "error on line 1894".<br>
-Please note that if there is an error related to the fact that you have not installed a specific error, then this topic will be ignored and closed in the future.
-<br>
+Учтите, что название ошибки должно отображать всю суть ошибки, не должно быть никаких "ошибка на строке 1894".
+Для создания баг репорта есть определенный шаблон, он вставится сразу в тело репорта. 
 
-## Script dependencies
+### Зависимости
 
 - MoonLoader    >= **v.026.5-beta**
 - SAMPFUNCS     >= **v5.4.1-final**
-- CLEO          >= **v4.1**
-- All libraries from `LIBRARIES` file
+- CLEO          >= **v4.1.1**
+- Все библиотеки из `LIBRARIES` файла.
 
-# Contributing
+# Помощь в разработке
+Есть много путей как вы можете помочь в разработке, как пример вы можете
 
-There are many ways in which you can participate in project, for example:
+- [создавать баг репорты](https://github.com/Vadim-Kamalov/GAdmin/issues)
+- смотреть [изменения в исходном коде](https://github.com/Vadim-Kamalov/GAdmin/commits/main)
 
-- [Submit bugs](https://github.com/Vadim-Kamalov/GAdmin/issues)
-- Review [source code changes](https://github.com/Vadim-Kamalov/GAdmin/pulls)
-
-If you are interested in fixing issues, and contributing directly to the code base, you can creating [pull requests](https://github.com/Vadim-Kamalov/GAdmin/compare).<br>
-Note that the main language that GAdmin is written in is Lua, using the MoonLoader API for the online game San Andreas Multiplayer. For more information see [`CONTRIBUTING.md`](https://github.com/Vadim-Kamalov/GAdmin/blob/main/CONTRIBUTING.md).
+Если вы заинтересованы в решении ошибок, или в добавлении изменений в исходный код, то вы можете создавать [запросы на изменение исходного кода](https://github.com/Vadim-Kamalov/GAdmin/pulls).<br>
+Учтите, что основной язык скрипта - **Lua**, а написан для игры GTA: San Andreas Multiplayer, используя **Moonloader API**. Больше информации вы можете узнать в файле [`CONTRIBUTING.md`](https://github.com/Vadim-Kamalov/GAdmin/blob/main/CONTRIBUTING.md).
 # License
-Copyright (C) 2023 The Contributors\*.<br>
-Licensed under the [GNU General Public License v3 (GPLv3)](https://github.com/Vadim-Kamalov/GAdmin/blob/main/LICENSE).
-<br>
-<br>
-\* You can find contributors of the GAdmin project in `CONTIBUTORS` file. 
+Copyright (C) 2023 The Contributors\*.<br> Licensed under the [GNU General Public License v3 (GPLv3)](https://github.com/Vadim-Kamalov/GAdmin/blob/main/LICENSE).
+> \* Вы можете найти всех кто внес вклад в разработку GAdmin в файле `CONTRIBUTORS`.
