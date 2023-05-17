@@ -26,14 +26,6 @@
 script_name     "GAdmin"
 script_version  "1.0"
 
-gweather = -1
-local airbreak = {
-    state = false,
-    speed = 1.0
-}
-time = 0
-
-
 local loadLib = function(name)
     local lib, err = pcall(require, name)
     if not lib then
@@ -92,15 +84,14 @@ ffi.cdef[[
     const char* GetCommandLineA(void);
 ]]
 
--- КОНСТАНТЫ
 CMD_DELAY = 800
 
 function enum(key)
-    return (function(num)
+    return function(num)
         for i, v in ipairs(num) do
             _G[v] = i
         end
-    end)
+    end
 end
 
 function get_config()
@@ -252,6 +243,9 @@ local _showSpectateCursor = true
 local popupId, popupNickname = 0, ""
 local selectedTab = 1
 local changeTheme = {}
+local gweather = -1
+local airbreak = {state = false, speed = 1.0}
+local time = 0
 local playerTime
 -- для информации в спеке --
 local in_sp = false
@@ -397,6 +391,15 @@ local spDisconnectCopy = {v = cfg.hotkeys.disconnectSpecCopy}
 
 function imgui.Input()
     -- TODO: написать свой инпут, чтобы не плодить кучу однотипного кода
+end
+
+function bringFloatTo(from, to, start_time, duration)
+    local timer = os.clock() - start_time
+    if timer >= 0.00 and timer <= duration then
+        local count = timer / (duration / 100)
+        return from + (count * (to - from) / 100), true
+    end
+    return (timer > duration) and to or from, false
 end
 
 function getPlayerIdByNickname(name)
@@ -709,16 +712,17 @@ local checkerFrame = imgui.OnFrame(
 )
 
 local notificationInit = {
-    icon = gnomeIcons.ICON_WARNING,
-    title = "Notification Initialize",
-    firstLine = "Notification Initialize Description | 1st line",
-    secondLine = "Notification Initialize Description | 2nd line",
-    secondsToHide = 5,
-    systemTime = os.clock(),
-    positionY = 0,
-    aplha = 1
+    icon            = gnomeIcons.ICON_WARNING,
+    title           = "Notification Initialize",
+    firstLine       = "Notification Initialize Description | 1st line",
+    secondLine      = "Notification Initialize Description | 2nd line",
+    secondsToHide   = 5,
+    systemTime      = os.clock(),
+    duration        = 0.1,
+    positionY       = 0
 }
 
+local notificationFramePositionStatus = true
 local notificationFrame = imgui.OnFrame(
     function() return notification[0] end,
     function(self)
@@ -731,6 +735,14 @@ local notificationFrame = imgui.OnFrame(
             {"Int", "WindowBorderSize", change = 0, reset = 1},
             {"ImVec4", "WindowBg", change = hexToImVec4("303030"), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)}
         }
+
+        self.closeNotification = function()
+            notification[0], notificationFramePositionStatus = false, true
+        end
+
+        if notificationFramePositionStatus then
+            notificationInit.positionY = select(1, bringFloatTo(0, 40, notificationInit.systemTime, 0.1))
+        end
 
         changeTheme:applySettings(self.notificationStyle)
         imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2 - 250, notificationInit.positionY))
@@ -745,16 +757,13 @@ local notificationFrame = imgui.OnFrame(
             textWithFont(notificationInit.secondLine, NULL, imgui.ImVec2(53, 52))
 
             if os.clock() - notificationInit.systemTime >= notificationInit.secondsToHide then
-                notificationInit.secondsToHide = 999
-                lua_thread.create(function()
-                    while notificationInit.positionY ~= -80 do
-                        wait(5)
-                        notificationInit.positionY = notificationInit.positionY - 40
-                    end
-                end)
+                notificationFramePositionStatus = false
+                if notificationInit.positionY ~= 80 then
+                    notificationInit.positionY = select(1, bringFloatTo(40, -80, notificationInit.systemTime + notificationInit.secondsToHide, 0.1))
+                end
             end
 
-            if notificationInit.positionY == -80 then notification[0] = false end
+            if notificationInit.positionY == -80 then self.closeNotification() end
         imgui.End()
 
         changeTheme:resetDefault(self.notificationStyle)
@@ -1185,7 +1194,7 @@ local _specAdminPanel = imgui.OnFrame(
             end
         end
 
-        if not isCursorActive() and not sampIsChatInputActive() and not isSampfuncsConsoleActive() and not sampIsDialogActive() then
+        if isNotCursorActive() then
             if wasKeyPressed(VK_UP) then
                 if selectedButton == 1 then selectedButton = #sortedTable else
                     selectedButton = selectedButton - 1
@@ -1306,7 +1315,7 @@ local mainWindow = imgui.OnFrame(
 
         changeTheme:applySettings(windowStyle)
 
-        imgui.Begin("Animation Window", newMainFrame, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize)
+        imgui.Begin("New main frame", newMainFrame, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize)
             imgui.BeginChild("Left-bar", imgui.ImVec2(menuProperties.width, 0), false)
             changeTheme:applySettings(menuStyle)
                 imgui.SetCursorPos(imgui.ImVec2(23, 20))
@@ -1454,7 +1463,7 @@ function main()
     while true do
         wait(0)
         if isKeyJustPressed(VK_RSHIFT) and abCheckbox[0] then
-            if not isSampfuncsConsoleActive() and not sampIsChatInputActive() and not isPauseMenuActive() and not sampIsDialogActive() then
+            if isNotCursorActive() then
                 airbreak.state = not airbreak.state
                 if airbreak.state then
                     local posX, posY, posZ = getCharCoordinates(playerPed)
@@ -1567,7 +1576,8 @@ local formCommands = {
     "iban (%d+) .*",
     "ck (%d+)",
     "pk (%d+)",
-    "setworld (%d+) %d+"
+    "setworld (%d+) %d+",
+    "slap (%d+)"
 }
 
 function onScriptTerminate(LuaScript, quitGame)
@@ -1654,14 +1664,13 @@ function samp.onServerMessage(color, text)
     local result, id        = sampGetPlayerIdByCharHandle(PLAYER_PED)
     local nickname          = sampGetPlayerNickname(id)
 
-    local text  = u8(text)
     local hex   = bit.tohex(bit.rshift(color, 8), 6)
 
     if text:find("Вы успешно авторизовались как администратор") or text:find("Вы уже авторизировались") and color == -1 then
         alogin = true
     elseif text:find("Администратор.*// "..formStarter) and color == -10270806 then
         stopForm()
-    elseif text:find("^%[A%] .*%[%d+%] ответил .*%[%d+]: CK by " .. formStarter) then
+    elseif text:find("^%[A%] .*%[%d+%] ответил .*%[%d+]: [PC]K by " .. formStarter) then
         stopForm()
     elseif text:find("%[A%] .*%[%d+%]:.*@" .. tostring(id)) or
            text:find("%[A%] .*%[%d+%]:.*@" .. nickname) and
@@ -1846,7 +1855,7 @@ lua_thread.create(function()
 end)
 
 function specReload()
-    if in_sp and not sampIsChatInputActive() and not isCursorActive() then
+    if in_sp and isNotCursorActive() then
         sampSendMenuSelectRow(1)
     end
 end
@@ -1947,24 +1956,18 @@ function asp_cmd(id)
     end
 end
 
-function sendNotification(icon, title, firstLine, secondLine, secondsToHide)
+function sendNotification(icon, title, firstLine, secondLine, secondsToHide, animDuration)
     notification[0] = true
     notificationInit = {
-        icon = icon,
-        title = title,
-        firstLine = firstLine,
-        secondLine = secondLine,
-        secondsToHide = tonumber(secondsToHide),
-        systemTime = os.clock(),
-        positionY = 0
+        icon            = icon,
+        title           = title,
+        firstLine       = firstLine,
+        secondLine      = secondLine,
+        secondsToHide   = tonumber(secondsToHide),
+        duration        = animDuration or 0.1,
+        systemTime      = os.clock(),
+        positionY       = 0
     }
-
-    lua_thread.create(function()
-        while notificationInit.positionY ~= 40 do
-            wait(1)
-            notificationInit.positionY = notificationInit.positionY + 5
-        end
-    end)
 end
 
 local spectateDisconnectNickname = nil
@@ -2062,8 +2065,6 @@ function sampAddChatMessage(text, color)
     addchatmessage(u8:decode(text), color)
 end
 
-
---- это функция аирбрейка, тут все проверки и так далее
 function abcheck()
     if not abCheckbox[0] then return end
     if airbreak.state then
@@ -2074,7 +2075,7 @@ function abcheck()
         local angle = getHeadingFromVector2d(targetCamX - camCoordX, targetCamY - camCoordY)
         if isCharInAnyCar(playerPed) then difference = 0.79 else difference = 1.0 end
         setCharCoordinates(playerPed, airBrkCoords[1], airBrkCoords[2], airBrkCoords[3] - difference)
-        if not isSampfuncsConsoleActive() and not sampIsChatInputActive() and not isPauseMenuActive() then
+        if isNotCursorActive() then
             if isKeyDown(VK_W) then
                 airBrkCoords[1] = airBrkCoords[1] + airbreak.speed * math.sin(-math.rad(angle))
                 airBrkCoords[2] = airBrkCoords[2] + airbreak.speed * math.cos(-math.rad(angle))
@@ -2098,8 +2099,6 @@ function abcheck()
         end
     end
 end
---=======================================
-
 
 function changeTheme:applySettings(table)
     for i = 1, #table do
