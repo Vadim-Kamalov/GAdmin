@@ -29,8 +29,8 @@ script_version  "1.0"
 local loadLib = function(name)
     local lib, err = pcall(require, name)
     if not lib then
-        sampfuncsLog("{FF5F5F}GAdmin << {FFFFFF}The GAdmin script can't find library \"" .. name .. "\", error: " .. err)
-        sampfuncsLog("{FF5F5F}GAdmin << {FFFFFF}Please, reinstall script with all libraries included.")
+        sampfuncsLog("{FF5F5F}GAdmin << {FFFFFF}GAdmin не может найти библиотеку  \"" .. name .. "\", ошибка: " .. err)
+        sampfuncsLog("{FF5F5F}GAdmin << {FFFFFF}Пожалуйста, переустановите скрипт со всеми установленными библиотеками.")
         return nil
     end
     return require(name)
@@ -202,7 +202,8 @@ function create_config()
         },
         renderSize = {
             car_spec    = 14,
-            showGunInfo = 14
+            showGunInfo = 14,
+            showAdmins  = 14
         },
         gg_msg              = "Приятной игры!",
         mentionColor        = "4A86B6",
@@ -215,7 +216,9 @@ function create_config()
         deathNotifyInChat   = false,
         airbreak            = false,
         showIdInKillList    = false,
-        displayBubbles      = true
+        displayBubbles      = true,
+        showLvlInAdminChat  = false,
+        showAdmins          = true
     } 
 
     local handle = assert(io.open("moonloader/config/gadmin.json", "w"))
@@ -243,6 +246,8 @@ local alogin = false
 local sendFormCommand = ""
 local checkSendFormCommand = false
 local players_platform = {}
+local adminsOnline = {}
+local checkedAdminList = false
 local _showSpectateCursor = true
 local popupId, popupNickname = 0, ""
 local selectedTab = 1
@@ -655,11 +660,12 @@ local backgroundDrawList = imgui.OnFrame(
                 for _, player in ipairs(getAllChars()) do
                     local idResult, id = sampGetPlayerIdByCharHandle(player)
                     local charResult, char = sampGetCharHandleBySampPlayerId(id)
-                    local x, y, z = getBodyPartCoordinates(2, player)
+                    local x, y, z = getBodyPartCoordinates(4, player)
                     local myx, myy, myz = getCharCoordinates(PLAYER_PED)
                     local screenPosX, screenPosY = convert3DCoordsToScreen(x, y, z)
+                    local charCheck = charResult and isCharOnScreen(char) and getDistanceBetweenCoords3d(x, y, z, myx, myy, myz) < 50
 
-                    if charResult and isCharOnScreen(char) and getDistanceBetweenCoords3d(x, y, z, myx, myy, myz) < 50 then
+                    if charCheck then
                         self.addTextColoredHex(
                             "{FFFFFF}{" .. require("game.weapons").names[getCurrentCharWeapon(player)] .. "}",
                             imgui.ImVec2(screenPosX, screenPosY),
@@ -667,6 +673,23 @@ local backgroundDrawList = imgui.OnFrame(
                             cfg.renderSize.showGunInfo,
                             1
                         )
+                    end
+
+                    if cfg.showAdmins then
+                        if id ~= select(2, sampGetPlayerIdByCharHandle(PLAYER_PED)) and charCheck and checkedAdminList then
+                            for _, data in ipairs(adminsOnline) do
+                                if id == data.adminId then
+                                    local showAdminsPosX, showAdminsPosY = convert3DCoordsToScreen(getBodyPartCoordinates(4, player))
+                                    self.addTextColoredHex(
+                                        "{FF8585}{" .. data.oocNickname .. "}",
+                                        imgui.ImVec2(showAdminsPosX, showAdminsPosY - 15),
+                                        nil,
+                                        cfg.renderSize.showAdmins,
+                                        1
+                                    )
+                                end
+                            end
+                        end
                     end
                 end
             end
@@ -1642,6 +1665,12 @@ end
 
 
 function samp.onPlayerQuit(id)
+    for index, data in ipairs(adminsOnline) do
+        if data.adminId == id then
+            table.remove(adminsOnline, index)
+        end
+    end
+
     players_platform[id] = nil
 end
 
@@ -1661,11 +1690,11 @@ local formCommands = {
 function onScriptTerminate(LuaScript, quitGame)
     if LuaScript == thisScript() and not quitGame then
         for _, v in ipairs {
-            "The GAdmin script crashed.",
-            "Something went wrong and the script stopped working. Please file a bug report in GAdmin repository if the bug is critical:",
+            "GAdmin остановил работу.",
+            "Что-то пошло не так и скрипт прекратил свою работу. Пожалуйсту, создайте баг репорт в репозитории если ошибка критическая:",
             "   https://github.com/Vadim-Kamalov/GAdmin/issues",
-            "Create a bug report after reading the README.md from the repository.",
-            "You can make the script better by simply submitting a bug report. We look forward to your responsiveness."
+            "Перед созданием баг репорта, прочтите README.md и CONTRIBUTING.md из репозитория.",
+            "Простой баг репорт улучшит работу скрипта. Надеемся на вашу отзывчивость."
         } do 
             sampfuncsLog("{FF5F5F}GAdmin << {FFFFFF}" .. v)
         end
@@ -1744,18 +1773,50 @@ function samp.onServerMessage(color, text)
 
     local hex   = bit.tohex(bit.rshift(color, 8), 6)
 
-    if text:find("Вы успешно авторизовались как администратор") or text:find("Вы уже авторизировались") and color == -1 then
+    local convertHexToInt32 = function(hex)
+        local hex = #hex == 8 and hex or (#hex == 6 and hex .. "AA" or hex)
+        local dec = 0
+        for i = 1, #hex do
+            dec = dec + tonumber(string.sub(hex, i, i), 16) * (16 ^ (#hex - i))
+        end
+        return dec
+    end
+
+    local insertLvlInAdminChat = function(returnData)
+        enum "RETURN_DATA_ENUM" {
+            "RETURN_DATA_COLOR",
+            "RETURN_DATA_TEXT"
+        }
+
+        if cfg.showLvlInAdminChat and checkedAdminList then
+            for _, data in ipairs(adminsOnline) do
+                if returnData[RETURN_DATA_TEXT]:match("%[A%] (.*)%[%d+%]") == data.oocNickname then
+                    returnData[RETURN_DATA_TEXT] = string.format("[LVL: %s] %s", data.adminLvl, returnData[RETURN_DATA_TEXT])
+                end
+            end
+        end
+
+        return returnData
+    end
+
+    if u8(text):find("Вы успешно авторизовались как администратор") or u8(text):find("%|.*Вы уже авторизировались") and color == -1 then
         alogin = true
-    elseif text:find("Администратор.*// "..formStarter) and color == -10270806 then
+        if not checkedAdminList then
+            lua_thread.create(function()
+                wait(CMD_DELAY)
+                sampSendChat("/adm")
+            end)
+        end
+    elseif u8(text):find("Администратор.*// "..formStarter) and color == -10270806 then
         stopForm()
-    elseif text:find("^%[A%] .*%[%d+%] ответил .*%[%d+]: [PC]K by " .. formStarter) then
+    elseif u8(text):find("^%[A%] .*%[%d+%] ответил .*%[%d+]: [PC]K by " .. formStarter) then
         stopForm()
     elseif text:find("%[A%] .*%[%d+%]:.*@" .. tostring(id)) or
            text:find("%[A%] .*%[%d+%]:.*@" .. nickname) and
            color == 866792362
     then
-        return {color, "{" .. cfg.mentionColor .."}" .. u8(text)}    
-    elseif text:find("^%[A%] Жалоба от .*%[%d+%]: .*") then
+        return insertLvlInAdminChat { convertHexToInt32(cfg.mentionColor), u8(text) }
+    elseif u8(text):find("^%[A%] Жалоба от .*%[%d+%]: .*") then
         if cfg.reportWindow.use then
             table.insert(reportData.messages, {
                 text = text,
@@ -1763,21 +1824,45 @@ function samp.onServerMessage(color, text)
             })
             return false
         end
+    elseif u8(text):find("^%[A%] .*%[%d+] авторизовался как администратор [1-5] уровня%.$") and checkedAdminList then
+        local adminConnectionPassed             = true
+        local oocNickname, adminId, adminLvl    = text:match("^%[A%] (.*)%[(%d+)%]:.*([1-5]) уровня%.$")
+
+        for _, data in ipairs(adminsOnline) do
+            if data.oocNickname == text:match("^%[A%] (.*)%[%d+%]") then
+                adminConnectionPassed = false
+            end
+        end
+
+        if adminConnectionPassed then
+            table.insert(adminsOnline, {
+                oocNickname = oocNickname,
+                icNickname  = sampGetPlayerNickname(tonumber(adminId)),
+                adminId     = tonumber(adminId),
+                adminLvl    = adminLvl
+            })
+        end
     end
 
     for k, v in ipairs(formCommands) do
         if text:find("%[A%] .*%[%d+%]: /"..v) and color == 866792362 then
-            formStarter, formStarterId, formCommand = text:match(u8"%[A%] (.*)%[(%d+)%]: /(.*)")
+            formStarter, formStarterId, formCommand = u8(text):match("%[A%] (.*)%[(%d+)%]: /(.*)")
 
             if formStarterId ~= id then
                 form_secondsToHide = os.clock()
                 admin_form_menu[0] = true
             end
+
+            return insertLvlInAdminChat { color, text }
         end
     end
 
+    if text:find("^%[A%] .*%[%d+%]:") and color == 866792362 then
+        return insertLvlInAdminChat { color, text }
+    end
+
     if checkSendFormCommand then
-        if text:find("%|.*У вас нет доступа для использования данной команды%.") then
+        if u8(text):find("%|.*У вас нет доступа для использования данной команды%.") then
             sampSendChat("/a "..sendFormCommand)
             checkSendFormCommand = false
             sendFormCommand = ""
@@ -1845,6 +1930,26 @@ function samp.onShowDialog(dialogId, style, title, button1, button2, text)
 
     if style == 3 and button1 == "Далее" and button2 == "Отмена" and text:find(".*{4a86b6}Авторизация.*{FFFFFF}Введите пароль:.*") and string.len(cfg.adm_pass) ~= 0 then
         sampSendDialogResponse(dialogId, 1, 0, cfg.adm_pass)
+        return false
+    end
+
+    if not checkedAdminList then
+        if text:find("Администрация в игре.*Лог отключений") then
+            sampSendDialogResponse(dialogId, 1, 0, nil)
+        elseif text:find("Администраторы в сети:") then
+            for line in string.gmatch(text, "[^\n]+") do
+                if line:find("^.*%[%d+%] %- [1-5] уровень") then
+                    local oocNickname, adminId, adminLvl = line:match("^{FFFFFF}(.*)%[(%d+)%] %- ([1-5]) уровень")
+                    table.insert(adminsOnline, {
+                        oocNickname = oocNickname,
+                        icNickname  = sampGetPlayerNickname(tonumber(adminId)),
+                        adminId     = tonumber(adminId),
+                        adminLvl    = adminLvl
+                    })
+                end
+            end
+            checkedAdminList = true
+        end
         return false
     end
 
@@ -2146,6 +2251,11 @@ sampfuncsRegisterConsoleCommand("execute.scriptInfo", writeScriptInformationIn)
 -- ниже лучше ничего не трогать
 sendchat = sampSendChat
 addchatmessage = sampAddChatMessage
+sampfuncslog = sampfuncsLog
+
+function sampfuncsLog(text)
+    sampfuncslog(u8:decode(text))
+end
 
 function sampSendChat(text)
     sendchat(u8:decode(text))
