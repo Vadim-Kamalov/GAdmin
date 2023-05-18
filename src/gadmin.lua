@@ -204,6 +204,7 @@ function create_config()
         aloginOnEnter = false,
         showGunInfo = false,
         deathNotifyInChat = false,
+        displayBubbles = true,
         airbreak = false,
         showIdInKillList = false,
         mentionColor = "4A86B6",
@@ -332,6 +333,7 @@ local newMainFrame = new.bool()
 local specAdminPanel = new.bool()
 local playersNerbyTransparent = new.int(cfg.windowsSettings.playersNearby.alpha)
 local playersNearbyCheckbox = new.bool(cfg.windowsSettings.playersNearby.use)
+local displayBubbleChat = new.bool(cfg.displayBubbles)
 local onlineFrameCheckbox = new.bool(cfg.windowsSettings.onlineFrame.use)
 local abCheckbox = new.bool(cfg.airbreak)
 local car_spec = new.bool(cfg.car_spec)
@@ -947,7 +949,10 @@ local mainFrame = imgui.OnFrame(
             cfg.windowsSettings.onlineFrame.use = onlineFrameCheckbox[0]
             save_config()
         end
-
+        if imgui.Checkbox("Отображение /ame и /ab в чат", displayBubbleChat) then
+            cfg.displayBubbles = displayBubbleChat[0]
+            save_config()
+        end
         if imgui.SliderInt("Прозрачность окна с ближайшими игроками", playersNerbyTransparent, 0, 100) then
             cfg.windowsSettings.playersNearby.alpha = playersNerbyTransparent[0] / 100
             save_config()
@@ -1712,6 +1717,19 @@ function samp.onServerMessage(color, text)
 
     print("COLOR:", bit.tohex(bit.rshift(color, 8), 6), "| DEF:", color, "|", string.gsub(text, "{(%x%x%x%x%x%x)}", "#%1"))
 end
+
+
+function samp.onPlayerChatBubble(playerId, color, dist, duration, text)
+    result, Ped = sampGetCharHandleBySampPlayerId(playerId)
+    if cfg.displayBubbles then
+        if result and color == -413892353 then
+            sampAddChatMessage('> '..sampGetPlayerNickname(playerId)..'['..playerId..'] '..text, 0xE75480)
+        elseif result and color == -421075226 then
+            sampAddChatMessage('> (( '..sampGetPlayerNickname(playerId)..'['..playerId..']: '..text:sub(3,-3)..' ))', 0xE6E6E6)
+        end
+    end
+end
+
 
 function getIdByMatchedNickname(nickname, lengthException)
     local result, playerId = false, -1
