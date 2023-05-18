@@ -1721,9 +1721,10 @@ end
 
 function samp.onPlayerChatBubble(playerId, color, dist, duration, text)
     local result, ped = sampGetCharHandleBySampPlayerId(playerId)
-    if cfg.displayBubbles and text:len() <= 3 then
+    local text = u8(text)
+    if cfg.displayBubbles and text:len() >= 3 then
         if result and color == -413892353 then
-            sampAddChatMessage('> '..sampGetPlayerNickname(playerId)..'['..playerId..'] '..text, 0xE75480)
+            sampAddChatMessage('> '..sampGetPlayerNickname(playerId)..'['..playerId..'] ', 0xE75480)
         elseif result and color == -421075226 then
             sampAddChatMessage('> (( '..sampGetPlayerNickname(playerId)..'['..playerId..']: '..text:sub(3,-3)..' ))', 0xE6E6E6)
         end
