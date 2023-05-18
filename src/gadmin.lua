@@ -188,7 +188,6 @@ function create_config()
                 {name = "EXIT", action = "{EXIT}", position = 7}
             }
         },
-        chats = {},
         checker = {
             show                = true,
             showOfflinePlayers  = true,
@@ -196,23 +195,27 @@ function create_config()
             alpha               = 0.30,
             players             = {}
         },
-        gg_msg = "Приятной игры!",
-        adm_pass = "",
-        game_pass = "",
-        car_spec = false,
-        autoEnter = false,
-        aloginOnEnter = false,
-        showGunInfo = false,
-        deathNotifyInChat = false,
-        displayBubbles = true,
-        airbreak = false,
-        showIdInKillList = false,
-        mentionColor = "4A86B6",
         reportWindow = {
             use     = false,
             alpha   = 30,
             size    = {500, 300}
-        }
+        },
+        renderSize = {
+            car_spec    = 14,
+            showGunInfo = 14
+        },
+        gg_msg              = "Приятной игры!",
+        mentionColor        = "4A86B6",
+        adm_pass            = "",
+        game_pass           = "",
+        car_spec            = false,
+        autoEnter           = false,
+        aloginOnEnter       = false,
+        showGunInfo         = false,
+        deathNotifyInChat   = false,
+        airbreak            = false,
+        showIdInKillList    = false,
+        displayBubbles      = true
     } 
 
     local handle = assert(io.open("moonloader/config/gadmin.json", "w"))
@@ -572,12 +575,111 @@ function setChatInputEnabledWithText(text)
     sampSetChatInputText(text)
 end
 
+local backgroundDrawList = imgui.OnFrame(
+    function() return true end,
+    function(self)
+        self.HideCursor         = _showSpectateCursor
+        self.DL                 = imgui.GetBackgroundDrawList()
+        self.explode_argb       = function(argb)    
+            local a = bit.band(bit.rshift(argb, 24), 0xFF)
+            local r = bit.band(bit.rshift(argb, 16), 0xFF)
+            local g = bit.band(bit.rshift(argb, 8), 0xFF)
+            local b = bit.band(argb, 0xFF)
+            return a, r, g, b
+        end
+
+        self.makeTextColoredTable = function(text)
+            local output = {}
+            for color, coloredText in text:gmatch("{(%x%x%x%x%x%x)}{(.-)}") do
+                table.insert(output, {text = coloredText, hex = color, sizeX = imgui.CalcTextSize(coloredText).x})
+            end
+            return output
+        end
+
+        -- Allows you to add circled text. Note that this function only adds a stroke.
+        self.addStrokeText      = function(text, color, pos, font, textSize, strokeWidth)
+            local strokeWidth   = strokeWidth or 1
+            local blackColor    = imgui.GetColorU32Vec4(imgui.ImVec4(0, 0, 0, 1))
+            if font then imgui.PushFont(font) end
+            if strokeWidth > 0 then
+                self.DL:AddTextFontPtr(font, textSize, imgui.ImVec2(pos.x + strokeWidth, pos.y + strokeWidth), blackColor, text)
+                self.DL:AddTextFontPtr(font, textSize, imgui.ImVec2(pos.x - strokeWidth, pos.y - strokeWidth), blackColor, text)
+                self.DL:AddTextFontPtr(font, textSize, imgui.ImVec2(pos.x + strokeWidth, pos.y - strokeWidth), blackColor, text)
+                self.DL:AddTextFontPtr(font, textSize, imgui.ImVec2(pos.x - strokeWidth, pos.y + strokeWidth), blackColor, text)
+            end
+            self.DL:AddTextFontPtr(font, textSize, pos, color, text)
+            if font then imgui.PopFont() end
+        end
+
+        -- A more optimized version with a rendering of individual, colored texts, instead of rendering each char. 
+        --
+        -- The function allows you to render text whose color can be passed through HEX.
+        -- To pass a hex, use the following syntax:
+        --      "{HEX}{TEXT}..."; Note that this argument ignores any characters other than {HEX} and {TEXT}.
+        self.addTextColoredHex  = function(text, pos, font, textSize, strokeWidth)
+            -- We assemble the table of the text argument, and render each colored text using a loop.
+            if font then imgui.PushFont(font) end
+            for index, data in ipairs(self.makeTextColoredTable(text)) do
+                -- data[]: {text: String, hex: String, sizeX: Number}
+                local r, g, b, a    = self.explode_argb("0x" .. data.hex .. "FF")
+                local color         = imgui.GetColorU32Vec4(imgui.ImVec4(r / 255, g / 255, b / 255, 1 --[[ Alpha ]]))
+                self.addStrokeText(data.text, color, pos, font or NULL, textSize or 14, strokeWidth or 1)
+                pos.x = pos.x + data.sizeX + (textSize or 14) / 2.5  
+            end
+            if font then imgui.PopFont() end
+        end
+
+        if isSampAvailable() then
+            if car_spec[0] then
+                for _, car in pairs(getAllVehicles()) do
+                    local x, y, z = getCarCoordinates(car)
+                    local myx, myy, myz = getCharCoordinates(PLAYER_PED)
+                    if doesVehicleExist(car) and isCarOnScreen(car) and getDistanceBetweenCoords3d(x, y, z, myx, myy, myz) < 50 then
+                        local engine_status = isCarEngineOn(car) and "{8dff85}{ON}" or "{ff8585}{OFF}"
+                        local door_status = getCarDoorLockStatus(car) == 0 and "{8dff85}{OPEN}" or "{ff8585}{LOCK}"
+                        local hp = getCarHealth(car)
+                        local result, id = sampGetVehicleIdByCarHandle(car)
+                        local carmodel = getCarModel(car)
+                        local vehname = getCarName(carmodel)
+                        local sx, sy = convert3DCoordsToScreen(x, y, z)
+                        
+                        local text  = string.format("{FFFFFF}{ID: }{8DFF85}{%s}{FFFFFF}{ HP: }{8DFF85}{%s}", id, hp)
+                        local text2 = string.format("{FFFFFF}{%s }%s{FFFFFF}{ / }%s", vehname, engine_status, door_status) 
+                        self.addTextColoredHex(text, imgui.ImVec2(sx, sy), nil, cfg.renderSize.car_spec, 1)
+                        self.addTextColoredHex(text2, imgui.ImVec2(sx, sy + 15), nil, cfg.renderSize.car_spec, 1)
+                    end
+                end
+            end
+
+            if cfg.showGunInfo then
+                for _, player in ipairs(getAllChars()) do
+                    local idResult, id = sampGetPlayerIdByCharHandle(player)
+                    local charResult, char = sampGetCharHandleBySampPlayerId(id)
+                    local x, y, z = getBodyPartCoordinates(2, player)
+                    local myx, myy, myz = getCharCoordinates(PLAYER_PED)
+                    local screenPosX, screenPosY = convert3DCoordsToScreen(x, y, z)
+
+                    if charResult and isCharOnScreen(char) and getDistanceBetweenCoords3d(x, y, z, myx, myy, myz) < 50 then
+                        self.addTextColoredHex(
+                            "{FFFFFF}{" .. require("game.weapons").names[getCurrentCharWeapon(player)] .. "}",
+                            imgui.ImVec2(screenPosX, screenPosY),
+                            nil,
+                            cfg.renderSize.showGunInfo,
+                            1
+                        )
+                    end
+                end
+            end
+        end
+    end
+)
+
 local reportData = {
     messages    = {},
     size        = imgui.ImVec2(table.unpack(cfg.reportWindow.size))
 }
 
-local reportWindow = imgui.OnFrame(
+local reportWindow = imgui.OnFrame( -- TODO
     function() return cfg.reportWindow.use end,
     function(self)
         self.HideCursor = _showSpectateCursor
@@ -611,7 +713,7 @@ local actionMenu = imgui.OnFrame(
             }, {
                 ["*Вы тут?*"]   = function() sampSendChat("/ans "..info_about.." Вы тут? Ответ в /b") end,
                 ["AFRISK"]      = function() sampSendMenuSelectRow(5) end,
-                ["GG"]          = function() gg_cmd(info_about) end,
+                ["КВЕНТА"]      = function() end,
                 ["GETBUYCAR"]   = function() setChatInputEnabledWithText("/getbuycar ") end,
                 ["REPAIR"]      = function() setChatInputEnabledWithText("/vrepair ") end,
                 ["STATS"]       = function() sampSendChat("/stats "..info_about) end,
@@ -949,10 +1051,7 @@ local mainFrame = imgui.OnFrame(
             cfg.windowsSettings.onlineFrame.use = onlineFrameCheckbox[0]
             save_config()
         end
-        if imgui.Checkbox("Отображение /ame и /ab в чат", displayBubbleChat) then
-            cfg.displayBubbles = displayBubbleChat[0]
-            save_config()
-        end
+
         if imgui.SliderInt("Прозрачность окна с ближайшими игроками", playersNerbyTransparent, 0, 100) then
             cfg.windowsSettings.playersNearby.alpha = playersNerbyTransparent[0] / 100
             save_config()
@@ -984,6 +1083,11 @@ local mainFrame = imgui.OnFrame(
         if rkeys.HotKey("Копировать никнейм за которым следите при его выходе", spDisconnectCopy, imgui.ImVec2(100, 20)) then
             cfg.hotkeys.specReload = spDisconnectCopy.v
             rkeys.changeHotKey(specDisconnectCopy, spDisconnectCopy.v)
+            save_config()
+        end
+
+        if imgui.Checkbox("Отображение /ame и /ab в чат", displayBubbleChat) then
+            cfg.displayBubbles = displayBubbleChat[0]
             save_config()
         end
 
@@ -1138,7 +1242,7 @@ local specActionsData = {
     ["SESSION"]     = function() sampSendMenuSelectRow(4) end,
     ["FRISK"]       = function() sampSendMenuSelectRow(5) end,
     ["EXIT"]        = function() sampSendMenuSelectRow(6) end,
-    ["GG"]          = function() gg_cmd(info_about) end,
+    ["GG"]          = function() sampSendChat("/ans "..info_about.." "..cfg.gg_msg) end,
     ["SP_ID"]       = function() return info_about end,
     ["SP_NICK"]     = function() return sampGetPlayerNickname(tonumber(info_about)) end,
     ["SP_HP"]       = function() return sampGetPlayerHealth(tonumber(info_about)) end,
@@ -1486,44 +1590,13 @@ function main()
                 
             end
         end
+
         if abCheckbox[0] then
             abcheck()
         end
+
         if gweather ~= -1 then
             forceWeatherNow(gweather)
-        end
-        if car_spec[0] then
-            for _, car in pairs(getAllVehicles()) do
-                local x, y, z = getCarCoordinates(car)
-                local myx, myy, myz = getCharCoordinates(PLAYER_PED)
-                if doesVehicleExist(car) and isCarOnScreen(car) and getDistanceBetweenCoords3d(x, y, z, myx, myy, myz) < 50 then
-                    local engine_status = isCarEngineOn(car) and "{8dff85}ON" or "{ff8585}OFF"
-                    local door_status = getCarDoorLockStatus(car) == 0 and "{8dff85}OPEN" or "{ff8585}LOCK"
-                    local hp = getCarHealth(car)
-                    local result, id = sampGetVehicleIdByCarHandle(car)
-                    local carmodel = getCarModel(car)
-                    local vehname = getCarName(carmodel)
-                    local sx, sy = convert3DCoordsToScreen(x, y, z)
-                    local text = "ID: {8dff85}" .. id .. " {FFFFFF}HP: {8dff85}" .. hp
-                    local text2 = vehname .. " [" .. engine_status .. "{FFFFFF} / " .. door_status .. "{FFFFFF}]"
-                    renderFontDrawTextAlign(font, text, sx, sy, 0xFFFFFFFF, 2)
-                    renderFontDrawTextAlign(font, text2, sx, sy + 15, 0xFFFFFFFF, 2)
-                end
-            end
-        end
-
-        if cfg.showGunInfo then
-            for _, player in ipairs(getAllChars()) do
-                local idResult, id = sampGetPlayerIdByCharHandle(player)
-                local charResult, char = sampGetCharHandleBySampPlayerId(id)
-                local x, y, z = getBodyPartCoordinates(2, player)
-                local myx, myy, myz = getCharCoordinates(PLAYER_PED)
-                local screenPosX, screenPosY = convert3DCoordsToScreen(x, y, z)
-
-                if charResult and isCharOnScreen(char) and getDistanceBetweenCoords3d(x, y, z, myx, myy, myz) < 50 then
-                    renderFontDrawTextAlign(font, require("game.weapons").names[getCurrentCharWeapon(player)], screenPosX, screenPosY, 0xFFFFFFFF, 2)
-                end
-            end
         end
 
         if in_sp and isNotCursorActive() then
@@ -1718,19 +1791,17 @@ function samp.onServerMessage(color, text)
     print("COLOR:", bit.tohex(bit.rshift(color, 8), 6), "| DEF:", color, "|", string.gsub(text, "{(%x%x%x%x%x%x)}", "#%1"))
 end
 
-
 function samp.onPlayerChatBubble(playerId, color, dist, duration, text)
     local result, ped = sampGetCharHandleBySampPlayerId(playerId)
     text = u8(text)
-    if cfg.displayBubbles and text:len() >= 3 and dist <= 25 and text:len() <= 40 then
+    if cfg.displayBubbles and text:len() >= 3 then
         if result and color == -413892353 then
-            sampAddChatMessage('> '..sampGetPlayerNickname(playerId)..'['..playerId..'] '..text, 0xE75480)
+            sampAddChatMessage('> '..sampGetPlayerNickname(playerId)..'['..playerId..'] ', 0xE75480)
         elseif result and color == -421075226 then
             sampAddChatMessage('> (( '..sampGetPlayerNickname(playerId)..'['..playerId..']: '..text:sub(3,-3)..' ))', 0xE6E6E6)
         end
     end
 end
-
 
 function getIdByMatchedNickname(nickname, lengthException)
     local result, playerId = false, -1
