@@ -1928,7 +1928,7 @@ function samp.onShowDialog(dialogId, style, title, button1, button2, text)
         end
     end
 
-    if style == 3 and button1 == "Далее" and button2 == "Отмена" and text:find(".*{4a86b6}Авторизация.*{FFFFFF}Введите пароль:.*") and string.len(cfg.adm_pass) ~= 0 then
+    if style == 3 and button1 == "Далее" and button2 == "Отмена" and text:find(".*{4a86b6}Авторизация.*{FFFFFF}Введите пароль:.*") and string.len(cfg.adm_pass) > 3 then
         sampSendDialogResponse(dialogId, 1, 0, cfg.adm_pass)
         return false
     end
@@ -1936,6 +1936,7 @@ function samp.onShowDialog(dialogId, style, title, button1, button2, text)
     if not checkedAdminList then
         if text:find("Администрация в игре.*Лог отключений") then
             sampSendDialogResponse(dialogId, 1, 0, nil)
+            return false
         elseif text:find("Администраторы в сети:") then
             for line in string.gmatch(text, "[^\n]+") do
                 if line:find("^.*%[%d+%] %- [1-5] уровень") then
@@ -1949,8 +1950,9 @@ function samp.onShowDialog(dialogId, style, title, button1, button2, text)
                 end
             end
             checkedAdminList = true
+            return false
         end
-        return false
+        
     end
 
     if text:find("Информация о игроке") and checking_stats then
