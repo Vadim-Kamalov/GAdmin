@@ -736,7 +736,7 @@ local actionMenu = imgui.OnFrame(
             }, {
                 ["*Вы тут?*"]   = function() sampSendChat("/ans "..info_about.." Вы тут? Ответ в /b") end,
                 ["AFRISK"]      = function() sampSendMenuSelectRow(5) end,
-                ["КВЕНТА"]      = function() end,
+                ["GG"]          = function() gg_cmd(info_about) end,
                 ["GETBUYCAR"]   = function() setChatInputEnabledWithText("/getbuycar ") end,
                 ["REPAIR"]      = function() setChatInputEnabledWithText("/vrepair ") end,
                 ["STATS"]       = function() sampSendChat("/stats "..info_about) end,
