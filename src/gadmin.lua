@@ -203,7 +203,8 @@ function create_config()
         renderSize = {
             car_spec    = 14,
             showGunInfo = 14,
-            showAdmins  = 14
+            showAdmins  = 14,
+            wallhack    = 14
         },
         gg_msg              = "Приятной игры!",
         mentionColor        = "4A86B6",
@@ -218,7 +219,8 @@ function create_config()
         showIdInKillList    = false,
         displayBubbles      = true,
         showLvlInAdminChat  = false,
-        showAdmins          = true
+        showAdmins          = true,
+        wallhack            = false
     } 
 
     local handle = assert(io.open("moonloader/config/gadmin.json", "w"))
@@ -656,16 +658,19 @@ local backgroundDrawList = imgui.OnFrame(
                 end
             end
 
-            if cfg.showGunInfo then
-                for _, player in ipairs(getAllChars()) do
-                    local idResult, id = sampGetPlayerIdByCharHandle(player)
-                    local charResult, char = sampGetCharHandleBySampPlayerId(id)
-                    local x, y, z = getBodyPartCoordinates(4, player)
-                    local myx, myy, myz = getCharCoordinates(PLAYER_PED)
-                    local screenPosX, screenPosY = convert3DCoordsToScreen(x, y, z)
-                    local charCheck = charResult and isCharOnScreen(char) and getDistanceBetweenCoords3d(x, y, z, myx, myy, myz) < 50
+            for _, player in ipairs(getAllChars()) do
+                local idResult, id = sampGetPlayerIdByCharHandle(player)
+                local charResult, char = sampGetCharHandleBySampPlayerId(id)
+                local x, y, z = getBodyPartCoordinates(4, player)
+                local myx, myy, myz = getCharCoordinates(PLAYER_PED)
+                local screenPosX, screenPosY = convert3DCoordsToScreen(x, y, z)
+                local charCheck =
+                    charResult and isCharOnScreen(char) and id ~= select(2, sampGetPlayerIdByCharHandle(PLAYER_PED))
+                local distance = getDistanceBetweenCoords3d(x, y, z, myx, myy, myz)
+                local clistColorHex = string.format("%06X", bit.band(sampGetPlayerColor(id), 0xFFFFFF))
 
-                    if charCheck then
+                if charCheck then
+                    if cfg.showGunInfo and distance < 50 then
                         self.addTextColoredHex(
                             "{FFFFFF}{" .. require("game.weapons").names[getCurrentCharWeapon(player)] .. "}",
                             imgui.ImVec2(screenPosX, screenPosY),
@@ -676,20 +681,29 @@ local backgroundDrawList = imgui.OnFrame(
                     end
 
                     if cfg.showAdmins then
-                        if id ~= select(2, sampGetPlayerIdByCharHandle(PLAYER_PED)) and charCheck and checkedAdminList then
-                            for _, data in ipairs(adminsOnline) do
-                                if id == data.adminId then
-                                    local showAdminsPosX, showAdminsPosY = convert3DCoordsToScreen(getBodyPartCoordinates(4, player))
-                                    self.addTextColoredHex(
-                                        "{FF8585}{" .. data.oocNickname .. "}",
-                                        imgui.ImVec2(showAdminsPosX, showAdminsPosY - 15),
-                                        nil,
-                                        cfg.renderSize.showAdmins,
-                                        1
-                                    )
-                                end
+                        for _, data in ipairs(adminsOnline) do
+                            if id == data.adminId and distance < 50 then
+                                self.addTextColoredHex(
+                                    "{FF8585}{" .. data.oocNickname .. "}",
+                                    imgui.ImVec2(screenPosX, screenPosY - 15),
+                                    nil,
+                                    cfg.renderSize.showAdmins,
+                                    1
+                                )
                             end
                         end
+                    end
+
+                    if cfg.wallhack then
+                        local wallhackText =
+                            string.format("{%s}{%s[%s] [X: %1.f]}", clistColorHex, sampGetPlayerNickname(id), id, distance)
+                        self.addTextColoredHex(
+                            wallhackText,
+                            imgui.ImVec2(screenPosX, screenPosY - 30),
+                            nil,
+                            cfg.renderSize.wallhack,
+                            1
+                        )
                     end
                 end
             end
@@ -928,9 +942,8 @@ local playersNearbyFrame = imgui.OnFrame(
                 end
             elseif isSampAvailable() then
                 for _, player in ipairs(getAllChars()) do
-                    result, id = sampGetPlayerIdByCharHandle(player)
+                    local result, id = sampGetPlayerIdByCharHandle(player)
 
-                    color = sampGetPlayerColor(id)
                     if result then
                         nickname = sampGetPlayerNickname(id)
                         resultDistance, handle = sampGetCharHandleBySampPlayerId(id)
@@ -947,7 +960,7 @@ local playersNearbyFrame = imgui.OnFrame(
                         )).x / 2)
                         imgui.SafeText(("%s[%s] [X: %1.f]"):format(nickname, id,
                             getDistanceBetweenCoords3d(distanceA1, distanceA2, distanceA3, distanceB1, distanceB2, distanceB3)
-                        ), cfg.windowsSettings.playersNearby.alpha, hexToImVec4(("%06X"):format(bit.band(color, 0xFFFFFF))))
+                        ), cfg.windowsSettings.playersNearby.alpha, hexToImVec4(("%06X"):format(bit.band(sampGetPlayerColor(id), 0xFFFFFF))))
                         if imgui.IsItemClicked() then
                             imgui.OpenPopup("playerInfo")
                             popupId, popupNickname = id, nickname
@@ -2207,9 +2220,8 @@ function spectateDisconnectCopy()
 end
 
 function hexToImVec4(hex, aplha)
-    local alpha = alpha or 1.00
     return imgui.ImVec4(
-        tonumber("0x"..hex:sub(1,2)) / 255, tonumber("0x"..hex:sub(3,4)) / 255, tonumber("0x"..hex:sub(5,6)) / 255, alpha
+        tonumber("0x"..hex:sub(1,2)) / 255, tonumber("0x"..hex:sub(3,4)) / 255, tonumber("0x"..hex:sub(5,6)) / 255, alpha or 1
     )
 end
 -- Debug console commands
