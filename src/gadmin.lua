@@ -25,8 +25,6 @@
 
 script_name     "GAdmin"
 script_version  "1.0"
-script_url      "https://github.com/Vadim-Kamalov/GAdmin"
-script_authors  { "https://github.com/Vadim-Kamalov/GAdmin/blob/main/CONTRIBUTORS" }
 
 local loadLib = function(name)
     local lib, err = pcall(require, name)
@@ -55,7 +53,6 @@ local new, str, sizeof = imgui.new, ffi.string, ffi.sizeof
 local sizeX, sizeY = getScreenResolution()
 local farchatTable = {}
 local lastFarChatColor = -1
-
 -- FFI
 local getBonePosition = ffi.cast("int (__thiscall*)(void*, float*, int, bool)", 0x5E4280)
 ffi.cdef[[
@@ -428,10 +425,6 @@ function bringFloatTo(from, to, start_time, duration)
     return (timer > duration) and to or from, false
 end
 
-function isNotGamePaused()
-    return not isGamePaused()
-end
-
 function getPlayerIdByNickname(name)
     for i = 0, sampGetMaxPlayerId(false) do
         if sampIsPlayerConnected(i) then
@@ -655,80 +648,75 @@ local backgroundDrawList = imgui.OnFrame(
         end
 
         if isSampAvailable() then
-            if isNotGamePaused() then
-                if car_spec[0] then
-                    for _, car in pairs(getAllVehicles()) do
-                        local x, y, z = getCarCoordinates(car)
-                        local myx, myy, myz = getCharCoordinates(PLAYER_PED)
-                        if doesVehicleExist(car) and isCarOnScreen(car) and getDistanceBetweenCoords3d(x, y, z, myx, myy, myz) < 50 then
-                            local engine_status = isCarEngineOn(car) and "{8dff85}{ON}" or "{ff8585}{OFF}"
-                            local door_status = getCarDoorLockStatus(car) == 0 and "{8dff85}{OPEN}" or "{ff8585}{LOCK}"
-                            local hp = getCarHealth(car)
-                            local result, id = sampGetVehicleIdByCarHandle(car)
-                            local carmodel = getCarModel(car)
-                            local vehname = getCarName(carmodel)
-                            local sx, sy = convert3DCoordsToScreen(x, y, z)
+            if car_spec[0] then
+                for _, car in pairs(getAllVehicles()) do
+                    local x, y, z = getCarCoordinates(car)
+                    local myx, myy, myz = getCharCoordinates(PLAYER_PED)
+                    if doesVehicleExist(car) and isCarOnScreen(car) and getDistanceBetweenCoords3d(x, y, z, myx, myy, myz) < 50 then
+                        local engine_status = isCarEngineOn(car) and "{8dff85}{ON}" or "{ff8585}{OFF}"
+                        local door_status = getCarDoorLockStatus(car) == 0 and "{8dff85}{OPEN}" or "{ff8585}{LOCK}"
+                        local hp = getCarHealth(car)
+                        local result, id = sampGetVehicleIdByCarHandle(car)
+                        local carmodel = getCarModel(car)
+                        local vehname = getCarName(carmodel)
+                        local sx, sy = convert3DCoordsToScreen(x, y, z)
                         
-                            local text  = string.format("{FFFFFF}{ID: }{8DFF85}{%s}{FFFFFF}{ HP: }{8DFF85}{%s}", id, hp)
-                            local text2 = string.format("{FFFFFF}{%s }%s{FFFFFF}{ / }%s", vehname, engine_status, door_status) 
-                            self.addTextColoredHex(text, imgui.ImVec2(sx, sy), nil, cfg.renderSize.car_spec, 1)
-                            self.addTextColoredHex(text2, imgui.ImVec2(sx, sy + 15), nil, cfg.renderSize.car_spec, 1)
-                        end
+                        local text  = string.format("{FFFFFF}{ID: }{8DFF85}{%s}{FFFFFF}{ HP: }{8DFF85}{%s}", id, hp)
+                        local text2 = string.format("{FFFFFF}{%s }%s{FFFFFF}{ / }%s", vehname, engine_status, door_status) 
+                        self.addTextColoredHex(text, imgui.ImVec2(sx, sy), nil, cfg.renderSize.car_spec, 1)
+                        self.addTextColoredHex(text2, imgui.ImVec2(sx, sy + 15), nil, cfg.renderSize.car_spec, 1)
                     end
                 end
+            end
 
-                for _, player in ipairs(getAllChars()) do
-                    local idResult, id = sampGetPlayerIdByCharHandle(player)
-                    local charResult, char = sampGetCharHandleBySampPlayerId(id)
-                    local x, y, z = getBodyPartCoordinates(4, player)
-                    local myx, myy, myz = getCharCoordinates(PLAYER_PED)
-                    local screenPosX, screenPosY = convert3DCoordsToScreen(x, y, z)
-                    local charCheck =
-                        charResult and isCharOnScreen(char) and id ~= select(2, sampGetPlayerIdByCharHandle(PLAYER_PED))
-                    local distance = getDistanceBetweenCoords3d(x, y, z, myx, myy, myz)
-                    local clistColorHex = string.format("%06X", bit.band(sampGetPlayerColor(id), 0xFFFFFF))
+            for _, player in ipairs(getAllChars()) do
+                local idResult, id = sampGetPlayerIdByCharHandle(player)
+                local charResult, char = sampGetCharHandleBySampPlayerId(id)
+                local x, y, z = getBodyPartCoordinates(4, player)
+                local myx, myy, myz = getCharCoordinates(PLAYER_PED)
+                local screenPosX, screenPosY = convert3DCoordsToScreen(x, y, z)
+                local charCheck =
+                    charResult and isCharOnScreen(char) and id ~= select(2, sampGetPlayerIdByCharHandle(PLAYER_PED))
+                local distance = getDistanceBetweenCoords3d(x, y, z, myx, myy, myz)
+                local clistColorHex = string.format("%06X", bit.band(sampGetPlayerColor(id), 0xFFFFFF))
 
-                    if charCheck then
-                        if cfg.showGunInfo and distance < 50 then
-                            self.addTextColoredHex(
-                                "{FFFFFF}{" .. require("game.weapons").names[getCurrentCharWeapon(player)] .. "}",
-                                imgui.ImVec2(screenPosX, screenPosY),
-                                nil,
-                                cfg.renderSize.showGunInfo,
-                                1
-                            )
-                        end
+                if charCheck then
+                    if cfg.showGunInfo and distance < 50 then
+                        self.addTextColoredHex(
+                            "{FFFFFF}{" .. require("game.weapons").names[getCurrentCharWeapon(player)] .. "}",
+                            imgui.ImVec2(screenPosX, screenPosY),
+                            nil,
+                            cfg.renderSize.showGunInfo,
+                            1
+                        )
+                    end
 
-                        if cfg.showAdmins then
-                            for _, data in ipairs(adminsOnline) do
-                                if id == data.adminId and distance < 50 then
-                                    self.addTextColoredHex(
-                                        "{FF8585}{" .. data.oocNickname .. "}",
-                                        imgui.ImVec2(screenPosX, screenPosY - 15),
-                                        nil,
-                                        cfg.renderSize.showAdmins,
-                                        1
-                                    )
-                                end
+                    if cfg.showAdmins then
+                        for _, data in ipairs(adminsOnline) do
+                            if id == data.adminId and distance < 50 then
+                                self.addTextColoredHex(
+                                    "{FF8585}{" .. data.oocNickname .. "}",
+                                    imgui.ImVec2(screenPosX, screenPosY - 15),
+                                    nil,
+                                    cfg.renderSize.showAdmins,
+                                    1
+                                )
                             end
                         end
+                    end
 
-                        if cfg.wallhack then
-                            local wallhackText =
-                                string.format("{%s}{%s[%s] [X: %1.f]}", clistColorHex, sampGetPlayerNickname(id), id, distance)
-                            self.addTextColoredHex(
-                                wallhackText,
-                                imgui.ImVec2(screenPosX, screenPosY - 30),
-                                nil,
-                                cfg.renderSize.wallhack,
-                                1
-                            )
-                        end
+                    if cfg.wallhack then
+                        local wallhackText =
+                            string.format("{%s}{%s[%s] [X: %1.f]}", clistColorHex, sampGetPlayerNickname(id), id, distance)
+                        self.addTextColoredHex(
+                            wallhackText,
+                            imgui.ImVec2(screenPosX, screenPosY - 30),
+                            nil,
+                            cfg.renderSize.wallhack,
+                            1
+                        )
                     end
                 end
-            else
-                -- Add information about the script to the pause menu.
-                self.DL:AddText(imgui.ImVec2(sizeX - 100 - imgui.CalcTextSize(thisScript().version).x / 2, sizeY - 40), -1, string.format("GAdmin v%s", thisScript().version))
             end
         end
     end
@@ -740,7 +728,7 @@ local reportData = {
 }
 
 local reportWindow = imgui.OnFrame( -- TODO
-    function() return isNotGamePaused and cfg.reportWindow.use end,
+    function() return cfg.reportWindow.use end,
     function(self)
         self.HideCursor = _showSpectateCursor
 
@@ -758,7 +746,7 @@ local reportWindow = imgui.OnFrame( -- TODO
 )
 
 local actionMenu = imgui.OnFrame(
-    function() return isNotGamePaused() and movableWindows[MOV_STATS].it[0] end,
+    function() return movableWindows[MOV_STATS].it[0] end,
     function(self)
         self.HideCursor = _showSpectateCursor
         self.Buttons    = {
@@ -821,7 +809,7 @@ local actionMenu = imgui.OnFrame(
 )
 
 local checkerFrame = imgui.OnFrame(
-    function() return isNotGamePaused() and movableWindows[MOV_CHECKER].it[0] and cfg.checker.show end,
+    function() return movableWindows[MOV_CHECKER].it[0] and cfg.checker.show end,
     function(self)
         self.HideCursor         = _showSpectateCursor
         self.windowProperties   = {
@@ -888,7 +876,7 @@ local notificationInit = {
 
 local notificationFramePositionStatus = true
 local notificationFrame = imgui.OnFrame(
-    function() return isNotGamePaused() and notification[0] end,
+    function() return notification[0] end,
     function(self)
         self.HideCursor = _showSpectateCursor
         self.notificationStyle = {
@@ -935,8 +923,15 @@ local notificationFrame = imgui.OnFrame(
 )
 
 local playersNearbyFrame = imgui.OnFrame(
-    function() return isNotGamePaused() and ((movableWindows[MOV_STATS].it[0] and cfg.windowsSettings.playersNearby.use) or movableWindows[MOV_NEARBY].it[0]) end,
+    function() return (movableWindows[MOV_STATS].it[0] and cfg.windowsSettings.playersNearby.use) or movableWindows[MOV_NEARBY].it[0] end,
     function(self)
+        local playersNearbyAlpha = {
+            {"ImVec4", "ScrollbarBg", change = imgui.ImVec4(0.07, 0.07, 0.07, cfg.windowsSettings.playersNearby.alpha), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
+            {"ImVec4", "WindowBg", change = imgui.ImVec4(0.07, 0.07, 0.07, cfg.windowsSettings.playersNearby.alpha), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
+            {"Int", "WindowBorderSize", change = 0, reset = 1}
+        }
+
+        changeTheme:applySettings(playersNearbyAlpha)
         self.HideCursor = _showSpectateCursor
 
         imgui.SetNextWindowPos(imgui.ImVec2(cfg.windowsPosition.playersNearby.x, cfg.windowsPosition.playersNearby.y))
@@ -1030,7 +1025,7 @@ local playersNearbyFrame = imgui.OnFrame(
 local selectedTab = 1
 
 local adminForm = imgui.OnFrame(
-    function() return isNotGamePaused() and admin_form_menu[0] end,
+    function() return admin_form_menu[0] end,
     function(self)
         self.HideCursor = _showSpectateCursor
         imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2, sizeY), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
@@ -1065,8 +1060,15 @@ local adminForm = imgui.OnFrame(
 )
 
 local mainFrame = imgui.OnFrame(
-    function() return isNotGamePaused() and show_main_menu[0] end,
+    function() return show_main_menu[0] end,
     function(player)
+        local mainAlpha = {
+            {"ImVec4", "ScrollbarBg", change = imgui.ImVec4(0.07, 0.07, 0.07, 1), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
+            {"ImVec4", "WindowBg", change = imgui.ImVec4(0.07, 0.07, 0.07, 1), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
+            {"Int", "WindowBorderSize", change = 0, reset = 1}
+        }
+        changeTheme:applySettings(mainAlpha)
+
         imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2, sizeY / 2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
         imgui.SetNextWindowSize(imgui.ImVec2(800, 600))
         imgui.Begin("GAdmin", show_main_menu, imgui.WindowFlags.NoTitleBar)
@@ -1178,13 +1180,20 @@ local mainFrame = imgui.OnFrame(
 )
 
 local onlineFrame = imgui.OnFrame(
-    function() return isNotGamePaused() and show_online_menu[0] and cfg.windowsSettings.onlineFrame.use and not isGamePaused() end,
+    function() return show_online_menu[0] and cfg.windowsSettings.onlineFrame.use end,
     function(player)
-        player.HideCursor   = _showSpectateCursor
+        local onlineAlpha = {
+            {"ImVec4", "ScrollbarBg", change = imgui.ImVec4(0.07, 0.07, 0.07, 1), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
+            {"ImVec4", "WindowBg", change = imgui.ImVec4(0.07, 0.07, 0.07, 1), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
+            {"Int", "WindowBorderSize", change = 0, reset = 1}
+        }
+        changeTheme:applySettings(onlineAlpha)
+        player.HideCursor = _showSpectateCursor
         local full_online = string.format("Общий онлайн: %02d:%02d:%02d", cfg.online.total / 3600,cfg.online.total / 60 % 60, cfg.online.total % 60)
         local temp_online = string.format("Онлайн за сессию: %02d:%02d:%02d", session_online / 3600, session_online / 60 % 60, session_online % 60)
         size = {imgui.GetStyle().WindowPadding.x*2 + imgui.CalcTextSize(temp_online).x,
         imgui.GetStyle().ItemSpacing.y + imgui.GetStyle().WindowPadding.y*2 + imgui.CalcTextSize(temp_online).y + imgui.CalcTextSize(full_online).y}
+
         
         if admin_form_menu[0] then onlinePosY = sizeY - size[2] - 35 else onlinePosY = sizeY - size[2] end
 
@@ -1204,7 +1213,7 @@ local onlineFrame = imgui.OnFrame(
 )
 
 local infoFrame = imgui.OnFrame(
-    function() return isNotGamePaused() and movableWindows[MOV_STATS].it[0] end,
+    function() return movableWindows[MOV_STATS].it[0] end,
     function(player)
         if sampIsPlayerConnected(tonumber(spectate_id)) then
             player_data["armour"] = sampGetPlayerArmor(spectate_id)
@@ -1228,7 +1237,12 @@ local infoFrame = imgui.OnFrame(
                 player_data["car_engine"] = nil
             end
         end
-
+        local infoAlpha = {
+            {"ImVec4", "ScrollbarBg", change = imgui.ImVec4(0.07, 0.07, 0.07, 1), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
+            {"ImVec4", "WindowBg", change = imgui.ImVec4(0.07, 0.07, 0.07, 1), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
+            {"Int", "WindowBorderSize", change = 0, reset = 1}
+        }
+        changeTheme:applySettings(infoAlpha)
         player.HideCursor = _showSpectateCursor
         local info = infoData[infoMode]
         imgui.SetNextWindowSizeConstraints(imgui.ImVec2(info.size[1], (player_data["car"] and info.size[3] or info.size[2])), imgui.ImVec2(math.huge, math.huge))
@@ -1326,7 +1340,7 @@ function doSpecActions(action)
 end
 
 local _specAdminPanel = imgui.OnFrame(
-    function() return isNotGamePaused() and movableWindows[MOV_STATS].it[0] and cfg.specAdminPanel.show end,
+    function() return movableWindows[MOV_STATS].it[0] and cfg.specAdminPanel.show end,
     function(self)
         self.HideCursor = _showSpectateCursor
 
@@ -1413,7 +1427,7 @@ local menuProperties = {
 }
 
 local mainWindow = imgui.OnFrame(
-    function() return isNotGamePaused() and newMainFrame[0] end,
+    function() return newMainFrame[0] end,
     function(self)
         imgui.SetNextWindowSize(imgui.ImVec2(900, 500))
         imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2, sizeY / 2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
@@ -1547,34 +1561,31 @@ local mainWindow = imgui.OnFrame(
         changeTheme:resetDefault(windowStyle)
     end
 )
-
 local farChatFrame = imgui.OnFrame(
-    function() return isNotGamePaused() and movableWindows[MOV_FARCHAT].it and cfg.windowsSettings.farChatFrame.use end,
-    function(player)
-        local farchatAlpha = {
-            {"ImVec4", "ScrollbarBg", change = imgui.ImVec4(0.07, 0.07, 0.07, 0), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
-            {"ImVec4", "WindowBg", change = imgui.ImVec4(0.07, 0.07, 0.07, 0), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
-            {"Int", "WindowBorderSize", change = 0, reset = 1}
-        }
-        changeTheme:applySettings(farchatAlpha)
-        player.HideCursor = _showSpectateCursor
-        imgui.SetNextWindowPos(imgui.ImVec2(cfg.windowsPosition.farchat.x, cfg.windowsPosition.farchat.y))
-        imgui.SetNextWindowSize(imgui.ImVec2(500, 170))
-        imgui.Begin("FarChat", movableWindows[MOV_FARCHAT].it, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoScrollbar)
-        for k, v in ipairs(farchatTable) do
-            local hex = bit.tohex(bit.rshift(v[3], 8), 6)
-            imgui.PushTextWrapPos(500)
-            imgui.SafeText('> '..v[2], 1, hexToImVec4(v[4]))
-            imgui.SameLine()
-            imgui.SafeText(v[1], 1, hexToImVec4(hex))
-            imgui.PopTextWrapPos()
-            imgui.SetScrollY(10000000) 
-        end
-        imgui.End()
-        changeTheme:resetDefault(farchatAlpha)
+  function() return movableWindows[MOV_FARCHAT].it and cfg.windowsSettings.farChatFrame.use end,
+  function(player)
+    local farchatAlpha = {
+        {"ImVec4", "ScrollbarBg", change = imgui.ImVec4(0.07, 0.07, 0.07, 0), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
+        {"ImVec4", "WindowBg", change = imgui.ImVec4(0.07, 0.07, 0.07, 0), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
+        {"Int", "WindowBorderSize", change = 0, reset = 1}
+    }
+    changeTheme:applySettings(farchatAlpha)
+    player.HideCursor = _showSpectateCursor
+    imgui.SetNextWindowPos(imgui.ImVec2(cfg.windowsPosition.farchat.x, cfg.windowsPosition.farchat.y))
+    imgui.SetNextWindowSize(imgui.ImVec2(500, 170))
+    imgui.Begin("FarChat", movableWindows[MOV_FARCHAT].it, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoScrollbar)
+    for k, v in ipairs(farchatTable) do
+        local hex = bit.tohex(bit.rshift(v[3], 8), 6)
+        imgui.PushTextWrapPos(500)
+        imgui.SafeText('> '..v[2], 1, hexToImVec4(v[4]))
+        imgui.SameLine()
+        imgui.SafeText(v[1], 1, hexToImVec4(hex))
+        imgui.PopTextWrapPos()
+        imgui.SetScrollY(10000000) 
     end
+    imgui.End()
+  end
 )
-
 function onWindowMessage(msg, wparam, lparam)
     local resetPosition = function()
         showCursor(false, false)
@@ -1624,6 +1635,11 @@ function main()
     -- инициализируем все команды
     sampRegisterChatCommand("gadm", gadm_cmd)
     sampRegisterChatCommand("sp", spectate)
+    sampRegisterChatCommand('table', function()
+        for k, v in ipairs(adminsOnline) do
+            print(v.oocNickname, v.icNickname, v.adminId, v.adminLvl)
+        end
+    end)
     sampRegisterChatCommand("test", function(arg)
         infoMode = tonumber(arg:match("(%d+)"))
         cfg.windowsSettings.playerStatsFrame.mode = infoMode
@@ -1829,8 +1845,6 @@ function samp.onPlayerDeathNotification(killerId, killedId, reason)
     end
 end
 
-
-
 function samp.onShowMenu()
     return not cfg.specAdminPanel.show
 end
@@ -1892,9 +1906,9 @@ function samp.onServerMessage(color, text)
             })
             return false
         end
-    elseif u8(text):find("^%[A%] .*%[%d+%] авторизовался как администратор [1-5] уровня%.$") and checkedAdminList then
+    elseif u8(text):find("^%[A%] .*%[%d+%] авторизовался как администратор %d+ уровня%.$") and checkedAdminList then
         local adminConnectionPassed             = true
-        local oocNickname, adminId, adminLvl    = text:match("^%[A%] (.*)%[(%d+)%]:.*([1-5]) уровня%.$")
+        local oocNickname, adminId, adminLvl    = u8(text):match("^%[A%] (.*)%[(%d+)%] авторизовался как администратор (%d+) уровня%.$")
 
         for _, data in ipairs(adminsOnline) do
             if data.oocNickname == text:match("^%[A%] (.*)%[%d+%]") then
@@ -2007,7 +2021,7 @@ function samp.onShowDialog(dialogId, style, title, button1, button2, text)
         return false
     end
 
-    if not checkedAdminList and alogin then
+    if not checkedAdminList then
         if text:find("Администрация в игре.*Лог отключений") then
             sampSendDialogResponse(dialogId, 1, 0, nil)
             return false
