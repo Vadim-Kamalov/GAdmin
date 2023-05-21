@@ -51,7 +51,8 @@ encoding.default = 'cp1251'
 local u8 = encoding.UTF8
 local new, str, sizeof = imgui.new, ffi.string, ffi.sizeof
 local sizeX, sizeY = getScreenResolution()
-
+local farchatTable = {}
+local lastFarChatColor = -1
 -- FFI
 local getBonePosition = ffi.cast("int (__thiscall*)(void*, float*, int, bool)", 0x5E4280)
 ffi.cdef[[
@@ -160,6 +161,7 @@ function create_config()
             playerChecker       = {x = sizeX / 2, y = sizeY / 2},
             actionMenu          = {x = sizeX / 15, y = sizeY / 2},
             reportWindow        = {x = sizeX / 2, y = sizeX / 2},
+            farchat             = {x = sizeX / 2, y = sizeX / 2},
             onlineFrame         = {x = sizeX, y = sizeY}
         },
         windowsSettings = {
@@ -169,6 +171,9 @@ function create_config()
             },
             onlineFrame = {
                 use = true,
+            },
+            farChatFrame = {
+                use = false,
             },
             playerStatsFrame = {
                 mode = 1
@@ -336,6 +341,7 @@ local form_secondsToHide = os.clock()
 
 -- ИМГУИ ПЕРЕМЕННЫЕ
 local show_main_menu = new.bool()
+local show_farchat = new.bool(cfg.windowsSettings.farChatFrame.use)
 local show_online_menu = new.bool(true)
 local notification = new.bool()
 local admin_form_menu = new.bool()
@@ -382,6 +388,10 @@ local movableWindows = {
         title   = "Окно с онлайном",
         jsonKey = "onlineFrame",
         it      = new.bool()
+    }, {
+        title   = "Дальний чат",
+        jsonKey = "farchat",
+        it      = new.bool(cfg.windowsSettings.farChatFrame.use)
     }
 }
 
@@ -391,7 +401,8 @@ enum "MOV_ENUM" {
     "MOV_NEARBY",
     "MOV_CHECKER",
     "MOV_ADMIN_PANEL",
-    "MOV_REPORT"
+    "MOV_REPORT",
+    "MOV_FARCHAT"
 }
 
 -- для хоткеев
@@ -914,6 +925,13 @@ local notificationFrame = imgui.OnFrame(
 local playersNearbyFrame = imgui.OnFrame(
     function() return (movableWindows[MOV_STATS].it[0] and cfg.windowsSettings.playersNearby.use) or movableWindows[MOV_NEARBY].it[0] end,
     function(self)
+        local playersNearbyAlpha = {
+            {"ImVec4", "ScrollbarBg", change = imgui.ImVec4(0.07, 0.07, 0.07, cfg.windowsSettings.playersNearby.alpha), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
+            {"ImVec4", "WindowBg", change = imgui.ImVec4(0.07, 0.07, 0.07, cfg.windowsSettings.playersNearby.alpha), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
+            {"Int", "WindowBorderSize", change = 0, reset = 1}
+        }
+
+        changeTheme:applySettings(playersNearbyAlpha)
         self.HideCursor = _showSpectateCursor
 
         imgui.SetNextWindowPos(imgui.ImVec2(cfg.windowsPosition.playersNearby.x, cfg.windowsPosition.playersNearby.y))
@@ -931,11 +949,11 @@ local playersNearbyFrame = imgui.OnFrame(
             if changePosition == 3 then
                 for _, v in ipairs {
                     "VANYA", "El_Capone", "DZONE", "Tyler_Carter", "Samuel_Jones", "Anthony_Hughes",
-                    "Christopher_Rivera", "Devin_Johnson", "Julian_Hall", "Xavier_Gray", "Gavin_Jenkins",
+                    "Christopher_Rivera", "HeroIAm", "Julian_Hall", "Xavier_Gray", "Gavin_Jenkins",
                     "Jacob_Baker", "Alex_Hill", "Antonio_Parker", "Alexander_Phillips", "Luke_Jones",
                     "Aidan_Butler", "Alexander_Phillips", "Samuel_Jones", "Anthony_Hughes", "Christopher_Rivera",
-                    "Devin_Johnson", "Julian_Hall", "Xavier_Gray", "Gavin_Jenkins", "Samuel_Jones", "Anthony_Hughes",
-                    "Christopher_Rivera", "Devin_Johnson", "Julian_Hall", "Xavier_Gray", "Gavin_Jenkins"
+                    "HeroIAm", "Julian_Hall", "Xavier_Gray", "Gavin_Jenkins", "Samuel_Jones", "Anthony_Hughes",
+                    "Christopher_Rivera", "HeroIAm", "Julian_Hall", "Xavier_Gray", "Gavin_Jenkins"
                 } do
                     imgui.SetCursorPosX(100 - imgui.CalcTextSize(v).x / 2)
                     imgui.SafeText(v, cfg.windowsSettings.playersNearby.alpha)
@@ -1044,6 +1062,13 @@ local adminForm = imgui.OnFrame(
 local mainFrame = imgui.OnFrame(
     function() return show_main_menu[0] end,
     function(player)
+        local mainAlpha = {
+            {"ImVec4", "ScrollbarBg", change = imgui.ImVec4(0.07, 0.07, 0.07, 1), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
+            {"ImVec4", "WindowBg", change = imgui.ImVec4(0.07, 0.07, 0.07, 1), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
+            {"Int", "WindowBorderSize", change = 0, reset = 1}
+        }
+        changeTheme:applySettings(mainAlpha)
+
         imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2, sizeY / 2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
         imgui.SetNextWindowSize(imgui.ImVec2(800, 600))
         imgui.Begin("GAdmin", show_main_menu, imgui.WindowFlags.NoTitleBar)
@@ -1074,6 +1099,10 @@ local mainFrame = imgui.OnFrame(
 
         if imgui.Checkbox("Отображение ближайших игроков в /sp", playersNearbyCheckbox) then
             cfg.windowsSettings.playersNearby.use = playersNearbyCheckbox[0]
+            save_config()
+        end
+        if imgui.Checkbox("Дальний чат", show_farchat) then
+            cfg.windowsSettings.farChatFrame.use = show_farchat[0]
             save_config()
         end
         if imgui.Checkbox("Аирбрейк на правый шифт", abCheckbox) then
@@ -1153,6 +1182,12 @@ local mainFrame = imgui.OnFrame(
 local onlineFrame = imgui.OnFrame(
     function() return show_online_menu[0] and cfg.windowsSettings.onlineFrame.use end,
     function(player)
+        local onlineAlpha = {
+            {"ImVec4", "ScrollbarBg", change = imgui.ImVec4(0.07, 0.07, 0.07, 1), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
+            {"ImVec4", "WindowBg", change = imgui.ImVec4(0.07, 0.07, 0.07, 1), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
+            {"Int", "WindowBorderSize", change = 0, reset = 1}
+        }
+        changeTheme:applySettings(onlineAlpha)
         player.HideCursor = _showSpectateCursor
         local full_online = string.format("Общий онлайн: %02d:%02d:%02d", cfg.online.total / 3600,cfg.online.total / 60 % 60, cfg.online.total % 60)
         local temp_online = string.format("Онлайн за сессию: %02d:%02d:%02d", session_online / 3600, session_online / 60 % 60, session_online % 60)
@@ -1202,7 +1237,12 @@ local infoFrame = imgui.OnFrame(
                 player_data["car_engine"] = nil
             end
         end
-
+        local infoAlpha = {
+            {"ImVec4", "ScrollbarBg", change = imgui.ImVec4(0.07, 0.07, 0.07, 1), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
+            {"ImVec4", "WindowBg", change = imgui.ImVec4(0.07, 0.07, 0.07, 1), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
+            {"Int", "WindowBorderSize", change = 0, reset = 1}
+        }
+        changeTheme:applySettings(infoAlpha)
         player.HideCursor = _showSpectateCursor
         local info = infoData[infoMode]
         imgui.SetNextWindowSizeConstraints(imgui.ImVec2(info.size[1], (player_data["car"] and info.size[3] or info.size[2])), imgui.ImVec2(math.huge, math.huge))
@@ -1521,7 +1561,31 @@ local mainWindow = imgui.OnFrame(
         changeTheme:resetDefault(windowStyle)
     end
 )
-
+local farChatFrame = imgui.OnFrame(
+  function() return movableWindows[MOV_FARCHAT].it and cfg.windowsSettings.farChatFrame.use end,
+  function(player)
+    local farchatAlpha = {
+        {"ImVec4", "ScrollbarBg", change = imgui.ImVec4(0.07, 0.07, 0.07, 0), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
+        {"ImVec4", "WindowBg", change = imgui.ImVec4(0.07, 0.07, 0.07, 0), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
+        {"Int", "WindowBorderSize", change = 0, reset = 1}
+    }
+    changeTheme:applySettings(farchatAlpha)
+    player.HideCursor = _showSpectateCursor
+    imgui.SetNextWindowPos(imgui.ImVec2(cfg.windowsPosition.farchat.x, cfg.windowsPosition.farchat.y))
+    imgui.SetNextWindowSize(imgui.ImVec2(500, 170))
+    imgui.Begin("FarChat", movableWindows[MOV_FARCHAT].it, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoScrollbar)
+    for k, v in ipairs(farchatTable) do
+        local hex = bit.tohex(bit.rshift(v[3], 8), 6)
+        imgui.PushTextWrapPos(500)
+        imgui.SafeText('> '..v[2], 1, hexToImVec4(v[4]))
+        imgui.SameLine()
+        imgui.SafeText(v[1], 1, hexToImVec4(hex))
+        imgui.PopTextWrapPos()
+        imgui.SetScrollY(10000000) 
+    end
+    imgui.End()
+  end
+)
 function onWindowMessage(msg, wparam, lparam)
     local resetPosition = function()
         showCursor(false, false)
@@ -1892,12 +1956,18 @@ end
 function samp.onPlayerChatBubble(playerId, color, dist, duration, text)
     local result, ped = sampGetCharHandleBySampPlayerId(playerId)
     text = u8(text)
+    local clistColorHex = string.format("%06X", bit.band(sampGetPlayerColor(playerId), 0xFFFFFF))
+    local name = sampGetPlayerNickname(playerId)
     if cfg.displayBubbles and text:len() >= 3 then
-        if result and color == -413892353 then
+        if result and color == -413892353 then 
             sampAddChatMessage('> '..sampGetPlayerNickname(playerId)..'['..playerId..'] '..text, 0xE75480)
         elseif result and color == -421075226 then
             sampAddChatMessage('> (( '..sampGetPlayerNickname(playerId)..'['..playerId..']:'..text:sub(3,-3)..'))', 0xE6E6E6)
         end
+    end
+    if sampGetCharHandleBySampPlayerId(playerId) then
+        local text = string.gsub(text, "%.%.%.", "")
+        table.insert(farchatTable, {text, name.."["..playerId.."]:", color, clistColorHex})
     end
 end
 
