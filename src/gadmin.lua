@@ -1892,9 +1892,9 @@ function samp.onServerMessage(color, text)
             })
             return false
         end
-    elseif u8(text):find("^%[A%] .*%[%d+%] авторизовался как администратор [1-5] уровня%.$") and checkedAdminList then
+    elseif u8(text):find("^%[A%] .*%[%d+%] авторизовался как администратор %d+ уровня%.$") and checkedAdminList then
         local adminConnectionPassed             = true
-        local oocNickname, adminId, adminLvl    = text:match("^%[A%] (.*)%[(%d+)%]:.*([1-5]) уровня%.$")
+        local oocNickname, adminId, adminLvl    = u8(text):match("^%[A%] (.*)%[(%d+)%] авторизовался как администратор (%d+) уровня%.$")
 
         for _, data in ipairs(adminsOnline) do
             if data.oocNickname == text:match("^%[A%] (.*)%[%d+%]") then
