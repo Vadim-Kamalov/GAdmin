@@ -269,6 +269,7 @@ local playerTime
 -- для информации в спеке --
 local in_sp = false
 local changePosition = -1
+local attached3DTextId = -1
 local checking_stats = false
 local last_checking_stats = 0
 local last_speed_check = 0
@@ -282,39 +283,50 @@ local infoData = {
         columnsNum = 4,
         columnsSize = {70, 100, 85, 145},
         size = {400, 170, 217},
-        main = {{"hp", "Здоровье"},
-                {"armour", "Броня"},
-                {"speed", "Скорость"},
-                {"ping", "Пинг"},
-                {"money", "Наличные"},
-                {"bank", "На банке"},
-                {"fraction", "Фракция"},
-                {"transport", "Транспорт"},
-                {"house", "Дом"},
-                {"reg_date", "Регистрация"},
-                {"vip", "Вип"},
-                {"game", "Игра"}},
-        car = {{"car_hp", "HP car"},
-               {"car_engine", "Двигатель"}}
-    },
-    {
+        main = {
+            {"hp", "Здоровье"},
+            {"armour", "Броня"},
+            {"speed", "Скорость"},
+            {"ping", "Пинг"},
+            {"money", "Наличные"},
+            {"bank", "На банке"},
+            {"fraction", "Фракция"},
+            {"transport", "Транспорт"},
+            {"house", "Дом"},
+            {"reg_date", "Регистрация"},
+            {"vip", "Вип"},
+            {"game", "Игра"},
+            {"stage", "Стадия"},
+            {"warnings", "Варны"}
+        },
+        car = {
+            {"car_hp", "HP car"},
+            {"car_engine", "Двигатель"}
+        }
+    }, {
         columnsNum = 2,
         columnsSize = {100, 100},
         size = {200, 313, 385},
-        main = {{"hp", "Здоровье"},
-                {"armour", "Броня"},
-                {"speed", "Скорость"},
-                {"ping", "Пинг"},
-                {"money", "Наличные"},
-                {"bank", "На банке"},
-                {"fraction", "Фракция"},
-                {"transport", "Транспорт"},
-                {"house", "Дом"},
-                {"reg_date", "Регистрация"},
-                {"vip", "Вип"},
-                {"game", "Игра"}},
-        car = {{"car_hp", "HP car"},
-               {"car_engine", "Двигатель"}}
+        main = {
+            {"hp", "Здоровье"},
+            {"armour", "Броня"},
+            {"speed", "Скорость"},
+            {"ping", "Пинг"},
+            {"money", "Наличные"},
+            {"bank", "На банке"},
+            {"fraction", "Фракция"},
+            {"transport", "Транспорт"},
+            {"house", "Дом"},
+            {"reg_date", "Регистрация"},
+            {"vip", "Вип"},
+            {"game", "Игра"},
+            {"stage", "Стадия"},
+            {"warnings", "Варны"}
+        },
+        car = {
+            {"car_hp", "HP car"},
+            {"car_engine", "Двигатель"}
+        }
     },
 }
 ----------------------------
@@ -726,7 +738,7 @@ local backgroundDrawList = imgui.OnFrame(
                         end
                     end
                 end
-            else
+            else -- IS_NOT_GAME_PAUSED
                 -- Add information about the script to the pause menu.
                 self.DL:AddText(imgui.ImVec2(sizeX - 100 - imgui.CalcTextSize(thisScript().version).x / 2, sizeY - 40), -1, string.format("GAdmin v%s", thisScript().version))
             end
@@ -905,7 +917,7 @@ local notificationFrame = imgui.OnFrame(
         end
 
         if notificationFramePositionStatus then
-            notificationInit.positionY = select(1, bringFloatTo(0, 40, notificationInit.systemTime, 0.1))
+            notificationInit.positionY = select(1, bringFloatTo(0, 40, notificationInit.systemTime, notificationInit.duration))
         end
 
         changeTheme:applySettings(self.notificationStyle)
@@ -923,7 +935,7 @@ local notificationFrame = imgui.OnFrame(
             if os.clock() - notificationInit.systemTime >= notificationInit.secondsToHide then
                 notificationFramePositionStatus = false
                 if notificationInit.positionY ~= 80 then
-                    notificationInit.positionY = select(1, bringFloatTo(40, -80, notificationInit.systemTime + notificationInit.secondsToHide, 0.1))
+                    notificationInit.positionY = select(1, bringFloatTo(40, -80, notificationInit.systemTime + notificationInit.secondsToHide, notificationInit.duration))
                 end
             end
 
@@ -1206,6 +1218,16 @@ local onlineFrame = imgui.OnFrame(
 local infoFrame = imgui.OnFrame(
     function() return isNotGamePaused() and movableWindows[MOV_STATS].it[0] end,
     function(player)
+        
+        local removeAfterDoubleHash = function(str)
+            if str then
+                local index = string.find(str, "##")
+                return index and string.sub(str, 1, index - 1) or str
+            else
+                return str
+            end
+        end
+
         if sampIsPlayerConnected(tonumber(spectate_id)) then
             player_data["armour"] = sampGetPlayerArmor(spectate_id)
             player_data["game"] = (players_platform[tonumber(spectate_id)] and players_platform[tonumber(spectate_id)] or "N/A")
@@ -1245,7 +1267,7 @@ local infoFrame = imgui.OnFrame(
         for k, v in pairs(info.main) do
             imgui.TextWrapped(v[2])
             imgui.NextColumn()
-            imgui.TextWrapped(tostring(player_data[v[1]]))
+            imgui.TextWrapped(tostring(removeAfterDoubleHash(player_data[v[1]])))
             imgui.NextColumn()
             if (k % (info.columnsNum / 2) == 0) and k ~= #info.main then
                 imgui.Separator()
@@ -1267,7 +1289,7 @@ local infoFrame = imgui.OnFrame(
             for k, v in pairs(info.car) do
                 imgui.TextWrapped(v[2])
                 imgui.NextColumn()
-                imgui.TextWrapped(tostring(player_data[v[1]]))
+                imgui.TextWrapped(tostring(removeAfterDoubleHash(player_data[v[1]])))
                 imgui.NextColumn()
                 if (k % (info.columnsNum / 2) == 0) and k ~= #info.car then
                     imgui.Separator()
@@ -1277,7 +1299,6 @@ local infoFrame = imgui.OnFrame(
             imgui.Columns(1)
             imgui.Separator()
         end
-
 
         imgui.End()
     end
@@ -1829,7 +1850,26 @@ function samp.onPlayerDeathNotification(killerId, killedId, reason)
     end
 end
 
+function samp.onCreate3DText(id, color, position, distance, testLOS, attachedPlayerId, attachedVehicleId, text)
+    ---print("3DTEXT:", attachedPlayerId, text)
+    ---print("3DTEXT ID:", id)
+    local attachedPlayerId  = attachedPlayerId == 65535 and nil or attachedPlayerId
+    local text              = u8(text)
+    if attachedPlayerId then
+        local this = attachedPlayerId
+        if this == tonumber(info_about) then
+            player_data["stage"] =
+                text:find("%(%( Данный персонаж ранен %d+ раз%(%-а%) %- /dm %d+ %)%)") and "1##" .. tostring(id) or 
+                (text:find("%(%( ДАННЫЙ ПЕРСОНАЖ .+ %)%)") and "2##" .. tostring(id) or "0##" .. tostring(id))
+        end
+    end
+end
 
+function samp.onRemove3DTextLabel(id)
+    if id == tonumber(player_data["stage"]:match(".*##(%d+)")) then
+        player_data["stage"] = "0"
+    end
+end
 
 function samp.onShowMenu()
     return not cfg.specAdminPanel.show
@@ -1839,7 +1879,9 @@ function samp.onServerMessage(color, text)
     local result, id        = sampGetPlayerIdByCharHandle(PLAYER_PED)
     local nickname          = sampGetPlayerNickname(id)
 
-    local hex   = bit.tohex(bit.rshift(color, 8), 6)
+    local hex       = bit.tohex(bit.rshift(color, 8), 6)
+    local tempText  = text
+    local text      = u8(text)
 
     local convertHexToInt32 = function(hex)
         local hex = #hex == 8 and hex or (#hex == 6 and hex .. "AA" or hex)
@@ -1867,7 +1909,7 @@ function samp.onServerMessage(color, text)
         return returnData
     end
 
-    if u8(text):find("Вы успешно авторизовались как администратор") or u8(text):find("%|.*Вы уже авторизировались") and color == -1 then
+    if text:find("Вы успешно авторизовались как администратор") or text:find("%|.*Вы уже авторизировались") and color == -1 then
         alogin = true
         if not checkedAdminList then
             lua_thread.create(function()
@@ -1875,16 +1917,16 @@ function samp.onServerMessage(color, text)
                 sampSendChat("/adm")
             end)
         end
-    elseif u8(text):find("Администратор.*// "..formStarter) and color == -10270806 then
+    elseif text:find("Администратор.*// "..formStarter) and color == -10270806 then
         stopForm()
-    elseif u8(text):find("^%[A%] .*%[%d+%] ответил .*%[%d+]: [PC]K by " .. formStarter) then
+    elseif text:find("^%[A%] .*%[%d+%] ответил .*%[%d+]: [PC]K by " .. formStarter) then
         stopForm()
     elseif text:find("%[A%] .*%[%d+%]:.*@" .. tostring(id)) or
            text:find("%[A%] .*%[%d+%]:.*@" .. nickname) and
            color == 866792362
     then
-        return insertLvlInAdminChat { convertHexToInt32(cfg.mentionColor), u8(text) }
-    elseif u8(text):find("^%[A%] Жалоба от .*%[%d+%]: .*") then
+        return insertLvlInAdminChat { convertHexToInt32(cfg.mentionColor), tempText }
+    elseif text:find("^%[A%] Жалоба от .*%[%d+%]: .*") then
         if cfg.reportWindow.use then
             table.insert(reportData.messages, {
                 text = text,
@@ -1892,9 +1934,9 @@ function samp.onServerMessage(color, text)
             })
             return false
         end
-    elseif u8(text):find("^%[A%] .*%[%d+%] авторизовался как администратор %d+ уровня%.$") and checkedAdminList then
+    elseif text:find("^%[A%] .*%[%d+%] авторизовался как администратор %d+ уровня%.$") then
         local adminConnectionPassed             = true
-        local oocNickname, adminId, adminLvl    = u8(text):match("^%[A%] (.*)%[(%d+)%] авторизовался как администратор (%d+) уровня%.$")
+        local oocNickname, adminId, adminLvl    = text:match("^%[A%] (.*)%[(%d+)%] авторизовался как администратор (%d+) уровня%.$")
 
         for _, data in ipairs(adminsOnline) do
             if data.oocNickname == text:match("^%[A%] (.*)%[%d+%]") then
@@ -1914,23 +1956,23 @@ function samp.onServerMessage(color, text)
 
     for k, v in ipairs(formCommands) do
         if text:find("%[A%] .*%[%d+%]: /"..v) and color == 866792362 then
-            formStarter, formStarterId, formCommand = u8(text):match("%[A%] (.*)%[(%d+)%]: /(.*)")
+            formStarter, formStarterId, formCommand = text:match("%[A%] (.*)%[(%d+)%]: /(.*)")
 
             if formStarterId ~= id then
                 form_secondsToHide = os.clock()
                 admin_form_menu[0] = true
             end
 
-            return insertLvlInAdminChat { color, text }
+            return insertLvlInAdminChat { color, tempText }
         end
     end
 
     if text:find("^%[A%] .*%[%d+%]:") and color == 866792362 then
-        return insertLvlInAdminChat { color, text }
+        return insertLvlInAdminChat { color, tempText }
     end
 
     if checkSendFormCommand then
-        if u8(text):find("%|.*У вас нет доступа для использования данной команды%.") then
+        if text:find("%|.*У вас нет доступа для использования данной команды%.") then
             sampSendChat("/a "..sendFormCommand)
             checkSendFormCommand = false
             sendFormCommand = ""
@@ -1941,14 +1983,15 @@ function samp.onServerMessage(color, text)
         end
     end
 
-    print("COLOR:", bit.tohex(bit.rshift(color, 8), 6), "| DEF:", color, "|", string.gsub(text, "{(%x%x%x%x%x%x)}", "#%1"))
+    print("COLOR:", bit.tohex(bit.rshift(color, 8), 6), "| DEF:", color, "|", string.gsub(tempText, "{(%x%x%x%x%x%x)}", "#%1"))
 end
 
 function samp.onPlayerChatBubble(playerId, color, dist, duration, text)
     local result, ped = sampGetCharHandleBySampPlayerId(playerId)
-    text = u8(text)
+    local text = u8(text)
     local clistColorHex = string.format("%06X", bit.band(sampGetPlayerColor(playerId), 0xFFFFFF))
     local name = sampGetPlayerNickname(playerId)
+    
     if cfg.displayBubbles and text:len() >= 3 then
         if result and color == -413892353 then 
             sampAddChatMessage('> '..sampGetPlayerNickname(playerId)..'['..playerId..'] '..text, 0xE75480)
@@ -2039,6 +2082,9 @@ function samp.onShowDialog(dialogId, style, title, button1, button2, text)
         player_data["house"] = text:match("Дом: (.-)\n")
         player_data["vip"] = text:match("Премиум аккаунт: (.-)\n")
         player_data["reg_date"] = text:match("Дата регистрации: (.-)\n")
+        player_data["warnings"] =
+            text:find("Предупреждения:.*%d+") and text:match("Предупреждения:.*(%d+)") or 0
+        player_data["stage"] = "0"
 
         sampSendDialogResponse(dialogId, 0, 0, "")
         checking_stats = false
@@ -2318,6 +2364,7 @@ end)
 sampfuncsRegisterConsoleCommand("execute.checker", function() movableWindows[MOV_CHECKER].it[0] = not movableWindows[MOV_CHECKER].it[0] end)
 sampfuncsRegisterConsoleCommand("execute.cursor", function() print(_showSpectateCursor) end)
 sampfuncsRegisterConsoleCommand("execute.newMenu", function() newMainFrame[0] = not newMainFrame[0] end)
+sampfuncsRegisterConsoleCommand("execute.specId", function() print(info_about) end)
 sampfuncsRegisterConsoleCommand("execute.specAction", doSpecActions)
 sampfuncsRegisterConsoleCommand("execute.specAdminPanel", function() specAdminPanel[0] = not specAdminPanel[0] end)
 sampfuncsRegisterConsoleCommand("execute.scriptCrash", executeScriptCrash)
