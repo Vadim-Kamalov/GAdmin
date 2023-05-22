@@ -1866,8 +1866,10 @@ function samp.onCreate3DText(id, color, position, distance, testLOS, attachedPla
 end
 
 function samp.onRemove3DTextLabel(id)
-    if id == tonumber(player_data["stage"]:match(".*##(%d+)")) then
-        player_data["stage"] = "0"
+    if player_data["stage"] then
+        if id == tonumber(player_data["stage"]:match(".*##(%d+)")) then
+            player_data["stage"] = "0"
+        end
     end
 end
 
