@@ -38,7 +38,7 @@ local loadLib = function(name)
     return require(name)
 end
 
-local mem           = loadLib("memory")
+local memory        = loadLib("memory")
 local encoding      = loadLib("encoding")
 local imgui         = loadLib("mimgui")
 local gnomeIcons    = loadLib("gadmin/gnome-icons")
@@ -53,8 +53,6 @@ encoding.default = 'cp1251'
 local u8 = encoding.UTF8
 local new, str, sizeof = imgui.new, ffi.string, ffi.sizeof
 local sizeX, sizeY = getScreenResolution()
-local farchatTable = {}
-local lastFarChatColor = -1
 
 -- FFI
 local getBonePosition = ffi.cast("int (__thiscall*)(void*, float*, int, bool)", 0x5E4280)
@@ -165,7 +163,8 @@ function create_config()
             actionMenu          = {x = sizeX / 15, y = sizeY / 2},
             reportWindow        = {x = sizeX / 2, y = sizeX / 2},
             farchat             = {x = sizeX / 2, y = sizeX / 2},
-            onlineFrame         = {x = sizeX, y = sizeY}
+            onlineFrame         = {x = sizeX, y = sizeY},
+            fpsCount            = {x = sizeX / 2.5, y = sizeY / 3.1}
         },
         windowsSettings = {
             playersNearby = {
@@ -213,6 +212,33 @@ function create_config()
             showGunInfo = 14,
             showAdmins  = 14,
             wallhack    = 14
+        },
+        cheats = {
+            tracers = {
+                use         = false,
+                maxLines    = 15,
+                hitColor    = "FFC700",
+                missColor   = "FFFFFF"
+            },
+            noCollision = {
+                onChar  = false
+            }
+        },
+        additions = {
+            fisheye = {
+                use = false,
+                fov = 101   -- in 60 .. 110
+                            -- Honestly, you can set the value not within this radius,
+                            -- but after the value of 110 white edges appear, and there is a high chance that the game will crash. 
+            },
+            fpsCount = {
+                use         = false,
+                color       = "FFFFFF",
+                fontSize    = 14
+            }
+        },
+        fixes = {
+            chatOnVK_T = false
         },
         gg_msg              = "Приятной игры!",
         mentionColor        = "4A86B6",
@@ -262,14 +288,17 @@ local _showSpectateCursor = true
 local popupId, popupNickname = 0, ""
 local selectedTab = 1
 local changeTheme = {}
+local bulletData = {lastId = 0, maxLines = cfg.cheats.tracers.maxLines}
 local gweather = -1
 local airbreak = {state = false, speed = 1.0}
 local time = 0
+local fisheyeWeaponLock = false
 local playerTime
 -- для информации в спеке --
 local in_sp = false
 local changePosition = -1
 local attached3DTextId = -1
+local farchatTable = {}
 local checking_stats = false
 local last_checking_stats = 0
 local last_speed_check = 0
@@ -407,6 +436,10 @@ local movableWindows = {
         title   = "Дальний чат",
         jsonKey = "farchat",
         it      = new.bool(cfg.windowsSettings.farChatFrame.use)
+    }, { -- This is not window, this is background text.
+        title   = "Счетчик FPS",
+        jsonKey = "fpsCount",
+        it      = new.bool(cfg.additions.fpsCount.use)
     }
 }
 
@@ -417,7 +450,8 @@ enum "MOV_ENUM" {
     "MOV_CHECKER",
     "MOV_ADMIN_PANEL",
     "MOV_REPORT",
-    "MOV_FARCHAT"
+    "MOV_FARCHAT",
+    "MOV_FPS_COUNT" -- Still not window.
 }
 
 -- для хоткеев
@@ -737,6 +771,16 @@ local backgroundDrawList = imgui.OnFrame(
                             )
                         end
                     end
+                end -- GET_ALL_CHARS
+                if cfg.additions.fpsCount.use or movableWindows[MOV_FPS_COUNT].it[0] then
+                    self.addStrokeText(
+                        tostring(math.floor(memory.getfloat(--[[ FPS ]]0xB7CB50, true))),
+                        tonumber("0x" .. cfg.additions.fpsCount.color --[[ RRGGBB ]] .. "FF" --[[ AA ]]),
+                        imgui.ImVec2(cfg.windowsPosition.fpsCount.x, cfg.windowsPosition.fpsCount.y),
+                        NULL,
+                        cfg.additions.fpsCount.fontSize,
+                        1
+                    )
                 end
             else -- IS_NOT_GAME_PAUSED
                 -- Add information about the script to the pause menu.
@@ -1642,6 +1686,16 @@ function main()
         script:unload()
     end
 
+    for i = 1, bulletData.maxLines do
+	    bulletData[i] = {
+            enable  = false,
+            o       = {x, y, z},
+            t       = {x, y, z},
+            time    = 0,
+            tType   = 0
+        }
+    end
+
     -- инициализируем все команды
     sampRegisterChatCommand("gadm", gadm_cmd)
     sampRegisterChatCommand("sp", spectate)
@@ -1738,6 +1792,52 @@ function main()
             end
         end
 
+        if cfg.fixes.chatOnVK_T then
+            if isNotCursorActive() and wasKeyPressed(VK_T) then
+                sampSetChatInputEnabled(true)
+            end
+        end
+
+        local oTime = os.time()
+		if cfg.cheats.tracers.use then
+			for i = 1, bulletData.maxLines do
+				if bulletData[i].enable == true and oTime <= bulletData[i].time then
+					local o, t = bulletData[i].o, bulletData[i].t
+					if isPointOnScreen(o.x, o.y, o.z) and isPointOnScreen(t.x, t.y, t.z) then
+						local sx, sy    = convert3DCoordsToScreen(o.x, o.y, o.z)
+						local fx, fy    = convert3DCoordsToScreen(t.x, t.y, t.z)
+                        local hitColor  = tonumber("0xFF" .. cfg.tracers.cheats.hitColor)
+                        local missColor = tonumber("0xFF" .. cfg.tracers.cheats.missColor)
+						renderDrawLine(sx, sy, fx, fy, 1, bulletData[i].tType == 0 and missColor or hitColor)
+						renderDrawPolygon(fx, fy-1, 3, 3, 4.0, 10, bulletData[i].tType == 0 and missColor or hitColor)
+					end
+				end
+			end
+		end
+
+        if cfg.additions.fisheye.use then
+            local isCharTargeting = memory.getint8(getCharPointer(PLAYER_PED) + 0x528, false) == 19
+            if isCurrentCharWeapon(PLAYER_PED, 34 --[[ Sniper rifle ]]) and isCharTargeting then
+				if not fisheyeWeaponLock then 
+					cameraSetLerpFov(70.0, 70.0, 1000, 1)
+					fisheyeWeaponLock = true
+				end
+			else
+                local fov = cfg.additions.fisheye.fov
+				cameraSetLerpFov(fov, fov, 1000, 1)
+				fisheyeWeaponLock = false
+			end
+        end
+
+        for i = 0, sampGetMaxPlayerId(false) do
+            if sampIsPlayerConnected(i) and cfg.cheats.noCollision.onChar then
+                local result, ped = sampGetCharHandleBySampPlayerId(i)
+                if result and doesCharExist(ped) then
+                    setCharCollision(ped, false)
+                end
+            end
+        end
+
         --TODO
         -- if cfg.aloginOnEnter and string.len(cfg.adm_pass) ~= 0 then
         --     local result, id = sampGetPlayerIdByCharHandle(PLAYER_PED)
@@ -1750,6 +1850,23 @@ function main()
     end
 end
 
+function samp.onBulletSync(playerid, data)
+	if cfg.cheats.tracers.use then
+		if data.target.x == -1 or data.target.y == -1 or data.target.z == -1 then
+            return true
+        end
+		bulletData.lastId = bulletData.lastId + 1
+		if bulletData.lastId < 1 or bulletData.lastId > bulletData.maxLines then
+			bulletData.lastId = 1
+		end
+		local id = bulletData.lastId
+		bulletData[id].enable = true
+		bulletData[id].tType = data.targetType
+		bulletData[id].time = os.time() + 15
+		bulletData[id].o.x, bulletData[id].o.y, bulletData[id].o.z = data.origin.x, data.origin.y, data.origin.z
+		bulletData[id].t.x, bulletData[id].t.y, bulletData[id].t.z = data.target.x, data.target.y, data.target.z
+	end
+end
 
 function samp.onPlayerQuit(id)
     for index, data in ipairs(adminsOnline) do
@@ -2543,20 +2660,20 @@ end
 
 function nameTagOn()
 	local pStSet = sampGetServerSettingsPtr();
-	NTdist = mem.getfloat(pStSet + 39)
-	NTwalls = mem.getint8(pStSet + 47)
-	NTshow = mem.getint8(pStSet + 56)
-	mem.setfloat(pStSet + 39, 1488.0)
-	mem.setint8(pStSet + 47, 0)
-	mem.setint8(pStSet + 56, 1)
+	NTdist = memory.getfloat(pStSet + 39)
+	NTwalls = memory.getint8(pStSet + 47)
+	NTshow = memory.getint8(pStSet + 56)
+	memory.setfloat(pStSet + 39, 1488.0)
+	memory.setint8(pStSet + 47, 0)
+	memory.setint8(pStSet + 56, 1)
 	nameTag = true
 end
 
 function nameTagOff()
 	local pStSet = sampGetServerSettingsPtr();
-	mem.setfloat(pStSet + 39, NTdist)
-	mem.setint8(pStSet + 47, NTwalls)
-	mem.setint8(pStSet + 56, NTshow)
+	memory.setfloat(pStSet + 39, NTdist)
+	memory.setint8(pStSet + 47, NTwalls)
+	memory.setint8(pStSet + 56, NTshow)
 	nameTag = false
 end
 
