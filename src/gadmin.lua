@@ -49,7 +49,6 @@ local samp          = loadLib("lib.samp.events")
 local ffi           = loadLib("ffi")
 local neatJSON      = loadLib("neatjson")
 
-encoding.default = 'cp1251'
 local u8 = encoding.UTF8
 local new, str, sizeof = imgui.new, ffi.string, ffi.sizeof
 local sizeX, sizeY = getScreenResolution()
@@ -88,7 +87,7 @@ ffi.cdef[[
 
 CMD_DELAY = 800
 
-function enum(key)
+function enum()
     return function(num)
         for i, v in ipairs(num) do
             _G[v] = i
@@ -96,14 +95,14 @@ function enum(key)
     end
 end
 
-function get_config()
-    file = io.open("moonloader/config/gadmin.json", "r")
-    data = decodeJson(file:read("*a"))
+function getConfig()
+    local file = io.open("moonloader/config/gadmin.json", "r")
+    local data = decodeJson(file:read("*a"))
     file:close()
     return data
 end
 
-function save_config()
+function saveConfig()
     local handle = assert(io.open("moonloader/config/gadmin.json", "w"))
     handle:write(neatJSON(cfg, {sort = true, wrap = 40}))
     handle:close()
@@ -137,7 +136,8 @@ function imgui.SafeText(text, alpha, color)
 end
 
 function create_config()
-    def_data = {
+    local handle = assert(io.open("moonloader/config/gadmin.json", "w"))
+    handle:write(neatJSON({
         online = {
             total = 0,
             monday = 0,
@@ -228,8 +228,8 @@ function create_config()
             fisheye = {
                 use = false,
                 fov = 101   -- in 60 .. 110
-                            -- Honestly, you can set the value not within this radius,
-                            -- but after the value of 110 white edges appear, and there is a high chance that the game will crash. 
+                -- Honestly, you can set the value not within this radius,
+                -- but after the value of 110 white edges appear, and there is a high chance that the game will crash.
             },
             fpsCount = {
                 use         = false,
@@ -255,57 +255,49 @@ function create_config()
         showLvlInAdminChat  = false,
         showAdmins          = true,
         wallhack            = false
-    } 
-
-    local handle = assert(io.open("moonloader/config/gadmin.json", "w"))
-    handle:write(neatJSON(def_data, {sort = true, wrap = 40}))
+    }, {sort = true, wrap = 40}))
     handle:close()
 end
 
-if not doesFileExist('moonloader\\config\\gadmin.json') then
-    if not doesDirectoryExist('moonloader\\config') then
-        createDirectory('moonloader\\config')
+if not doesFileExist("moonloader\\config\\gadmin.json") then
+    if not doesDirectoryExist("moonloader\\config") then
+        createDirectory("moonloader\\config")
     end
     create_config()
 end
 
-local cfg = get_config()
-function save_config(tabl)
+local cfg = getConfig()
+function saveConfig(tabl)
     local handle = assert(io.open("moonloader/config/gadmin.json", "w"))
     handle:write(neatJSON(tabl or cfg, {sort = true, wrap = 40}))
     handle:close()
 end
 
--- ВРЕМЕННО
--- create_config()
 local alogin = false
-local sendFormCommand = ""
+local formCommandSended = ""
 local checkSendFormCommand = false
-local players_platform = {}
+local playersPlatform = {}
 local adminsOnline = {}
 local checkedAdminList = false
-local _showSpectateCursor = true
+local cursorStatus = true
 local popupId, popupNickname = 0, ""
-local selectedTab = 1
 local changeTheme = {}
+local daysOfWeek = {"sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"}
 local bulletData = {lastId = 0, maxLines = cfg.cheats.tracers.maxLines}
 local gweather = -1
 local airbreak = {state = false, speed = 1.0}
 local time = 0
 local fisheyeWeaponLock = false
 local playerTime
--- для информации в спеке --
-local in_sp = false
+local isPlayerInSpectate = false
 local changePosition = -1
-local attached3DTextId = -1
 local farchatTable = {}
 local checking_stats = false
-local last_checking_stats = 0
-local last_speed_check = 0
-local spectate_id = -1
-local info_about = -1
-local spec_textdraw = -1
-local player_data = {}
+local lastStatsChecked = 0
+local spectateId = -1
+local infoAbout = -1
+local specTextdraw = -1
+local playerData = {}
 local infoMode = tonumber(cfg.windowsSettings.playerStatsFrame.mode)
 local infoData = {
     {
@@ -358,48 +350,50 @@ local infoData = {
         }
     },
 }
-----------------------------
-local session_online = 0
+
+local sessionOnline = 0
 local formPlayer = ""
-local short_cmds = {
-    vr = "vrepair %s",
-    vs = "vspawn %s",
-    as = "aspawn %s",
-    ah = "aheal %s",
-    af = "afrisk %s",
-    uf = "unfreeze %s",
-    g = "goto %s",
-    gh = "gethere %s",
-    gc = "getcar %s",
+local shortCommands = {
+    vr  = "vrepair %s",
+    vs  = "vspawn %s",
+    as  = "aspawn %s",
+    ah  = "aheal %s",
+    af  = "afrisk %s",
+    uf  = "unfreeze %s",
+    g   = "goto %s",
+    gh  = "gethere %s",
+    gc  = "getcar %s",
     gbc = "getbuycar %s",
-    jb = "ans %s Пишите жалобу на форум, туда со всеми доказательствами",
+    jb  = "ans %s Пишите жалобу на форум, туда со всеми доказательствами",
     asl = "ans %s Слежу за игроком",
-    ar = "kick %s AFK on ROAD",
-    ak = "kick %s AFK without ESC",
-    ap = "kick %s AFK public place"
+    ar  = "kick %s AFK on ROAD",
+    ak  = "kick %s AFK without ESC",
+    ap  = "kick %s AFK public place"
 }
 
 local formCommand = "" 
 local formStarter = ""
 local form_secondsToHide = os.clock()
 
--- ИМГУИ ПЕРЕМЕННЫЕ
-local show_main_menu = new.bool()
-local show_farchat = new.bool(cfg.windowsSettings.farChatFrame.use)
-local show_online_menu = new.bool(true)
-local notification = new.bool()
-local admin_form_menu = new.bool()
-local newMainFrame = new.bool()
-local specAdminPanel = new.bool()
-local playersNerbyTransparent = new.int(cfg.windowsSettings.playersNearby.alpha)
-local playersNearbyCheckbox = new.bool(cfg.windowsSettings.playersNearby.use)
-local displayBubbleChat = new.bool(cfg.displayBubbles)
-local onlineFrameCheckbox = new.bool(cfg.windowsSettings.onlineFrame.use)
-local abCheckbox = new.bool(cfg.airbreak)
-local car_spec = new.bool(cfg.car_spec)
-local gg_msg = new.char[256](cfg.gg_msg)
-local game_pass = new.char[256](cfg.game_pass)
-local adm_pass = new.char[256](cfg.adm_pass)
+--- ImGui declarations.
+--- For those who will add variables here: note that you need to add before the variable name
+--- a letter that indicates the type of the variable. See an example below.
+local bMainMenu                 = new.bool()
+local bShowFarchat              = new.bool(cfg.windowsSettings.farChatFrame.use)
+local bOnlineMenu               = new.bool(true)
+local bNotificationFrame        = new.bool()
+local bAdminForm                = new.bool()
+local bNewMainFrame             = new.bool()
+local bSpecAdminPanel           = new.bool()
+local bPlayersNearbyCheckbox    = new.bool(cfg.windowsSettings.playersNearby.use)
+local bDisplayBubbleChat        = new.bool(cfg.displayBubbles)
+local bOnlineFrameCheckbox      = new.bool(cfg.windowsSettings.onlineFrame.use)
+local bAirbreakCheckbox         = new.bool(cfg.airbreak)
+local bCarInfoInSpectator       = new.bool(cfg.car_spec)
+local iPlayersNerbyTransparent  = new.int(cfg.windowsSettings.playersNearby.alpha)
+local cGGMessage                = new.char[256](cfg.gg_msg)
+local cGamePassword             = new.char[256](cfg.game_pass)
+local cAdminPassword            = new.char[256](cfg.adm_pass)
 
 -- If you want to add an imgui window(that can resize), then add to this array an table with the following:
 -- {title = String, jsonKey = String, it = ImBool}
@@ -454,19 +448,18 @@ enum "MOV_ENUM" {
     "MOV_FPS_COUNT" -- Still not window.
 }
 
--- для хоткеев
-local gadmKeys = {v = cfg.hotkeys.gadm}
-local showSpectateCursor = {v = cfg.hotkeys.spectateCursor}
-local acceptFormKeys = {v = cfg.hotkeys.acceptForm}
-local specReloadKeys = {v = cfg.hotkeys.specReload}
-local spDisconnectCopy = {v = cfg.hotkeys.disconnectSpecCopy}
+local gadmKeys              = {v = cfg.hotkeys.gadm}
+local showSpectateCursor    = {v = cfg.hotkeys.spectateCursor}
+local acceptFormKeys        = {v = cfg.hotkeys.acceptForm}
+local specReloadKeys        = {v = cfg.hotkeys.specReload}
+local spDisconnectCopy      = {v = cfg.hotkeys.disconnectSpecCopy}
 
 function imgui.Input()
-    -- TODO: написать свой инпут, чтобы не плодить кучу однотипного кода
+    -- TODO: Write your own input so as not to produce a bunch of the same type of code.
 end
 
-function bringFloatTo(from, to, start_time, duration)
-    local timer = os.clock() - start_time
+function bringFloatTo(from, to, startTime, duration)
+    local timer = os.clock() - startTime
     if timer >= 0.00 and timer <= duration then
         local count = timer / (duration / 100)
         return from + (count * (to - from) / 100), true
@@ -522,29 +515,29 @@ function writeScriptInformationIn(path, neatJsonProperties)
         mainConfig  = mainConfig,
         variables   = {
             alogin                          = alogin,
-            sendFormCommand                 = sendFormCommand,
-            playersPlatform                 = players_platform,
-            inSp                            = in_sp
+            sendFormCommand                 = formCommandSended,
+            playersPlatform                 = playersPlatform,
+            inSp                            = isPlayerInSpectate
         },
         imVariables = {
             main = {
                 bools   = {
-                    show_main_menu          = show_main_menu[0],
-                    notification            = notification[0],
-                    admin_form_menu         = admin_form_menu[0],
-                    newMainFrame            = newMainFrame[0],
-                    specAdminPanel          = specAdminPanel[0],
-                    playersNearbyCheckbox   = playersNearbyCheckbox[0],
-                    onlineFrameCheckbox     = onlineFrameCheckbox[0],
-                    car_spec                = car_spec[0]
+                    show_main_menu          = bMainMenu[0],
+                    notification            = bNotificationFrame[0],
+                    admin_form_menu         = bAdminForm[0],
+                    newMainFrame            = bNewMainFrame[0],
+                    specAdminPanel          = bSpecAdminPanel[0],
+                    playersNearbyCheckbox   = bPlayersNearbyCheckbox[0],
+                    onlineFrameCheckbox     = bOnlineFrameCheckbox[0],
+                    car_spec                = bCarInfoInSpectator[0]
                 },
                 int     = {
-                    playersNerbyTransparent = playersNerbyTransparent[0]
+                    playersNerbyTransparent = iPlayersNerbyTransparent[0]
                 },
                 char    = {
-                    gg_msg                  = {value = str(gg_msg), size = sizeof(gg_msg)},
-                    game_pass               = {value = "HIDEN",     size = sizeof(game_pass)},
-                    adm_pass                = {value = "HIDEN",     size = sizeof(adm_pass)}
+                    gg_msg                  = {value = str(cGGMessage), size = sizeof(cGGMessage)},
+                    game_pass               = {value = "HIDEN",         size = sizeof(cGamePassword)},
+                    adm_pass                = {value = "HIDEN",         size = sizeof(cAdminPassword)}
                 }
             },
             movableWindows = movWindows
@@ -603,7 +596,6 @@ function writeScriptInformationIn(path, neatJsonProperties)
         }
     }
 
-
     local handle = assert(io.open(path, "w"))
     handle:write(neatJSON(data, neatJsonProperties or {sort = true, wrap = 80}))
     handle:close()
@@ -617,26 +609,23 @@ function getBodyPartCoordinates(id, handle)
 end
 
 function stopForm()
-    admin_form_menu[0], formPlayer = false, ""
-    formStarter = "" formCommand = "", ""
+    bAdminForm[0], formPlayer   = false, ""
+    formStarter, formCommand    = "", ""
 end
 
 imgui.OnInitialize(function()
     gnomeIcons.loadIcons(30)
-
-    local glyph_ranges = imgui.GetIO().Fonts:GetGlyphRangesCyrillic()
-
-    bold14 = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellBold, 22.0, nil, glyph_ranges)
-    bold17 = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellBold, 27.0, nil, glyph_ranges)
-
-    bold15 = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellBold, 23.0, nil, glyph_ranges)
-    bold18 = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellBold, 26.0, nil, glyph_ranges)
-    bold25 = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellBold, 33.0, nil, glyph_ranges)
-    regular9 = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellRegular, 16.0, nil, glyph_ranges)   
-    regular15 = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellRegular, 23.0, nil, glyph_ranges)
-
-    bold = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellBold, 25.0, nil, glyph_ranges)
-    regular = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellRegular, 25.0, nil, glyph_ranges)
+    local glyphRanges = imgui.GetIO().Fonts:GetGlyphRangesCyrillic()
+    
+    bold14      = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellBold, 22.0, nil, glyphRanges)
+    bold17      = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellBold, 27.0, nil, glyphRanges)
+    bold15      = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellBold, 23.0, nil, glyphRanges)
+    bold18      = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellBold, 26.0, nil, glyphRanges)
+    bold25      = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellBold, 33.0, nil, glyphRanges)
+    regular9    = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellRegular, 16.0, nil, glyphRanges)   
+    regular15   = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellRegular, 23.0, nil, glyphRanges)
+    bold        = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellBold, 25.0, nil, glyphRanges)
+    regular     = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellRegular, 25.0, nil, glyphRanges)
 
     imgui.Theme()
 end)
@@ -646,12 +635,13 @@ function setChatInputEnabledWithText(text)
     sampSetChatInputText(text)
 end
 
-local backgroundDrawList = imgui.OnFrame(
+--- Background draw list.
+imgui.OnFrame(
     function() return true end,
     function(self)
-        self.HideCursor         = _showSpectateCursor
+        self.HideCursor         = cursorStatus
         self.DL                 = imgui.GetBackgroundDrawList()
-        self.explode_argb       = function(argb)    
+        self.explodeARGB        = function(argb)    
             local a = bit.band(bit.rshift(argb, 24), 0xFF)
             local r = bit.band(bit.rshift(argb, 16), 0xFF)
             local g = bit.band(bit.rshift(argb, 8), 0xFF)
@@ -682,7 +672,7 @@ local backgroundDrawList = imgui.OnFrame(
             if font then imgui.PopFont() end
         end
 
-        -- A more optimized version with a rendering of individual, colored texts, instead of rendering each char. 
+        -- A more optimized version with a rendering of individual, colored texts, instead of rendering each char.
         --
         -- The function allows you to render text whose color can be passed through HEX.
         -- To pass a hex, use the following syntax:
@@ -690,9 +680,9 @@ local backgroundDrawList = imgui.OnFrame(
         self.addTextColoredHex  = function(text, pos, font, textSize, strokeWidth)
             -- We assemble the table of the text argument, and render each colored text using a loop.
             if font then imgui.PushFont(font) end
-            for index, data in ipairs(self.makeTextColoredTable(text)) do
+            for _, data in ipairs(self.makeTextColoredTable(text)) do
                 -- data[]: {text: String, hex: String, sizeX: Number}
-                local r, g, b, a    = self.explode_argb("0x" .. data.hex .. "FF")
+                local r, g, b, _ = self.explodeARGB("0x" .. data.hex .. "FF")
                 local color         = imgui.GetColorU32Vec4(imgui.ImVec4(r / 255, g / 255, b / 255, 1 --[[ Alpha ]]))
                 self.addStrokeText(data.text, color, pos, font or NULL, textSize or 14, strokeWidth or 1)
                 pos.x = pos.x + data.sizeX + (textSize or 14) / 2.5  
@@ -702,18 +692,18 @@ local backgroundDrawList = imgui.OnFrame(
 
         if isSampAvailable() then
             if isNotGamePaused() then
-                if car_spec[0] then
+                if bCarInfoInSpectator[0] then
                     for _, car in pairs(getAllVehicles()) do
                         local x, y, z = getCarCoordinates(car)
                         local myx, myy, myz = getCharCoordinates(PLAYER_PED)
                         if doesVehicleExist(car) and isCarOnScreen(car) and getDistanceBetweenCoords3d(x, y, z, myx, myy, myz) < 50 then
                             local engine_status = isCarEngineOn(car) and "{8dff85}{ON}" or "{ff8585}{OFF}"
-                            local door_status = getCarDoorLockStatus(car) == 0 and "{8dff85}{OPEN}" or "{ff8585}{LOCK}"
-                            local hp = getCarHealth(car)
-                            local result, id = sampGetVehicleIdByCarHandle(car)
-                            local carmodel = getCarModel(car)
-                            local vehname = getCarName(carmodel)
-                            local sx, sy = convert3DCoordsToScreen(x, y, z)
+                            local door_status   = getCarDoorLockStatus(car) == 0 and "{8dff85}{OPEN}" or "{ff8585}{LOCK}"
+                            local hp            = getCarHealth(car)
+                            local _, id         = sampGetVehicleIdByCarHandle(car)
+                            local carmodel      = getCarModel(car)
+                            local vehname       = getCarName(carmodel)
+                            local sx, sy        = convert3DCoordsToScreen(x, y, z)
                         
                             local text  = string.format("{FFFFFF}{ID: }{8DFF85}{%s}{FFFFFF}{ HP: }{8DFF85}{%s}", id, hp)
                             local text2 = string.format("{FFFFFF}{%s }%s{FFFFFF}{ / }%s", vehname, engine_status, door_status) 
@@ -724,15 +714,14 @@ local backgroundDrawList = imgui.OnFrame(
                 end
 
                 for _, player in ipairs(getAllChars()) do
-                    local idResult, id = sampGetPlayerIdByCharHandle(player)
-                    local charResult, char = sampGetCharHandleBySampPlayerId(id)
-                    local x, y, z = getBodyPartCoordinates(4, player)
-                    local myx, myy, myz = getCharCoordinates(PLAYER_PED)
-                    local screenPosX, screenPosY = convert3DCoordsToScreen(x, y, z)
-                    local charCheck =
-                        charResult and isCharOnScreen(char) and id ~= select(2, sampGetPlayerIdByCharHandle(PLAYER_PED))
-                    local distance = getDistanceBetweenCoords3d(x, y, z, myx, myy, myz)
-                    local clistColorHex = string.format("%06X", bit.band(sampGetPlayerColor(id), 0xFFFFFF))
+                    local _, id                     = sampGetPlayerIdByCharHandle(player)
+                    local charResult, char          = sampGetCharHandleBySampPlayerId(id)
+                    local x, y, z                   = getBodyPartCoordinates(4, player)
+                    local myx, myy, myz             = getCharCoordinates(PLAYER_PED)
+                    local screenPosX, screenPosY    = convert3DCoordsToScreen(x, y, z)
+                    local charCheck                 = charResult and isCharOnScreen(char) and id ~= select(2, sampGetPlayerIdByCharHandle(PLAYER_PED))
+                    local distance                  = getDistanceBetweenCoords3d(x, y, z, myx, myy, myz)
+                    local clistColorHex             = string.format("%06X", bit.band(sampGetPlayerColor(id), 0xFFFFFF))
 
                     if charCheck then
                         if cfg.showGunInfo and distance < 50 then
@@ -749,37 +738,35 @@ local backgroundDrawList = imgui.OnFrame(
                             for _, data in ipairs(adminsOnline) do
                                 if id == data.adminId and distance < 50 then
                                     self.addTextColoredHex(
-                                        "{FF8585}{" .. data.oocNickname .. "}",
-                                        imgui.ImVec2(screenPosX, screenPosY - 15),
-                                        nil,
-                                        cfg.renderSize.showAdmins,
-                                        1
+                                            "{FF8585}{" .. data.oocNickname .. "}", 
+                                            imgui.ImVec2(screenPosX, screenPosY - 15), 
+                                            nil, 
+                                            cfg.renderSize.showAdmins, 
+                                            1
                                     )
                                 end
                             end
                         end
 
                         if cfg.wallhack then
-                            local wallhackText =
-                                string.format("{%s}{%s[%s] [X: %1.f]}", clistColorHex, sampGetPlayerNickname(id), id, distance)
                             self.addTextColoredHex(
-                                wallhackText,
-                                imgui.ImVec2(screenPosX, screenPosY - 30),
-                                nil,
-                                cfg.renderSize.wallhack,
-                                1
+                                    string.format("{%s}{%s[%s] [X: %1.f]}", clistColorHex, sampGetPlayerNickname(id), id, distance),
+                                    imgui.ImVec2(screenPosX, screenPosY - 30), 
+                                    nil, 
+                                    cfg.renderSize.wallhack, 
+                                    1
                             )
                         end
                     end
                 end -- GET_ALL_CHARS
                 if cfg.additions.fpsCount.use or movableWindows[MOV_FPS_COUNT].it[0] then
                     self.addStrokeText(
-                        tostring(math.floor(memory.getfloat(--[[ FPS ]]0xB7CB50, true))),
-                        tonumber("0x" .. cfg.additions.fpsCount.color --[[ RRGGBB ]] .. "FF" --[[ AA ]]),
-                        imgui.ImVec2(cfg.windowsPosition.fpsCount.x, cfg.windowsPosition.fpsCount.y),
-                        NULL,
-                        cfg.additions.fpsCount.fontSize,
-                        1
+                            tostring(math.floor(memory.getfloat(--[[ FPS ]]0xB7CB50, true))), 
+                            tonumber("0x" .. cfg.additions.fpsCount.color --[[ RRGGBB ]] .. "FF" --[[ AA ]]), 
+                            imgui.ImVec2(cfg.windowsPosition.fpsCount.x, cfg.windowsPosition.fpsCount.y), 
+                            NULL, 
+                            cfg.additions.fpsCount.fontSize, 
+                            1
                     )
                 end
             else -- IS_NOT_GAME_PAUSED
@@ -795,17 +782,18 @@ local reportData = {
     size        = imgui.ImVec2(table.unpack(cfg.reportWindow.size))
 }
 
-local reportWindow = imgui.OnFrame( -- TODO
+--- Report window
+imgui.OnFrame( -- TODO
     function() return isNotGamePaused and cfg.reportWindow.use end,
     function(self)
-        self.HideCursor = _showSpectateCursor
+        self.HideCursor = cursorStatus
 
         imgui.SetNextWindowPos(imgui.ImVec2(cfg.windowsPosition.reportWindow.x, cfg.windowsPosition.reportWindow.y))
         imgui.SetNextWindowSize(reportData.size)
 
         imgui.Begin("Report window", movableWindows[MOV_REPORT].it, imgui.WindowFlags.NoMove + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize)
             imgui.PushTextWrapPos(reportData.size.x)
-                for i, v in ipairs(reportData.messages) do
+                for _, v in ipairs(reportData.messages) do
                     imgui.SafeText(v.text, cfg.reportWindow.alpha, hexToImVec4(v.hex))
                 end
             imgui.PopTextWrapPos()
@@ -813,26 +801,27 @@ local reportWindow = imgui.OnFrame( -- TODO
     end
 )
 
-local actionMenu = imgui.OnFrame(
+--- Action menu
+imgui.OnFrame(
     function() return isNotGamePaused() and movableWindows[MOV_STATS].it[0] end,
     function(self)
-        self.HideCursor = _showSpectateCursor
+        self.HideCursor = cursorStatus
         self.Buttons    = {
             {
-                ["SPAWN"]       = function() sampSendChat("/aspawn "..info_about) end,
+                ["SPAWN"]       = function() sampSendChat("/aspawn ".. infoAbout) end,
                 ["GETIP"]       = function() end,
-                ["SLAP"]        = function() sampSendChat("/slap "..info_about) end,
-                ["GIVE HP"]     = function() setChatInputEnabledWithText("/sethp "..info_about.." ") end,
-                ["RESSURECT"]   = function() sampSendChat("/aheal "..info_about) end,
-                ["KILL"]        = function() sampSendChat("/sethp "..info_about.." 0") end,
-                ["PAME"]        = function() sampSendChat("/pame "..info_about) end
+                ["SLAP"]        = function() sampSendChat("/slap ".. infoAbout) end,
+                ["GIVE HP"]     = function() setChatInputEnabledWithText("/sethp ".. infoAbout .." ") end,
+                ["RESSURECT"]   = function() sampSendChat("/aheal ".. infoAbout) end,
+                ["KILL"]        = function() sampSendChat("/sethp ".. infoAbout .." 0") end,
+                ["PAME"]        = function() sampSendChat("/pame ".. infoAbout) end
             }, {
-                ["*Вы тут?*"]   = function() sampSendChat("/ans "..info_about.." Вы тут? Ответ в /b") end,
+                ["*Вы тут?*"]   = function() sampSendChat("/ans ".. infoAbout .." Вы тут? Ответ в /b") end,
                 ["AFRISK"]      = function() sampSendMenuSelectRow(5) end,
-                ["GG"]          = function() gg_cmd(info_about) end,
+                ["GG"]          = function() ggCommand(infoAbout) end,
                 ["GETBUYCAR"]   = function() setChatInputEnabledWithText("/getbuycar ") end,
                 ["REPAIR"]      = function() setChatInputEnabledWithText("/vrepair ") end,
-                ["STATS"]       = function() sampSendChat("/stats "..info_about) end,
+                ["STATS"]       = function() sampSendChat("/stats ".. infoAbout) end,
                 ["SWITCH"]      = function() sampSendMenuSelectRow(1) end
             }
         }
@@ -853,7 +842,7 @@ local actionMenu = imgui.OnFrame(
                 imgui.BeginGroup()
                     for k, v in pairs(self.Buttons[1]) do
                         if imgui.Button(k, imgui.ImVec2(100, 35)) then v()
-                            if not _showSpectateCursor then _showSpectateCursor = true end
+                            if not cursorStatus then cursorStatus = true end
                         end
                         imgui.SameLine()
                     end
@@ -861,7 +850,7 @@ local actionMenu = imgui.OnFrame(
                     imgui.BeginGroup()
                         for k, v in pairs(self.Buttons[2]) do
                             if imgui.Button(k, imgui.ImVec2(100, 35)) then v()
-                                if not _showSpectateCursor and index ~= 1 then _showSpectateCursor = true end
+                                if not cursorStatus and index ~= 1 then cursorStatus = true end
                             end
                             imgui.SameLine()
                         end
@@ -876,10 +865,11 @@ local actionMenu = imgui.OnFrame(
     end
 )
 
-local checkerFrame = imgui.OnFrame(
+--- Checker frame
+imgui.OnFrame(
     function() return isNotGamePaused() and movableWindows[MOV_CHECKER].it[0] and cfg.checker.show end,
     function(self)
-        self.HideCursor         = _showSpectateCursor
+        self.HideCursor         = cursorStatus
         self.windowProperties   = {
             {"ImVec4", "ScrollbarBg", change = imgui.ImVec4(0.07, 0.07, 0.07, cfg.checker.alpha), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
             {"ImVec4", "WindowBg", change = imgui.ImVec4(0.07, 0.07, 0.07, cfg.checker.alpha), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
@@ -891,7 +881,7 @@ local checkerFrame = imgui.OnFrame(
         changeTheme:applySettings(self.windowProperties)
     
         imgui.Begin("Checker Frame", movableWindows[MOV_CHECKER].it, imgui.WindowFlags.NoResize + imgui.WindowFlags.NoMove + imgui.WindowFlags.NoTitleBar)
-            for index, player in ipairs(cfg.checker.players) do
+            for _, player in ipairs(cfg.checker.players) do
                 imgui.SetCursorPosX(
                     125 - imgui.CalcTextSize("[OFFLINE]" .. player .. (sampIsPlayerConnected(getPlayerIdByNickname(player)) and "[" .. tostring(getPlayerIdByNickname(player) .. "]") or "")).x / 2
                 )
@@ -943,10 +933,12 @@ local notificationInit = {
 }
 
 local notificationFramePositionStatus = true
-local notificationFrame = imgui.OnFrame(
-    function() return isNotGamePaused() and notification[0] end,
+
+--- Notification frame
+imgui.OnFrame(
+    function() return isNotGamePaused() and bNotificationFrame[0] end,
     function(self)
-        self.HideCursor = _showSpectateCursor
+        self.HideCursor = cursorStatus
         self.notificationStyle = {
             {"ImVec2", "FramePadding", change = {0, 0}, reset = {5, 5}},
             {"ImVec2", "WindowPadding", change = {0, 0}, reset = {5, 5}},
@@ -957,7 +949,7 @@ local notificationFrame = imgui.OnFrame(
         }
 
         self.closeNotification = function()
-            notification[0], notificationFramePositionStatus = false, true
+            bNotificationFrame[0], notificationFramePositionStatus = false, true
         end
 
         if notificationFramePositionStatus then
@@ -968,7 +960,7 @@ local notificationFrame = imgui.OnFrame(
         imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2 - 250, notificationInit.positionY))
         imgui.SetNextWindowSize(imgui.ImVec2(500, 75))
 
-        imgui.Begin("Notification", notification, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoMove)
+        imgui.Begin("Notification", bNotificationFrame, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoMove)
             imgui.SetCursorPos(imgui.ImVec2(15, 32))
             imgui.Text(notificationInit.icon == -1 and gnomeIcons.ICON_LIGHTBULB_FILLED or notificationInit.icon)
 
@@ -990,22 +982,20 @@ local notificationFrame = imgui.OnFrame(
     end
 )
 
-local playersNearbyFrame = imgui.OnFrame(
+--- Players nearby frame
+imgui.OnFrame(
     function() return isNotGamePaused() and ((movableWindows[MOV_STATS].it[0] and cfg.windowsSettings.playersNearby.use) or movableWindows[MOV_NEARBY].it[0]) end,
     function(self)
-        self.HideCursor = _showSpectateCursor
-
-        imgui.SetNextWindowPos(imgui.ImVec2(cfg.windowsPosition.playersNearby.x, cfg.windowsPosition.playersNearby.y))
-        imgui.SetNextWindowSize(imgui.ImVec2(250, 287))
-
-        local playersNearbyAlpha = {
+        self.HideCursor = cursorStatus
+        self.playersNearbyAlpha = {
             {"ImVec4", "ScrollbarBg", change = imgui.ImVec4(0.07, 0.07, 0.07, cfg.windowsSettings.playersNearby.alpha), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
             {"ImVec4", "WindowBg", change = imgui.ImVec4(0.07, 0.07, 0.07, cfg.windowsSettings.playersNearby.alpha), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
             {"Int", "WindowBorderSize", change = 0, reset = 1}
         }
 
-        changeTheme:applySettings(playersNearbyAlpha)
-
+        imgui.SetNextWindowPos(imgui.ImVec2(cfg.windowsPosition.playersNearby.x, cfg.windowsPosition.playersNearby.y))
+        imgui.SetNextWindowSize(imgui.ImVec2(250, 287))
+        changeTheme:applySettings(self.playersNearbyAlpha)
         imgui.Begin("playersNearby", movableWindows[MOV_NEARBY].it, imgui.WindowFlags.NoMove + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar)
             if changePosition == 3 then
                 for _, v in ipairs {
@@ -1026,14 +1016,14 @@ local playersNearbyFrame = imgui.OnFrame(
                     if result then
                         nickname = sampGetPlayerNickname(id)
                         resultDistance, handle = sampGetCharHandleBySampPlayerId(id)
-                        resultDistanceSpec, handleSpec = sampGetCharHandleBySampPlayerId(tonumber(info_about))
+                        resultDistanceSpec, handleSpec = sampGetCharHandleBySampPlayerId(tonumber(infoAbout))
                         if resultDistance then
                             distanceA1, distanceA2, distanceA3 = getCharCoordinates(handle)
                             if resultDistanceSpec then distanceB1, distanceB2, distanceB3 = getCharCoordinates(handleSpec) end
                         end
                     end
 
-                    if result and id ~= select(2, sampGetPlayerIdByCharHandle(PLAYER_PED)) and id ~= tonumber(info_about) then
+                    if result and id ~= select(2, sampGetPlayerIdByCharHandle(PLAYER_PED)) and id ~= tonumber(infoAbout) then
                         imgui.SetCursorPosX(250 / 2 - imgui.CalcTextSize((
                             nickname.."["..id.."][X: "..math.floor(getDistanceBetweenCoords3d(distanceA1, distanceA2, distanceA3, distanceB1, distanceB2, distanceB3)).."]"
                         )).x / 2)
@@ -1060,15 +1050,15 @@ local playersNearbyFrame = imgui.OnFrame(
                             imgui.SetCursorPosY(10 + imgui.CalcTextSize(popupNickname).y)
                             if imgui.Button("STATS", imgui.ImVec2(200, 30)) then
                                 sampSendChat("/stats "..popupId); imgui.CloseCurrentPopup()
-                                if not _showSpectateCursor then _showSpectateCursor = true end
+                                if not cursorStatus then cursorStatus = true end
                             end
                             if imgui.Button("PAME", imgui.ImVec2(200, 30)) then
                                 sampSendChat("/pame "..popupId); imgui.CloseCurrentPopup()
-                                if not _showSpectateCursor then _showSpectateCursor = true end
+                                if not cursorStatus then cursorStatus = true end
                             end
                             if imgui.Button("SPEC", imgui.ImVec2(200, 30)) then
                                 sampSendChat("/sp "..popupId); imgui.CloseCurrentPopup()
-                                if not _showSpectateCursor then _showSpectateCursor = true end
+                                if not cursorStatus then cursorStatus = true end
                             end
                         imgui.PopStyleVar()
                     imgui.EndGroup()
@@ -1079,29 +1069,26 @@ local playersNearbyFrame = imgui.OnFrame(
         imgui.EndPopup()
         imgui.End()
 
-        changeTheme:resetDefault(playersNearbyAlpha)
+        changeTheme:resetDefault(self.playersNearbyAlpha)
     end
 )
 
-local selectedTab = 1
-
-local adminForm = imgui.OnFrame(
-    function() return isNotGamePaused() and admin_form_menu[0] end,
+--- Admin form
+imgui.OnFrame(
+    function() return isNotGamePaused() and bAdminForm[0] end,
     function(self)
-        self.HideCursor = _showSpectateCursor
-        imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2, sizeY), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
-        imgui.SetNextWindowSize(imgui.ImVec2(sizeX, 70))
-
-        local adminFormStyle = {
+        self.HideCursor = cursorStatus
+        self.adminFormStyle = {
             {"ImVec4", "WindowBg", change = imgui.ImVec4(0.07, 0.07, 0.07, 0.50), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
             {"Int", "WindowRounding", change = 0, reset = 5},
             {"Int", "FrameRounding", change = 0, reset = 5},
             {"Int", "WindowBorderSize", change = 0, reset = 1}
         }
 
-        changeTheme:applySettings(adminFormStyle)
-
-        imgui.Begin("admin_form_menu", admin_form_menu, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoMove)
+        imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2, sizeY), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
+        imgui.SetNextWindowSize(imgui.ImVec2(sizeX, 70))
+        changeTheme:applySettings(self.adminFormStyle)
+        imgui.Begin("admin_form_menu", bAdminForm, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoMove)
             imgui.SetCursorPosY(10)
             imgui.BeginGroup()
                 imgui.SetCursorPosX(15)
@@ -1116,98 +1103,99 @@ local adminForm = imgui.OnFrame(
 
             if os.clock() - form_secondsToHide >= 5 then stopForm() end
         imgui.End()
-        changeTheme:resetDefault(adminFormStyle)
+        changeTheme:resetDefault(self.adminFormStyle)
     end
 )
 
-local mainFrame = imgui.OnFrame(
-    function() return isNotGamePaused() and show_main_menu[0] end,
-    function(player)
+--- Main frame
+imgui.OnFrame(
+    function() return isNotGamePaused() and bMainMenu[0] end,
+    function()
         imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2, sizeY / 2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
         imgui.SetNextWindowSize(imgui.ImVec2(800, 600))
-        imgui.Begin("GAdmin", show_main_menu, imgui.WindowFlags.NoTitleBar)
+        imgui.Begin("GAdmin", bMainMenu, imgui.WindowFlags.NoTitleBar)
 
         imgui.Text("Текст /gg")
         imgui.SameLine()
-        if imgui.InputText("##gg_msg", gg_msg, sizeof(gg_msg)) then
-            cfg.gg_msg = str(gg_msg)
-            save_config()
+        if imgui.InputText("##gg_msg", cGGMessage, sizeof(cGGMessage)) then
+            cfg.gg_msg = str(cGGMessage)
+            saveConfig()
         end
 
         imgui.Text("Пароль от аккаунта")
         imgui.SameLine()
-        if imgui.InputText("##game_pass", game_pass, sizeof(game_pass)) then
-            cfg.game_pass = str(game_pass)
-            save_config()
+        if imgui.InputText("##game_pass", cGamePassword, sizeof(cGamePassword)) then
+            cfg.game_pass = str(cGamePassword)
+            saveConfig()
         end
 
         imgui.Text("Пароль от админки")
         imgui.SameLine()
-        if imgui.InputText("##adm_pass", adm_pass, sizeof(adm_pass)) then
-            cfg.adm_pass = str(adm_pass)
-            save_config()
+        if imgui.InputText("##adm_pass", cAdminPassword, sizeof(cAdminPassword)) then
+            cfg.adm_pass = str(cAdminPassword)
+            saveConfig()
         end
         if imgui.Button("Настроить позицию окон") then
             imgui.OpenPopup("windowsPosition")
         end
 
-        if imgui.Checkbox("Отображение ближайших игроков в /sp", playersNearbyCheckbox) then
-            cfg.windowsSettings.playersNearby.use = playersNearbyCheckbox[0]
-            save_config()
+        if imgui.Checkbox("Отображение ближайших игроков в /sp", bPlayersNearbyCheckbox) then
+            cfg.windowsSettings.playersNearby.use = bPlayersNearbyCheckbox[0]
+            saveConfig()
         end
-        if imgui.Checkbox("Дальний чат", show_farchat) then
-            cfg.windowsSettings.farChatFrame.use = show_farchat[0]
-            save_config()
+        if imgui.Checkbox("Дальний чат", bShowFarchat) then
+            cfg.windowsSettings.farChatFrame.use = bShowFarchat[0]
+            saveConfig()
         end
-        if imgui.Checkbox("Аирбрейк на правый шифт", abCheckbox) then
-            cfg.airbreak = abCheckbox[0]
-            if not abCheckbox then
+        if imgui.Checkbox("Аирбрейк на правый шифт", bAirbreakCheckbox) then
+            cfg.airbreak = bAirbreakCheckbox[0]
+            if not bAirbreakCheckbox then
                 airbreak.state = false
             end
-            save_config()
+            saveConfig()
         end
-        if imgui.Checkbox("Отображение окна с временем онлайна", onlineFrameCheckbox) then
-            cfg.windowsSettings.onlineFrame.use = onlineFrameCheckbox[0]
-            save_config()
+        if imgui.Checkbox("Отображение окна с временем онлайна", bOnlineFrameCheckbox) then
+            cfg.windowsSettings.onlineFrame.use = bOnlineFrameCheckbox[0]
+            saveConfig()
         end
 
-        if imgui.SliderInt("Прозрачность окна с ближайшими игроками", playersNerbyTransparent, 0, 100) then
-            cfg.windowsSettings.playersNearby.alpha = playersNerbyTransparent[0] / 100
-            save_config()
+        if imgui.SliderInt("Прозрачность окна с ближайшими игроками", iPlayersNerbyTransparent, 0, 100) then
+            cfg.windowsSettings.playersNearby.alpha = iPlayersNerbyTransparent[0] / 100
+            saveConfig()
         end
 
         if rkeys.HotKey("Главное меню", gadmKeys, imgui.ImVec2(100, 20)) then
             cfg.hotkeys.gadm = gadmKeys.v
             rkeys.changeHotKey(openMainMenu, gadmKeys.v)
-            save_config()
+            saveConfig()
         end
         if rkeys.HotKey("Принятие формы", acceptFormKeys, imgui.ImVec2(100, 20)) then
             cfg.hotkeys.acceptForm = acceptFormKeys.v
             rkeys.changeHotKey(acceptForm, acceptFormKeys.v)
-            save_config()
+            saveConfig()
         end
 
         if rkeys.HotKey("Открытие курсора в /sp", showSpectateCursor, imgui.ImVec2(100, 20)) then
             cfg.hotkeys.spectateCursor = acceptFormKeys.v
             rkeys.changeHotKey(showSpectateCursor, showSpectateCursor.v)
-            save_config()
+            saveConfig()
         end
 
         if rkeys.HotKey("Spec reload", specReloadKeys, imgui.ImVec2(100, 20)) then
             cfg.hotkeys.specReload = specReloadKeys.v
             rkeys.changeHotKey(_specReload, specReloadKeys.v)
-            save_config()
+            saveConfig()
         end
 
         if rkeys.HotKey("Копировать никнейм за которым следите при его выходе", spDisconnectCopy, imgui.ImVec2(100, 20)) then
             cfg.hotkeys.specReload = spDisconnectCopy.v
             rkeys.changeHotKey(specDisconnectCopy, spDisconnectCopy.v)
-            save_config()
+            saveConfig()
         end
 
-        if imgui.Checkbox("Отображение /ame и /ab в чат", displayBubbleChat) then
-            cfg.displayBubbles = displayBubbleChat[0]
-            save_config()
+        if imgui.Checkbox("Отображение /ame и /ab в чат", bDisplayBubbleChat) then
+            cfg.displayBubbles = bDisplayBubbleChat[0]
+            saveConfig()
         end
 
         imgui.PushStyleVarVec2(imgui.StyleVar.WindowPadding, imgui.ImVec2(0, 0))
@@ -1233,22 +1221,23 @@ local mainFrame = imgui.OnFrame(
     end
 )
 
-local onlineFrame = imgui.OnFrame(
-    function() return isNotGamePaused() and show_online_menu[0] and cfg.windowsSettings.onlineFrame.use and not isGamePaused() end,
+--- Online frame
+imgui.OnFrame(
+    function() return isNotGamePaused() and bOnlineMenu[0] and cfg.windowsSettings.onlineFrame.use and not isGamePaused() end,
     function(player)
-        player.HideCursor   = _showSpectateCursor
+        player.HideCursor = cursorStatus
         local full_online = string.format("Общий онлайн: %02d:%02d:%02d", cfg.online.total / 3600,cfg.online.total / 60 % 60, cfg.online.total % 60)
-        local temp_online = string.format("Онлайн за сессию: %02d:%02d:%02d", session_online / 3600, session_online / 60 % 60, session_online % 60)
+        local temp_online = string.format("Онлайн за сессию: %02d:%02d:%02d", sessionOnline / 3600, sessionOnline / 60 % 60, sessionOnline % 60)
         size = {imgui.GetStyle().WindowPadding.x*2 + imgui.CalcTextSize(temp_online).x,
         imgui.GetStyle().ItemSpacing.y + imgui.GetStyle().WindowPadding.y*2 + imgui.CalcTextSize(temp_online).y + imgui.CalcTextSize(full_online).y}
         
-        if admin_form_menu[0] then onlinePosY = sizeY - size[2] - 35 else onlinePosY = sizeY - size[2] end
+        if bAdminForm[0] then onlinePosY = sizeY - size[2] - 35 else onlinePosY = sizeY - size[2] end
 
         imgui.PushStyleVarFloat(imgui.StyleVar.WindowRounding, 0)
 
         imgui.SetNextWindowSize(imgui.ImVec2(size[1], size[2]))
         imgui.SetNextWindowPos( imgui.ImVec2(cfg.windowsPosition.onlineFrame.x - size[1], cfg.windowsPosition.onlineFrame.y - size[2]))
-        imgui.Begin("GAdmin_online", show_online_menu, imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoMove + imgui.WindowFlags.NoScrollbar)
+        imgui.Begin("GAdmin_online", bOnlineMenu, imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoMove + imgui.WindowFlags.NoScrollbar)
 
         imgui.Text(full_online)
         imgui.Text(temp_online)
@@ -1259,10 +1248,10 @@ local onlineFrame = imgui.OnFrame(
     end
 )
 
-local infoFrame = imgui.OnFrame(
+--- Info frame
+imgui.OnFrame(
     function() return isNotGamePaused() and movableWindows[MOV_STATS].it[0] end,
-    function(player)
-        
+    function(self)
         local removeAfterDoubleHash = function(str)
             if str then
                 local index = string.find(str, "##")
@@ -1272,38 +1261,38 @@ local infoFrame = imgui.OnFrame(
             end
         end
 
-        if sampIsPlayerConnected(tonumber(spectate_id)) then
-            player_data["armour"] = sampGetPlayerArmor(spectate_id)
-            player_data["game"] = (players_platform[tonumber(spectate_id)] and players_platform[tonumber(spectate_id)] or "N/A")
-            local res, ped = sampGetCharHandleBySampPlayerId(spectate_id)
-            if res then player_data["ped"] = ped end
-            if res and isCharInAnyCar(player_data["ped"]) then
-                player_data["car"] = storeCarCharIsInNoSave(player_data["ped"])
-                local car = player_data["car"]
-                player_data["car_hp"] = getCarHealth(car)
-                player_data["car_model"] = getCarModel(car)
-                player_data["car_name"] = getCarName(player_data["car_model"])
-                res, player_data["car_id"] = sampGetVehicleIdByCarHandle(car)
-                player_data["car_engine"] = isCarEngineOn(car) and "Заведён" or "Заглушен"
+        if sampIsPlayerConnected(tonumber(spectateId)) then
+            playerData["armour"] = sampGetPlayerArmor(spectateId)
+            playerData["game"] = (playersPlatform[tonumber(spectateId)] and playersPlatform[tonumber(spectateId)] or "N/A")
+            local res, ped = sampGetCharHandleBySampPlayerId(spectateId)
+            if res then playerData["ped"] = ped end
+            if res and isCharInAnyCar(playerData["ped"]) then
+                playerData["car"] = storeCarCharIsInNoSave(playerData["ped"])
+                local car = playerData["car"]
+                playerData["car_hp"] = getCarHealth(car)
+                playerData["car_model"] = getCarModel(car)
+                playerData["car_name"] = getCarName(playerData["car_model"])
+                res, playerData["car_id"] = sampGetVehicleIdByCarHandle(car)
+                playerData["car_engine"] = isCarEngineOn(car) and "Заведён" or "Заглушен"
             else
-                player_data["car"] = nil
-                player_data["car_hp"] = nil
-                player_data["car_model"] = nil
-                player_data["car_name"] = nil
-                player_data["car_id"] = nil
-                player_data["car_engine"] = nil
+                playerData["car"] = nil
+                playerData["car_hp"] = nil
+                playerData["car_model"] = nil
+                playerData["car_name"] = nil
+                playerData["car_id"] = nil
+                playerData["car_engine"] = nil
             end
         end
 
-        player.HideCursor = _showSpectateCursor
+        self.HideCursor = cursorStatus
         local info = infoData[infoMode]
-        imgui.SetNextWindowSizeConstraints(imgui.ImVec2(info.size[1], (player_data["car"] and info.size[3] or info.size[2])), imgui.ImVec2(math.huge, math.huge))
+        imgui.SetNextWindowSizeConstraints(imgui.ImVec2(info.size[1], (playerData["car"] and info.size[3] or info.size[2])), imgui.ImVec2(math.huge, math.huge))
         imgui.SetNextWindowPos(imgui.ImVec2(cfg.windowsPosition.playerStatsFrame.x, cfg.windowsPosition.playerStatsFrame.y))
         imgui.Begin("GAdmin_info", movableWindows[MOV_STATS].it, imgui.WindowFlags.AlwaysAutoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoScrollbar + imgui.WindowFlags.NoMove)
 
-        imgui.CenterText(tostring(player_data["nick"]) .. "[" .. spectate_id .. "]")
+        imgui.CenterText(tostring(playerData["nick"]) .. "[" .. spectateId .. "]")
         imgui.Columns(info.columnsNum, "##player_info", true)
-        for i = 1, 4 do imgui.NextColumn() end
+        for _ = 1, 4 do imgui.NextColumn() end
         imgui.Separator()
         for num, size in pairs(info.columnsSize) do
             imgui.SetColumnWidth(num, size)
@@ -1311,7 +1300,7 @@ local infoFrame = imgui.OnFrame(
         for k, v in pairs(info.main) do
             imgui.TextWrapped(v[2])
             imgui.NextColumn()
-            imgui.TextWrapped(tostring(removeAfterDoubleHash(player_data[v[1]])))
+            imgui.TextWrapped(tostring(removeAfterDoubleHash(playerData[v[1]])))
             imgui.NextColumn()
             if (k % (info.columnsNum / 2) == 0) and k ~= #info.main then
                 imgui.Separator()
@@ -1320,11 +1309,10 @@ local infoFrame = imgui.OnFrame(
 
         imgui.Columns(1)
         imgui.Separator()
-        if player_data["car"] and info.car then
-            local car = player_data["car"]
-            imgui.CenterText(player_data["car_name"] .. "[" .. player_data["car_id"] .. "]")
+        if playerData["car"] and info.car then
+            imgui.CenterText(playerData["car_name"] .. "[" .. playerData["car_id"] .. "]")
             imgui.Columns(info.columnsNum, "##player_cars_info", true)
-            for i = 1, 4 do imgui.NextColumn() end
+            for _ = 1, 4 do imgui.NextColumn() end
             imgui.Separator()
             for num, size in pairs(info.columnsSize) do
                 imgui.SetColumnWidth(num, size)
@@ -1333,7 +1321,7 @@ local infoFrame = imgui.OnFrame(
             for k, v in pairs(info.car) do
                 imgui.TextWrapped(v[2])
                 imgui.NextColumn()
-                imgui.TextWrapped(tostring(removeAfterDoubleHash(player_data[v[1]])))
+                imgui.TextWrapped(tostring(removeAfterDoubleHash(playerData[v[1]])))
                 imgui.NextColumn()
                 if (k % (info.columnsNum / 2) == 0) and k ~= #info.car then
                     imgui.Separator()
@@ -1348,39 +1336,28 @@ local infoFrame = imgui.OnFrame(
     end
 )
 
-function sortedTableByPosition()
-    local sortedTable = {}
-    for i = 1, #cfg.specAdminPanel.items do
-        table.insert(sortedTable, cfg.specAdminPanel.items[i].position, cfg.specAdminPanel.items[i])
-    end
-    for j = 1, #cfg.specAdminPanel.items do
-        if sortedTable[j] == nil then table.remove(sortedTable, j) end
-    end
-    return sortedTable
-end
-
 local ARGUMENT_REGEXP = [[{.*="(.*)"}]]
 local selectedButton = 1
 local specActionsData = {
-    ["NEXT"]        = function() sampSendMenuSelectRow(0) end,
-    ["SWITCH"]      = function() sampSendMenuSelectRow(1) end,
-    ["BACK"]        = function() sampSendMenuSelectRow(2) end,
-    ["STATS"]       = function() sampSendMenuSelectRow(3) end,
-    ["SESSION"]     = function() sampSendMenuSelectRow(4) end,
-    ["FRISK"]       = function() sampSendMenuSelectRow(5) end,
-    ["EXIT"]        = function() sampSendMenuSelectRow(6) end,
-    ["GG"]          = function() sampSendChat("/ans "..info_about.." "..cfg.gg_msg) end,
-    ["SP_ID"]       = function() return info_about end,
-    ["SP_NICK"]     = function() return sampGetPlayerNickname(tonumber(info_about)) end,
-    ["SP_HP"]       = function() return sampGetPlayerHealth(tonumber(info_about)) end,
-    ["SP_ARM"]      = function() return sampGetPlayerArmor(tonumber(info_about)) end,
-    ["SP_PING"]     = function() return sampGetPlayerPing(tonumber(info_about)) end,
-    ["SP_CAR_HEALTH"]   = function() return player_data["car_hp"] end,
-    ["SP_CAR_NAME"]     = function() return player_data["car_name"] end,
-    ["SP_CAR_ENGINE"]   = function() return player_data["car_engine"] end,
-    [ [[SEND_CHAT]] ]            = function(arg) sampSendChat(arg:match(ARGUMENT_REGEXP)) end,
-    [ [[ADD_CHAT_MESSAGE]] ]     = function(arg) sampAddChatMessage(arg:match(ARGUMENT_REGEXP), -1) end,
-    [ [[SEND_SP_ANSWER]] ]       = function(arg) sampSendChat("/sp "..info_about.." "..arg:match(ARGUMENT_REGEXP)) end
+    ["NEXT"]                        = function() sampSendMenuSelectRow(0) end,
+    ["SWITCH"]                      = function() sampSendMenuSelectRow(1) end,
+    ["BACK"]                        = function() sampSendMenuSelectRow(2) end,
+    ["STATS"]                       = function() sampSendMenuSelectRow(3) end,
+    ["SESSION"]                     = function() sampSendMenuSelectRow(4) end,
+    ["FRISK"]                       = function() sampSendMenuSelectRow(5) end,
+    ["EXIT"]                        = function() sampSendMenuSelectRow(6) end,
+    ["GG"]                          = function() sampSendChat("/ans ".. infoAbout .." "..cfg.gg_msg) end,
+    ["SP_ID"]                       = function() return infoAbout end,
+    ["SP_NICK"]                     = function() return sampGetPlayerNickname(tonumber(infoAbout)) end,
+    ["SP_HP"]                       = function() return sampGetPlayerHealth(tonumber(infoAbout)) end,
+    ["SP_ARM"]                      = function() return sampGetPlayerArmor(tonumber(infoAbout)) end,
+    ["SP_PING"]                     = function() return sampGetPlayerPing(tonumber(infoAbout)) end,
+    ["SP_CAR_HEALTH"]               = function() return playerData["car_hp"] end,
+    ["SP_CAR_NAME"]                 = function() return playerData["car_name"] end,
+    ["SP_CAR_ENGINE"]               = function() return playerData["car_engine"] end,
+    [ [[SEND_CHAT]] ]               = function(arg) sampSendChat(arg:match(ARGUMENT_REGEXP)) end,
+    [ [[ADD_CHAT_MESSAGE]] ]        = function(arg) sampAddChatMessage(arg:match(ARGUMENT_REGEXP), -1) end,
+    [ [[SEND_SP_ANSWER]] ]          = function(arg) sampSendChat("/sp ".. infoAbout .." "..arg:match(ARGUMENT_REGEXP)) end
 }
 
 function doSpecActions(action)
@@ -1390,28 +1367,12 @@ function doSpecActions(action)
     end
 end
 
-local _specAdminPanel = imgui.OnFrame(
+--- Admin panel in spectate.
+imgui.OnFrame(
     function() return isNotGamePaused() and movableWindows[MOV_STATS].it[0] and cfg.specAdminPanel.show end,
     function(self)
-        self.HideCursor = _showSpectateCursor
-
-        local adminPanelSize = 7 + #cfg.specAdminPanel.items * 37
-        local sortedTable = (function()
-            local sortedTable = {}
-            for i = 1, #cfg.specAdminPanel.items do
-                table.insert(sortedTable, cfg.specAdminPanel.items[i].position, cfg.specAdminPanel.items[i])
-            end
-
-            for j = 1, #cfg.specAdminPanel.items do
-                if sortedTable[j] == nil then table.remove(sortedTable, j) end
-            end
-            return sortedTable
-        end)()
-
-        imgui.SetNextWindowPos(imgui.ImVec2(cfg.windowsPosition.actionMenu.x, cfg.windowsPosition.actionMenu.y))
-        imgui.SetNextWindowSize(imgui.ImVec2(cfg.specAdminPanel.width, adminPanelSize))
-
-        local specAdminPanelChange = {
+        self.HideCursor = cursorStatus
+        self.specAdminPanelStyle = {
             {"ImVec2", "WindowPadding", change = {7, 7}, reset = {5, 5}},
             {"ImVec2", "ItemSpacing", change = {0, 7}, reset = {5, 5}},
             {"Int", "FrameBorderSize", change = 0, reset = 1},
@@ -1422,6 +1383,21 @@ local _specAdminPanel = imgui.OnFrame(
             {"ImVec4", "ButtonActive", change = hexToImVec4("444751"), reset = imgui.ImVec4(0.41, 0.41, 0.41, 1.00)},
             {"ImVec2", "ButtonTextAlign", change = {0.5, 0.5}, reset = {0.5, 0.5}}
         }
+
+        local adminPanelSize    = 7 + #cfg.specAdminPanel.items * 37
+        local sortedTable       = (function()
+            local sortedTable = {}
+            for i = 1, #cfg.specAdminPanel.items do
+                table.insert(sortedTable, cfg.specAdminPanel.items[i].position, cfg.specAdminPanel.items[i])
+            end
+            for j = 1, #cfg.specAdminPanel.items do
+                if sortedTable[j] == nil then table.remove(sortedTable, j) end
+            end
+            return sortedTable
+        end)()
+
+        imgui.SetNextWindowPos(imgui.ImVec2(cfg.windowsPosition.actionMenu.x, cfg.windowsPosition.actionMenu.y))
+        imgui.SetNextWindowSize(imgui.ImVec2(cfg.specAdminPanel.width, adminPanelSize))
 
         local doAction = function(i)
             subAction = string.gsub(cfg.specAdminPanel.items[i].action, "[%{%}]", "")
@@ -1448,7 +1424,7 @@ local _specAdminPanel = imgui.OnFrame(
             end
         end
 
-        changeTheme:applySettings(specAdminPanelChange)
+        changeTheme:applySettings(self.specAdminPanelStyle)
         imgui.PushFont(bold15)
             imgui.Begin("specAdminPanel", movableWindows[MOV_ADMIN_PANEL].it, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoMove)
                 for k, v in pairs(sortedTable) do
@@ -1468,7 +1444,7 @@ local _specAdminPanel = imgui.OnFrame(
             imgui.End()
 
         imgui.PopFont()
-        changeTheme:resetDefault(specAdminPanelChange)
+        changeTheme:resetDefault(self.specAdminPanelStyle)
     end
 )
 
@@ -1477,9 +1453,10 @@ local menuProperties = {
     selectedTab = 1
 }
 
-local mainWindow = imgui.OnFrame(
-    function() return isNotGamePaused() and newMainFrame[0] end,
-    function(self)
+--- Main window
+imgui.OnFrame(
+    function() return isNotGamePaused() and bNewMainFrame[0] end,
+    function()
         imgui.SetNextWindowSize(imgui.ImVec2(900, 500))
         imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2, sizeY / 2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
 
@@ -1551,7 +1528,7 @@ local mainWindow = imgui.OnFrame(
 
         changeTheme:applySettings(windowStyle)
 
-        imgui.Begin("New main frame", newMainFrame, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize)
+        imgui.Begin("New main frame", bNewMainFrame, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize)
             imgui.BeginChild("Left-bar", imgui.ImVec2(menuProperties.width, 0), false)
             changeTheme:applySettings(menuStyle)
                 imgui.SetCursorPos(imgui.ImVec2(23, 20))
@@ -1613,7 +1590,8 @@ local mainWindow = imgui.OnFrame(
     end
 )
 
-local farChatFrame = imgui.OnFrame(
+--- Far chat frame
+imgui.OnFrame(
     function() return isNotGamePaused() and movableWindows[MOV_FARCHAT].it and cfg.windowsSettings.farChatFrame.use end,
     function(player)
         local farchatAlpha = {
@@ -1622,14 +1600,14 @@ local farChatFrame = imgui.OnFrame(
             {"Int", "WindowBorderSize", change = 0, reset = 1}
         }
         changeTheme:applySettings(farchatAlpha)
-        player.HideCursor = _showSpectateCursor
+        player.HideCursor = cursorStatus
         imgui.SetNextWindowPos(imgui.ImVec2(cfg.windowsPosition.farchat.x, cfg.windowsPosition.farchat.y))
         imgui.SetNextWindowSize(imgui.ImVec2(500, 170))
         imgui.Begin("FarChat", movableWindows[MOV_FARCHAT].it, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoScrollbar)
-        for k, v in ipairs(farchatTable) do
+        for _, v in ipairs(farchatTable) do
             local hex = bit.tohex(bit.rshift(v[3], 8), 6)
             imgui.PushTextWrapPos(500)
-            imgui.SafeText('> '..v[2], 1, hexToImVec4(v[4]))
+            imgui.SafeText("> " .. v[2], 1, hexToImVec4(v[4]))
             imgui.SameLine()
             imgui.SafeText(v[1], 1, hexToImVec4(hex))
             imgui.PopTextWrapPos()
@@ -1646,8 +1624,8 @@ function onWindowMessage(msg, wparam, lparam)
         displayHud(true)
         displayRadar(true)
         
-        show_main_menu[0] = true
-        changePosition    = -1
+        bMainMenu[0]        = true
+        changePosition      = -1
 
         for _, window in ipairs(movableWindows) do
             window.it[0] = false
@@ -1655,16 +1633,16 @@ function onWindowMessage(msg, wparam, lparam)
     end
 
     if msg == wm.WM_SYSKEYDOWN or msg == wm.WM_KEYDOWN then
-        if show_main_menu[0] and wparam == vkeys.VK_ESCAPE and not isPauseMenuActive() then
+        if bMainMenu[0] and wparam == vkeys.VK_ESCAPE and not isPauseMenuActive() then
             consumeWindowMessage(true, false)
-            show_main_menu[0] = false
+            bMainMenu[0] = false
         end
     elseif msg == wm.WM_LBUTTONUP and changePosition ~= -1 then
         cfg.windowsPosition[movableWindows[changePosition].jsonKey].x,
         cfg.windowsPosition[movableWindows[changePosition].jsonKey].y = bit.band(lparam, 0xFFFF), bit.band(bit.rshift(lparam, 16), 0xFFFF)
 
         sendNotification(gnomeIcons.ICON_COLLAPSE, "Настройки сохранены.", "Позиция окна успешно сохранена!", "", 5)
-        save_config()
+        saveConfig()
         resetPosition()
     elseif msg == wm.WM_RBUTTONUP and changePosition ~= -1 then
         sendNotification(gnomeIcons.ICON_COLLAPSE, "Отменено.", "Смена позиции окна отменена.", "", 5)
@@ -1679,6 +1657,7 @@ end
 function main()
     while not isSampAvailable() do wait(0) end
 
+    encoding.default = "CP1251"
     if sampGetCurrentServerAddress() == "46.174.48.194" then
         sampAddChatMessage("GAdmin успешно запущен", -1) 
     else
@@ -1696,25 +1675,22 @@ function main()
         }
     end
 
-    -- инициализируем все команды
-    sampRegisterChatCommand("gadm", gadm_cmd)
+    sampRegisterChatCommand("gadm", displayMainMenu)
     sampRegisterChatCommand("sp", spectate)
     sampRegisterChatCommand("test", function(arg)
         infoMode = tonumber(arg:match("(%d+)"))
         cfg.windowsSettings.playerStatsFrame.mode = infoMode
-        save_config()
+        saveConfig()
     end)
     sampRegisterChatCommand("wh", nameTagOn)
     sampRegisterChatCommand("st", setTime)
     sampRegisterChatCommand("sw", setWeather)
-
-    -- сокращенные командыs
-    sampRegisterChatCommand("pk", pk_cmd)
+    sampRegisterChatCommand("pk", playerKillCommand)
     sampRegisterChatCommand("rec", reconnect)
-    sampRegisterChatCommand("gg", gg_cmd)
-    sampRegisterChatCommand("asp", asp_cmd)
+    sampRegisterChatCommand("gg", ggCommand)
+    sampRegisterChatCommand("asp", aspCommand)
 
-    for k, v in pairs(short_cmds) do
+    for k, v in pairs(shortCommands) do
         sampRegisterChatCommand(k, function(arg)
             if arg then
                 sampSendChat("/" .. v:format(arg))
@@ -1722,20 +1698,15 @@ function main()
         end)
     end
 
-    -- инициализируем все хоткеи
-    openMainMenu =       rkeys.registerHotKey(cfg.hotkeys.gadm, 1, gadm_cmd)
-    showCursorInSpec =   rkeys.registerHotKey(cfg.hotkeys.spectateCursor, 1, changeSpecCursorMode)
-    acceptForm =         rkeys.registerHotKey(cfg.hotkeys.acceptForm, 1, sendFormCommand)
-    _specReload =        rkeys.registerHotKey(cfg.hotkeys.specReload, 1, specReload)
-    specDisconnectCopy = rkeys.registerHotKey(cfg.hotkeys.disconnectSpecCopy, 1, spectateDisconnectCopy)
-
-    -- инициализируем шрифты для рендера на экране
-    local font_flag = require('moonloader').font_flag
-    local font = renderCreateFont('Verdana', 10, font_flag.BOLD + font_flag.SHADOW)
+    openMainMenu        = rkeys.registerHotKey(cfg.hotkeys.gadm, 1, displayMainMenu)
+    showCursorInSpec    = rkeys.registerHotKey(cfg.hotkeys.spectateCursor, 1, changeSpecCursorMode)
+    acceptForm          = rkeys.registerHotKey(cfg.hotkeys.acceptForm, 1, sendFormCommand)
+    _specReload         = rkeys.registerHotKey(cfg.hotkeys.specReload, 1, specReload)
+    specDisconnectCopy  = rkeys.registerHotKey(cfg.hotkeys.disconnectSpecCopy, 1, copyDisconnectedNicknameInSpectate)
 
     while true do
         wait(0)
-        if isKeyJustPressed(VK_RSHIFT) and abCheckbox[0] then
+        if isKeyJustPressed(VK_RSHIFT) and bAirbreakCheckbox[0] then
             if isNotCursorActive() then
                 airbreak.state = not airbreak.state
                 if airbreak.state then
@@ -1755,7 +1726,7 @@ function main()
             end
         end
 
-        if abCheckbox[0] then
+        if bAirbreakCheckbox[0] then
             abcheck()
         end
 
@@ -1763,7 +1734,7 @@ function main()
             forceWeatherNow(gweather)
         end
 
-        if in_sp and isNotCursorActive() then
+        if isPlayerInSpectate and isNotCursorActive() then
             if wasKeyPressed(1) or wasKeyPressed(37) then sampSendMenuSelectRow(2) end
             if wasKeyPressed(2) or wasKeyPressed(39) then sampSendMenuSelectRow(0) end
         end
@@ -1773,7 +1744,7 @@ function main()
         end
 
         if changePosition ~= -1 then
-            if in_sp then
+            if isPlayerInSpectate then
                 sampAddChatMessage("Сперва нужно покинуть /sp", -1)
                 changePosition = -1
             else
@@ -1782,7 +1753,7 @@ function main()
                 displayRadar(false)
 
                 currentX, currentY  = getCursorPos()
-                show_main_menu[0]   = false
+                bMainMenu[0]   = false
                 cfg.windowsPosition[movableWindows[changePosition].jsonKey].x = currentX
                 cfg.windowsPosition[movableWindows[changePosition].jsonKey].y = currentY
 
@@ -1875,7 +1846,7 @@ function samp.onPlayerQuit(id)
         end
     end
 
-    players_platform[id] = nil
+    playersPlatform[id] = nil
 end
 
 local formCommands = {
@@ -1906,10 +1877,10 @@ function onScriptTerminate(LuaScript, quitGame)
 end
 
 function samp.onSendCommand(command)
-    for k, v in ipairs(formCommands) do
+    for _, v in ipairs(formCommands) do
         if string.lower(command):find("/"..v..".*") then
             checkSendFormCommand = true
-            sendFormCommand = command
+            formCommandSended = command
         end
     end
 end
@@ -1974,8 +1945,8 @@ function samp.onCreate3DText(id, color, position, distance, testLOS, attachedPla
     local text              = u8(text)
     if attachedPlayerId then
         local this = attachedPlayerId
-        if this == tonumber(info_about) then
-            player_data["stage"] =
+        if this == tonumber(infoAbout) then
+            playerData["stage"] =
                 text:find("%(%( Данный персонаж ранен %d+ раз%(%-а%) %- /dm %d+ %)%)") and "1##" .. tostring(id) or 
                 (text:find("%(%( ДАННЫЙ ПЕРСОНАЖ .+ %)%)") and "2##" .. tostring(id) or "0##" .. tostring(id))
         end
@@ -1983,9 +1954,9 @@ function samp.onCreate3DText(id, color, position, distance, testLOS, attachedPla
 end
 
 function samp.onRemove3DTextLabel(id)
-    if player_data["stage"] then
-        if id == tonumber(player_data["stage"]:match(".*##(%d+)")) then
-            player_data["stage"] = "0"
+    if playerData["stage"] then
+        if id == tonumber(playerData["stage"]:match(".*##(%d+)")) then
+            playerData["stage"] = "0"
         end
     end
 end
@@ -1995,7 +1966,7 @@ function samp.onShowMenu()
 end
 
 function samp.onServerMessage(color, text)
-    local result, id        = sampGetPlayerIdByCharHandle(PLAYER_PED)
+    local _, id        = sampGetPlayerIdByCharHandle(PLAYER_PED)
     local nickname          = sampGetPlayerNickname(id)
 
     local hex       = bit.tohex(bit.rshift(color, 8), 6)
@@ -2073,13 +2044,13 @@ function samp.onServerMessage(color, text)
         end
     end
 
-    for k, v in ipairs(formCommands) do
+    for _, v in ipairs(formCommands) do
         if text:find("%[A%] .*%[%d+%]: /"..v) and color == 866792362 then
             formStarter, formStarterId, formCommand = text:match("%[A%] (.*)%[(%d+)%]: /(.*)")
 
             if formStarterId ~= id then
                 form_secondsToHide = os.clock()
-                admin_form_menu[0] = true
+                bAdminForm[0] = true
             end
 
             return insertLvlInAdminChat { color, tempText }
@@ -2092,34 +2063,34 @@ function samp.onServerMessage(color, text)
 
     if checkSendFormCommand then
         if text:find("%|.*У вас нет доступа для использования данной команды%.") then
-            sampSendChat("/a "..sendFormCommand)
+            sampSendChat("/a ".. formCommandSended)
             checkSendFormCommand = false
-            sendFormCommand = ""
+            formCommandSended = ""
             return false
         else
             checkSendFormCommand = false
-            sendFormCommand = ""
+            formCommandSended = ""
         end
     end
 
     print("COLOR:", bit.tohex(bit.rshift(color, 8), 6), "| DEF:", color, "|", string.gsub(tempText, "{(%x%x%x%x%x%x)}", "#%1"))
 end
 
-function samp.onPlayerChatBubble(playerId, color, dist, duration, text)
-    local result, ped = sampGetCharHandleBySampPlayerId(playerId)
+function samp.onPlayerChatBubble(playerId, color, distance, duration, text)
+    local result, _ = sampGetCharHandleBySampPlayerId(playerId)
     local text = u8(text)
     local clistColorHex = string.format("%06X", bit.band(sampGetPlayerColor(playerId), 0xFFFFFF))
     local name = sampGetPlayerNickname(playerId)
     
-    if cfg.displayBubbles and text:len() >= 3 then
+    if cfg.displayBubbles and #text >= 3 then
         if result and color == -413892353 then 
-            sampAddChatMessage('> '..sampGetPlayerNickname(playerId)..'['..playerId..'] '..text, 0xE75480)
+            sampAddChatMessage("> " .. sampGetPlayerNickname(playerId) .. "[" .. playerId .. "] " .. text, 0xE75480)
         elseif result and color == -421075226 then
-            sampAddChatMessage('> (( '..sampGetPlayerNickname(playerId)..'['..playerId..']:'..text:sub(3,-3)..'))', 0xE6E6E6)
+            sampAddChatMessage("> (( " .. sampGetPlayerNickname(playerId) .. "[" .. playerId .. "]:" .. text:sub(3,-3) .. "))", 0xE6E6E6)
         end
     end
     if sampGetCharHandleBySampPlayerId(playerId) then
-        local text = string.gsub(text, "%.%.%.", "")
+        text = string.gsub(text, "%.%.%.", "")
         table.insert(farchatTable, {text, name.."["..playerId.."]:", color, clistColorHex})
     end
 end
@@ -2192,18 +2163,16 @@ function samp.onShowDialog(dialogId, style, title, button1, button2, text)
     end
 
     if text:find("Информация о игроке") and checking_stats then
-        print("i have checked stats")
-        text = text:gsub("{......}", "")
-        player_data["nick"], info_about = text:match("Информация о игроке (.+)%[(%d+)]")
-        player_data["money"], player_data["bank"] = text:match("Деньги%: (%$[%-]?%d+)\nБанк%: (%$[%-]?%d+)\n")
-        player_data["fraction"] = text:match("Фракция: (.-)\n")
-        player_data["transport"] = text:match("Транспорт: (.-)\n")
-        player_data["house"] = text:match("Дом: (.-)\n")
-        player_data["vip"] = text:match("Премиум аккаунт: (.-)\n")
-        player_data["reg_date"] = text:match("Дата регистрации: (.-)\n")
-        player_data["warnings"] =
-            text:find("Предупреждения:.*%d+") and text:match("Предупреждения:.*(%d+)") or 0
-        player_data["stage"] = "0"
+        text                                    = text:gsub("{......}", "")
+        playerData["nick"], infoAbout           = text:match("Информация о игроке (.+)%[(%d+)]")
+        playerData["money"], playerData["bank"] = text:match("Деньги%: (%$[%-]?%d+)\nБанк%: (%$[%-]?%d+)\n")
+        playerData["fraction"]                  = text:match("Фракция: (.-)\n")
+        playerData["transport"]                 = text:match("Транспорт: (.-)\n")
+        playerData["house"]                     = text:match("Дом: (.-)\n")
+        playerData["vip"]                       = text:match("Премиум аккаунт: (.-)\n")
+        playerData["reg_date"]                  = text:match("Дата регистрации: (.-)\n")
+        playerData["warnings"]                  = text:find("Предупреждения:.*%d+") and text:match("Предупреждения:.*(%d+)") or 0
+        playerData["stage"]                     = "0"
 
         sampSendDialogResponse(dialogId, 0, 0, "")
         checking_stats = false
@@ -2211,24 +2180,24 @@ function samp.onShowDialog(dialogId, style, title, button1, button2, text)
     end
 end
 
-function change_sp(new_id)
-    spectate_id = new_id
-    in_sp = true
-    movableWindows[MOV_STATS].it[0] = in_sp
+function changeSpectateTo(new_id)
+    spectateId = new_id
+    isPlayerInSpectate = true
+    movableWindows[MOV_STATS].it[0] = isPlayerInSpectate
     lua_thread.create(function()
         wait(1)
-        if new_id ~= info_about and os.clock() - last_checking_stats > 1 and not sampIsDialogActive() and not checking_stats then
+        if new_id ~= infoAbout and os.clock() - lastStatsChecked > 1 and not sampIsDialogActive() and not checking_stats then
             checking_stats = true
             sampSendMenuSelectRow(3) -- sampSendChat("/stats " .. spectate_id)
-            last_checking_stats = os.clock()
+            lastStatsChecked = os.clock()
         end
     end)
 end
 
 function samp.onShowTextDraw(id, data)
     if data.text:find("~y~%(%d+%)") then
-        spec_textdraw = id
-        change_sp(data.text:match("%((%d+)%)"))
+        specTextdraw = id
+        changeSpectateTo(data.text:match("%((%d+)%)"))
         return false
     end
     if data.text:find("ID Akkay") then
@@ -2237,25 +2206,25 @@ function samp.onShowTextDraw(id, data)
 end
 
 function samp.onTextDrawHide(id)
-    if id == spec_textdraw then
-        in_sp = false
-        movableWindows[MOV_STATS].it[0] = in_sp
-        spectate_id = -1
+    if id == specTextdraw then
+        isPlayerInSpectate = false
+        movableWindows[MOV_STATS].it[0] = isPlayerInSpectate
+        spectateId = -1
     end
 end
 
 function samp.onTextDrawSetString(id, text)
-    if id == spec_textdraw or (spec_textdraw == -1 and text:find("~y~%(%d+%)")) then
-        spec_textdraw = id
-        change_sp(text:match("%((%d+)%)"))
+    if id == specTextdraw or (specTextdraw == -1 and text:find("~y~%(%d+%)")) then
+        specTextdraw = id
+        changeSpectateTo(text:match("%((%d+)%)"))
     end
     if text:find("HP") and text:find("Ping") then
-        player_data["hp"] = tostring(text:match("HP: (%d+)"))
-        player_data["ping"] = tostring(text:match("Ping: (%d+)"))
-        player_data["speed"] = tostring(text:match("(%d+) / [%-]?%d+"))
+        playerData["hp"] = tostring(text:match("HP: (%d+)"))
+        playerData["ping"] = tostring(text:match("Ping: (%d+)"))
+        playerData["speed"] = tostring(text:match("(%d+) / [%-]?%d+"))
     end
     if text:find("Android: .+") then
-        players_platform[tonumber(info_about)] = #text:match("Android: (.+)") == 2 and "Mobile" or "PC"
+        playersPlatform[tonumber(infoAbout)] = #text:match("Android: (.+)") == 2 and "Mobile" or "PC"
     end
 end
 
@@ -2274,31 +2243,29 @@ function spectate(arg)
     end
 end
 
-function gadm_cmd()
-    show_main_menu[0] = not show_main_menu[0]
+function displayMainMenu()
+    bMainMenu[0] = not bMainMenu[0]
 end
-
-local days_of_week = {"sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"}
 
 lua_thread.create(function()
     while true do
         wait(1000)
-        session_online = session_online + 1
+        sessionOnline = sessionOnline + 1
         cfg.online.total = cfg.online.total + 1
-        local week_name = days_of_week[tonumber(os.date("%w")) + 1]
+        local week_name = daysOfWeek[tonumber(os.date("%w")) + 1]
         cfg.online[week_name] = cfg.online[week_name] + 1
     end
 end)
 
 function specReload()
-    if in_sp and isNotCursorActive() then
+    if isPlayerInSpectate and isNotCursorActive() then
         sampSendMenuSelectRow(1)
     end
 end
 
 function changeSpecCursorMode()
-    if isNotCursorActive() or not _showSpectateCursor then
-        _showSpectateCursor = not _showSpectateCursor
+    if isNotCursorActive() or not cursorStatus then
+        cursorStatus = not cursorStatus
     end
 end
 
@@ -2314,7 +2281,7 @@ function reconnect(delay)
 end
 
 function sendFormCommand()
-    if not isCursorActive() and admin_form_menu[0] then
+    if not isCursorActive() and bAdminForm[0] then
         if formCommand:find("pk %d+") or formCommand:find("ck %d+") then
             playerId    = formCommand:match("pk (%d+)")
             command     = formCommand:match("(.+) %d+")
@@ -2366,7 +2333,7 @@ function setWeather(weather)
     end
 end
 
-function pk_cmd(id)
+function playerKillCommand(id)
     if tonumber(id) and sampIsPlayerConnected(tonumber(id)) then
         lua_thread.create(function()
             sampSendChat("/jail " .. id .. " 90 PK`ed")
@@ -2376,13 +2343,13 @@ function pk_cmd(id)
     end
 end
 
-function gg_cmd(id)
+function ggCommand(id)
     if tonumber(id) and sampIsPlayerConnected(tonumber(id)) then
         sampSendChat("/ans " .. id .. " " .. cfg.gg_msg)
     end
 end
 
-function asp_cmd(id)
+function aspCommand(id)
     if tonumber(id) and sampIsPlayerConnected(tonumber(id)) then
         lua_thread.create(function()
             sampSendChat("/sp " .. id)
@@ -2393,7 +2360,7 @@ function asp_cmd(id)
 end
 
 function sendNotification(icon, title, firstLine, secondLine, secondsToHide, animDuration)
-    notification[0] = true
+    bNotificationFrame[0] = true
     notificationInit = {
         icon            = icon,
         title           = title,
@@ -2406,19 +2373,18 @@ function sendNotification(icon, title, firstLine, secondLine, secondsToHide, ani
     }
 end
 
-local spectateDisconnectNickname = nil
-
+local spectateDisconnectNickname
 function samp.onDisplayGameText(style, time, text)
     if text:find("~b~Player.*") then
         sendNotification(
             gnomeIcons.ICON_PERSON,
-            player_data["nick"].." отключился.",
+            playerData["nick"].." отключился.",
             "Скопировать его ник - "..rkeys.getKeysName(cfg.hotkeys.disconnectSpecCopy),
             "Скопировать можно только в течении 10 секунд.",
             10
         )
 
-        spectateDisconnectNickname = player_data["nick"]
+        spectateDisconnectNickname = playerData["nick"]
 
         lua_thread.create(function()
             while true do
@@ -2434,7 +2400,7 @@ function samp.onDisplayGameText(style, time, text)
     end
 end
 
-function spectateDisconnectCopy()
+function copyDisconnectedNicknameInSpectate()
     if spectateDisconnectNickname then
         if setClipboardText(spectateDisconnectNickname) then
             sendNotification(gnomeIcons.ICON_PERSON, "Никнейм игрока скопирован!", spectateDisconnectNickname.." записан в буфер обмена.", "", 5)
@@ -2445,7 +2411,7 @@ function spectateDisconnectCopy()
     end
 end
 
-function hexToImVec4(hex, aplha)
+function hexToImVec4(hex, alpha)
     return imgui.ImVec4(
         tonumber("0x"..hex:sub(1,2)) / 255, tonumber("0x"..hex:sub(3,4)) / 255, tonumber("0x"..hex:sub(5,6)) / 255, alpha or 1
     )
@@ -2461,7 +2427,7 @@ sampfuncsRegisterConsoleCommand("execute.notification", function(arg)
 end)
 
 sampfuncsRegisterConsoleCommand("execute.form", function()
-    admin_form_menu[0], formStarter, formCommand = true, "DEBUG_EXECUTE_FORM", "me DEBUG_EXECUTE_FORM"
+    bAdminForm[0], formStarter, formCommand = true, "DEBUG_EXECUTE_FORM", "me DEBUG_EXECUTE_FORM"
     form_secondsToHide = os.clock()
 end)
 
@@ -2471,7 +2437,7 @@ end)
 
 sampfuncsRegisterConsoleCommand("execute.addChecker", function(nickname)
     table.insert(cfg.checker.players, nickname)
-    save_config()
+    saveConfig()
 end)
 
 sampfuncsRegisterConsoleCommand("execute.parseDialog", function()
@@ -2481,11 +2447,11 @@ sampfuncsRegisterConsoleCommand("execute.parseDialog", function()
 end)
 
 sampfuncsRegisterConsoleCommand("execute.checker", function() movableWindows[MOV_CHECKER].it[0] = not movableWindows[MOV_CHECKER].it[0] end)
-sampfuncsRegisterConsoleCommand("execute.cursor", function() print(_showSpectateCursor) end)
-sampfuncsRegisterConsoleCommand("execute.newMenu", function() newMainFrame[0] = not newMainFrame[0] end)
-sampfuncsRegisterConsoleCommand("execute.specId", function() print(info_about) end)
+sampfuncsRegisterConsoleCommand("execute.cursor", function() print(cursorStatus) end)
+sampfuncsRegisterConsoleCommand("execute.newMenu", function() bNewMainFrame[0] = not bNewMainFrame[0] end)
+sampfuncsRegisterConsoleCommand("execute.specId", function() print(infoAbout) end)
 sampfuncsRegisterConsoleCommand("execute.specAction", doSpecActions)
-sampfuncsRegisterConsoleCommand("execute.specAdminPanel", function() specAdminPanel[0] = not specAdminPanel[0] end)
+sampfuncsRegisterConsoleCommand("execute.specAdminPanel", function() bSpecAdminPanel[0] = not bSpecAdminPanel[0] end)
 sampfuncsRegisterConsoleCommand("execute.scriptCrash", executeScriptCrash)
 sampfuncsRegisterConsoleCommand("execute.scriptInfo", writeScriptInformationIn)
 
@@ -2507,12 +2473,12 @@ function sampAddChatMessage(text, color)
 end
 
 function abcheck()
-    if not abCheckbox[0] then return end
+    if not bAirbreakCheckbox[0] then return end
     if airbreak.state then
         if isCharInAnyCar(playerPed) then heading = getCarHeading(storeCarCharIsInNoSave(playerPed))
         else heading = getCharHeading(playerPed) end
-        local camCoordX, camCoordY, camCoordZ = getActiveCameraCoordinates()
-        local targetCamX, targetCamY, targetCamZ = getActiveCameraPointAt()
+        local camCoordX, camCoordY, _ = getActiveCameraCoordinates()
+        local targetCamX, targetCamY, _ = getActiveCameraPointAt()
         local angle = getHeadingFromVector2d(targetCamX - camCoordX, targetCamY - camCoordY)
         if isCharInAnyCar(playerPed) then difference = 0.79 else difference = 1.0 end
         setCharCoordinates(playerPed, airBrkCoords[1], airBrkCoords[2], airBrkCoords[3] - difference)
@@ -2647,13 +2613,13 @@ function imgui.Theme()
 end
 
 function renderFontDrawTextAlign(font, text, x, y, color, align)
-    if not align or align == 1 then -- слева
+    if not align or align == 1 then     -- On left.
         renderFontDrawText(font, text, x, y, color)
     end
-    if align == 2 then -- по центру
+    if align == 2 then                  -- On center.
         renderFontDrawText(font, text, x - renderGetFontDrawTextLength(font, text) / 2, y, color)
     end
-    if align == 3 then -- справа
+    if align == 3 then                  -- On right.
         renderFontDrawText(font, text, x - renderGetFontDrawTextLength(font, text), y, color)
     end
 end
