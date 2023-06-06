@@ -149,7 +149,7 @@ function create_config()
             sunday = 0
         },
         hotkeys = {
-            gadm = {300},
+            gadm = {30},
             acceptForm = {73},
             spectateCursor = {66},
             specReload = {85},
@@ -447,12 +447,6 @@ enum "MOV_ENUM" {
     "MOV_FARCHAT",
     "MOV_FPS_COUNT" -- Still not window.
 }
-
-local gadmKeys              = {v = cfg.hotkeys.gadm}
-local showSpectateCursor    = {v = cfg.hotkeys.spectateCursor}
-local acceptFormKeys        = {v = cfg.hotkeys.acceptForm}
-local specReloadKeys        = {v = cfg.hotkeys.specReload}
-local spDisconnectCopy      = {v = cfg.hotkeys.disconnectSpecCopy}
 
 function imgui.Input()
     -- TODO: Write your own input so as not to produce a bunch of the same type of code.
@@ -1164,35 +1158,6 @@ imgui.OnFrame(
             saveConfig()
         end
 
-        if rkeys.HotKey("Главное меню", gadmKeys, imgui.ImVec2(100, 20)) then
-            cfg.hotkeys.gadm = gadmKeys.v
-            rkeys.changeHotKey(openMainMenu, gadmKeys.v)
-            saveConfig()
-        end
-        if rkeys.HotKey("Принятие формы", acceptFormKeys, imgui.ImVec2(100, 20)) then
-            cfg.hotkeys.acceptForm = acceptFormKeys.v
-            rkeys.changeHotKey(acceptForm, acceptFormKeys.v)
-            saveConfig()
-        end
-
-        if rkeys.HotKey("Открытие курсора в /sp", showSpectateCursor, imgui.ImVec2(100, 20)) then
-            cfg.hotkeys.spectateCursor = acceptFormKeys.v
-            rkeys.changeHotKey(showSpectateCursor, showSpectateCursor.v)
-            saveConfig()
-        end
-
-        if rkeys.HotKey("Spec reload", specReloadKeys, imgui.ImVec2(100, 20)) then
-            cfg.hotkeys.specReload = specReloadKeys.v
-            rkeys.changeHotKey(_specReload, specReloadKeys.v)
-            saveConfig()
-        end
-
-        if rkeys.HotKey("Копировать никнейм за которым следите при его выходе", spDisconnectCopy, imgui.ImVec2(100, 20)) then
-            cfg.hotkeys.specReload = spDisconnectCopy.v
-            rkeys.changeHotKey(specDisconnectCopy, spDisconnectCopy.v)
-            saveConfig()
-        end
-
         if imgui.Checkbox("Отображение /ame и /ab в чат", bDisplayBubbleChat) then
             cfg.displayBubbles = bDisplayBubbleChat[0]
             saveConfig()
@@ -1450,34 +1415,78 @@ imgui.OnFrame(
 
 local menuProperties = {
     width = 80,
-    selectedTab = 1
+    selectedTab = 1,
+    animations = {
+        menu = {
+            type = 0,
+            time = os.clock()
+        }
+    }
+}
+
+enum "MAIN_WINDOW_TABS" {
+    "TAB_MAIN",
+    "TAB_KEYS"
 }
 
 --- Main window
 imgui.OnFrame(
     function() return isNotGamePaused() and bNewMainFrame[0] end,
-    function()
-        imgui.SetNextWindowSize(imgui.ImVec2(900, 500))
-        imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2, sizeY / 2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
+    function(self)
+        self.tabs = {
+            hotkeys = {
+                {
+                    title   = "Главное меню",
+                    keyData = {v = cfg.hotkeys.gadm},
+                    size    = {100, 20},
+                    jsonKey = "gadm",
+                    address = openMainMenu
+                }, {
+                    title   = "Принятие формы",
+                    keyData = {v = cfg.hotkeys.acceptForm},
+                    size    = {100, 20},
+                    jsonKey = "acceptForm",
+                    address = acceptForm
+                }, {
+                    title   = "Открытие курсора в /sp",
+                    keyData = {v = cfg.hotkeys.spectateCursor},
+                    size    = {100, 20},
+                    jsonKey = "spectateCursor",
+                    address = showCursorInSpec
+                }, {
+                    title   = "Перезайти в /sp",
+                    keyData = {v = cfg.hotkeys.specReload},
+                    size    = {100, 20},
+                    jsonKey = "specReload",
+                    address = _specReload
+                }, {
+                    title   = "Копировать никнейм игрок при выходе в /sp",
+                    keyData = {v = cfg.hotkeys.disconnectSpecCopy},
+                    size    = {100, 20},
+                    jsonKey = "disconnectSpecCopy",
+                    address = specDisconnectCopy
+                }
+            }
+        }
 
-        local activeMenuButtonStyle = {
+        self.activeMenuButtonStyle = {
             {"ImVec4", "Button", change = hexToImVec4("303030"), reset = hexToImVec4("242424")},
             {"ImVec4", "ButtonActive", change = hexToImVec4("303030"), reset = hexToImVec4("242424")},
             {"ImVec4", "ButtonHovered", change = hexToImVec4("303030"), reset = hexToImVec4("303030")}
         }
 
-        local postMenuStyle = {
+        self.postMenuStyle = {
             {"ImVec2", "ButtonTextAlign", change = {0.5, 0.5}, reset = {0.5, 0.8}},
             {"ImVec4", "ButtonActive", change = hexToImVec4("4F4F4F"), reset = hexToImVec4("4F4F4F")}
         }
 
-        local menuStyle = {
+        self.menuStyle = {
             {"ImVec4", "Button", change = hexToImVec4("242424"), reset = hexToImVec4("4F4F4F")},
             {"ImVec4", "ButtonHovered", change = hexToImVec4("303030"), reset = hexToImVec4("616161")},
             {"ImVec4", "ButtonActive", change = hexToImVec4("242424"), reset = hexToImVec4("4F4F4F")}
         }
 
-        local windowStyle = {
+        self.windowStyle = {
             {"ImVec2", "WindowPadding", change = {0, 0}, reset = {5, 5}},
             {"ImVec2", "FramePadding", change = {0, 0}, reset = {5, 5}},
             {"ImVec2", "ItemSpacing", change = {0, 0}, reset = {5, 5}},
@@ -1492,20 +1501,20 @@ imgui.OnFrame(
             {"ImVec4", "ButtonHovered", change = hexToImVec4("616161"), reset = imgui.ImVec4(0.21, 0.20, 0.20, 1.00)},
             {"ImVec4", "ButtonActive", change = hexToImVec4("4F4F4F"), reset = imgui.ImVec4(0.41, 0.41, 0.41, 1.00)}
         }
-    
-        local fill = function(ImVec2_size, ImVec2_pos, ImVec4_color, rounding)
+
+        self.fill = function(ImVec2_size, ImVec2_pos, ImVec4_color, rounding)
             imgui.SetCursorPos(ImVec2_pos)
             imgui.PushStyleVarFloat(imgui.StyleVar.ChildRounding, rounding or 0)
             imgui.PushStyleColor(imgui.Col.ChildBg, ImVec4_color)
-                imgui.BeginChild(tostring(ImVec2_pos), ImVec2_size, true)
-                imgui.EndChild()
+            imgui.BeginChild(tostring(ImVec2_pos), ImVec2_size, true)
+            imgui.EndChild()
             imgui.PopStyleColor()
             imgui.PopStyleVar()
         end
 
-        local menuButton = function(icon, text, ImVec2_pos, tabForChange)
+        self.menuButton = function(icon, text, ImVec2_pos, tabForChange)
             if tabForChange == menuProperties.selectedTab then
-                changeTheme:applySettings(activeMenuButtonStyle)
+                changeTheme:applySettings(self.activeMenuButtonStyle)
             end
 
             if menuProperties.width == 80 then
@@ -1523,30 +1532,28 @@ imgui.OnFrame(
                 imgui.Text(icon)
             end
 
-            changeTheme:resetDefault(activeMenuButtonStyle)
+            changeTheme:resetDefault(self.activeMenuButtonStyle)
         end
 
-        changeTheme:applySettings(windowStyle)
+        menuProperties.width =
+        menuProperties.animations.menu.type == 1 and select(1, bringFloatTo(80, 240, menuProperties.animations.menu.time, 0.1))
+                or (menuProperties.animations.menu.type == 2 and select(1, bringFloatTo(240, 80, menuProperties.animations.menu.time, 0.1))
+                or menuProperties.width)
 
+        imgui.SetNextWindowSize(imgui.ImVec2(900, 500))
+        imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2, sizeY / 2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
+        changeTheme:applySettings(self.windowStyle)
         imgui.Begin("New main frame", bNewMainFrame, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize)
             imgui.BeginChild("Left-bar", imgui.ImVec2(menuProperties.width, 0), false)
-            changeTheme:applySettings(menuStyle)
+            changeTheme:applySettings(self.menuStyle)
                 imgui.SetCursorPos(imgui.ImVec2(23, 20))
                 if imgui.Button(gnomeIcons.ICON_MENU, imgui.ImVec2(35, 35)) then
                     if menuProperties.width == 80 then
-                        lua_thread.create(function()
-                            while menuProperties.width ~= 240 do
-                                wait(1)
-                                menuProperties.width = menuProperties.width + 20
-                            end
-                        end)
+                        menuProperties.animations.menu.type = 1
+                        menuProperties.animations.menu.time = os.clock()
                     elseif menuProperties.width == 240 then
-                        lua_thread.create(function()
-                            while menuProperties.width ~= 80 do
-                                wait(1)
-                                menuProperties.width = menuProperties.width - 20
-                            end
-                        end)
+                        menuProperties.animations.menu.type = 2
+                        menuProperties.animations.menu.time = os.clock()
                     end
                 end
 
@@ -1555,38 +1562,46 @@ imgui.OnFrame(
                         textWithFont("GAdmin", bold18, imgui.ImVec2(83, 25))
                         textWithFont("v"..thisScript().version, regular9, imgui.ImVec2(162, 32))
                     imgui.EndGroup()
-                    menuButton(gnomeIcons.ICON_HOME, "Главная", imgui.ImVec2(21, 78), 1)
-                    menuButton(gnomeIcons.ICON_VERTICAL_BAR_CHART, "Статистика", imgui.ImVec2(21, 123), 2)
+                    self.menuButton(gnomeIcons.ICON_HOME, "Главная", imgui.ImVec2(21, 78), TAB_MAIN)
+                    self.menuButton(gnomeIcons.ICON_KEYBOARD, "Клавиши", imgui.ImVec2(21, 123), TAB_KEYS)
                 imgui.EndGroup()
-                fill(imgui.ImVec2(10, 0), imgui.ImVec2(menuProperties.width - 10, 0), hexToImVec4("242424"))
-            changeTheme:resetDefault(menuStyle)    
+                self.fill(imgui.ImVec2(10, 0), imgui.ImVec2(menuProperties.width - 10, 0), hexToImVec4("242424"))
+            changeTheme:resetDefault(self.menuStyle)
             imgui.EndChild()
 
             imgui.SameLine()
             imgui.SetCursorPos(imgui.ImVec2(menuProperties.width, 0))
-            changeTheme:applySettings(postMenuStyle)
+            changeTheme:applySettings(self.postMenuStyle)
 
             imgui.PushStyleColor(imgui.Col.ChildBg, hexToImVec4("303030"))
                 imgui.BeginChild("MainContent", imgui.ImVec2(0, 0), false)
-                    if menuProperties.selectedTab == 1 then
-                        imgui.BeginGroup() -- Logo
-                            textWithFont("GAdmin", bold25, imgui.ImVec2(17, 14))
-                            textWithFont("v"..thisScript().version, regular15, imgui.ImVec2(120, 23))
-                        imgui.EndGroup()
-                        imgui.PushFont(bold18)
-                            imgui.SetCursorPos(imgui.ImVec2(10, 450))
-                            if imgui.Button("Выйти из админки", imgui.ImVec2(900 - menuProperties.width - 20, 40)) then
-                                -- TODO
-                            end
-                        imgui.PopFont()
+                if menuProperties.selectedTab == TAB_MAIN then
+                    imgui.BeginGroup() -- Logo
+                        textWithFont("GAdmin", bold25, imgui.ImVec2(17, 14))
+                        textWithFont("v"..thisScript().version, regular15, imgui.ImVec2(120, 23))
+                    imgui.EndGroup()
+                    imgui.PushFont(bold18)
+                        imgui.SetCursorPos(imgui.ImVec2(10, 450))
+                        if imgui.Button("Выйти из админки", imgui.ImVec2(900 - menuProperties.width - 20, 40)) then
+                            -- TODO
+                        end
+                    imgui.PopFont()
+                elseif menuProperties.selectedTab == TAB_KEYS then
+                    for _, data in ipairs(self.tabs.hotkeys) do
+                        if rkeys.HotKey(data.title, data.keyData, imgui.ImVec2(table.unpack(data.size))) then
+                            cfg.hotkeys[data.jsonKey] = data.keyData.v
+                            rkeys.changeHotKey(data.address, data.keyData.v)
+                            saveConfig()
+                        end
                     end
+                end
                 imgui.EndChild()
             imgui.PopStyleColor()
 
-            changeTheme:resetDefault(postMenuStyle)
+            changeTheme:resetDefault(self.postMenuStyle)
         imgui.End()
 
-        changeTheme:resetDefault(windowStyle)
+        changeTheme:resetDefault(self.windowStyle)
     end
 )
 
@@ -1722,7 +1737,7 @@ function main()
                         time = os.time()+0.0001
                     end
                 end
-                
+
             end
         end
 
@@ -1767,6 +1782,10 @@ function main()
             if isNotCursorActive() and wasKeyPressed(VK_T) then
                 sampSetChatInputEnabled(true)
             end
+        end
+
+        if isKeyJustPressed(VK_Q) then
+            sampAddChatMessage("132i90123", -1)
         end
 
         local oTime = os.time()
@@ -1939,8 +1958,6 @@ function samp.onPlayerDeathNotification(killerId, killedId, reason)
 end
 
 function samp.onCreate3DText(id, color, position, distance, testLOS, attachedPlayerId, attachedVehicleId, text)
-    ---print("3DTEXT:", attachedPlayerId, text)
-    ---print("3DTEXT ID:", id)
     local attachedPlayerId  = attachedPlayerId == 65535 and nil or attachedPlayerId
     local text              = u8(text)
     if attachedPlayerId then

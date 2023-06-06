@@ -145,15 +145,8 @@ module.HotKey = function(name, keys, ImVec2_size, callback)
                 lastTick = os.clock()
                 tickState = not tickState
             end
-        sKeys = tickState and module._SETTINGS.waitKeysMessage or " "
+            sKeys = tickState and module._SETTINGS.waitKeysMessage or " "
         else
-			local r, res = pcall(module.getKeysName(tCurKeyList))
-			if not r or not res then
-				print(r, res, tCurKeyList)
-				for k,v in pairs(tCurKeyList) do
-					print(k,v)
-				end
-			end
             sKeys = module.getKeysName(tCurKeyList)
         end
     end

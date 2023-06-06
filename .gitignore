@@ -2,3 +2,11 @@
 
 !gadmin.lua
 !.gitignore
+
+!src/*
+!CONTRIBUTING.md
+!CONTRIBUTORS
+!LIBRARIES
+!LICENSE
+!README.md
+!.github/*
