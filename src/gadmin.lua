@@ -38,6 +38,8 @@ local loadLib = function(name)
     return require(name)
 end
 
+require "lib.moonloader"
+require "moonloader"
 local memory        = loadLib("memory")
 local encoding      = loadLib("encoding")
 local imgui         = loadLib("mimgui")
@@ -1819,7 +1821,7 @@ function main()
 			end
         end
 
-        for i = 0, sampGetMaxPlayerId(false) do
+        for i = 0, 600 do
             if sampIsPlayerConnected(i) and cfg.cheats.noCollision.onChar then
                 local result, ped = sampGetCharHandleBySampPlayerId(i)
                 if result and doesCharExist(ped) then
@@ -1912,13 +1914,15 @@ function samp.onPlayerDeathNotification(killerId, killedId, reason)
 
     local gameModule = require("game.weapons")
     local reasonKilledBy = (function(id)
-        local DIE_BY_FALL_ID   = 54
-        local DIE_BY_CAR_ID    = 49
-        if id == DIE_BY_FALL_ID or id == DIE_BY_CAR_ID then
-            return ({
-                [DIE_BY_CAR_ID] = "убит машиной",
-                [DIE_BY_FALL_ID] = "убит падением"
-            })[id]
+        local DIE_SPECIAL_REASONS = {
+            [49] = "убит машиной",
+            [50] = "убит лопастями",
+            [51] = "убит взрывом",
+            [53] = "утонул",
+            [54] = "самоубийство"
+        }
+        if DIE_SPECIAL_REASONS[id] then
+            return DIE_SPECIAL_REASONS[id]
         else
             if (id >= 0 and id <= 18) or (id >= 22 and id <= 46) then
                 return "убит с " .. gameModule.get_name(id)
@@ -2058,6 +2062,13 @@ function samp.onServerMessage(color, text)
                 adminId     = tonumber(adminId),
                 adminLvl    = adminLvl
             })
+        end
+    elseif text:find("^%[A%] .*%[%d+%] вышел как администратор%.$") then
+        local adminId = tonumber(text:match("^%[A%] .*%[(%d+)%] вышел как администратор%.$"))
+        for index, data in ipairs(adminsOnline) do
+            if data.adminId == adminId then
+                table.remove(adminsOnline, index)
+            end
         end
     end
 
