@@ -27,19 +27,18 @@ script_name     "GAdmin"
 script_version  "1.0"
 script_url      "https://github.com/Vadim-Kamalov/GAdmin"
 script_authors  { "https://github.com/Vadim-Kamalov/GAdmin/blob/main/CONTRIBUTORS" }
+require         "moonloader"
 
 local loadLib = function(name)
     local lib, err = pcall(require, name)
     if not lib then
-        sampfuncsLog("{FF5F5F}GAdmin << {FFFFFF}GAdmin не может найти библиотеку  \"" .. name .. "\", ошибка: " .. err)
-        sampfuncsLog("{FF5F5F}GAdmin << {FFFFFF}Пожалуйста, переустановите скрипт со всеми установленными библиотеками.")
+        sampfuncsLog("{FF5F5F}GAdmin << {FFFFFF}GAdmin cannot find library \"" .. name .. "\", error: " .. err)
+        sampfuncsLog("{FF5F5F}GAdmin << {FFFFFF}Please reinstall the script with all libraries installed.")
         return nil
     end
     return require(name)
 end
 
-require "lib.moonloader"
-require "moonloader"
 local memory        = loadLib("memory")
 local encoding      = loadLib("encoding")
 local imgui         = loadLib("mimgui")
