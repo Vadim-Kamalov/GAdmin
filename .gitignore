@@ -1,12 +1,13 @@
 *
 
-!gadmin.lua
-!.gitignore
+!/src/
+!/src/lib/
 
-!src/*
+!.gitignore
 !CONTRIBUTING.md
 !CONTRIBUTORS
 !LIBRARIES
 !LICENSE
 !README.md
 !.github/*
+!AutoUpdate.xml

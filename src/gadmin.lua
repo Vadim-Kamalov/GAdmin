@@ -29,6 +29,13 @@ script_url      "https://github.com/Vadim-Kamalov/GAdmin"
 script_authors  { "https://github.com/Vadim-Kamalov/GAdmin/blob/main/CONTRIBUTORS" }
 require         "moonloader"
 
+CMD_DELAY       = 800
+DEBUG           = true
+
+if DEBUG then
+    package.path = getWorkingDirectory() .. "\\src\\lib\\?.lua;" .. package.path
+end
+
 local loadLib = function(name)
     local lib, err = pcall(require, name)
     if not lib then
@@ -42,13 +49,15 @@ end
 local memory        = loadLib("memory")
 local encoding      = loadLib("encoding")
 local imgui         = loadLib("mimgui")
-local gnomeIcons    = loadLib("gadmin/gnome-icons")
 local wm            = loadLib("windows.message")
 local vkeys         = loadLib("vkeys")
-local rkeys         = loadLib("gadmin/rkeys_modif")
 local samp          = loadLib("lib.samp.events")
 local ffi           = loadLib("ffi")
 local neatJSON      = loadLib("neatjson")
+
+local autoUpdate    = require("gadmin/AutoUpdate")
+local rkeys         = require("gadmin/rkeys_modif")
+local icons         = require("gadmin/SolaceIcons")
 
 local u8 = encoding.UTF8
 local new, str, sizeof = imgui.new, ffi.string, ffi.sizeof
@@ -86,7 +95,7 @@ ffi.cdef[[
     const char* GetCommandLineA(void);
 ]]
 
-CMD_DELAY = 800
+changeTheme = {} -- to export
 
 function enum()
     return function(num)
@@ -154,7 +163,7 @@ function create_config()
             acceptForm = {73},
             spectateCursor = {66},
             specReload = {85},
-            disconnectSpecCopy = {0x12, vkeys.VK_Q} -- Alt + Q
+            disconnectSpecCopy = {0x12, VK_Q} -- Alt + Q
         },
         windowsPosition = {
             actionFrame         = {x = sizeX / 100, y = sizeY / 1.1},
@@ -282,7 +291,6 @@ local adminsOnline = {}
 local checkedAdminList = false
 local cursorStatus = true
 local popupId, popupNickname = 0, ""
-local changeTheme = {}
 local daysOfWeek = {"sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"}
 local bulletData = {lastId = 0, maxLines = cfg.cheats.tracers.maxLines}
 local gweather = -1
@@ -609,7 +617,7 @@ function stopForm()
 end
 
 imgui.OnInitialize(function()
-    gnomeIcons.loadIcons(30)
+    icons.loadIcons(30)
     local glyphRanges = imgui.GetIO().Fonts:GetGlyphRangesCyrillic()
     
     bold14      = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellBold, 22.0, nil, glyphRanges)
@@ -617,7 +625,8 @@ imgui.OnInitialize(function()
     bold15      = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellBold, 23.0, nil, glyphRanges)
     bold18      = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellBold, 26.0, nil, glyphRanges)
     bold25      = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellBold, 33.0, nil, glyphRanges)
-    regular9    = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellRegular, 16.0, nil, glyphRanges)   
+    regular9    = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellRegular, 16.0, nil, glyphRanges)
+    regular14   = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellRegular, 19.0, nil, glyphRanges)
     regular15   = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellRegular, 23.0, nil, glyphRanges)
     bold        = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellBold, 25.0, nil, glyphRanges)
     regular     = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellRegular, 25.0, nil, glyphRanges)
@@ -789,7 +798,7 @@ imgui.OnFrame( -- TODO
         imgui.Begin("Report window", movableWindows[MOV_REPORT].it, imgui.WindowFlags.NoMove + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize)
             imgui.PushTextWrapPos(reportData.size.x)
                 for _, v in ipairs(reportData.messages) do
-                    imgui.SafeText(v.text, cfg.reportWindow.alpha, hexToImVec4(v.hex))
+                    imgui.SafeText(v.text, cfg.reportWindow.alpha, convertHex2ImVec4(v.hex))
                 end
             imgui.PopTextWrapPos()
         imgui.End()
@@ -882,10 +891,10 @@ imgui.OnFrame(
                 )
                 imgui.BeginGroup()
                     if sampIsPlayerConnected(getPlayerIdByNickname(player)) then
-                        imgui.SafeText("[ONLINE]", cfg.checker.alpha, hexToImVec4("66CC33"))
+                        imgui.SafeText("[ONLINE]", cfg.checker.alpha, convertHex2ImVec4("66CC33"))
                     else
                         if cfg.checker.showOfflinePlayers then
-                            imgui.SafeText("[OFFLINE]", cfg.checker.alpha, hexToImVec4("FF0033"))
+                            imgui.SafeText("[OFFLINE]", cfg.checker.alpha, convertHex2ImVec4("FF0033"))
                         end
                     end
                     imgui.SameLine()
@@ -893,7 +902,7 @@ imgui.OnFrame(
                 imgui.EndGroup()
                 if imgui.IsItemClicked() then
                     sendNotification(
-                        gnomeIcons.ICON_PERSON,
+                        icons.ICON_PERSON,
                         sampIsPlayerConnected(getPlayerIdByNickname(player)) and "Айди игрока скопирован!" or "Никнейм игрока скопирован!",
                         "Скопировано у игрока \"" .. player .. "\"",
                         "",
@@ -917,7 +926,7 @@ imgui.OnFrame(
 )
 
 local notificationInit = {
-    icon            = gnomeIcons.ICON_WARNING,
+    icon            = icons.ICON_WARNING,
     title           = "Notification Initialize",
     firstLine       = "Notification Initialize Description | 1st line",
     secondLine      = "Notification Initialize Description | 2nd line",
@@ -940,7 +949,7 @@ imgui.OnFrame(
             {"ImVec2", "ItemSpacing", change = {0, 0}, reset = {5, 5}},
             {"ImVec2", "ItemInnerSpacing", change = {0, 0}, reset = {2, 2}},
             {"Int", "WindowBorderSize", change = 0, reset = 1},
-            {"ImVec4", "WindowBg", change = hexToImVec4("303030"), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)}
+            { "ImVec4", "WindowBg", change = convertHex2ImVec4("303030"), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)}
         }
 
         self.closeNotification = function()
@@ -957,7 +966,7 @@ imgui.OnFrame(
 
         imgui.Begin("Notification", bNotificationFrame, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoMove)
             imgui.SetCursorPos(imgui.ImVec2(15, 32))
-            imgui.Text(notificationInit.icon == -1 and gnomeIcons.ICON_LIGHTBULB_FILLED or notificationInit.icon)
+            imgui.Text(notificationInit.icon == -1 and icons.ICON_LIGHTBULB_FILLED or notificationInit.icon)
 
             textWithFont(notificationInit.title, bold18, imgui.ImVec2(53, 6))
             textWithFont(notificationInit.firstLine, NULL, imgui.ImVec2(53, 36))
@@ -1024,7 +1033,7 @@ imgui.OnFrame(
                         )).x / 2)
                         imgui.SafeText(("%s[%s] [X: %1.f]"):format(nickname, id,
                             getDistanceBetweenCoords3d(distanceA1, distanceA2, distanceA3, distanceB1, distanceB2, distanceB3)
-                        ), cfg.windowsSettings.playersNearby.alpha, hexToImVec4(("%06X"):format(bit.band(sampGetPlayerColor(id), 0xFFFFFF))))
+                        ), cfg.windowsSettings.playersNearby.alpha, convertHex2ImVec4(("%06X"):format(bit.band(sampGetPlayerColor(id), 0xFFFFFF))))
                         if imgui.IsItemClicked() then
                             imgui.OpenPopup("playerInfo")
                             popupId, popupNickname = id, nickname
@@ -1343,10 +1352,10 @@ imgui.OnFrame(
             {"ImVec2", "ItemSpacing", change = {0, 7}, reset = {5, 5}},
             {"Int", "FrameBorderSize", change = 0, reset = 1},
             {"Int", "WindowBorderSize", change = 0, reset = 1},
-            {"ImVec4", "WindowBg", change = hexToImVec4("21242A", cfg.specAdminPanel.alpha), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
-            {"ImVec4", "Button", change = hexToImVec4("444751"), reset = imgui.ImVec4(0.12, 0.12, 0.12, 1.00)},
-            {"ImVec4", "ButtonHovered", change = hexToImVec4("303238"), reset = imgui.ImVec4(0.21, 0.20, 0.20, 1.00)},
-            {"ImVec4", "ButtonActive", change = hexToImVec4("444751"), reset = imgui.ImVec4(0.41, 0.41, 0.41, 1.00)},
+            { "ImVec4", "WindowBg", change = convertHex2ImVec4("21242A", cfg.specAdminPanel.alpha), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
+            { "ImVec4", "Button", change = convertHex2ImVec4("444751"), reset = imgui.ImVec4(0.12, 0.12, 0.12, 1.00)},
+            { "ImVec4", "ButtonHovered", change = convertHex2ImVec4("303238"), reset = imgui.ImVec4(0.21, 0.20, 0.20, 1.00)},
+            { "ImVec4", "ButtonActive", change = convertHex2ImVec4("444751"), reset = imgui.ImVec4(0.41, 0.41, 0.41, 1.00)},
             {"ImVec2", "ButtonTextAlign", change = {0.5, 0.5}, reset = {0.5, 0.5}}
         }
 
@@ -1395,9 +1404,9 @@ imgui.OnFrame(
             imgui.Begin("specAdminPanel", movableWindows[MOV_ADMIN_PANEL].it, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoMove)
                 for k, v in pairs(sortedTable) do
                     imgui.BeginGroup()
-                        imgui.PushStyleColor(imgui.Col.Button, hexToImVec4(k == selectedButton and "303238" or "444751"))
-                        imgui.PushStyleColor(imgui.Col.ButtonHovered, hexToImVec4(k == selectedButton and "444751" or "303238"))
-                        imgui.PushStyleColor(imgui.Col.ButtonActive, hexToImVec4(k == selectedButton and "303238" or "444751"))
+                        imgui.PushStyleColor(imgui.Col.Button, convertHex2ImVec4(k == selectedButton and "303238" or "444751"))
+                        imgui.PushStyleColor(imgui.Col.ButtonHovered, convertHex2ImVec4(k == selectedButton and "444751" or "303238"))
+                        imgui.PushStyleColor(imgui.Col.ButtonActive, convertHex2ImVec4(k == selectedButton and "303238" or "444751"))
                             imgui.Button("##IMGUI_".. v.name, imgui.ImVec2(cfg.specAdminPanel.width - 14, 30))
                         imgui.PopStyleColor(2)
 
@@ -1471,20 +1480,20 @@ imgui.OnFrame(
         }
 
         self.activeMenuButtonStyle = {
-            {"ImVec4", "Button", change = hexToImVec4("303030"), reset = hexToImVec4("242424")},
-            {"ImVec4", "ButtonActive", change = hexToImVec4("303030"), reset = hexToImVec4("242424")},
-            {"ImVec4", "ButtonHovered", change = hexToImVec4("303030"), reset = hexToImVec4("303030")}
+            { "ImVec4", "Button", change = convertHex2ImVec4("303030"), reset = convertHex2ImVec4("242424")},
+            { "ImVec4", "ButtonActive", change = convertHex2ImVec4("303030"), reset = convertHex2ImVec4("242424")},
+            { "ImVec4", "ButtonHovered", change = convertHex2ImVec4("303030"), reset = convertHex2ImVec4("303030")}
         }
 
         self.postMenuStyle = {
             {"ImVec2", "ButtonTextAlign", change = {0.5, 0.5}, reset = {0.5, 0.8}},
-            {"ImVec4", "ButtonActive", change = hexToImVec4("4F4F4F"), reset = hexToImVec4("4F4F4F")}
+            { "ImVec4", "ButtonActive", change = convertHex2ImVec4("4F4F4F"), reset = convertHex2ImVec4("4F4F4F")}
         }
 
         self.menuStyle = {
-            {"ImVec4", "Button", change = hexToImVec4("242424"), reset = hexToImVec4("4F4F4F")},
-            {"ImVec4", "ButtonHovered", change = hexToImVec4("303030"), reset = hexToImVec4("616161")},
-            {"ImVec4", "ButtonActive", change = hexToImVec4("242424"), reset = hexToImVec4("4F4F4F")}
+            { "ImVec4", "Button", change = convertHex2ImVec4("242424"), reset = convertHex2ImVec4("4F4F4F")},
+            { "ImVec4", "ButtonHovered", change = convertHex2ImVec4("303030"), reset = convertHex2ImVec4("616161")},
+            { "ImVec4", "ButtonActive", change = convertHex2ImVec4("242424"), reset = convertHex2ImVec4("4F4F4F")}
         }
 
         self.windowStyle = {
@@ -1496,11 +1505,11 @@ imgui.OnFrame(
             {"Int", "WindowBorderSize", change = 0, reset = 1},
             {"Int", "ChildBorderSize", change = 0, reset = 1},
             {"Int", "FrameBorderSize", change = 0, reset = 1},
-            {"ImVec4", "ChildBg", change = hexToImVec4("242424"), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
-            {"ImVec4", "WindowBg", change = hexToImVec4("303030"), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
-            {"ImVec4", "Button", change = hexToImVec4("4F4F4F"), reset = imgui.ImVec4(0.12, 0.12, 0.12, 1.00)},
-            {"ImVec4", "ButtonHovered", change = hexToImVec4("616161"), reset = imgui.ImVec4(0.21, 0.20, 0.20, 1.00)},
-            {"ImVec4", "ButtonActive", change = hexToImVec4("4F4F4F"), reset = imgui.ImVec4(0.41, 0.41, 0.41, 1.00)}
+            { "ImVec4", "ChildBg", change = convertHex2ImVec4("242424"), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
+            { "ImVec4", "WindowBg", change = convertHex2ImVec4("303030"), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
+            { "ImVec4", "Button", change = convertHex2ImVec4("4F4F4F"), reset = imgui.ImVec4(0.12, 0.12, 0.12, 1.00)},
+            { "ImVec4", "ButtonHovered", change = convertHex2ImVec4("616161"), reset = imgui.ImVec4(0.21, 0.20, 0.20, 1.00)},
+            { "ImVec4", "ButtonActive", change = convertHex2ImVec4("4F4F4F"), reset = imgui.ImVec4(0.41, 0.41, 0.41, 1.00)}
         }
 
         self.fill = function(ImVec2_size, ImVec2_pos, ImVec4_color, rounding)
@@ -1548,7 +1557,7 @@ imgui.OnFrame(
             imgui.BeginChild("Left-bar", imgui.ImVec2(menuProperties.width, 0), false)
             changeTheme:applySettings(self.menuStyle)
                 imgui.SetCursorPos(imgui.ImVec2(23, 20))
-                if imgui.Button(gnomeIcons.ICON_MENU, imgui.ImVec2(35, 35)) then
+                if imgui.Button(icons.ICON_MENU, imgui.ImVec2(35, 35)) then
                     if menuProperties.width == 80 then
                         menuProperties.animations.menu.type = 1
                         menuProperties.animations.menu.time = os.clock()
@@ -1563,10 +1572,10 @@ imgui.OnFrame(
                         textWithFont("GAdmin", bold18, imgui.ImVec2(83, 25))
                         textWithFont("v"..thisScript().version, regular9, imgui.ImVec2(162, 32))
                     imgui.EndGroup()
-                    self.menuButton(gnomeIcons.ICON_HOME, "Главная", imgui.ImVec2(21, 78), TAB_MAIN)
-                    self.menuButton(gnomeIcons.ICON_KEYBOARD, "Клавиши", imgui.ImVec2(21, 123), TAB_KEYS)
+                    self.menuButton(icons.ICON_HOME, "Главная", imgui.ImVec2(21, 78), TAB_MAIN)
+                    self.menuButton(icons.ICON_KEYBOARD, "Клавиши", imgui.ImVec2(21, 123), TAB_KEYS)
                 imgui.EndGroup()
-                self.fill(imgui.ImVec2(10, 0), imgui.ImVec2(menuProperties.width - 10, 0), hexToImVec4("242424"))
+                self.fill(imgui.ImVec2(10, 0), imgui.ImVec2(menuProperties.width - 10, 0), convertHex2ImVec4("242424"))
             changeTheme:resetDefault(self.menuStyle)
             imgui.EndChild()
 
@@ -1574,7 +1583,7 @@ imgui.OnFrame(
             imgui.SetCursorPos(imgui.ImVec2(menuProperties.width, 0))
             changeTheme:applySettings(self.postMenuStyle)
 
-            imgui.PushStyleColor(imgui.Col.ChildBg, hexToImVec4("303030"))
+            imgui.PushStyleColor(imgui.Col.ChildBg, convertHex2ImVec4("303030"))
                 imgui.BeginChild("MainContent", imgui.ImVec2(0, 0), false)
                 if menuProperties.selectedTab == TAB_MAIN then
                     imgui.BeginGroup() -- Logo
@@ -1623,9 +1632,9 @@ imgui.OnFrame(
         for _, v in ipairs(farchatTable) do
             local hex = bit.tohex(bit.rshift(v[3], 8), 6)
             imgui.PushTextWrapPos(500)
-            imgui.SafeText("> " .. v[2], 1, hexToImVec4(v[4]))
+            imgui.SafeText("> " .. v[2], 1, convertHex2ImVec4(v[4]))
             imgui.SameLine()
-            imgui.SafeText(v[1], 1, hexToImVec4(hex))
+            imgui.SafeText(v[1], 1, convertHex2ImVec4(hex))
             imgui.PopTextWrapPos()
             imgui.SetScrollY(10000000) 
         end
@@ -1657,11 +1666,11 @@ function onWindowMessage(msg, wparam, lparam)
         cfg.windowsPosition[movableWindows[changePosition].jsonKey].x,
         cfg.windowsPosition[movableWindows[changePosition].jsonKey].y = bit.band(lparam, 0xFFFF), bit.band(bit.rshift(lparam, 16), 0xFFFF)
 
-        sendNotification(gnomeIcons.ICON_COLLAPSE, "Настройки сохранены.", "Позиция окна успешно сохранена!", "", 5)
+        sendNotification(icons.ICON_COLLAPSE, "Настройки сохранены.", "Позиция окна успешно сохранена!", "", 5)
         saveConfig()
         resetPosition()
     elseif msg == wm.WM_RBUTTONUP and changePosition ~= -1 then
-        sendNotification(gnomeIcons.ICON_COLLAPSE, "Отменено.", "Смена позиции окна отменена.", "", 5)
+        sendNotification(icons.ICON_COLLAPSE, "Отменено.", "Смена позиции окна отменена.", "", 5)
         resetPosition()
     end
 end
@@ -1675,20 +1684,46 @@ function main()
 
     encoding.default = "CP1251"
     if sampGetCurrentServerAddress() == "46.174.48.194" then
-        sampAddChatMessage("GAdmin успешно запущен", -1) 
+        sampAddChatMessage("GAdmin успешно запущен", -1)
     else
         sampAddChatMessage("GAdmin работает только на sa.gambit-rp.ru", -1)
         script:unload()
     end
 
     for i = 1, bulletData.maxLines do
-	    bulletData[i] = {
+        bulletData[i] = {
             enable  = false,
             o       = {x, y, z},
             t       = {x, y, z},
             time    = 0,
             tType   = 0
         }
+    end
+
+    for _, path in ipairs {
+        "GAdmin_data",
+        "GAdmin_data\\temp"
+    } do
+        if not doesDirectoryExist(getWorkingDirectory() .. "\\" .. path) then
+            createDirectory(getWorkingDirectory() .. "\\" .. path)
+        end
+    end
+
+    -- FIXME: Change url to AutoUpdate.xml and also in AutoUpdate.xml itself in <links> section.
+    -- Fix when the repository is open. However, you can fix it now, but then tokens will be visible (and also the link will be temporary).
+    if not DEBUG then
+        local url = "FIXME"
+        local XMLPath = getWorkingDirectory() .. "\\GAdmin_data\\temp\\AutoUpdate.xml"
+
+        autoUpdate.init(url, XMLPath, function(self) --- onReadyCallback
+            if self.getVersion() ~= thisScript().version then
+                self.download()
+            end
+        end, function() --- afterDownloadCallback
+            thisScript():reload()
+        end)
+
+        os.remove(XMLPath)
     end
 
     sampRegisterChatCommand("gadm", displayMainMenu)
@@ -1729,16 +1764,15 @@ function main()
                     local posX, posY, posZ = getCharCoordinates(playerPed)
                     airBrkCoords = {posX, posY, posZ, 0.0, 0.0, getCharHeading(playerPed)}
                     if time <= os.time() then
-                        sendNotification(gnomeIcons.ICON_ARROW_UP, "AirBreak включен", "Увеличить скорость: NUM +", "Уменьшить скорость: NUM -", 2)
+                        sendNotification(icons.ICON_ARROW_UP, "AirBreak включен", "Увеличить скорость: NUM +", "Уменьшить скорость: NUM -", 2)
                         time = os.time()+0.0001
                     end
                 else
                     if time <= os.time() then
-                        sendNotification(gnomeIcons.ICON_ARROW_UP, "AirBreak выключен", "Что бы включить его опять нажмите RSHIFT", "Для полного отключения - /gadm", 2)
+                        sendNotification(icons.ICON_ARROW_UP, "AirBreak выключен", "Что бы включить его опять нажмите RSHIFT", "Для полного отключения - /gadm", 2)
                         time = os.time()+0.0001
                     end
                 end
-
             end
         end
 
@@ -1783,10 +1817,6 @@ function main()
             if isNotCursorActive() and wasKeyPressed(VK_T) then
                 sampSetChatInputEnabled(true)
             end
-        end
-
-        if isKeyJustPressed(VK_Q) then
-            sampAddChatMessage("132i90123", -1)
         end
 
         local oTime = os.time()
@@ -1987,7 +2017,7 @@ end
 
 function samp.onServerMessage(color, text)
     local _, id        = sampGetPlayerIdByCharHandle(PLAYER_PED)
-    local nickname          = sampGetPlayerNickname(id)
+    local nickname      = sampGetPlayerNickname(id)
 
     local hex       = bit.tohex(bit.rshift(color, 8), 6)
     local tempText  = text
@@ -2100,7 +2130,9 @@ function samp.onServerMessage(color, text)
         end
     end
 
-    print("COLOR:", bit.tohex(bit.rshift(color, 8), 6), "| DEF:", color, "|", string.gsub(tempText, "{(%x%x%x%x%x%x)}", "#%1"))
+    if DEBUG then
+        print("COLOR:", bit.tohex(bit.rshift(color, 8), 6), "| DEF:", color, "|", string.gsub(tempText, "{(%x%x%x%x%x%x)}", "#%1"))
+    end
 end
 
 function samp.onPlayerChatBubble(playerId, color, distance, duration, text)
@@ -2300,7 +2332,7 @@ function reconnect(delay)
     local delay = tonumber(delay) or 1
 
     sampDisconnectWithReason(quit)
-    sendNotification(gnomeIcons.ICON_WARNING, "Переподключение.", "Переподключение через "..tostring(delay).." секунд.", "", delay)
+    sendNotification(icons.ICON_WARNING, "Переподключение.", "Переподключение через "..tostring(delay).." секунд.", "", delay)
     lua_thread.create(function()
         wait(delay * 1000)
         sampSetGamestate(1)
@@ -2404,7 +2436,7 @@ local spectateDisconnectNickname
 function samp.onDisplayGameText(style, time, text)
     if text:find("~b~Player.*") then
         sendNotification(
-            gnomeIcons.ICON_PERSON,
+            icons.ICON_PERSON,
             playerData["nick"].." отключился.",
             "Скопировать его ник - "..rkeys.getKeysName(cfg.hotkeys.disconnectSpecCopy),
             "Скопировать можно только в течении 10 секунд.",
@@ -2430,61 +2462,63 @@ end
 function copyDisconnectedNicknameInSpectate()
     if spectateDisconnectNickname then
         if setClipboardText(spectateDisconnectNickname) then
-            sendNotification(gnomeIcons.ICON_PERSON, "Никнейм игрока скопирован!", spectateDisconnectNickname.." записан в буфер обмена.", "", 5)
+            sendNotification(icons.ICON_PERSON, "Никнейм игрока скопирован!", spectateDisconnectNickname.." записан в буфер обмена.", "", 5)
             spectateDisconnectNickname = nil
         end
     else
-        sendNotification(gnomeIcons.ICON_CLOSE, "Ошибка!", "Никто не отключался,", "или прошло 10 секунд с момента отключения игрока.", 5)
+        sendNotification(icons.ICON_CLOSE, "Ошибка!", "Никто не отключался,", "или прошло 10 секунд с момента отключения игрока.", 5)
     end
 end
 
-function hexToImVec4(hex, alpha)
+function convertHex2ImVec4(hex, alpha)
     return imgui.ImVec4(
         tonumber("0x"..hex:sub(1,2)) / 255, tonumber("0x"..hex:sub(3,4)) / 255, tonumber("0x"..hex:sub(5,6)) / 255, alpha or 1
     )
 end
--- Debug console commands
-sampfuncsRegisterConsoleCommand("execute.notification", function(arg)
-    if string.find(arg, "\".*\" \".*\" \".*\" %d+") then
-        local title, firstLine, secondLine, secondsToHide = string.match(arg, "\"(.*)\" \"(.*)\" \"(.*)\" (%d+)")
-        sendNotification(-1, title, firstLine, secondLine, secondsToHide)
-    else
-        print("execute.notification usage: execute.notification \"[title : String]\" \"[1st line : String]\" \"[2nd line : String]\" [secondsToHide : Int]")
-    end
-end)
 
-sampfuncsRegisterConsoleCommand("execute.form", function()
-    bAdminForm[0], formStarter, formCommand = true, "DEBUG_EXECUTE_FORM", "me DEBUG_EXECUTE_FORM"
-    form_secondsToHide = os.clock()
-end)
+if DEBUG then
+    sampfuncsRegisterConsoleCommand("execute.notification", function(arg)
+        if string.find(arg, "\".*\" \".*\" \".*\" %d+") then
+            local title, firstLine, secondLine, secondsToHide = string.match(arg, "\"(.*)\" \"(.*)\" \"(.*)\" (%d+)")
+            sendNotification(-1, title, firstLine, secondLine, secondsToHide)
+        else
+            print("execute.notification usage: execute.notification \"[title : String]\" \"[1st line : String]\" \"[2nd line : String]\" [secondsToHide : Int]")
+        end
+    end)
 
-sampfuncsRegisterConsoleCommand("execute.passwords", function()
-    print(cfg.adm_pass, cfg.game_pass)
-end)
+    sampfuncsRegisterConsoleCommand("execute.form", function()
+        bAdminForm[0], formStarter, formCommand = true, "DEBUG_EXECUTE_FORM", "me DEBUG_EXECUTE_FORM"
+        form_secondsToHide = os.clock()
+    end)
 
-sampfuncsRegisterConsoleCommand("execute.addChecker", function(nickname)
-    table.insert(cfg.checker.players, nickname)
-    saveConfig()
-end)
+    sampfuncsRegisterConsoleCommand("execute.passwords", function()
+        print(cfg.adm_pass, cfg.game_pass)
+    end)
 
-sampfuncsRegisterConsoleCommand("execute.parseDialog", function()
-    for line in string.gmatch(sampGetDialogText(), "\n") do
-        sampfuncsLog(line)
-    end
-end)
+    sampfuncsRegisterConsoleCommand("execute.addChecker", function(nickname)
+        table.insert(cfg.checker.players, nickname)
+        saveConfig()
+    end)
 
-sampfuncsRegisterConsoleCommand("execute.checker", function() movableWindows[MOV_CHECKER].it[0] = not movableWindows[MOV_CHECKER].it[0] end)
-sampfuncsRegisterConsoleCommand("execute.cursor", function() print(cursorStatus) end)
-sampfuncsRegisterConsoleCommand("execute.newMenu", function() bNewMainFrame[0] = not bNewMainFrame[0] end)
-sampfuncsRegisterConsoleCommand("execute.specId", function() print(infoAbout) end)
-sampfuncsRegisterConsoleCommand("execute.specAction", doSpecActions)
-sampfuncsRegisterConsoleCommand("execute.specAdminPanel", function() bSpecAdminPanel[0] = not bSpecAdminPanel[0] end)
-sampfuncsRegisterConsoleCommand("execute.scriptCrash", executeScriptCrash)
-sampfuncsRegisterConsoleCommand("execute.scriptInfo", writeScriptInformationIn)
+    sampfuncsRegisterConsoleCommand("execute.parseDialog", function()
+        for line in string.gmatch(sampGetDialogText(), "\n") do
+            sampfuncsLog(line)
+        end
+    end)
+
+    sampfuncsRegisterConsoleCommand("execute.checker", function() movableWindows[MOV_CHECKER].it[0] = not movableWindows[MOV_CHECKER].it[0] end)
+    sampfuncsRegisterConsoleCommand("execute.cursor", function() print(cursorStatus) end)
+    sampfuncsRegisterConsoleCommand("execute.newMenu", function() bNewMainFrame[0] = not bNewMainFrame[0] end)
+    sampfuncsRegisterConsoleCommand("execute.specId", function() print(infoAbout) end)
+    sampfuncsRegisterConsoleCommand("execute.specAction", doSpecActions)
+    sampfuncsRegisterConsoleCommand("execute.specAdminPanel", function() bSpecAdminPanel[0] = not bSpecAdminPanel[0] end)
+    sampfuncsRegisterConsoleCommand("execute.scriptCrash", executeScriptCrash)
+    sampfuncsRegisterConsoleCommand("execute.scriptInfo", writeScriptInformationIn)
+end
 
 -- ниже лучше ничего не трогать
 sendchat = sampSendChat
-addchatmessage = sampAddChatMessage
+addChatMessage = sampAddChatMessage
 sampfuncslog = sampfuncsLog
 
 function sampfuncsLog(text)
@@ -2496,7 +2530,7 @@ function sampSendChat(text)
 end
 
 function sampAddChatMessage(text, color)
-    addchatmessage(u8:decode(text), color)
+    addChatMessage(u8:decode(text), color)
 end
 
 function abcheck()
@@ -2616,7 +2650,7 @@ function imgui.Theme()
     colors[color.Header]                 = ImVec4(0.12, 0.12, 0.12, 1.00)
     colors[color.HeaderHovered]          = ImVec4(0.20, 0.20, 0.20, 1.00)
     colors[color.HeaderActive]           = ImVec4(0.47, 0.47, 0.47, 1.00)
-    colors[color.Separator]              = hexToImVec4("4F4F4F")
+    colors[color.Separator]              = convertHex2ImVec4("4F4F4F")
     colors[color.SeparatorHovered]       = ImVec4(0.12, 0.12, 0.12, 1.00)
     colors[color.SeparatorActive]        = ImVec4(0.12, 0.12, 0.12, 1.00)
     colors[color.ResizeGrip]             = ImVec4(1.00, 1.00, 1.00, 0.25)

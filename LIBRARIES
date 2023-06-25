@@ -1,10 +1,9 @@
 memory          <https://www.blast.hk/threads/13305/>   # Part of MoonLoader project.
 encoding        <https://www.blast.hk/threads/13305/>   # Part of MoonLoader project.
 mimgui          <https://www.blast.hk/threads/66959/>  
-gnomeIcons      <lib/gadmin/gnome-icons.lua>            # Part of GAdmin project.
 windows.message <https://www.blast.hk/threads/13305/>   # Part of MoonLoader project.
 vkeys           <https://www.blast.hk/threads/13305/>   # Part of MoonLoader project.
-rkeys           <lib/gadmin/rkeys_modif.lua>            # Part of GAdmin project.
 SAMP.lua        <https://www.blast.hk/threads/14624/>
 ffi             <https://www.blast.hk/threads/13305/>   # Part of Moonloader project. Authors - LuaJIT contributors.
 neatjson        <https://github.com/Phrogz/NeatJSON/blob/master/lua/neatjson.lua>
+xml2lua         <https://github.com/manoelcampos/xml2lua>

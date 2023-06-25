@@ -40,7 +40,7 @@
 
 ]]--
 
-local gnomeIcons = {
+local solaceIcons = {
     ["ICON_XLS_DOCUMENT"] = "\u{F000}",
     ["ICON_WORD_DOCUMENT"] = "\u{F001}",
     ["ICON_WAVE"] = "\u{F002}",
@@ -250,7 +250,7 @@ compressedGnomeIconsFont = "7])#######d',Iq'/###W),##2(V$#Q6>##.FxF>6pY(/Q5)=-'O
 
 local imgui = require("mimgui")
 
-gnomeIcons.loadIcons = function(iconSize)
+solaceIcons.loadIcons = function(iconSize)
     local config = imgui.ImFontConfig()
     local glyph_ranges = imgui.GetIO().Fonts:GetGlyphRangesCyrillic()
     local iconRanges = imgui.new.ImWchar[3](0xe005, 0xf8ff, 0)
@@ -271,7 +271,7 @@ local function unicodeToUtf8(code)
    return string.char(unpack(t)):reverse()
 end
 
-setmetatable(gnomeIcons, {
+setmetatable(solaceIcons, {
 	__call = function(t, v)
 		if (type(v) == "string") then
 			return t["ICON_"..v:upper()] or "?"
@@ -294,4 +294,4 @@ setmetatable(gnomeIcons, {
 	end
 })
 
-return gnomeIcons
+return solaceIcons
