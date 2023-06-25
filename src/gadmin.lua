@@ -1629,14 +1629,15 @@ imgui.OnFrame(
         imgui.SetNextWindowPos(imgui.ImVec2(cfg.windowsPosition.farchat.x, cfg.windowsPosition.farchat.y))
         imgui.SetNextWindowSize(imgui.ImVec2(500, 170))
         imgui.Begin("FarChat", movableWindows[MOV_FARCHAT].it, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoScrollbar)
-        for _, v in ipairs(farchatTable) do
-            local hex = bit.tohex(bit.rshift(v[3], 8), 6)
+        for i = math.max(1, #farchatTable - 14), #farchatTable do
+            local data = farchatTable[i]
+            local hex = bit.tohex(bit.rshift(data[3], 8), 6)
             imgui.PushTextWrapPos(500)
-            imgui.SafeText("> " .. v[2], 1, convertHex2ImVec4(v[4]))
+            imgui.SafeText("> " .. data[2], 1, convertHex2ImVec4(data[4]))
             imgui.SameLine()
-            imgui.SafeText(v[1], 1, convertHex2ImVec4(hex))
+            imgui.SafeText(data[1], 1, convertHex2ImVec4(hex))
             imgui.PopTextWrapPos()
-            imgui.SetScrollY(10000000) 
+            imgui.SetScrollY(10000000)
         end
         imgui.End()
         changeTheme:resetDefault(farchatAlpha)
@@ -2506,6 +2507,16 @@ if DEBUG then
         end
     end)
 
+    sampfuncsRegisterConsoleCommand("execute.addLinesInFarchat", function(amount)
+        for i = 1, amount do
+            table.insert(farchatTable, {
+                "EXECUTE_ADD_LINES_IN_FARCHAT",
+                "EXECUTE_ADD_LINES_IN_FARCHAT",
+                -1,
+                string.format("%06X", bit.band(sampGetPlayerColor(PLAYER_PED), 0xFFFFFF))
+            })
+        end
+    end)
     sampfuncsRegisterConsoleCommand("execute.checker", function() movableWindows[MOV_CHECKER].it[0] = not movableWindows[MOV_CHECKER].it[0] end)
     sampfuncsRegisterConsoleCommand("execute.cursor", function() print(cursorStatus) end)
     sampfuncsRegisterConsoleCommand("execute.newMenu", function() bNewMainFrame[0] = not bNewMainFrame[0] end)
