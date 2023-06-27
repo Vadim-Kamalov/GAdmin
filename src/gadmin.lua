@@ -1853,8 +1853,8 @@ function main()
 					if isPointOnScreen(o.x, o.y, o.z) and isPointOnScreen(t.x, t.y, t.z) then
 						local sx, sy    = convert3DCoordsToScreen(o.x, o.y, o.z)
 						local fx, fy    = convert3DCoordsToScreen(t.x, t.y, t.z)
-                        local hitColor  = tonumber("0xFF" .. cfg.tracers.cheats.hitColor)
-                        local missColor = tonumber("0xFF" .. cfg.tracers.cheats.missColor)
+                        local hitColor  = tonumber("0xFF" .. cfg.cheats.tracers.cheats.hitColor)
+                        local missColor = tonumber("0xFF" .. cfg.cheats.tracers.cheats.missColor)
 						renderDrawLine(sx, sy, fx, fy, 1, bulletData[i].tType == 0 and missColor or hitColor)
 						renderDrawPolygon(fx, fy-1, 3, 3, 4.0, 10, bulletData[i].tType == 0 and missColor or hitColor)
 					end
