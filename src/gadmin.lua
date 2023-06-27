@@ -254,6 +254,7 @@ function create_config()
         mentionColor        = "4A86B6",
         adm_pass            = "",
         game_pass           = "",
+        oocNickname         = "",
         car_spec            = false,
         autoEnter           = false,
         aloginOnEnter       = false,
@@ -261,10 +262,10 @@ function create_config()
         deathNotifyInChat   = false,
         airbreak            = false,
         showIdInKillList    = false,
-        displayBubbles      = true,
         showLvlInAdminChat  = false,
         showAdmins          = true,
-        wallhack            = false
+        wallhack            = false,
+        autocompletion      = false
     }, {sort = true, wrap = 40}))
     handle:close()
 end
@@ -394,6 +395,7 @@ local bNotificationFrame        = new.bool()
 local bAdminForm                = new.bool()
 local bNewMainFrame             = new.bool()
 local bSpecAdminPanel           = new.bool()
+local bAutocompletionFrame      = new.bool(cfg.autocompletion)
 local bPlayersNearbyCheckbox    = new.bool(cfg.windowsSettings.playersNearby.use)
 local bDisplayBubbleChat        = new.bool(cfg.displayBubbles)
 local bOnlineFrameCheckbox      = new.bool(cfg.windowsSettings.onlineFrame.use)
@@ -1111,6 +1113,24 @@ imgui.OnFrame(
     end
 )
 
+imgui.OnFrame( --- TODO
+    function() return isNotGamePaused() and sampIsChatInputActive() and bAutocompletionFrame[0] end,
+    function(self)
+        self.inputInfoPtr   = sampGetInputInfoPtr()
+        self.stInputInfo    = getStructElement(self.inputInfoPtr, 0x8, 4)
+        self.chatPosX       = getStructElement(self.stInputInfo, 0x8, 4)
+        self.chatPosY       = getStructElement(self.stInputInfo, 0xC, 4)
+        self.windowFlags    = imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoMove
+
+        imgui.SetNextWindowPos(imgui.ImVec2(self.chatPosX, self.chatPosY + 50))
+        imgui.SetNextWindowSize(imgui.ImVec2(500, 250))
+
+        imgui.Begin("Auto completion window", bAutocompletionFrame, self.windowFlags)
+            
+        imgui.End()
+    end
+)
+
 --- Main frame
 imgui.OnFrame(
     function() return isNotGamePaused() and bMainMenu[0] end,
@@ -1631,11 +1651,11 @@ imgui.OnFrame(
         imgui.Begin("FarChat", movableWindows[MOV_FARCHAT].it, imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoScrollbar)
         for i = math.max(1, #farchatTable - 14), #farchatTable do
             local data = farchatTable[i]
-            local hex = bit.tohex(bit.rshift(data[3], 8), 6)
+            local hex = bit.tohex(bit.rshift(data.messageColor, 8), 6)
             imgui.PushTextWrapPos(500)
-            imgui.SafeText("> " .. data[2], 1, convertHex2ImVec4(data[4]))
+            imgui.SafeText("> " .. data.prefix, 1, convertHex2ImVec4(data.prefixColor))
             imgui.SameLine()
-            imgui.SafeText(data[1], 1, convertHex2ImVec4(hex))
+            imgui.SafeText(data.message, 1, convertHex2ImVec4(hex))
             imgui.PopTextWrapPos()
             imgui.SetScrollY(10000000)
         end
@@ -1689,6 +1709,11 @@ function main()
     else
         sampAddChatMessage("GAdmin работает только на sa.gambit-rp.ru", -1)
         script:unload()
+    end
+
+    if cfg.oocNickname == "" then
+        cfg.oocNickname = sampGetPlayerNickname(select(2, sampGetPlayerIdByCharHandle(PLAYER_PED)))
+        saveConfig()
     end
 
     for i = 1, bulletData.maxLines do
@@ -2137,21 +2162,32 @@ function samp.onServerMessage(color, text)
 end
 
 function samp.onPlayerChatBubble(playerId, color, distance, duration, text)
-    local result, _ = sampGetCharHandleBySampPlayerId(playerId)
-    local text = u8(text)
+    local result, _     = sampGetCharHandleBySampPlayerId(playerId)
+    local text          = u8(text)
     local clistColorHex = string.format("%06X", bit.band(sampGetPlayerColor(playerId), 0xFFFFFF))
-    local name = sampGetPlayerNickname(playerId)
-    
-    if cfg.displayBubbles and #text >= 3 then
-        if result and color == -413892353 then 
-            sampAddChatMessage("> " .. sampGetPlayerNickname(playerId) .. "[" .. playerId .. "] " .. text, 0xE75480)
-        elseif result and color == -421075226 then
-            sampAddChatMessage("> (( " .. sampGetPlayerNickname(playerId) .. "[" .. playerId .. "]:" .. text:sub(3,-3) .. "))", 0xE6E6E6)
+    local name          = sampGetPlayerNickname(playerId)
+
+    local farchatTableData = {
+        message         = string.gsub(text, "%.%.%.", ""),
+        prefix          = name .. "[" .. playerId .. "]:",
+        messageColor    = color,
+        prefixColor     = clistColorHex,
+        time            = os.clock()
+    }
+
+    if result then
+        if #farchatTable ~= 0 then
+            local data = farchatTable[#farchatTable]
+            if os.clock() - data.time >= 3 then
+                if data.message ~= text and data.prefix ~= name .. "[" .. playerId .. "]:" then
+                    table.insert(farchatTable, farchatTableData)
+                end
+            else
+                table.insert(farchatTable, farchatTableData)
+            end
+        else
+            table.insert(farchatTable, farchatTableData)
         end
-    end
-    if sampGetCharHandleBySampPlayerId(playerId) then
-        text = string.gsub(text, "%.%.%.", "")
-        table.insert(farchatTable, {text, name.."["..playerId.."]:", color, clistColorHex})
     end
 end
 
@@ -2187,6 +2223,8 @@ end
 
 function samp.onShowDialog(dialogId, style, title, button1, button2, text)
     local title, button1, button2, text = u8(title), u8(button1), u8(button2), u8(text)
+    local _, id = sampGetPlayerIdByCharHandle(PLAYER_PED)
+    local nickname = sampGetPlayerNickname(id)
 
     if cfg.autoEnter and string.len(cfg.game_pass) > 3 and style == 3 then
         if text:find("Для продолжения игры, Вам необходимо авторизоваться") then
@@ -2208,12 +2246,17 @@ function samp.onShowDialog(dialogId, style, title, button1, button2, text)
             for line in string.gmatch(text, "[^\n]+") do
                 if line:find("^.*%[%d+%] %- [1-5] уровень") then
                     local oocNickname, adminId, adminLvl = line:match("^{FFFFFF}(.*)%[(%d+)%] %- ([1-5]) уровень")
-                    table.insert(adminsOnline, {
-                        oocNickname = oocNickname,
-                        icNickname  = sampGetPlayerNickname(tonumber(adminId)),
-                        adminId     = tonumber(adminId),
-                        adminLvl    = adminLvl
-                    })
+                    if tonumber(adminId) == id and cfg.oocNickname ~= oocNickname then
+                        cfg.oocNickname = oocNickname
+                        saveConfig()
+                    else
+                        table.insert(adminsOnline, {
+                            oocNickname = oocNickname,
+                            icNickname  = sampGetPlayerNickname(tonumber(adminId)),
+                            adminId     = tonumber(adminId),
+                            adminLvl    = adminLvl
+                        })
+                    end
                 end
             end
             checkedAdminList = true
@@ -2517,6 +2560,7 @@ if DEBUG then
             })
         end
     end)
+
     sampfuncsRegisterConsoleCommand("execute.checker", function() movableWindows[MOV_CHECKER].it[0] = not movableWindows[MOV_CHECKER].it[0] end)
     sampfuncsRegisterConsoleCommand("execute.cursor", function() print(cursorStatus) end)
     sampfuncsRegisterConsoleCommand("execute.newMenu", function() bNewMainFrame[0] = not bNewMainFrame[0] end)

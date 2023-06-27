@@ -21,6 +21,7 @@
 local xml2lua       = require("xml2lua")
 local handler       = require("xmlhandler.tree")
 local imgui         = require("mimgui")
+local neatJSON      = require("neatjson")
 
 AUTOUPDATE_RESPONSE_WAITING = 1
 AUTOUPDATE_RESPONSE_OK      = 2
@@ -38,6 +39,51 @@ local imguiData = {
         }
     },
 }
+
+---@param first table
+---@param second table
+---@return table
+local function mergeTables(first, second)
+    for key, value in pairs(second) do
+        if (type(value) == "table") and (type(first[key] or false) == "table") then
+            mergeTables(first[key], second[key])
+        else
+            first[key] = value
+        end
+    end
+    return first
+end
+
+---@param src string
+---@return string
+local function getFileContent(src)
+    local handle    = io.open(src, "r")
+    local content   = handle:read("*all")
+    handle:close()
+    return content
+end
+
+--- Combines two JSON strings into one file.
+---
+---@param src string (path)
+---@param first string
+---@param second string
+local function mergeJsonInFile(src, first, second)
+    if doesFileExist(src) then
+        local handle                = io.open(src, "w")
+        local parsedTableFromXML    = decodeJson(first)
+        local parsedTableFromHandle = decodeJson(second)
+        local mergedTable           = mergeTables(parsedTableFromXML, parsedTableFromHandle)
+        local finalJSON             = neatJSON(mergeTable, {sort = true, wrap = 40})
+
+        print("[AutoUpdate.lua] Successfully written file to path " .. src)
+        handle:write(finalJSON)
+        handle:close()
+    else
+        print("[AutoUpdate.lua] File on path " .. src .. " does not exist.")
+        print("[AutoUpdate.lua]", src, value)
+    end
+end
 
 imgui.OnFrame(
     function() return imguiData.window[0] end,
@@ -119,7 +165,7 @@ imgui.OnFrame(
     end
 )
 
-module = { _VERSION = "0.1" }
+module = { _VERSION = "0.2" }
 
 ---@param url string                        URL to AutoUpdate.xml file.
 ---@param XMLPath string                    Path where the file from @param url will be installed. The file is NOT DELETED after
@@ -135,12 +181,38 @@ module.init = function(url, XMLPath, onReadyCallback, afterDownloadCallback)
     local callbacks         = {}
     local content           = nil
 
+    --- **Since 0.1**
+    ---
     --- Loads all <link destination="...">...</link> from AutoUpdate.xml.
     --- If the number of <linK> == 1 then only one will be downloaded. Otherwise, everything will be installed.
     --- `destination="..."` means the path where the file will be loaded from the working directory.
     --- `<link>...</link>` means the url of the file.
+    ---
+    --- **Since 0.2**
+    ---
+    --- Now you can merge JSON files from `<merge><json src="...">...</json>...</merge>`.
+    --- Note that there can be only one `<merge>` tag, and <json> can only be in `<merge>`
+    --- and its quantity is unlimited. The `src="..."` attribute means the path from the working directory.
+    ---
     ---@return void
     function callbacks:download()
+        print("[AutoUpdate.lua] Start merging JSON file(s)")
+        if #handler.root.AutoUpdate.merge.json > 1 then
+            local this = handler.root.AutoUpdate.merge.json
+            for _, json in ipairs(this) do
+                local src   = getWorkingDirectory() .. "\\" .. json._attr.src
+                local value = json[1]
+                mergeJsonInFile(src, getFileContent(src), value)
+            end
+        else
+            local this  = handler.root.AutoUpdate.merge.json
+            local src   = getWorkingDirectory() .. "\\" .. this._attr.src
+            local value = this[1]
+            mergeJsonInFile(src, getFileContent(src), value)
+        end
+
+        print("[AutoUpdate.lua] Start downloading file(s)")
+
         if #handler.root.AutoUpdate.links.link > 1 then
             local this  = handler.root.AutoUpdate.links.link
             local total = {}
@@ -154,7 +226,10 @@ module.init = function(url, XMLPath, onReadyCallback, afterDownloadCallback)
                     downloadUrlToFile(scriptUrl, destination, function(id, status, p1, p2)
                         if status == downloadStatus.STATUS_ENDDOWNLOADDATA then
                             sampAddChatMessage("Успешно загружен файл \"" .. destination .. "\". Загрузка следующего через секунду.", -1)
+                            print("[AutoUpdate.lua] File on path \"" .. destination .. "\" loaded!")
                             table.insert(total, 0)
+                        else
+                            print("[AutoUpdate.lua] Loading file from path \"" .. destination .. "\". Remaining " .. string.format("%d of %d.", p1, p2))
                         end
                     end)
                 end)
@@ -163,10 +238,12 @@ module.init = function(url, XMLPath, onReadyCallback, afterDownloadCallback)
                         wait(0)
                         if #this == #total then
                             afterDownloadCallback()
+                            print("[AutoUpdate.lua] afterDownloadCallback called.")
                             break
                         else
                             if os.clock() - time >= 120 then
                                 sampAddChatMessage("Что-то пошло не так, обновление не загружено.", -1)
+                                print("[AutoUpdate.lua] 120 seconds have passed since all files started downloading. afterDownloadCallback will not be called.")
                                 break
                             end
                         end
@@ -181,12 +258,15 @@ module.init = function(url, XMLPath, onReadyCallback, afterDownloadCallback)
                 wait(1000)
                 downloadUrlToFile(scriptUrl, destination, function(id, status, p1, p2)
                     if status == downloadStatus.STATUS_ENDDOWNLOADDATA then
-                        sampAddChatMessage("Успешно загружен файл \"" .. destination .. "\"", -1)
-                        afterDownloadCallback()
+                        sampAddChatMessage("Успешно загружен файл \"" .. destination .. "\".", -1)
+                        print("[AutoUpdate.lua] File on path \"" .. destination .. "\" loaded!")
+                    else
+                        print("[AutoUpdate.lua] Loading file from path \"" .. destination .. "\". Remaining " .. string.format("%d of %d.", p1, p2))
                     end
                 end)
             end)
         end
+        print("[AutoUpdate.lua] callback:download() completed his work.")
     end
 
     function callbacks:getVersion()
@@ -200,8 +280,8 @@ module.init = function(url, XMLPath, onReadyCallback, afterDownloadCallback)
             local parser = xml2lua.parser(handler)
             local success, result = pcall(parser.parse, parser, content)
             if not success then
-                print("Error:", result)
-                print("Why? Most likely due to incorrect url to AutoUpdate.xml.")
+                print("[AutoUpdate.lua] Got error from xml2lua module: " .. result)
+                print("[AutoUpdate.lua] Why? Most likely due to incorrect url to AutoUpdate.xml.")
                 imguiData.response = AUTOUPDATE_RESPONSE_BAD
             else
                 imguiData.xml.body              = string.match(content, "<body>%s*(.*)%s*</body>")
@@ -209,20 +289,21 @@ module.init = function(url, XMLPath, onReadyCallback, afterDownloadCallback)
                 imguiData.xml.buttons.first     = handler.root.AutoUpdate.buttons._attr.first
                 imguiData.xml.buttons.second    = handler.root.AutoUpdate.buttons._attr.second
                 imguiData.window[0]             = true
-            end
 
-            lua_thread.create(function()
-                while true do
-                    wait(0)
-                    if imguiData.response == AUTOUPDATE_RESPONSE_OK then
-                        sampAddChatMessage("Обновление загружается...", -1)
-                        onReadyCallback(callbacks)
-                        break
-                    elseif imguiData.response == AUTOUPDATE_RESPONSE_BAD then
-                        break
+                print("[AutoUpdate.lua] The window is called. We are waiting for a response from the user.")
+                lua_thread.create(function()
+                    while true do
+                        wait(0)
+                        if imguiData.response == AUTOUPDATE_RESPONSE_OK then
+                            sampAddChatMessage("Обновление загружается...", -1)
+                            onReadyCallback(callbacks)
+                            break
+                        elseif imguiData.response == AUTOUPDATE_RESPONSE_BAD then
+                            break
+                        end
                     end
-                end
-            end)
+                end)
+            end
         end
     end)
 end
