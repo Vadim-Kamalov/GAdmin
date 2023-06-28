@@ -265,6 +265,7 @@ function create_config()
         showLvlInAdminChat  = false,
         showAdmins          = true,
         wallhack            = false,
+        swapLayout          = true,
         autocompletion      = false
     }, {sort = true, wrap = 40}))
     handle:close()
@@ -297,6 +298,7 @@ local bulletData = {lastId = 0, maxLines = cfg.cheats.tracers.maxLines}
 local gweather = -1
 local airbreak = {state = false, speed = 1.0}
 local time = 0
+local sessionGmoney = 0
 local fisheyeWeaponLock = false
 local playerTime
 local isPlayerInSpectate = false
@@ -397,7 +399,6 @@ local bNewMainFrame             = new.bool()
 local bSpecAdminPanel           = new.bool()
 local bAutocompletionFrame      = new.bool(cfg.autocompletion)
 local bPlayersNearbyCheckbox    = new.bool(cfg.windowsSettings.playersNearby.use)
-local bDisplayBubbleChat        = new.bool(cfg.displayBubbles)
 local bOnlineFrameCheckbox      = new.bool(cfg.windowsSettings.onlineFrame.use)
 local bAirbreakCheckbox         = new.bool(cfg.airbreak)
 local bCarInfoInSpectator       = new.bool(cfg.car_spec)
@@ -1188,11 +1189,6 @@ imgui.OnFrame(
             saveConfig()
         end
 
-        if imgui.Checkbox("Отображение /ame и /ab в чат", bDisplayBubbleChat) then
-            cfg.displayBubbles = bDisplayBubbleChat[0]
-            saveConfig()
-        end
-
         imgui.PushStyleVarVec2(imgui.StyleVar.WindowPadding, imgui.ImVec2(0, 0))
         if imgui.BeginPopupModal("windowsPosition", nil, imgui.WindowFlags.NoResize + imgui.WindowFlags.NoMove + imgui.WindowFlags.NoTitleBar) then
             imgui.PushStyleVarFloat(imgui.StyleVar.FrameRounding, 0)
@@ -1223,19 +1219,21 @@ imgui.OnFrame(
         player.HideCursor = cursorStatus
         local full_online = string.format("Общий онлайн: %02d:%02d:%02d", cfg.online.total / 3600,cfg.online.total / 60 % 60, cfg.online.total % 60)
         local temp_online = string.format("Онлайн за сессию: %02d:%02d:%02d", sessionOnline / 3600, sessionOnline / 60 % 60, sessionOnline % 60)
+        local gmoney_display = string.format("GMoney за сессию: %s", sessionGmoney)
         size = {imgui.GetStyle().WindowPadding.x*2 + imgui.CalcTextSize(temp_online).x,
-        imgui.GetStyle().ItemSpacing.y + imgui.GetStyle().WindowPadding.y*2 + imgui.CalcTextSize(temp_online).y + imgui.CalcTextSize(full_online).y}
+        imgui.GetStyle().ItemSpacing.y + imgui.GetStyle().WindowPadding.y*2 + imgui.CalcTextSize(temp_online).y + imgui.CalcTextSize(full_online).y + imgui.CalcTextSize(gmoney_display).y}
         
         if bAdminForm[0] then onlinePosY = sizeY - size[2] - 35 else onlinePosY = sizeY - size[2] end
 
         imgui.PushStyleVarFloat(imgui.StyleVar.WindowRounding, 0)
 
-        imgui.SetNextWindowSize(imgui.ImVec2(size[1], size[2]))
+        imgui.SetNextWindowSizeConstraints(imgui.ImVec2(0, 0), imgui.ImVec2(math.huge, math.huge))
         imgui.SetNextWindowPos( imgui.ImVec2(cfg.windowsPosition.onlineFrame.x - size[1], cfg.windowsPosition.onlineFrame.y - size[2]))
         imgui.Begin("GAdmin_online", bOnlineMenu, imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoMove + imgui.WindowFlags.NoScrollbar)
 
         imgui.Text(full_online)
         imgui.Text(temp_online)
+        imgui.Text(gmoney_display)
 
         imgui.PopStyleVar()
 
@@ -1775,6 +1773,7 @@ function main()
         end)
     end
 
+    
     openMainMenu        = rkeys.registerHotKey(cfg.hotkeys.gadm, 1, displayMainMenu)
     showCursorInSpec    = rkeys.registerHotKey(cfg.hotkeys.spectateCursor, 1, changeSpecCursorMode)
     acceptForm          = rkeys.registerHotKey(cfg.hotkeys.acceptForm, 1, sendFormCommand)
@@ -1801,7 +1800,7 @@ function main()
                 end
             end
         end
-
+        
         if bAirbreakCheckbox[0] then
             abcheck()
         end
@@ -2040,7 +2039,17 @@ end
 function samp.onShowMenu()
     return not cfg.specAdminPanel.show
 end
-
+function samp.onSendChat(cmdtext)
+    local firstChar = cmdtext:sub(1, 1)
+    if firstChar == "." and cfg.swapLayout then
+        local spaceIndex = cmdtext:find(" ")
+        local textToModify = cmdtext:sub(2, spaceIndex and spaceIndex - 1)
+        local modifiedText = swapLayout(u8(textToModify))
+        local finalText = modifiedText .. (spaceIndex and cmdtext:sub(spaceIndex) or "")
+        sampSendChat('/' .. u8(finalText))
+        return false
+    end
+end
 function samp.onServerMessage(color, text)
     local _, id        = sampGetPlayerIdByCharHandle(PLAYER_PED)
     local nickname      = sampGetPlayerNickname(id)
@@ -2087,6 +2096,10 @@ function samp.onServerMessage(color, text)
         stopForm()
     elseif text:find("^%[A%] .*%[%d+%] ответил .*%[%d+]: [PC]K by " .. formStarter) then
         stopForm()
+    elseif text:find("Администратор "..cfg.oocNickname) and color == -10270806 then
+        sessionGmoney = sessionGmoney + 2
+    elseif text:find("%[A%] "..cfg.oocNickname.."%[%d+%] ответил.*") and color == -6732374 then --[A] HeroIAm[65] ответил Santino_Andolinni[65]: 1   0
+        sessionGmoney = sessionGmoney + 0.5
     elseif text:find("%[A%] .*%[%d+%]:.*@" .. tostring(id)) or
            text:find("%[A%] .*%[%d+%]:.*@" .. nickname) and
            color == 866792362
@@ -2587,6 +2600,30 @@ end
 function sampAddChatMessage(text, color)
     addChatMessage(u8:decode(text), color)
 end
+function swapLayout(text)
+    local chars = {
+        ["й"] = "q", ["ц"] = "w", ["у"] = "e", ["к"] = "r", ["е"] = "t",
+        ["н"] = "y", ["г"] = "u", ["ш"] = "i", ["щ"] = "o", ["з"] = "p",
+        ["х"] = "[", ["ъ"] = "]", ["ф"] = "a", ["ы"] = "s", ["в"] = "d",
+        ["а"] = "f", ["п"] = "g", ["р"] = "h", ["о"] = "j", ["л"] = "k",
+        ["д"] = "l", ["ж"] = ";", ["э"] = "'", ["я"] = "z", ["ч"] = "x",
+        ["с"] = "c", ["м"] = "v", ["и"] = "b", ["т"] = "n", ["ь"] = "m",
+        ["б"] = ",", ["ю"] = ".", ["Й"] = "Q", ["Ц"] = "Q", ["У"] = "W",
+        ["К"] = "E", ["Е"] = "R", ["Н"] = "T", ["Г"] = "Y", ["Ш"] = "U",
+        ["Щ"] = "I", ["З"] = "O", ["Х"] = "{", ["Ъ"] = "}", ["Ф"] = "A",
+        ["Ы"] = "S", ["В"] = "D", ["А"] = "F", ["П"] = "G", ["Р"] = "H",
+        ["О"] = "J", ["Л"] = "K", ["Д"] = "L", ["Ж"] = ":", ["Э"] = "\"",
+        ["Я"] = "Z", ["Ч"] = "X", ["С"] = "C", ["М"] = "V", ["И"] = "B",
+        ["Т"] = "N", ["Ь"] = "M", ["Б"] = "<", ["Ю"] = ">"
+    }
+
+    for k, v in pairs(chars) do
+        text = text:gsub(k, v)
+    end
+
+    return text
+end
+
 
 function abcheck()
     if not bAirbreakCheckbox[0] then return end
@@ -2780,7 +2817,6 @@ function getCarName(id)
     end
     return getGxtText(getNameOfVehicleModel(id))
 end
-
 function onReceivePacket(id)
     if (id == 36 or id == 32 or id == 37) then -- closed conn, wrong srv pass, banned
         alogin = false
