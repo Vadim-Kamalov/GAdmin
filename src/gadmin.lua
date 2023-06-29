@@ -240,6 +240,7 @@ function create_config()
                 fov = 101   -- in 60 .. 110
                 -- Honestly, you can set the value not within this radius,
                 -- but after the value of 110 white edges appear, and there is a high chance that the game will crash.
+                -- Update: Fixed with `skygrad.asi` plugin.
             },
             fpsCount = {
                 use         = false,
@@ -250,23 +251,24 @@ function create_config()
         fixes = {
             chatOnVK_T = false
         },
-        gg_msg              = "Приятной игры!",
-        mentionColor        = "4A86B6",
-        adm_pass            = "",
-        game_pass           = "",
-        oocNickname         = "",
-        car_spec            = false,
-        autoEnter           = false,
-        aloginOnEnter       = false,
-        showGunInfo         = false,
-        deathNotifyInChat   = false,
-        airbreak            = false,
-        showIdInKillList    = false,
-        showLvlInAdminChat  = false,
-        showAdmins          = true,
-        wallhack            = false,
-        swapLayout          = true,
-        autocompletion      = false
+        gg_msg                  = "Приятной игры!",
+        mentionColor            = "4A86B6",
+        adm_pass                = "",
+        game_pass               = "",
+        oocNickname             = "",
+        car_spec                = false,
+        autoEnter               = false,
+        aloginOnEnter           = false,
+        showGunInfo             = false,
+        deathNotifyInChat       = false,
+        airbreak                = false,
+        showIdInKillList        = false,
+        showLvlInAdminChat      = false,
+        showAdmins              = true,
+        wallhack                = false,
+        swapLayout              = true,
+        autocompletion          = false,
+        zoomCameraInSpectator   = false -- Uses FOV within 70 .. 150. See comment above.
     }, {sort = true, wrap = 40}))
     handle:close()
 end
@@ -295,6 +297,7 @@ local cursorStatus = true
 local popupId, popupNickname = 0, ""
 local daysOfWeek = {"sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"}
 local bulletData = {lastId = 0, maxLines = cfg.cheats.tracers.maxLines}
+local zoomCameraInSpectatorFov = -1
 local gweather = -1
 local airbreak = {state = false, speed = 1.0}
 local time = 0
@@ -633,6 +636,8 @@ imgui.OnInitialize(function()
     regular15   = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellRegular, 23.0, nil, glyphRanges)
     bold        = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellBold, 25.0, nil, glyphRanges)
     regular     = imgui.GetIO().Fonts:AddFontFromMemoryCompressedBase85TTF(cantarellRegular, 25.0, nil, glyphRanges)
+
+    imgui.GetIO().IniFilename = nil
 
     imgui.Theme()
 end)
@@ -1691,6 +1696,23 @@ function onWindowMessage(msg, wparam, lparam)
     elseif msg == wm.WM_RBUTTONUP and changePosition ~= -1 then
         sendNotification(icons.ICON_COLLAPSE, "Отменено.", "Смена позиции окна отменена.", "", 5)
         resetPosition()
+    elseif msg == wm.WM_MOUSEWHEEL then
+        MOUSE_WHEEL_VERTICAL_SIDE_UP    = 0x780000
+        MOUSE_WHEEL_VERTICAL_SIDE_DOWN  = 0xFF880000
+
+        if isPlayerInSpectate and cfg.zoomCameraInSpectator and isNotCursorActive() then
+            local currentFov = getCameraFov()
+            local isFovInRange = currentFov >= 50 and currentFov <= 150
+            if isFovInRange then
+                if wparam == MOUSE_WHEEL_VERTICAL_SIDE_UP then
+                    zoomCameraInSpectatorFov = currentFov + 5 > 150 and 150 or currentFov + 5
+                    consumeWindowMessage()
+                elseif wparam == MOUSE_WHEEL_VERTICAL_SIDE_DOWN then
+                    zoomCameraInSpectatorFov = currentFov - 5 < 50 and 50 or currentFov - 5
+                    consumeWindowMessage()
+                end
+            end
+        end
     end
 end
 
@@ -1844,6 +1866,12 @@ function main()
             end
         end
 
+        if isPlayerInSpectate and cfg.zoomCameraInSpectator and zoomCameraInSpectatorFov ~= -1 then
+            cameraSetLerpFov(zoomCameraInSpectatorFov, zoomCameraInSpectatorFov, 1000, 1)
+        else
+            zoomCameraInSpectatorFov = -1
+        end
+
         local oTime = os.time()
 		if cfg.cheats.tracers.use then
 			for i = 1, bulletData.maxLines do
@@ -1861,18 +1889,22 @@ function main()
 			end
 		end
 
-        if cfg.additions.fisheye.use then
-            local isCharTargeting = memory.getint8(getCharPointer(PLAYER_PED) + 0x528, false) == 19
-            if isCurrentCharWeapon(PLAYER_PED, 34 --[[ Sniper rifle ]]) and isCharTargeting then
-				if not fisheyeWeaponLock then 
-					cameraSetLerpFov(70.0, 70.0, 1000, 1)
-					fisheyeWeaponLock = true
-				end
-			else
-                local fov = cfg.additions.fisheye.fov
-				cameraSetLerpFov(fov, fov, 1000, 1)
-				fisheyeWeaponLock = false
-			end
+        if cfg.additions.fisheye.use and zoomCameraInSpectatorFov == -1 then
+            local fov = cfg.additions.fisheye.fov
+            if math.floor(getCameraFov()) ~= fov and cfg.zoomCameraInSpectator then
+                cameraSetLerpFov(fov, fov, 1000, 1)
+            else
+                local isCharTargeting = memory.getint8(getCharPointer(PLAYER_PED) + 0x528, false) == 19
+                if isCurrentCharWeapon(PLAYER_PED, 34 --[[ Sniper rifle ]]) and isCharTargeting then
+                    if not fisheyeWeaponLock then
+                        cameraSetLerpFov(70.0, 70.0, 1000, 1)
+                        fisheyeWeaponLock = true
+                    end
+                else
+                    cameraSetLerpFov(fov, fov, 1000, 1)
+                    fisheyeWeaponLock = false
+                end
+            end
         end
 
         for i = 0, 600 do
