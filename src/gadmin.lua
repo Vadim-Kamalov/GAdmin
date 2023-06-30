@@ -251,6 +251,10 @@ function create_config()
         fixes = {
             chatOnVK_T = false
         },
+        chat = {
+            changeColor = {},   --- { pattern: string|nil, colors = { old = string|nil, new = string } }...
+            remove = {}         --- { pattern: string|nil, color = string|nil }...
+        },
         gg_msg                  = "Приятной игры!",
         mentionColor            = "4A86B6",
         adm_pass                = "",
@@ -2071,6 +2075,7 @@ end
 function samp.onShowMenu()
     return not cfg.specAdminPanel.show
 end
+
 function samp.onSendChat(cmdtext)
     local firstChar = cmdtext:sub(1, 1)
     if firstChar == "." and cfg.swapLayout then
@@ -2082,25 +2087,34 @@ function samp.onSendChat(cmdtext)
         return false
     end
 end
+
 function samp.onServerMessage(color, text)
-    local _, id        = sampGetPlayerIdByCharHandle(PLAYER_PED)
+    local _, id         = sampGetPlayerIdByCharHandle(PLAYER_PED)
     local nickname      = sampGetPlayerNickname(id)
 
     local hex       = bit.tohex(bit.rshift(color, 8), 6)
     local tempText  = text
     local text      = u8(text)
 
-    local convertHexToInt32 = function(hex)
-        local hex = #hex == 8 and hex or (#hex == 6 and hex .. "AA" or hex)
-        local dec = 0
-        for i = 1, #hex do
-            dec = dec + tonumber(string.sub(hex, i, i), 16) * (16 ^ (#hex - i))
+    local colorAsHexadecimalRGB = bit.tohex(bit.rshift(color, 8), 6)
+    local rgb2color = function(rgb)
+        return rgb and bit.tobit(tonumber(string.format("%s%02X", rgb, bit.band(color, 0xFF)), 16))
+    end
+
+    local compareWithArguments = function(pattern, _color)
+        if pattern and _color then
+            return text:find(pattern) and color == _color
+        elseif pattern then
+            return text:find(pattern)
+        elseif _color then
+            return color == _color
+        else
+            return false
         end
-        return dec
     end
 
     local insertLvlInAdminChat = function(returnData)
-        enum "RETURN_DATA_ENUM" {
+        enum {
             "RETURN_DATA_COLOR",
             "RETURN_DATA_TEXT"
         }
@@ -2114,6 +2128,18 @@ function samp.onServerMessage(color, text)
         end
 
         return returnData
+    end
+
+    for _, data in ipairs(cfg.chat.changeColor) do
+        if compareWithArguments(data.pattern, rgb2color(data.colors.old)) then
+            return { rgb2color(data.colors.new), tempText }
+        end
+    end
+
+    for _, data in ipairs(cfg.chat.remove) do
+        if compareWithArguments(data.pattern, rgb2color(data.color)) then
+            return false
+        end
     end
 
     if text:find("Вы успешно авторизовались как администратор") or text:find("%|.*Вы уже авторизировались") and color == -1 then
@@ -2136,7 +2162,7 @@ function samp.onServerMessage(color, text)
            text:find("%[A%] .*%[%d+%]:.*@" .. nickname) and
            color == 866792362
     then
-        return insertLvlInAdminChat { convertHexToInt32(cfg.mentionColor), tempText }
+        return insertLvlInAdminChat { rgb2color(cfg.mentionColor), tempText }
     elseif text:find("^%[A%] Жалоба от .*%[%d+%]: .*") then
         if cfg.reportWindow.use then
             table.insert(reportData.messages, {
@@ -2202,7 +2228,7 @@ function samp.onServerMessage(color, text)
     end
 
     if DEBUG then
-        print("COLOR:", bit.tohex(bit.rshift(color, 8), 6), "| DEF:", color, "|", string.gsub(tempText, "{(%x%x%x%x%x%x)}", "#%1"))
+        print("COLOR:", colorAsHexadecimalRGB, "| DEF:", color, "|", string.gsub(tempText, "{(%x%x%x%x%x%x)}", "#%1"))
     end
 end
 
