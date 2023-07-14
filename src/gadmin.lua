@@ -97,11 +97,9 @@ ffi.cdef[[
 
 changeTheme = {} -- to export
 
-function enum()
-    return function(num)
-        for i, v in ipairs(num) do
-            _G[v] = i
-        end
+function enum(num)
+    for i, v in ipairs(num) do
+        _G[v] = i
     end
 end
 
@@ -174,7 +172,8 @@ function create_config()
             reportWindow        = {x = sizeX / 2, y = sizeX / 2},
             farchat             = {x = sizeX / 2, y = sizeX / 2},
             onlineFrame         = {x = sizeX, y = sizeY},
-            fpsCount            = {x = sizeX / 2.5, y = sizeY / 3.1}
+            fpsCount            = {x = sizeX / 2.5, y = sizeY / 3.1},
+            keyWatcher          = {x = sizeX / 2, y = sizeY / 2}
         },
         windowsSettings = {
             playersNearby = {
@@ -189,6 +188,9 @@ function create_config()
             },
             playerStatsFrame = {
                 mode = 1
+            },
+            keyWatcher = {
+                use = false
             }
         },
         specAdminPanel = {
@@ -414,8 +416,15 @@ local cGGMessage                = new.char[256](cfg.gg_msg)
 local cGamePassword             = new.char[256](cfg.game_pass)
 local cAdminPassword            = new.char[256](cfg.adm_pass)
 
--- If you want to add an imgui window(that can resize), then add to this array an table with the following:
--- {title = String, jsonKey = String, it = ImBool}
+--- If you want to add an imgui window(that can resize), then add to this array an table with the following:
+--- ```lua
+--- {
+---     title = String,
+---     jsonKey = String,
+---     it = ImBool
+--- }...
+--- ```
+--- **Don't pass** a boolean to the `it` parameter, pass it directly in the window display condition. (always use `it = new.bool()`)
 local movableWindows = {
     {
         title   = "Окно быстрых действий в /sp",
@@ -453,18 +462,84 @@ local movableWindows = {
         title   = "Счетчик FPS",
         jsonKey = "fpsCount",
         it      = new.bool(cfg.additions.fpsCount.use)
+    }, {
+        title   = "Нажатия игрока в /sp",
+        jsonKey = "keyWatcher",
+        it      = new.bool(cfg.windowsSettings.keyWatcher.use)
     }
 }
 
-enum "MOV_ENUM" {
+local spectatorKeys = {
+    pc = {
+        onFoot = {
+            _imgui  = { window = { size = imgui.ImVec2(281, 85) } },
+            w       = { _imgui = { size = imgui.ImVec2(35, 35), pos = imgui.ImVec2(45, 5) }, status = false },
+            a       = { _imgui = { size = imgui.ImVec2(35, 35), pos = imgui.ImVec2(5, 45) }, status = false },
+            s       = { _imgui = { size = imgui.ImVec2(35, 35), pos = imgui.ImVec2(45, 45) }, status = false },
+            d       = { _imgui = { size = imgui.ImVec2(35, 35), pos = imgui.ImVec2(85, 45) }, status = false },
+            space   = { _imgui = { size = imgui.ImVec2(110, 35), pos = imgui.ImVec2(126, 45) }, status = false },
+            shift   = { _imgui = { size = imgui.ImVec2(52, 35), pos = imgui.ImVec2(126, 5) }, status = false },
+            alt     = { _imgui = { size = imgui.ImVec2(52, 35), pos = imgui.ImVec2(184, 5) }, status = false },
+            f       = { _imgui = { size = imgui.ImVec2(35, 35), pos = imgui.ImVec2(241, 5) }, status = false },
+            c       = { _imgui = { size = imgui.ImVec2(35, 35), pos = imgui.ImVec2(241, 45) }, status = false },
+            lmb     = { _imgui = { size = imgui.ImVec2(35, 35), pos = imgui.ImVec2(5, 5) }, status = false },
+            rmb     = { _imgui = { size = imgui.ImVec2(35, 35), pos = imgui.ImVec2(85, 5) }, status = false }
+        },
+        inVehicle = {
+            _imgui  = { window = { size = imgui.ImVec2(336, 85) } },
+            w       = { _imgui = { size = imgui.ImVec2(35, 35), pos = imgui.ImVec2(45, 5) }, status = false },
+            a       = { _imgui = { size = imgui.ImVec2(35, 35), pos = imgui.ImVec2(5, 45) }, status = false },
+            s       = { _imgui = { size = imgui.ImVec2(35, 35), pos = imgui.ImVec2(45, 45) }, status = false },
+            d       = { _imgui = { size = imgui.ImVec2(35, 35), pos = imgui.ImVec2(85, 45) }, status = false },
+            h       = { _imgui = { size = imgui.ImVec2(35, 35), pos = imgui.ImVec2(241, 5) }, status = false },
+            space   = { _imgui = { size = imgui.ImVec2(110, 35), pos = imgui.ImVec2(126, 45) }, status = false },
+            ctrl    = { _imgui = { size = imgui.ImVec2(52, 35), pos = imgui.ImVec2(126, 5) }, status = false },
+            alt     = { _imgui = { size = imgui.ImVec2(52, 35), pos = imgui.ImVec2(184, 5) }, status = false },
+            q       = { _imgui = { size = imgui.ImVec2(35, 35), pos = imgui.ImVec2(5, 5) }, status = false },
+            e       = { _imgui = { size = imgui.ImVec2(35, 35), pos = imgui.ImVec2(85, 5) }, status = false },
+            f       = { _imgui = { size = imgui.ImVec2(35, 35), pos = imgui.ImVec2(241, 45) }, status = false },
+            up      = { _imgui = { size = imgui.ImVec2(50, 35), pos = imgui.ImVec2(281, 5) }, status = false },
+            down    = { _imgui = { size = imgui.ImVec2(50, 35), pos = imgui.ImVec2(281, 45) }, status = false }
+        },
+    },
+    mobile = {
+        onFoot = {
+            _imgui  = {
+                window  = { size = imgui.ImVec2(240, 85) },
+                joy     = { pos = imgui.ImVec2(37, 38) }
+            },
+            hit                 = { _imgui = { size = imgui.ImVec2(52, 35), pos = imgui.ImVec2(85, 5) }, status = false },
+            aim                 = { _imgui = { size = imgui.ImVec2(52, 35), pos = imgui.ImVec2(143, 5) }, status = false },
+            ["jump / run"]      = { _imgui = { size = imgui.ImVec2(110, 35), pos = imgui.ImVec2(85, 45) }, status = false },
+            f                   = { _imgui = { size = imgui.ImVec2(35, 35), pos = imgui.ImVec2(200, 5) }, status = false },
+            alt                 = { _imgui = { size = imgui.ImVec2(35, 35), pos = imgui.ImVec2(200, 45) }, status = false }
+        },
+        inVehicle = {
+            _imgui      = {
+                window  = { size = imgui.ImVec2(289, 85) },
+                joy     = { size = imgui.ImVec2(10, 10), pos = imgui.ImVec2(37, 38) }
+            },
+            forward     = { _imgui = { size = imgui.ImVec2(90, 35), pos = imgui.ImVec2(85, 5) }, status = false },
+            backward    = { _imgui = { size = imgui.ImVec2(90, 35), pos = imgui.ImVec2(85, 45) }, status = false },
+            signal      = { _imgui = { size = imgui.ImVec2(65, 35), pos = imgui.ImVec2(179, 5) }, status = false },
+            braking     = { _imgui = { size = imgui.ImVec2(65, 35), pos = imgui.ImVec2(179, 45) }, status = false },
+            ["2"]       = { _imgui = { size = imgui.ImVec2(35, 35), pos = imgui.ImVec2(249, 5) }, status = false },
+            f           = { _imgui = { size = imgui.ImVec2(35, 35), pos = imgui.ImVec2(249, 45) }, status = false }
+        }
+    }
+}
+
+enum {
     "MOV_ACTION",
     "MOV_STATS",
     "MOV_NEARBY",
     "MOV_CHECKER",
     "MOV_ADMIN_PANEL",
     "MOV_REPORT",
+    "MOV_ONLINE",
     "MOV_FARCHAT",
-    "MOV_FPS_COUNT" -- Still not window.
+    "MOV_FPS_COUNT",
+    "MOV_KEY_WATCHER"
 }
 
 function imgui.Input()
@@ -502,7 +577,7 @@ function imgui.CenterText(text)
     imgui.Text(text)
 end
 
-function writeScriptInformationIn(path, neatJsonProperties)
+function writeScriptInformationIn(path, neatJsonProperties) -- TODO: Rewrite with debug library.
     local mainConfig = (function()
         local config        = cfg
         config.adm_pass     = "HIDEN"
@@ -1013,7 +1088,7 @@ imgui.OnFrame(
         imgui.SetNextWindowSize(imgui.ImVec2(250, 287))
         changeTheme:applySettings(self.playersNearbyAlpha)
         imgui.Begin("playersNearby", movableWindows[MOV_NEARBY].it, imgui.WindowFlags.NoMove + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar)
-            if changePosition == 3 then
+            if changePosition == MOV_NEARBY then
                 for _, v in ipairs {
                     "VANYA", "El_Capone", "DZONE", "Tyler_Carter", "Samuel_Jones", "Anthony_Hughes",
                     "Christopher_Rivera", "HeroIAm", "Julian_Hall", "Xavier_Gray", "Gavin_Jenkins",
@@ -1379,10 +1454,10 @@ imgui.OnFrame(
             {"ImVec2", "ItemSpacing", change = {0, 7}, reset = {5, 5}},
             {"Int", "FrameBorderSize", change = 0, reset = 1},
             {"Int", "WindowBorderSize", change = 0, reset = 1},
-            { "ImVec4", "WindowBg", change = convertHex2ImVec4("21242A", cfg.specAdminPanel.alpha), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
-            { "ImVec4", "Button", change = convertHex2ImVec4("444751"), reset = imgui.ImVec4(0.12, 0.12, 0.12, 1.00)},
-            { "ImVec4", "ButtonHovered", change = convertHex2ImVec4("303238"), reset = imgui.ImVec4(0.21, 0.20, 0.20, 1.00)},
-            { "ImVec4", "ButtonActive", change = convertHex2ImVec4("444751"), reset = imgui.ImVec4(0.41, 0.41, 0.41, 1.00)},
+            {"ImVec4", "WindowBg", change = convertHex2ImVec4("21242A", cfg.specAdminPanel.alpha), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00)},
+            {"ImVec4", "Button", change = convertHex2ImVec4("444751"), reset = imgui.ImVec4(0.12, 0.12, 0.12, 1.00)},
+            {"ImVec4", "ButtonHovered", change = convertHex2ImVec4("303238"), reset = imgui.ImVec4(0.21, 0.20, 0.20, 1.00)},
+            {"ImVec4", "ButtonActive", change = convertHex2ImVec4("444751"), reset = imgui.ImVec4(0.41, 0.41, 0.41, 1.00)},
             {"ImVec2", "ButtonTextAlign", change = {0.5, 0.5}, reset = {0.5, 0.5}}
         }
 
@@ -1444,9 +1519,93 @@ imgui.OnFrame(
                     if imgui.IsItemClicked() then doAction(k) end
                 end
             imgui.End()
-
         imgui.PopFont()
         changeTheme:resetDefault(self.specAdminPanelStyle)
+    end
+)
+
+--- Key watcher
+imgui.OnFrame(
+    function()
+        return (isNotGamePaused() and cfg.windowsSettings.keyWatcher.use and isPlayerInSpectate) or changePosition == MOV_KEY_WATCHER
+    end, function(self)
+        self.spectatorPlatform  = changePosition == MOV_KEY_WATCHER and "PC" or playersPlatform[tonumber(infoAbout)]
+        self.spectatorId        = changePosition == MOV_KEY_WATCHER and select(2, sampGetPlayerIdByCharHandle(PLAYER_PED)) or tonumber(infoAbout)
+        local result, ped       = sampGetCharHandleBySampPlayerId(self.spectatorId)
+        if (result and self.spectatorPlatform) or changePosition == MOV_KEY_WATCHER then
+            self.HideCursor         = cursorStatus
+            self.flags              = imgui.WindowFlags.NoMove + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize
+            self.properties         = {
+                { "Int", "WindowBorderSize", change = 0, reset = 1 },
+                { "Int", "ChildBorderSize", change = 0, reset = 1 },
+                { "Int", "FrameBorderSize", change = 0, reset = 1 },
+                { "ImVec4", "WindowBg", change = convertHex2ImVec4("222222", 0.7), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00) }
+            }
+
+            self.fill = function(ImVec2_size, ImVec2_pos, ImVec4_color, rounding)
+                imgui.SetCursorPos(ImVec2_pos)
+                imgui.PushStyleVarFloat(imgui.StyleVar.ChildRounding, rounding or 0)
+                imgui.PushStyleColor(imgui.Col.ChildBg, ImVec4_color)
+                imgui.BeginChild(tostring(ImVec2_pos), ImVec2_size, true)
+                imgui.EndChild()
+                imgui.PopStyleColor()
+                imgui.PopStyleVar()
+            end
+
+            self.keysTable =
+                    isCharInAnyCar(changePosition == MOV_KEY_WATCHER and PLAYER_PED or ped)
+                    and spectatorKeys[string.lower(self.spectatorPlatform)].inVehicle
+                    or spectatorKeys[string.lower(self.spectatorPlatform)].onFoot
+
+            self.buttonProperties = {
+                [false] = {
+                    { "ImVec4", "Button", change = convertHex2ImVec4("5B5B5B", 0.7) },
+                    { "ImVec4", "ButtonHovered", change = convertHex2ImVec4("5B5B5B", 0.7) },
+                    { "ImVec4", "ButtonActive", change = convertHex2ImVec4("5B5B5B", 0.7) }
+                }, [true] = {
+                    { "ImVec4", "Button", change = convertHex2ImVec4("424242", 0.7) },
+                    { "ImVec4", "ButtonHovered", change = convertHex2ImVec4("424242", 0.7) },
+                    { "ImVec4", "ButtonActive", change = convertHex2ImVec4("424242", 0.7) }
+                }, reset = {
+                    { "ImVec4", "Button", reset = imgui.ImVec4(0.12, 0.12, 0.12, 1.00) },
+                    { "ImVec4", "ButtonHovered", reset = imgui.ImVec4(0.21, 0.20, 0.20, 1.00) },
+                    { "ImVec4", "ButtonActive", reset = imgui.ImVec4(0.41, 0.41, 0.41, 1.00) }
+                }
+            }
+
+            self.joystickBorderProperties = {
+                { "Int", "ChildBorderSize", change = 2, reset = 1 },
+                { "ImVec4", "Border", change = convertHex2ImVec4("5B5B5B", 0.7), reset = imgui.ImVec4(0.25, 0.25, 0.26, 0.54) },
+            }
+
+            changeTheme:applySettings(self.properties)
+            imgui.SetNextWindowPos(imgui.ImVec2(cfg.windowsPosition.keyWatcher.x, cfg.windowsPosition.keyWatcher.y))
+            imgui.SetNextWindowSize(self.keysTable._imgui.window.size)
+            imgui.Begin("Key watcher", movableWindows[MOV_KEY_WATCHER].it, self.flags)
+                for key, data in pairs(self.keysTable) do
+                    if key ~= "_imgui" then
+                        imgui.SetCursorPos(data._imgui.pos)
+                        imgui.PushFont(regular9)
+                            changeTheme:applySettings(self.buttonProperties[data.status])
+                            imgui.Button(string.upper(key), data._imgui.size)
+                            changeTheme:resetDefault(self.buttonProperties.reset)
+                        imgui.PopFont()
+                    else
+                        if self.spectatorPlatform == "Mobile" then -- render joystick
+                            local windowPos = imgui.GetWindowPos()
+                            imgui.GetWindowDrawList():AddCircle(
+                                imgui.ImVec2(windowPos.x + 42, windowPos.y + 42),
+                                37,
+                                imgui.GetColorU32Vec4(convertHex2ImVec4("5B5B5B", 0.7)), 0xFF, 2
+                            )
+                            local joystickCenterDot = self.keysTable._imgui.joy.pos
+                            self.fill(imgui.ImVec2(10, 10), joystickCenterDot, convertHex2ImVec4("5B5B5B", 0.7), 0xFF)
+                        end
+                    end
+                end
+            imgui.End()
+            changeTheme:resetDefault(self.properties)
+        end
     end
 )
 
@@ -1461,7 +1620,7 @@ local menuProperties = {
     }
 }
 
-enum "MAIN_WINDOW_TABS" {
+enum {
     "TAB_MAIN",
     "TAB_KEYS"
 }
@@ -1776,6 +1935,7 @@ function main()
         os.remove(XMLPath)
     end
 
+
     sampRegisterChatCommand("gadm", displayMainMenu)
     sampRegisterChatCommand("sp", spectate)
     sampRegisterChatCommand("test", function(arg)
@@ -1798,7 +1958,6 @@ function main()
             end
         end)
     end
-
     
     openMainMenu        = rkeys.registerHotKey(cfg.hotkeys.gadm, 1, displayMainMenu)
     showCursorInSpec    = rkeys.registerHotKey(cfg.hotkeys.spectateCursor, 1, changeSpecCursorMode)
@@ -1826,7 +1985,7 @@ function main()
                 end
             end
         end
-        
+
         if bAirbreakCheckbox[0] then
             abcheck()
         end
@@ -2076,14 +2235,99 @@ function samp.onShowMenu()
     return not cfg.specAdminPanel.show
 end
 
-function samp.onSendChat(cmdtext)
-    local firstChar = cmdtext:sub(1, 1)
-    if firstChar == "." and cfg.swapLayout then
-        local spaceIndex = cmdtext:find(" ")
-        local textToModify = cmdtext:sub(2, spaceIndex and spaceIndex - 1)
-        local modifiedText = swapLayout(u8(textToModify))
-        local finalText = modifiedText .. (spaceIndex and cmdtext:sub(spaceIndex) or "")
-        sampSendChat('/' .. u8(finalText))
+function samp.onPlayerSync(id, data) -- TODO: https://www.blast.hk/threads/128348/#post-1011416 https://www.blast.hk/threads/173857/
+    if tonumber(infoAbout) == id then
+        if playersPlatform[id] == "PC" then
+            spectatorKeys.pc.onFoot.w.status       = data.upDownKeys == 0xFF80
+            spectatorKeys.pc.onFoot.a.status       = data.leftRightKeys == 0xFF80
+            spectatorKeys.pc.onFoot.s.status       = data.upDownKeys == 0x80
+            spectatorKeys.pc.onFoot.d.status       = data.leftRightKeys == 0x80
+            spectatorKeys.pc.onFoot.alt.status     = bit.band(data.keysData, 0x400) == 0x400
+            spectatorKeys.pc.onFoot.shift.status   = bit.band(data.keysData, 8) == 8
+            spectatorKeys.pc.onFoot.space.status   = bit.band(data.keysData, 0x20) == 0x20
+            spectatorKeys.pc.onFoot.f.status       = bit.band(data.keysData, 0x10) == 0x10
+            spectatorKeys.pc.onFoot.c.status       = bit.band(data.keysData, 2) == 2
+            spectatorKeys.pc.onFoot.rmb.status     = bit.band(data.keysData, 4) == 4
+            spectatorKeys.pc.onFoot.lmb.status     = bit.band(data.keysData, 0x80) == 0x80
+        elseif playersPlatform[id] == "Mobile" then
+            spectatorKeys.mobile.onFoot.hit.status              = bit.band(data.keysData, 4) == 4
+            spectatorKeys.mobile.onFoot.alt.status              = bit.band(data.keysData, 0x400) == 0x400
+            spectatorKeys.mobile.onFoot.f.status                = bit.band(data.keysData, 0x10) == 0x10
+            spectatorKeys.mobile.onFoot["jump / run"].status    = bit.band(data.keysData, 8) == 8
+            spectatorKeys.mobile.onFoot.aim.status              = bit.band(data.keysData, 0x80) == 0x80
+
+            local x, y = data.leftRightKeys, data.upDownKeys
+            spectatorKeys.mobile.onFoot._imgui.joy.pos.x = x == nil and 38 or ((x > 128 and x - 0xFFFF or x) / 5.6) + 42
+            spectatorKeys.mobile.onFoot._imgui.joy.pos.y = y == nil and 37 or ((y > 128 and y - 0xFFFF or y) / 5.6) + 42
+        end
+    end
+end
+
+function samp.onVehicleSync(id, _, data)
+    if tonumber(infoAbout) == id then
+        if playersPlatform[id] == "PC" then
+            spectatorKeys.pc.inVehicle.w.status     = bit.band(data.keysData, 8) == 8
+            spectatorKeys.pc.inVehicle.a.status     = data.leftRightKeys == 0xFF80
+            spectatorKeys.pc.inVehicle.s.status     = bit.band(data.keysData, 0x20) == 0x20
+            spectatorKeys.pc.inVehicle.d.status     = data.leftRightKeys == 0x80
+            spectatorKeys.pc.inVehicle.h.status     = bit.band(data.keysData, 2) == 2
+            spectatorKeys.pc.inVehicle.space.status = bit.band(data.keysData, 0x80) == 0x80
+            spectatorKeys.pc.inVehicle.ctrl.status  = bit.band(data.keysData, 1) == 1
+            spectatorKeys.pc.inVehicle.alt.status   = bit.band(data.keysData, 4) == 4
+            spectatorKeys.pc.inVehicle.q.status     = bit.band(data.keysData, 0x100) == 0x100
+            spectatorKeys.pc.inVehicle.e.status     = bit.band(data.keysData, 0x40) == 0x40
+            spectatorKeys.pc.inVehicle.f.status     = bit.band(data.keysData, 0x10) == 0x10
+            spectatorKeys.pc.inVehicle.up.status    = data.upDownKeys == 0xFF80
+            spectatorKeys.pc.inVehicle.down.status  = data.upDownKeys == 0x80
+        elseif playersPlatform[id] == "Mobile" then
+            spectatorKeys.mobile.inVehicle.signal.status    = bit.band(data.keysData, 2) == 2
+            spectatorKeys.mobile.inVehicle.forward.status   = bit.band(data.keysData, 8) == 8
+            spectatorKeys.mobile.inVehicle.braking.status   = bit.band(data.keysData, 0x28) == 0x28 -- braking is FORWARD + BACKWARD
+            spectatorKeys.mobile.inVehicle.backward.status  = bit.band(data.keysData, 0x20) == 0x20
+            spectatorKeys.mobile.inVehicle["2"].status      = bit.band(data.keysData, 0x200) == 0x200
+            spectatorKeys.mobile.inVehicle.f.status         = bit.band(data.keysData, 0x10) == 0x10
+
+            print(data.keysData)
+
+            local x, y = data.leftRightKeys, data.upDownKeys
+            spectatorKeys.mobile.inVehicle._imgui.joy.pos.x = x == nil and 38 or ((x > 128 and x - 0xFFFF or x) / 5.6) + 42
+            spectatorKeys.mobile.inVehicle._imgui.joy.pos.y = y == nil and 37 or ((y > 128 and y - 0xFFFF or y) / 5.6) + 42
+        end
+    end
+end
+
+function samp.onPassengerSync(id, data)
+    if tonumber(infoAbout) == id then
+        -- Why is there no sync check for mobile devices? Yes, you can also track this, but at the output we will get
+        -- only four keys: ALT, F, H, 2. Synchronization is also sent to the Y and N keys, but they will always be zero.
+        -- Synchronization for PC is the same as onVehicleSync.
+        if playersPlatform[id] == "PC" then
+            spectatorKeys.pc.inVehicle.w.status     = bit.band(data.keysData, 8) == 8
+            spectatorKeys.pc.inVehicle.a.status     = data.leftRightKeys == 0xFF80
+            spectatorKeys.pc.inVehicle.s.status     = bit.band(data.keysData, 0x20) == 0x20
+            spectatorKeys.pc.inVehicle.d.status     = data.leftRightKeys == 0x80
+            spectatorKeys.pc.inVehicle.h.status     = bit.band(data.keysData, 2) == 2
+            spectatorKeys.pc.inVehicle.space.status = bit.band(data.keysData, 0x80) == 0x80
+            spectatorKeys.pc.inVehicle.ctrl.status  = bit.band(data.keysData, 1) == 1
+            spectatorKeys.pc.inVehicle.alt.status   = bit.band(data.keysData, 4) == 4
+            spectatorKeys.pc.inVehicle.q.status     = bit.band(data.keysData, 0x100) == 0x100
+            spectatorKeys.pc.inVehicle.e.status     = bit.band(data.keysData, 0x40) == 0x40
+            spectatorKeys.pc.inVehicle.f.status     = bit.band(data.keysData, 0x10) == 0x10
+            spectatorKeys.pc.inVehicle.up.status    = data.upDownKeys == 0xFF80
+            spectatorKeys.pc.inVehicle.down.status  = data.upDownKeys == 0x80
+        end
+    end
+end
+
+function samp.onSendChat(message)
+    local comma, command = string.match(message, "^(.)(%S*)")
+    if comma == "." and cfg.swapLayout then
+        local output = swapLayout(command)
+        if sampIsChatCommandDefined(output) then
+            sampProcessChatInput("/" .. output)
+        else
+            sampSendChat("/" .. output)
+        end
         return false
     end
 end
@@ -2658,8 +2902,10 @@ end
 function sampAddChatMessage(text, color)
     addChatMessage(u8:decode(text), color)
 end
+
 function swapLayout(text)
-    local chars = {
+    local text = u8(text)
+    for k, v in pairs {
         ["й"] = "q", ["ц"] = "w", ["у"] = "e", ["к"] = "r", ["е"] = "t",
         ["н"] = "y", ["г"] = "u", ["ш"] = "i", ["щ"] = "o", ["з"] = "p",
         ["х"] = "[", ["ъ"] = "]", ["ф"] = "a", ["ы"] = "s", ["в"] = "d",
@@ -2673,15 +2919,10 @@ function swapLayout(text)
         ["О"] = "J", ["Л"] = "K", ["Д"] = "L", ["Ж"] = ":", ["Э"] = "\"",
         ["Я"] = "Z", ["Ч"] = "X", ["С"] = "C", ["М"] = "V", ["И"] = "B",
         ["Т"] = "N", ["Ь"] = "M", ["Б"] = "<", ["Ю"] = ">"
-    }
-
-    for k, v in pairs(chars) do
-        text = text:gsub(k, v)
-    end
+    } do text = text:gsub(k, v) end
 
     return text
 end
-
 
 function abcheck()
     if not bAirbreakCheckbox[0] then return end
