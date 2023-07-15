@@ -2132,9 +2132,9 @@ function samp.onSendChat(message)
     if comma == "." and cfg.swapLayout then
         local output = swapLayout(command)
         if sampIsChatCommandDefined(output) then
-            sampProcessChatInput("/" .. output .. arguments)
+            sampProcessChatInput("/" .. (arguments and output .. arguments or output))
         else
-            sampSendChat("/" .. output .. argument)
+            sampSendChat("/" .. (arguments and output .. arguments or output))
         end
         return false
     end
