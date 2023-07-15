@@ -566,7 +566,7 @@ function imgui.CenterText(text)
     imgui.Text(text)
 end
 
-function writeScriptInformationIn(path, neatJsonProperties) -- TODO: Rewrite with debug library.
+function writeScriptInformationIn(path, neatJsonProperties)
     local mainConfig = (function()
         local config        = cfg
         config.adm_pass     = "HIDDEN"
@@ -2128,13 +2128,13 @@ function samp.onPassengerSync(id, data)
 end
 
 function samp.onSendChat(message)
-    local comma, command = string.match(message, "^(.)(%S*)")
+    local comma, command, arguments = string.match(message, "^(.)(%S*)(.*)")
     if comma == "." and cfg.swapLayout then
         local output = swapLayout(command)
         if sampIsChatCommandDefined(output) then
-            sampProcessChatInput("/" .. output)
+            sampProcessChatInput("/" .. output .. arguments)
         else
-            sampSendChat("/" .. output)
+            sampSendChat("/" .. output .. argument)
         end
         return false
     end
