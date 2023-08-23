@@ -50,7 +50,6 @@ local memory        = loadLib("memory")
 local encoding      = loadLib("encoding")
 local imgui         = loadLib("mimgui")
 local wm            = loadLib("windows.message")
-local vkeys         = loadLib("vkeys")
 local samp          = loadLib("lib.samp.events")
 local ffi           = loadLib("ffi")
 local neatJSON      = loadLib("neatjson")
@@ -66,6 +65,8 @@ local sizeX, sizeY = getScreenResolution()
 -- FFI
 local getBonePosition = ffi.cast("int (__thiscall*)(void*, float*, int, bool)", 0x5E4280)
 ffi.cdef[[
+    typedef void CInput;
+    
     struct stKillEntry
     {
 	    char					szKiller[25];
@@ -93,6 +94,7 @@ ffi.cdef[[
     } __attribute__ ((packed));
 
     const char* GetCommandLineA(void);
+    int VirtualProtect(void* lpAddress, unsigned long dwSize, unsigned long flNewProtect, unsigned long* lpflOldProtect);
 ]]
 
 changeTheme         = {}
@@ -302,6 +304,7 @@ local fisheyeWeaponLock = false
 local playerTime
 local changePosition = -1
 local farchatTable = {}
+local hook = { hooks = {} }
 local checking_stats = false
 local lastStatsChecked = 0
 local spectateId = -1
@@ -530,6 +533,12 @@ local spectatorKeys = {
     }
 }
 
+function readText(file)
+    local handle = io.open(file, "r")
+    local output = handle:read("*all")
+    handle:close()
+    return output
+end
 
 function imgui.Input()
     -- TODO: Write your own input so as not to produce a bunch of the same type of code.
@@ -675,6 +684,47 @@ function getBodyPartCoordinates(id, handle)
     local vec = ffi.new("float[3]")
     getBonePosition(ffi.cast("void*", pedPointer), vec, id, true)
     return vec[0], vec[1], vec[2]
+end
+
+function hook.new(cast, callback, hookAddress, size)
+    jit.off(callback, true)
+
+    local size = size or 5
+    local newHook = { status = false }
+    local detourAddress = tonumber(ffi.cast("intptr_t", ffi.cast("void*", ffi.cast(cast, callback))))
+    local voidAddress = ffi.cast("void*", hookAddress)
+    local oldProt = ffi.new("unsigned long[1]")
+    local orgBytes = ffi.new("uint8_t[?]", size)
+    
+    ffi.copy(orgBytes, voidAddress, size)
+    
+    local hookBytes = ffi.new("uint8_t[?]", size, 0x90)
+    hookBytes[0] = 0xE9
+    ffi.cast("uint32_t*", hookBytes + 1)[0] = detourAddress - hookAddress - 5
+    
+    local function setStatus(bool)
+        newHook.status = bool
+        ffi.C.VirtualProtect(voidAddress, size, 0x40, oldProt)
+        ffi.copy(voidAddress, bool and hookBytes or orgBytes, size)
+        ffi.C.VirtualProtect(voidAddress, size, oldProt[0], oldProt)
+    end
+
+    newHook.call   = ffi.cast(cast, hookAddress)
+    newHook.status = false
+    newHook.stop   = function() setStatus(false) end
+    newHook.start  = function() setStatus(true) end
+    
+    newHook.start()
+    table.insert(hook.hooks, newHook)
+    
+    return setmetatable(newHook, {
+        __call = function(self, ...)
+            self.stop()
+            local res = self.call(...)
+            self.start()
+            return res
+        end
+    })
 end
 
 function stopForm()
@@ -1074,21 +1124,75 @@ imgui.OnFrame(
     end
 )
 
-imgui.OnFrame( --- TODO
-    function() return isNotGamePaused() and sampIsChatInputActive() and bAutocompletionFrame[0] end,
+local autoCompletion = {
+    position = 1,
+    foundCommandsListLength = 1,
+
+    commands = (function()
+        local list      = readText(getWorkingDirectory() .. "\\GAdminResource\\Autocompletion.txt")
+        local output    = {}
+        for line in string.gmatch(list, "[^\n]+") do
+            local command, description = string.match(line, "^([/A-Za-z]+)%s*(.*)$")
+            table.insert(output, { command = command, description = description })
+        end
+        return output
+    end)(),
+    
+    condition = function()
+        return isNotGamePaused() and bAutocompletionFrame[0] and sampIsChatInputActive()
+            and string.sub(sampGetChatInputText(), 1, 2):find("/[A-Za-z]") and #sampGetChatInputText() >= 2
+    end
+}
+
+--- Auto-completion frame
+imgui.OnFrame(autoCompletion.condition,
     function(self)
         self.inputInfoPtr   = sampGetInputInfoPtr()
         self.stInputInfo    = getStructElement(self.inputInfoPtr, 0x8, 4)
         self.chatPosX       = getStructElement(self.stInputInfo, 0x8, 4)
         self.chatPosY       = getStructElement(self.stInputInfo, 0xC, 4)
         self.windowFlags    = imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoMove
+        self.inputText      = sampGetChatInputText()
+        self.properties     = {
+            { "Int", "WindowRounding", change = 0, reset = 5 },
+            { "Int", "WindowBorderSize", change = 0, reset = 1 },
+            { "ImVec4", "Header", change = convertHex2ImVec4("5B5B5B"), reset = imgui.ImVec4(0.12, 0.12, 0.12, 1.00) },
+            { "ImVec4", "HeaderHovered", change = convertHex2ImVec4("838383"), reset = imgui.ImVec4(0.21, 0.20, 0.20, 1.00) },
+            { "ImVec4", "HeaderActive", change = convertHex2ImVec4("424242"), reset = imgui.ImVec4(0.41, 0.41, 0.41, 1.00) },
+            { "ImVec4", "WindowBg", change = imgui.ImVec4(0, 0, 0, 0), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00) }
+        }
 
-        imgui.SetNextWindowPos(imgui.ImVec2(self.chatPosX, self.chatPosY + 50))
-        imgui.SetNextWindowSize(imgui.ImVec2(500, 250))
+        self.foundCommandsList = (function()
+            local list = {}
+            for _, data in ipairs(autoCompletion.commands) do
+                if string.find(data.command, self.inputText, 1, true) then
+                    table.insert(list, data)
+                end
+            end
+            return list
+        end)()
 
-        imgui.Begin("Auto completion window", bAutocompletionFrame, self.windowFlags)
-            
-        imgui.End()
+        autoCompletion.foundCommandsListLength = #self.foundCommandsList
+       
+        if autoCompletion.foundCommandsListLength > 0 then
+            imgui.SetNextWindowPos(imgui.ImVec2(self.chatPosX, self.chatPosY + 50))
+            imgui.SetNextWindowSizeConstraints(imgui.ImVec2(0, 0), imgui.ImVec2(math.huge, math.huge))
+
+            changeTheme:applySettings(self.properties)
+
+            imgui.Begin("AutoCompletionWindow", bAutocompletionFrame, self.windowFlags)
+                for pos, data in ipairs(self.foundCommandsList) do
+                    if imgui.Selectable(string.format("%s - %s", data.command, data.description), autoCompletion.position == pos)
+                        or (autoCompletion.position == pos and isKeyJustPressed(VK_TAB))
+                    then
+                        sampSetChatInputText(data.command)
+                        autoCompletion.position = pos
+                    end
+                end
+            imgui.End()
+
+            changeTheme:resetDefault(self.properties)
+        end
     end
 )
 
@@ -1671,7 +1775,7 @@ end)
 
 function onWindowMessage(msg, wparam, lparam)
     if msg == wm.WM_SYSKEYDOWN or msg == wm.WM_KEYDOWN then
-        if bMainMenu[0] and wparam == vkeys.VK_ESCAPE and not isPauseMenuActive() then
+        if bMainMenu[0] and wparam == VK_ESCAPE and not isPauseMenuActive() then
             consumeWindowMessage(true, false)
             bMainMenu[0] = false
         end
@@ -1685,7 +1789,7 @@ function onWindowMessage(msg, wparam, lparam)
             if isFovInRange then
                 if wparam == MOUSE_WHEEL_VERTICAL_SIDE_UP then
                     zoomCameraInSpectatorFov = currentFov + 5 > 150 and 150 or currentFov + 5
-                    consumeWindowMessage()
+                    consumeWindowMessage() -- FIXME: This shit not working. Fix with JMP hook. (if there any address)
                 elseif wparam == MOUSE_WHEEL_VERTICAL_SIDE_DOWN then
                     zoomCameraInSpectatorFov = currentFov - 5 < 50 and 50 or currentFov - 5
                     consumeWindowMessage()
@@ -1727,7 +1831,8 @@ function main()
 
     for _, path in ipairs {
         "GAdmin_data",
-        "GAdmin_data\\temp"
+        "GAdmin_data\\temp",
+        "GAdminResource"
     } do
         if not doesDirectoryExist(getWorkingDirectory() .. "\\" .. path) then
             createDirectory(getWorkingDirectory() .. "\\" .. path)
@@ -1751,6 +1856,8 @@ function main()
         os.remove(XMLPath)
     end
 
+    onRecallUpHook      = hook.new("void(__thiscall*)(CInput*)", onRecallUpHook, getModuleHandle("samp.dll") + 0x65990)
+    onRecallDownHook    = hook.new("void(__thiscall*)(CInput*)", onRecallDownHook, getModuleHandle("samp.dll") + 0x65A00)
 
     sampRegisterChatCommand("gadm", displayMainMenu)
     sampRegisterChatCommand("sp", spectate)
@@ -1891,6 +1998,22 @@ function main()
     end
 end
 
+function onRecallDownHook(this) -- void(__thiscall*)(CInput*)
+    if isKeyDown(VK_CONTROL) and autoCompletion.condition() then
+        autoCompletion.position = autoCompletion.position == autoCompletion.foundCommandsListLength and 1 or autoCompletion.position + 1
+    else
+        onRecallDownHook(this)
+    end
+end
+
+function onRecallUpHook(this) -- void(__thiscall*)(CInput*)
+    if isKeyDown(VK_CONTROL) and autoCompletion.condition() then
+        autoCompletion.position = autoCompletion.position == 1 and autoCompletion.foundCommandsListLength or autoCompletion.position - 1
+    else
+        onRecallUpHook(this)
+    end
+end
+
 function samp.onBulletSync(playerid, data)
 	if cfg.cheats.tracers.use then
 		if data.target.x == -1 or data.target.y == -1 or data.target.z == -1 then
@@ -1950,6 +2073,12 @@ function onScriptTerminate(LuaScript, quitGame)
             print("updating")
             cfg.movableWindows = movableWindows.getUpdatedConfigWithPositions()
             saveConfig()
+        end
+
+        for i, hook in ipairs(hook.hooks) do
+            if hook.status then
+                hook.stop()
+            end
         end
     end
 end
@@ -2647,10 +2776,14 @@ if DEBUG then
         saveConfig()
     end)
 
-    sampfuncsRegisterConsoleCommand("execute.parseDialog", function()
-        for line in string.gmatch(sampGetDialogText(), "\n") do
-            sampfuncsLog(line)
+    sampfuncsRegisterConsoleCommand("execute.parseDialogIn", function()
+        local handle = io.open(getWorkingDirectory() .. "\\GAdminResource\\parsedialog.log", "a")
+        handle:write("[" .. os.date() .. "]\n")
+        for line in string.gmatch(sampGetDialogText(), "[^\n]+") do
+            local line = string.gsub(line, "{%x%x%x%x%x%x}", "")
+            handle:write(u8(line) .. "\n")
         end
+        handle:close()
     end)
 
     sampfuncsRegisterConsoleCommand("execute.incrementSessionGmoney", function()
@@ -2682,6 +2815,7 @@ end
 sendchat = sampSendChat
 addChatMessage = sampAddChatMessage
 sampfuncslog = sampfuncsLog
+getworkingdirectory = getWorkingDirectory
 
 function sampfuncsLog(text)
     sampfuncslog(u8:decode(text))
@@ -2693,6 +2827,10 @@ end
 
 function sampAddChatMessage(text, color)
     addChatMessage(u8:decode(text), color)
+end
+
+function getWorkingDirectory()
+    return getworkingdirectory() .. (DEBUG and "\\src" or "")
 end
 
 function swapLayout(text)
