@@ -15,10 +15,8 @@
 
         -- Somewhere in ImGui window:
         imgui.Text(gnomeIcons.ICON_PERSON)
-        -- Since `gnomeIcons` table is represented as metatable, we can simply enter key of this icon.
     ```
     Total items count that you can use is 200.
-
 
     GAdmin - Script for administators on gambit-rp.ru
     Copyright (C) 2023 The Contributors*.

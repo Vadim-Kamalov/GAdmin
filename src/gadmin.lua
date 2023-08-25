@@ -65,33 +65,34 @@ local sizeX, sizeY = getScreenResolution()
 -- FFI
 local getBonePosition = ffi.cast("int (__thiscall*)(void*, float*, int, bool)", 0x5E4280)
 ffi.cdef[[
-    typedef void CInput;
-    
-    struct stKillEntry
-    {
-	    char					szKiller[25];
-	    char					szVictim[25];
-	    uint32_t				clKillerColor;      // D3DCOLOR
-	    uint32_t				clVictimColor;      // D3DCOLOR
-	    uint8_t					byteType;
-    } __attribute__ ((packed));
+    typedef void        CInput;
+    typedef uint32_t    D3DCOLOR;
 
-    struct stKillInfo
-    {
-	    int						iEnabled;
-	    struct stKillEntry		killEntry[5];
-	    int 					iLongestNickLength;
-  	    int 					iOffsetX;
-  	    int 					iOffsetY;
-	    void			    	*pD3DFont;          // ID3DXFont
-	    void		    		*pWeaponFont1;      // ID3DXFont
-	    void		   	    	*pWeaponFont2;      // ID3DXFont
-	    void					*pSprite;
-	    void					*pD3DDevice;
-	    int 					iAuxFontInited;
-        void 		    		*pAuxFont1;         // ID3DXFont
-        void 			    	*pAuxFont2;         // ID3DXFont
-    } __attribute__ ((packed));
+    #pragma pack(push, 1)
+        typedef struct {
+	        char            szKiller[25];
+	        char			szVictim[25];
+	        D3DCOLOR		clKillerColor;
+	        D3DCOLOR		clVictimColor;
+	        uint8_t			byteType;
+        } stKillEntry;
+
+        typedef struct {
+	        int				iEnabled;
+	        stKillEntry     killEntry[5];
+	        int 			iLongestNickLength;
+  	        int 			iOffsetX;
+  	        int 			iOffsetY;
+	        void		    *pD3DFont;          // ID3DXFont
+	        void		    *pWeaponFont1;      // ID3DXFont
+	        void		    *pWeaponFont2;      // ID3DXFont
+	        void			*pSprite;
+	        void			*pD3DDevice;
+	        int 			iAuxFontInited;
+            void 		    *pAuxFont1;         // ID3DXFont
+            void 			*pAuxFont2;         // ID3DXFont
+        } stKillInfo;
+    #pragma pack(pop)
 
     const char* GetCommandLineA(void);
     int VirtualProtect(void* lpAddress, unsigned long dwSize, unsigned long flNewProtect, unsigned long* lpflOldProtect);
@@ -183,6 +184,12 @@ function create_config()
             },
             keyWatcher = {
                 use = false
+            },
+            adminList = {
+                use = false,
+                textAlignMode = 1, -- LEFT - 1, CENTER - 2, RIGHT - 3
+                showAdminLvl = false,
+                textColorBasedOnClist = false
             }
         },
         specAdminPanel = {
@@ -290,7 +297,7 @@ local alogin = false
 local formCommandSended = ""
 local checkSendFormCommand = false
 local playersPlatform = {}
-local adminsOnline = {}
+local adminsOnline = {} -- { { oocNickname: String, icNickname: String, adminId: Number, adminLvl: String }... }
 local checkedAdminList = false
 local popupId, popupNickname = 0, ""
 local daysOfWeek = {"sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"}
@@ -469,6 +476,13 @@ local movableWindows = require("gadmin/MovableWindows").init {
             condition   = function()
                 return cfg.windowsSettings.playersNearby.use
             end
+        }, MV_ADMIN_LIST = {
+            description = "Список администраторов в сети",
+            type        = MV_DEFAULT,
+            defaultPos  = { x = sizeX / 2, y = sizeY / 2 },
+            condition   = function()
+                return cfg.windowsSettings.adminList.use
+            end
         }
     }
 }
@@ -614,8 +628,8 @@ function writeScriptInformationIn(path, neatJsonProperties)
                 },
                 char    = {
                     gg_msg                  = {value = str(cGGMessage), size = sizeof(cGGMessage)},
-                    game_pass               = {value = "HIDEN",         size = sizeof(cGamePassword)},
-                    adm_pass                = {value = "HIDEN",         size = sizeof(cAdminPassword)}
+                    game_pass               = {value = "HIDDEN",         size = sizeof(cGamePassword)},
+                    adm_pass                = {value = "HIDDEN",         size = sizeof(cAdminPassword)}
                 }
             },
             movableWindows = movableWindows
@@ -889,8 +903,69 @@ imgui.OnFrame(
     end
 )
 
+movableWindows.newWindow(MV_ADMIN_LIST, function(self)
+    self.flags = imgui.WindowFlags.NoResize + imgui.WindowFlags.NoMove + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.AlwaysAutoResize
+    self.style = {
+        { "Int", "WindowBorderSize", change = 0, reset = 1 },
+        { "ImVec2", "WindowPadding", change = { 0, 0 }, reset = { 5, 5 } },
+        { "ImVec4", "WindowBg", change = imgui.ImVec4(0, 0, 0, 0), reset = imgui.ImVec4(0.07, 0.07, 0.07, 1.00) }
+    }
+
+    imgui.SetNextWindowSize(imgui.ImVec2(200, 0))
+    imgui.SetNextWindowPos(self.windowPosition)
+    
+    changeTheme:applySettings(self.style)
+        
+    imgui.Begin(MV_ADMIN_LIST, nil, self.flags)
+        self.main = self.getWindowInformation()
+        for _, admin in ipairs(adminsOnline) do
+            local pos   = imgui.GetCursorPos()
+            local text  = string.format("[LVL: %s] %s[%d]", admin.adminLvl, admin.oocNickname, admin.adminId)
+            local align = cfg.windowsSettings.adminList.textAlignMode
+
+            text = cfg.windowsSettings.adminList.showAdminLvl and string.format("%s[%d]", admin.oocNickname, admin.adminId) or text
+            pos.x = align == 1 and pos.x
+                or (align == 2 and pos.x + self.main.size.x / 2 - imgui.CalcTextSize(text).x / 2
+                or (align == 3 and pos.x + self.main.size.x - imgui.CalcTextSize(text).x))
+
+            imgui.BeginGroup()
+                imgui.SetCursorPos(imgui.ImVec2(pos.x + 1, pos.y))
+                imgui.TextColored(imgui.ImVec4(0, 0, 0, 1), text)
+                imgui.SetCursorPos(imgui.ImVec2(pos.x - 1, pos.y))
+                imgui.TextColored(imgui.ImVec4(0, 0, 0, 1), text)
+                imgui.SetCursorPos(imgui.ImVec2(pos.x, pos.y + 1))
+                imgui.TextColored(imgui.ImVec4(0, 0, 0, 1), text)
+                imgui.SetCursorPos(imgui.ImVec2(pos.x, pos.y - 1))
+                imgui.TextColored(imgui.ImVec4(0, 0, 0, 1), text)
+
+                imgui.SetCursorPos(pos)
+                imgui.TextColored(
+                    cfg.windowsSettings.adminList.textColorBasedOnClist and
+                        convertHex2ImVec4(string.format("%06X", bit.band(sampGetPlayerColor(adminId), 0xFFFFFF))) or imgui.ImVec4(1, 1, 1, 1),
+                    text
+                )
+            imgui.EndGroup()
+
+            if imgui.IsItemHovered() then
+                imgui.GetWindowDrawList():AddLine(
+                    imgui.ImVec2(self.windowPosition.x + pos.x, self.windowPosition.y + pos.y + imgui.CalcTextSize(text).y),
+                    imgui.ImVec2(self.windowPosition.x + pos.x + imgui.GetItemRectMax().x - 2, self.windowPosition.y + pos.y + imgui.CalcTextSize(text).y),
+                    -1,
+                    2
+                )
+            end
+            
+            if imgui.IsItemClicked() and setClipboardText(admin.oocNickname) then
+                sendNotification(icons.ICON_KEYBOARD, "Никнейм успешно скопирован!", "Скопирован никнейм у администратора: " .. admin.oocNickname, "", 2)
+            end
+        end
+    imgui.End()
+
+    changeTheme:resetDefault(self.style)
+end)
+
 movableWindows.newWindow(MV_ACTION_MENU, function(self)
-    self.Buttons    = {
+    self.Buttons = {
         {
             ["SPAWN"]       = function() sampSendChat("/aspawn ".. infoAbout) end,
             ["GETIP"]       = function() end,
@@ -1173,6 +1248,10 @@ imgui.OnFrame(autoCompletion.condition,
         end)()
 
         autoCompletion.foundCommandsListLength = #self.foundCommandsList
+        
+        if autoCompletion.foundCommandsListLength < autoCompletion.position then
+            autoCompletion.position = 1
+        end
        
         if autoCompletion.foundCommandsListLength > 0 then
             imgui.SetNextWindowPos(imgui.ImVec2(self.chatPosX, self.chatPosY + 50))
@@ -1182,7 +1261,20 @@ imgui.OnFrame(autoCompletion.condition,
 
             imgui.Begin("AutoCompletionWindow", bAutocompletionFrame, self.windowFlags)
                 for pos, data in ipairs(self.foundCommandsList) do
-                    if imgui.Selectable(string.format("%s - %s", data.command, data.description), autoCompletion.position == pos)
+                    local text = string.format("%s - %s", data.command, data.description)
+                    local _pos = imgui.GetCursorPos()
+
+                    imgui.SetCursorPos(imgui.ImVec2(_pos.x + 1, _pos.y))
+                    imgui.TextColored(imgui.ImVec4(0, 0, 0, 1), text)
+                    imgui.SetCursorPos(imgui.ImVec2(_pos.x - 1, _pos.y))
+                    imgui.TextColored(imgui.ImVec4(0, 0, 0, 1), text)
+                    imgui.SetCursorPos(imgui.ImVec2(_pos.x, _pos.y + 1))
+                    imgui.TextColored(imgui.ImVec4(0, 0, 0, 1), text)
+                    imgui.SetCursorPos(imgui.ImVec2(_pos.x, _pos.y - 1))
+                    imgui.TextColored(imgui.ImVec4(0, 0, 0, 1), text)
+                    imgui.SetCursorPos(_pos)
+
+                    if imgui.Selectable(text, autoCompletion.position == pos)
                         or (autoCompletion.position == pos and isKeyJustPressed(VK_TAB))
                     then
                         sampSetChatInputText(data.command)
@@ -1258,7 +1350,6 @@ imgui.OnFrame(
     end
 )
 
---- Online frame
 movableWindows.newWindow(MV_ONLINE_FRAME, function(self)
     self.flags = imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoMove + imgui.WindowFlags.NoScrollbar + imgui.WindowFlags.AlwaysAutoResize
     imgui.SetNextWindowPos(imgui.ImVec2(self.windowPosition))
@@ -2093,7 +2184,7 @@ function samp.onSendCommand(command)
 end
 
 function samp.onPlayerDeathNotification(killerId, killedId, reason)
-    local kill = ffi.cast("struct stKillInfo*", sampGetKillInfoPtr())
+    local kill = ffi.cast("stKillInfo*", sampGetKillInfoPtr())
     local _, myid = sampGetPlayerIdByCharHandle(PLAYER_PED)
     local killerNickname = (sampIsPlayerConnected(killerId) or killerId == myid) and sampGetPlayerNickname(killerId) or nil
     local killedNickname = (sampIsPlayerConnected(killedId) or killedId == myid) and sampGetPlayerNickname(killedId) or nil
