@@ -923,7 +923,7 @@ movableWindows.newWindow(MV_ADMIN_LIST, function(self)
             local text  = string.format("[LVL: %s] %s[%d]", admin.adminLvl, admin.oocNickname, admin.adminId)
             local align = cfg.windowsSettings.adminList.textAlignMode
 
-            text = cfg.windowsSettings.adminList.showAdminLvl and string.format("%s[%d]", admin.oocNickname, admin.adminId) or text
+            text = cfg.windowsSettings.adminList.showAdminLvl and text or string.format("%s[%d]", admin.oocNickname, admin.adminId)
             pos.x = align == 1 and pos.x
                 or (align == 2 and pos.x + self.main.size.x / 2 - imgui.CalcTextSize(text).x / 2
                 or (align == 3 and pos.x + self.main.size.x - imgui.CalcTextSize(text).x))
