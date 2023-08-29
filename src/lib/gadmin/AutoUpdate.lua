@@ -74,7 +74,7 @@ local function mergeJsonInFile(src, first, second)
         local parsedTableFromXML    = decodeJson(first)
         local parsedTableFromHandle = decodeJson(second)
         local mergedTable           = mergeTables(parsedTableFromXML, parsedTableFromHandle)
-        local finalJSON             = neatJSON(mergeTable, {sort = true, wrap = 40})
+        local finalJSON             = neatJSON(mergedTable, {sort = true, wrap = 40})
 
         print("[AutoUpdate.lua] Successfully written file to path " .. src)
         handle:write(finalJSON)
@@ -165,7 +165,7 @@ imgui.OnFrame(
     end
 )
 
-module = { _VERSION = "0.2" }
+module = { _VERSION = "0.3.30082023" }
 
 ---@param url string                        URL to AutoUpdate.xml file.
 ---@param XMLPath string                    Path where the file from @param url will be installed. The file is NOT DELETED after
