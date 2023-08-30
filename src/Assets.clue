@@ -1,0 +1,81 @@
+/**
+ * GAdmin - Script simplifying the work of administrators on the Gambit-RP
+ * Copyright (C) 2023 The Contributors.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * SDPX-License-Identifier: GPL-3.0-only
+ */
+
+local assets = {}
+
+/**
+ * Download a list of files. The `files` argument is represented by a table, device:
+ *
+ * ```clue
+ * files = { { url = String, destination = String}... }
+ * ```
+ * 
+ * Note that each file is downloaded every second to prevent undefined behavior.
+ * If no files are downloaded after 120 seconds, the function will return false.
+ * After files are successfully downloaded, the `afterDownloadCallback` ...
+ * ... argument is called (this is a function that accepts the list of `files` that was passed to the main function).
+ *
+ * @param files table
+ * @param afterDownloadCallback
+ * @return boolean
+ */
+method assets::downloadFileList(files, afterDownloadCallback) {
+    local downloadStatus    = require("moonloader").download_status
+    local total             = {}
+    local time              = os.clock()
+
+    for _, data in files {
+        lua_thread.create(fn {
+            wait(1000) // We need to add delay to avoid the "device or resource busy: device or resource busy" error.
+            downloadUrlToFile(data.url, data.destination, fn(_, status, p1, p2) {
+                if status == downloadStatus.STATUS_ENDDOWNLOADDATA {
+                    table.insert(total, 0)
+                    @ifdef __GADMIN_DEBUG__ { $debugSuccessful!("assets::downloadFileList", "loaded " .. data.destination .. " from " .. data.url) }
+                } else {
+                    @ifdef __GADMIN_DEBUG__ {
+                        $debugInformation!("assts::downloadFileList", "loading " .. data.destination .. ". Remaining " .. string.format("%d of %d.", p1, p2))
+                    }
+                }
+            })
+        })
+
+        lua_thread.crete(fn {
+            while true {
+                wait(0)
+                if #total == #files {
+                    if afterDownloadCallback { afterDownloadCallback(files) }
+                    @ifdef __GADMIN_DEBUG__ {
+                        $debugSuccessful!("assets::downloadFileList", "`files` loaded. afterDownloadCallback called (if present).") 
+                    }
+                    return true
+                } else {
+                    if os.clock() - time >= 120 {
+                        @ifdef __GADMIN_DEBUG__ {
+                            $debugError!("assets::downloadFileList", "`files` not downloaded after 120 seconds. `entryPoint` returned false")
+                        }
+                        return false
+                    }
+                }
+            }
+        })
+    }
+}
+
+return assets
