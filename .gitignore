@@ -1,13 +1,3 @@
-*
-
-!/src/
-!/src/lib/
-
-!.gitignore
-!CONTRIBUTING.md
-!CONTRIBUTORS
-!LIBRARIES
-!LICENSE
-!README.md
-!.github/*
-!AutoUpdate.xml
+LICENSE
+/.github/*
+/out/*

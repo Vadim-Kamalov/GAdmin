@@ -18,7 +18,28 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
-local imguiAssets = {}
+local imguiAssets = {}; imguiAssets.__index = imguiAssets
+
+imguiAssets.cursor = false
+
+/**
+ * @return boolean Whether the ImGui cursor is active.
+ */
+method imguiAssets::isCursorActive() { return self.cursor }
+
+/**
+ * Change the global cursor display ONLY for ImGui windows.
+ *
+ * @param status boolean Cursor status (default = false).
+ * @return void
+ */
+method imguiAssets::setCursorStatus(status = false) { self.cursor = status  }
+
+/**
+ * Globally change the state of the ImGui cursor.
+ * @return void
+ */
+method imguiAssets::switchCursorStatus() { self.cursor = !$ }
 
 /**
  * Drawing imgui text with a specific font, optionally with a position.

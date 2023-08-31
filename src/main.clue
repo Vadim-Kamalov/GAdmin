@@ -34,6 +34,8 @@ static ffi          = require("ffi")
 static neatJSON     = require("neatjson")
 static xm2lua       = require("xml2lua")
 
+require("moonloader")
+
 @import "AutoUpdate"        => autoUpdate
 @import "Icons"             => icons
 @import "MovableWindows"    => movableWindows

@@ -155,16 +155,17 @@ imgui.OnFrame(fn { return imguiData.window[0] }, fn(self) {
 local autoUpdate = {}
 
 /**
- * TODO: documentation for this
+ * @param url string                        Path to AutoUpdate.xml.
+ * @param XMLPath string                    Path where the file from @param url will be installed. The file is NOT DELETED after
+ *                                          completion of work with it.
+ * @param onReadyCallback function          Function that will be called after successful parsing of AutoUpdate.xml.
+ * @param afterDownloadCallback function    Function that will be called after all files was downloaded.
  */
 autoUpdate.init = fn(url, XMLPath, onReadyCallback, afterDownloadCallback) {
     local downloadStatus    = require("moonloader").download_status
     local callbacks         = {}
     local content
 
-    /**
-     * TODO: documentation for this
-     */
     method callbacks::download() {
         @ifdef __GADMIN_DEBUG__ { $debugInformation!("autoUpdate.init->callbacks::download", "start merging JSON file(s)") }
 
