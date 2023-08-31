@@ -7,7 +7,7 @@
 ---
 --- GAdmin Repository: https://github.com/Vadim-Kamalov/GAdmin/
 --- GAdmin Contributors: https://github.com/Vadim-Kamalov/GAdmin/blob/main/CONTRIBUTING.md
---- Build-Target: Release (without environment variable __GADMIN_DEBUG__)
+--- Build-Target: Debug (with environment variable __GADMIN_DEBUG__)
 ---
 --- ************************************************************************
 ---
