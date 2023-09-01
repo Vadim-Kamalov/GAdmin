@@ -30,10 +30,39 @@
 --- SDPX-License-Identifier: GPL-3.0-only
 ---
 
+script_name     "GAdmin"
+script_authors  "https://github.com/Vadim-Kamalov/GAdmin/blob/main/CONTRIBUTORS"
+script_url      "https://github.com/Vadim-Kamalov/GAdmin/"
+
+local import, modules
+do
+    local cache = {}
+    local nils = {}
+    function import(name)
+        if nils[name] then return end
+
+        local cached = cache[name]
+        if cached then return cached end
+
+        cached = modules[name]
+        if cached then
+            cached = cached(name)
+            if not cached then
+                nils[name] = true
+            else
+                cache[name] = cached
+            end
+            return cached
+        end
+    end
+end
+
 ---! BEGIN_AUTO_GENERATED_CONTENT
 
 --STATICS
 
-local _modules = {§}
+modules = {§}
 
 ---! END_AUTO_GENERATED_CONTENT
+
+import("Main")
