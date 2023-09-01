@@ -78,4 +78,21 @@ method assets::downloadFileList(files, afterDownloadCallback) {
     }
 }
 
+/**
+ * Convert Unicode character to UTF8 string.
+ *
+ * @param code number   Unicode character.
+ * @return string       UTF8 string.
+ */
+method assets::convertUnicode2Utf8(code) {
+    local t, h = {}, 128
+    while code >= h {
+        table.insert(t, 128 + code % 64)
+        code = math.floor(code / 64)
+        h = (h > 32) ? 32 : h / 2
+    }
+    table.insert(t, 256 - 2 * h + code)
+    return string.reverse(string.char(table.unpack(t)))
+}
+
 return assets
