@@ -46,6 +46,20 @@ method common::writeInFile(file, str) {
     handle::close()
 }
 
+
+/**
+ * Create all directories (from working directory) in tree table if some of them doesn't exist.
+ * All "/" characters in directory path will be replaced with "\\" character (UNIX path-style => Windows path-style).
+ */
+method common::makeDirectoryTree(tree) {
+    for _, directory in tree {
+        directory = string.gsub(directory, "/", "\\")
+        if !doesDirectoryExist(getWorkingDirectory() .. "\\" .. tree) {
+            createDirectory(directory)
+        }
+    }
+}
+
 /**
  * Translation of RGB (or RGBA) string color into ImVec4 format.
  *

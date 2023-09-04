@@ -34,9 +34,33 @@ static ffi          = require("ffi")
 static neatJSON     = require("neatjson")
 static xm2lua       = require("xml2lua")
 
+encoding.default  = "CP1251"
+static u8 = encoding.UTF8
+
 require("moonloader")
+
+global enum /* ALIGN_TYPE */ {
+    ALIGN_LEFT,
+    ALIGN_CENTER,
+    ALIGN_RIGHT
+}
 
 @import "AutoUpdate"        => autoUpdate
 @import "Icons"             => icons
 @import "MovableWindows"    => movableWindows
+@import "Common"            => common
+@import "Config"            => config
 
+global fn main() {
+    while !isSampAvailable() { wait(0) }
+
+    if sampGetCurrentServerAddress() != "46.174.48.194" {
+        script::unload()
+    }
+
+    common::makeDirectoryTree({ "GAdmin", "GAdmin/temp", "GAdmin/config" })
+
+    while true {
+        wait(0)
+    }
+}
