@@ -18,6 +18,8 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
+@import "Assets" => assets
+
 local common = {}
 
 /**
@@ -40,7 +42,7 @@ method common::readFileContent(source) {
  * @param str string    The string to be written to the file.
  * @return void
  */
-method common::writeInFile(file, str) {
+method common::writeInFile(source, str) {
     local handle = io.open(source, "w")
     handle::write(str)
     handle::close()
@@ -54,8 +56,8 @@ method common::writeInFile(file, str) {
 method common::makeDirectoryTree(tree) {
     for _, directory in tree {
         directory = string.gsub(directory, "/", "\\")
-        if !doesDirectoryExist(getWorkingDirectory() .. "\\" .. tree) {
-            createDirectory(directory)
+        if !doesDirectoryExist(getWorkingDirectory() .. "\\" .. directory) {
+            createDirectory(getWorkingDirectory() .. "\\" .. directory)
         }
     }
 }
@@ -76,10 +78,7 @@ method common::convertHex2ImVec4(hex, alpha = 255) {
         local b     = rgb & 255
         local a     = alpha
     } elseif (#hex == 8) {
-        local r     = (rgb >> 24) & 255
-        local g     = (rgb >> 16) & 255
-        local b     = (rgb >> 8) & 255
-        local a     = rbg & 255
+        local r, g, b, a = assets::explodeARGB(rgb) 
     }
 
     return imgui.ImVec4(r / 255, g / 255, r / 255, a / 255)

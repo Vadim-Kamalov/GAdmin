@@ -20,12 +20,12 @@
 
 local imguiAssets = {}; imguiAssets.__index = imguiAssets
 
-imguiAssets.cursor = false
+imguiAssets.cursor = true
 
 /**
- * @return boolean Whether the ImGui cursor is active.
+ * @return boolean Whether the ImGui cursor is active (Cursor Status).
  */
-method imguiAssets::isCursorActive() { return self.cursor }
+method imguiAssets::getCursorStatus() { return self.cursor }
 
 /**
  * Change the global cursor display ONLY for ImGui windows.
@@ -54,6 +54,15 @@ method imguiAssets::textWithFont(text, font, pos) {
         if (pos) { imgui.SetCursorPos(pos) }
         imgui.Text(text)
     imgui.PopFont()
+}
+
+method imguiAssets::bringFloatTo(from, to, startTime, duration) {
+    local timer = os.clock() - startTime
+    if timer >= 0.00 && timer <= duration {
+        local count = timer / (duration / 100)
+        return from + (count * (to - from) / 100), true
+    }
+    return (timer > duration) ? to : from, false
 }
 
 return imguiAssets

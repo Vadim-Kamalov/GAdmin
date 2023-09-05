@@ -66,3 +66,9 @@ modules = {§}
 ---! END_AUTO_GENERATED_CONTENT
 
 import("Main")
+
+for eventName, _ in pairs(modules) do
+    if string.find(eventName, "^events%.") then
+        import(eventName)
+    end
+end

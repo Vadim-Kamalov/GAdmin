@@ -56,7 +56,7 @@ method assets::downloadFileList(files, afterDownloadCallback) {
             })
         })
 
-        lua_thread.crete(fn {
+        lua_thread.create(fn {
             while true {
                 wait(0)
                 if #total == #files {
@@ -93,6 +93,14 @@ method assets::convertUnicode2Utf8(code) {
     }
     table.insert(t, 256 - 2 * h + code)
     return string.reverse(string.char(table.unpack(t)))
+}
+
+method assets::explodeARGB(argb) {
+    local a = (argb >> 24) & 255
+    local r = (argb >> 16) & 255
+    local g = (argb >> 8) & 255
+    local b = argb & 255
+    return a, r, g, b
 }
 
 return assets
