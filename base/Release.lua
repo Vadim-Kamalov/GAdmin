@@ -65,10 +65,11 @@ modules = {§}
 
 ---! END_AUTO_GENERATED_CONTENT
 
+import("EncodingCompatibility")
 import("Main")
 
-for eventName, _ in pairs(modules) do
-    if string.find(eventName, "^events%.") then
-        import(eventName)
+for name, _ in pairs(modules) do
+    if string.find(name, "^events%.") or string.find(name, "^imgui%.windows%.") then
+        import(name)
     end
 end

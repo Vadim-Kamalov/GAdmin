@@ -181,3 +181,9 @@ imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
         self.DL::AddText(imgui.ImVec2(sizeX - 100 - imgui.CalcTextSize(text).x / 2, sizeY - 40), -1, text)
     }
 })
+
+global fn onScriptTerminate(scr, quitGame) {
+    if scr == script.this {
+        config::saveIfChanged()
+    }
+}

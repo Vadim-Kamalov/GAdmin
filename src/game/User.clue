@@ -72,7 +72,6 @@ method __user__::getOOCNickname() {
  */
 method __user__::setOOCNickname(nickname) {
     config.root.user.oocNickname = nickname
-    config::save()
 }
 
 return __user__

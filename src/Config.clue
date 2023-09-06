@@ -27,6 +27,12 @@ static __config__ = {
     initialized = false,    // Module status. In config file it's always be true.
     def         = nil,
 
+    // We need this to save config if it was changed (compare JSON file with self.root).
+    jsonStrings = {
+        file = "",
+        root = ""
+    },
+
     root = {
         online = {
             total       = 0,
@@ -178,6 +184,17 @@ method __config__::save() {
     common::writeInFile($CONFIG_PATH, neatJSON(self.root), { sort = true, wrap = 40} )
 }
 
+/**
+ * Save configuratin file to $CONFIG_PATH if it was changed.
+ * @return void
+ */
+method __config__::saveIfChanged() {
+    self.jsonStrings.root = encodeJson(self.root)
+    if self.jsonStrings.file != self.jsonStrings.root {
+        self::save()
+    }
+}
+
 {
     if !__config__.initialized {
         __config__.def = __config__.root
@@ -185,8 +202,11 @@ method __config__::save() {
         common::makeDirectoryTree({ "GAdmin", "GAdmin/temp", "GAdmin/config" })
         if !doesFileExist($CONFIG_PATH) {
             common::writeInFile($CONFIG_PATH, neatJSON(__config__.root, { sort = true, wrap = 40 }))
+            __config__.jsonStrings.file = __config__.root
         } else {
-            __config__.root = decodeJson(common::readFileContent($CONFIG_PATH))
+            __config__.root, __config__.jsonStrings.file =
+                decodeJson(common::readFileContent($CONFIG_PATH)),
+                encodeJson($)
         }
 
         __config__.initialized = true
