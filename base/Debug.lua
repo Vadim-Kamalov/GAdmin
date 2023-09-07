@@ -39,20 +39,10 @@ do
     local cache = {}
     local nils = {}
     function import(name)
-        if nils[name] then return end
-
-        local cached = cache[name]
-        if cached then return cached end
-
-        cached = modules[name]
-        if cached then
-            cached = cached(name)
-            if not cached then
-                nils[name] = true
-            else
-                cache[name] = cached
-            end
-            return cached
+        if not modules[name] then
+            print("Invalid import, module doesnt exist: " .. name)
+        else
+            return modules[name]()
         end
     end
 end
