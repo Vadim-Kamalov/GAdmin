@@ -63,7 +63,8 @@ static __config__ = {
                 use                     = false,
                 textAlignMode           = ALIGN_LEFT,
                 showAdminLvl            = false,
-                textColorBasedOnClist   = false
+                textColorBasedOnClist   = false,
+                strokeSize              = 1
             },
 
             adminPanel = {
@@ -170,6 +171,10 @@ static __config__ = {
             gg = {
                 message = "Приятной игры!"
             }
+        },
+
+        notifications = {
+            maxItems = 5 // 1 .. 5
         },
 
         movableWindows = {}

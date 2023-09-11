@@ -20,7 +20,7 @@
 
 @import "game.Spectator"    => spectator
 @import "imgui.Assets"      => imguiAssets
-m@import "Config"            => config
+@import "Config"            => config
 
 static enum /* MV_WINDOW_DISPLAY_TYPE */ {
     MV_ONLY_IN_SPECTATOR,

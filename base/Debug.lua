@@ -36,23 +36,11 @@ script_url      "https://github.com/Vadim-Kamalov/GAdmin/"
 
 local import, modules
 do
-    local cache = {}
-    local nils = {}
     function import(name)
-        if nils[name] then return end
-
-        local cached = cache[name]
-        if cached then return cached end
-
-        cached = modules[name]
-        if cached then
-            cached = cached(name)
-            if not cached then
-                nils[name] = true
-            else
-                cache[name] = cached
-            end
-            return cached
+        if modules[name] == nil then
+            print("Invalid module import: " .. name)
+        else
+            return modules[name]()
         end
     end
 end

@@ -33,6 +33,15 @@ global enum /* WIN_DEFAULT_POS */ {
 }
 
 /**
+ * Set ImGui window render status.
+ * @param status boolean Render status.
+ * @return void
+ */
+method windows::setRenderStatus(status = false) {
+    self.condition = fn { return status }
+}
+
+/**
  * Equivalent to imgui.Begin() and imgui.End(), but with predefined window flags and transmitted window information.
  *
  * @param label string      Window name.
@@ -43,11 +52,13 @@ global enum /* WIN_DEFAULT_POS */ {
 method windows::begin(
     label,
     callback,
-    flags = imgui.WindowFlags.NoMove + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoScrollbar
+    flags = imgui.WindowFlags.NoMove + imgui.WindowFlags.NoTitleBar
+        + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoScrollbar 
+        + imgui.WindowFlags.AlwaysAutoResize
 ) {
-    imgui.Begin(label, self.condition, flags)
+    imgui.Begin(label, nil, flags)
         self.window = {
-            pos         = config.root.movableWindows[self.id],
+            pos         = self.pos,
             isFocused   = imgui.IsWindowFocused(),
             isHovered   = imgui.IsWindowHovered(),
             size        = imgui.GetWindowSize(),
@@ -65,32 +76,28 @@ method windows::begin(
  *
  * `configuration` example:
  * ```clue
- * fn {
- *     return {
- *         condition    = imgui.new.bool(config.root.windows.admins.use),
- *         type         = MV_DEFAULT,
- *         defaultPos   = WIN_DEFAULT_POS_CENTER,
- *         size         = { x = 255, y = 256 },
- *         description  = "Hello, world!",
+ * {
+ *     condition    = fn { return false },
+ *     type         = MV_DEFAULT,
+ *     defaultPos   = WIN_DEFAULT_POS_CENTER,
+ *     size         = { x = 255, y = 256 },
+ *     description  = "Hello, world!",
  *         
- *         // Initialisation of variables outside of the ImGui renderer without using any local variables. 
- *         // In render self-parameter it can be used as self.var.someVariable
- *         initialize = {
- *             someVariable = "Hello, world!" 
- *         }
+ *     // Initialisation of variables outside of the ImGui renderer without using any local variables. 
+ *     // In render self-parameter it can be used as self.var.someVariable
+ *     initialize = {
+ *         someVariable = "Hello, world!" 
  *     }
  * }
  * ```clue
  *
  * @param id string                 Window ID. Used as config.root.movableWindows[id].
- * @param configuration function    Window configuration (for example see above).
+ * @param configuration table       Window configuration (for example see above).
  * @param render function           Render function that accepts `self` as argument.
  */
 method windows::new(id, configuration, render) {
-    local configuration = $()
-
     self.description    = configuration.description || "No description provided"
-    self.condition      = configuration.condition || nil
+    self.condition      = configuration.condition || (fn { return true })
     self.type           = configuration.type || MV_DEFAULT
     self.defaultPos     = configuration.defaultPos || WIN_DEFAULT_POS_CENTER
     self.size           = configuration.size || { x = 0, y = 0 }
@@ -104,13 +111,16 @@ method windows::new(id, configuration, render) {
 
     self.isChangingWindowsPositions         = movableWindows::isChangingWindowsPositions()
     self.executeChangingWindowsPositions    = fn { movableWindows::executeChangingWindowsPositions() }
+    self.closeWindow                        = fn { self.condition = fn { return false }}
 
-    // Initialisation of variables outside of the ImGui renderer without using any local variables.
-    for key, value of configuration.initialize {
-        self.var[key] = value
+    if configuration.initialize {
+        // Initialisation of variables outside of the ImGui renderer without using any local variables.
+        for key, value of configuration.initialize {
+            self.var[key] = value
+        }
     }
 
-    imgui.OnFrame(fn { return movableWindows::setupThisWindowCondition(self.type) && self.condition[0] }, fn(window) {
+    imgui.OnFrame(fn { return movableWindows::setupThisWindowCondition(self.type) && self.condition() }, fn(window) {
         window.HideCursor = imguiAssets::getCursorStatus()
     
         if self.size {
@@ -119,6 +129,7 @@ method windows::new(id, configuration, render) {
 
         if local pos = config.root.movableWindows[id] {
             imgui.SetNextWindowPos(imgui.ImVec2(pos.x, pos.y))
+            self.pos = pos
         } else {
             config.root.movableWindows[id] = (self.defaultPos == WIN_DEFAULT_POS_CENTER) ?
                 { x = (self.resolution.x - self.size.x) / 2, y = (self.resolution.y - self.size.y) / 2 } : self.defaultPos
@@ -130,4 +141,4 @@ method windows::new(id, configuration, render) {
     })
 }
 
-return windows
+return windows 

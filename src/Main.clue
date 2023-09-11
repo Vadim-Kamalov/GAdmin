@@ -21,6 +21,8 @@
 @define COMMAND_DELAY   800
 @define GADMIN_VERSION  "0.1"
 
+@define UNIQUE_STRING tostring(os.clock())
+
 @macro debugSuccessful(entryPoint, message)     { sampfuncsLog("{00FF00}__GADMIN__DEBUG__ [+][" .. $entryPoint .. "]:{FFFFFF} " .. $message) }
 @macro debugWarning(entryPoint, message)        { sampfuncsLog("{FFA500}__GADMIN__DEBUG__ [~][" .. $entryPoint .. "]:{FFFFFF} " .. $message) }
 @macro debugInformation(entryPoint, message)    { sampfuncsLog("{00BFFF}__GADMIN__DEBUG__ [?][" .. $entryPoint .. "]:{FFFFFF} " .. $message) }
@@ -40,7 +42,7 @@ static u8 = encoding.UTF8
 
 require("moonloader")
 
-global enum /* ALIGN_TYPE */ {
+static enum /* ALIGN_TYPE */ {
     ALIGN_LEFT,
     ALIGN_CENTER,
     ALIGN_RIGHT
@@ -50,6 +52,7 @@ global enum /* ALIGN_TYPE */ {
 @import "Common"            => common
 @import "Config"            => config
 @import "CompressedData"    => compressed
+@import "Notifications"     => notify
 
 @import "game.User"     => user
 @import "game.Admins"   => admins
@@ -63,17 +66,20 @@ imgui.OnInitialize(fn {
 
     icons::init(30)
     
+    global bold10      = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellBold, 18.0, nil, glyphRanges)
     global bold14      = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellBold, 22.0, nil, glyphRanges)
     global bold17      = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellBold, 27.0, nil, glyphRanges)
     global bold15      = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellBold, 23.0, nil, glyphRanges)
     global bold18      = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellBold, 26.0, nil, glyphRanges)
     global bold25      = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellBold, 33.0, nil, glyphRanges)
-    global regular9    = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellRegular, 16.0, nil, glyphRanges)
+    global regular9    = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellRegular, 14.0, nil, glyphRanges)
     global regular14   = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellRegular, 19.0, nil, glyphRanges)
     global regular15   = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellRegular, 23.0, nil, glyphRanges)
     global bold        = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellBold, 25.0, nil, glyphRanges)
     global regular     = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellRegular, 25.0, nil, glyphRanges)
     
+    global shadowPng   = imgui.CreateTextureFromFileInMemory(imgui.new("const char*", compressed.shadow), #compressed.shadow)
+
     imgui.GetIO().IniFilename = nil
 })
 
@@ -170,7 +176,7 @@ imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
                         string.format("{%s}{%s[%s] [X: %1.f]}", clistColorHex, sampGetPlayerNickname(id), id, distance),
                         imgui.ImVec2(screenPosX, screenPosY - 30), 
                         nil, 
-                        config.root..render.size.wallhack, 
+                        config.root.render.size.wallhack, 
                         1
                     )
                 }
@@ -186,4 +192,29 @@ global fn onScriptTerminate(scr, quitGame) {
     if scr == script.this {
         config::saveIfChanged()
     }
+}
+
+@ifdef __GADMIN_DEBUG__ {
+    sampfuncsRegisterConsoleCommand("debug.enableWindow", fn(window) {
+        config.root.windows[window].use = true
+    })
+
+    sampfuncsRegisterConsoleCommand("debug.setAlignMode", fn(mode) {
+        config.root.windows.adminList.textAlignMode = tonumber(mode)
+    })
+
+    sampfuncsRegisterConsoleCommand("debug.addNotification", fn(title) {
+        notify::send({
+            buttons = {
+                first = {
+                    name    = "Закрыть"
+                    call    = fn(close) { close() }
+                }
+
+                second = {
+                    name = "AHelper govno"
+                }
+            }
+        })
+    })
 }

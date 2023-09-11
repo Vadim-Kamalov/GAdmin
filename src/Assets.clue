@@ -54,7 +54,7 @@ method assets::downloadFileList(files, afterDownloadCallback) {
                     }
                 }
             })
-        })
+        })   
 
         lua_thread.create(fn {
             while true {

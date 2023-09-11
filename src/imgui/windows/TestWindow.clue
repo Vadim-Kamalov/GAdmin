@@ -18,19 +18,17 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
-@import "imgui.Windows" => window
+@import "imgui.Windows" => windows
 
 @ifdef __GADMIN_DEBUG__ {
-    window::new("imgui.windows.TestWindow", fn {
-        return {
-            description = "Test window...",
-            type        = MV_DEFAULT,
-            condition   = imgui.new.bool(true),
-            size        = { x = 255, y = 252 },
+    windows::new("imgui.windows.TestWindow", {
+        description = "Test window...",
+        type        = MV_DEFAULT,
+        condition   = fn { return true },
+        size        = { x = 255, y = 252 },
 
-            initialize  = {
-                testNumber = 1
-            }
+        initialize  = {
+            testNumber = 1
         }
     }, fn(self) {
         self::begin("JustTestWindow", fn {

@@ -18,10 +18,10 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
-@import "Common"        => common
-@import "StyleChanger"  => StyleChanger
-@import "imgui.Assets"  => imguiAssets
-@import "Assets"        => assets
+@import "Common"                => common
+@import "imgui.StyleChanger"    => StyleChanger
+@import "imgui.Assets"          => imguiAssets
+@import "Assets"                => assets
 
 global enum {
     AUTOUPDATE_RESPONSE_WAITING,

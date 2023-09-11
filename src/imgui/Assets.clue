@@ -65,4 +65,50 @@ method imguiAssets::bringFloatTo(from, to, startTime, duration) {
     return (timer > duration) ? to : from, false
 }
 
+method imguiAssets::bringVec4To(from, to, startTime, duration) {
+    local timer = os.clock() - startTime
+    if timer >= 0.00 && timer <= duration {
+        local count = timer / (duration / 100)
+        return imgui.ImVec4(
+            from.x + (count * (to.x - from.x) / 100),
+            from.y + (count * (to.y - from.y) / 100),
+            from.z + (count * (to.z - from.z) / 100),
+            from.w + (count * (to.w - from.w) / 100)
+        ), true
+    }
+    return ((timer > duration) ? to : from), false
+}
+
+/**
+ * Add stroked ImGui text.
+ *
+ * @param text string
+ * @param strokeWidth number|nil
+ * @param color ImVec4|nil
+ * @vararg any
+ * @return boolean, boolean (imgui.IsItemClicked() and imgui.IsItemHovered())
+ */
+method imguiAssets::addStrokedText(text, strokeWidth = 0, color = imgui.ImVec4(1, 1, 1, 1), ...) {
+    local text  = string.format($, ...)
+    local pos   = imgui.GetCursorPos()
+
+    imgui.BeginGroup()
+        for i = 1, strokeWidth {
+            imgui.SetCursorPos(imgui.ImVec2(pos.x + i, pos.y))
+            imgui.TextColored(imgui.ImVec4(0, 0, 0, 1), text)
+            imgui.SetCursorPos(imgui.ImVec2(pos.x - i, pos.y))
+            imgui.TextColored(imgui.ImVec4(0, 0, 0, 1), text)
+            imgui.SetCursorPos(imgui.ImVec2(pos.x, pos.y + i))
+            imgui.TextColored(imgui.ImVec4(0, 0, 0, 1), text)
+            imgui.SetCursorPos(imgui.ImVec2(pos.x, pos.y - i))
+            imgui.TextColored(imgui.ImVec4(0, 0, 0, 1), text)
+        }
+
+        imgui.SetCursorPos(pos)
+        imgui.TextColored(color, text)
+    imgui.EndGroup()
+
+    return imgui.IsItemClicked(), imgui.IsItemHovered()
+}
+
 return imguiAssets

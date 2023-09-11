@@ -71,17 +71,18 @@ method common::makeDirectoryTree(tree) {
  */
 method common::convertHex2ImVec4(hex, alpha = 255) {
     local rgb = tonumber(hex, 16)
+    local r, g, b, a
 
     if (#hex == 6) {
-        local r     = (rgb >> 16) & 255
-        local g     = (rgb >> 8) & 255
-        local b     = rgb & 255
-        local a     = alpha
+        r = (rgb >> 16) & 255
+        g = (rgb >> 8) & 255
+        b = rgb & 255
+        a = alpha
     } elseif (#hex == 8) {
-        local r, g, b, a = assets::explodeARGB(rgb) 
+        r, g, b, a = assets::explodeARGB(rgb) 
     }
 
-    return imgui.ImVec4(r / 255, g / 255, r / 255, a / 255)
+    return imgui.ImVec4(r / 255, g / 255, b / 255, a / 255)
 }
 
 return common
