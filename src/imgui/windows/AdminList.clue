@@ -39,9 +39,9 @@ windows::new("imgui.windows.AdminList", {
 
     initialize  = {
         windowStyle = StyleChanger::new({
-            WindowBorderSize    = { new = 0, old = 1 },
-            WindowPadding       = { new = imgui.ImVec2(0, 0), old = imgui.ImVec2(5, 5) },
-            WindowBg            = { new = imgui.ImVec4(0, 0, 0, 0), old = imgui.ImVec4(0.07, 0.07, 0.07, 1) }
+            WindowBorderSize    = 0,
+            WindowPadding       = imgui.ImVec2(0, 0),
+            WindowBg            = imgui.ImVec4(0, 0, 0, 0)
         })
     }
 }, fn(self) {

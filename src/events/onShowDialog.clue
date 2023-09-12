@@ -18,9 +18,10 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
-@import "game.User"     => user
-@import "game.Admins"   => admins
-@import "Config"        => config
+@import "game.User"         => user
+@import "game.Admins"       => admins
+@import "game.Spectator"    => spectator
+@import "Config"            => config
 
 local checkedAdminList = false
 
@@ -56,5 +57,25 @@ sampev.onShowDialog = fn(id, style, title, firstButton, secondButton, text) {
             
             return false
         }
+    }
+
+    if string.find(text, "Информация о игроке") && spectator.stats.checking {
+        text = string.gsub($, "{......}", "")
+        spectator::setInformation({
+            statsId     = string.match(text, "Информация о игроке .+%[(%d+)%]")
+            accountId   = string.match(text, "ID Аккаунта: (%d+)")
+            money, bank = string.match(text, "Деньги: (%$[%-]?%d+)\nБанк%: (%$[%-]?%d+)\n")
+            fraction    = string.match(text, "Фракция: (.-)\n")
+            vehicle     = string.match(text, "Транспорт: (.-)\n")
+            house       = string.match(text, "Дом: (.-)\n")
+            vip         = string.match(text, "Премиум аккаунт: (.-)\n")
+            regDate     = string.match(text, "Дата регистрации: (.-)\n")
+            warnings    = (string.find(text, "Предупреждения:.*%d+")) ? string.match(text, "Предупреждения:.*(%d+)") : "0"
+            stage       = "0"
+        })
+
+        sampSendDialogResponse(id, 0, 0, "")
+        spectator.stats.checking = false
+        return false
     }
 }

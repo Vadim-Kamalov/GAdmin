@@ -18,7 +18,8 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
-@import "Common" => common
+src/@import "Common"        => common
+@import "imgui.Style"   => style
 
 local StyleChanger = {}; StyleChanger.__index = StyleChanger
 
@@ -49,11 +50,11 @@ method StyleChanger::new(style) {
  */
 method StyleChanger::apply() {
     for property, style of self {
-        if string.find(tostring(style.new), "^ImVec2") || type(style.new) == "number" {
-            imgui.GetStyle()[property] = style.new
+        if string.find(tostring(style), "^ImVec2") || type(style) == "number" {
+            imgui.GetStyle()[property] = style
         } else {
-            imgui.GetStyle().Colors[imgui.Col[property]] = (type(style.new) == "string") ? 
-                common::convertHex2ImVec4(style.new) : style.new
+            imgui.GetStyle().Colors[imgui.Col[property]] = (type(style) == "string") ? 
+                common::convertHex2ImVec4(style) : style
         }
     }
 }
@@ -66,12 +67,13 @@ method StyleChanger::apply() {
  * @return void
  */
 method StyleChanger::reset() {
-    for property, style of self {
-        if string.find(tostring(style.old), "^ImVec2") || type(style.old) == "number" {
-            imgui.GetStyle()[property] = style.old
-        } else {
-            imgui.GetStyle().Colors[imgui.Col[property]] = (type(style.old) == "string") ? 
-                common::convertHex2ImVec4(style.old) : style.old
+    for property, oldValue of self {
+        if local defaultValue = style.def[property] {
+            if string.find(tostring(oldValue), "^ImVec2") || type(oldValue) == "number" {
+                imgui.GetStyle()[property] = defaultValue
+            } else {
+                imgui.GetStyle().Colors[imgui.Col[property]] = defaultValue
+            }
         }
     }
 }

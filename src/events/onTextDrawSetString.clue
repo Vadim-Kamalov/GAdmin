@@ -18,29 +18,21 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
-local ped = {
-    getBodyPartCoordinatesCast = ffi.cast("int(__thiscall*)(void*, float*, int, bool)", 0x5E4280)
-}
+@import "game.Spectator" => spectator
 
-/**
- * Get bone coordinates on ped-handle.
- *
- * @param id number     Bone part.
- * @param handle number Ped-handle.
- * @return number, number, number (X, Y, Z)
- */
-method ped::getBodyPartCoordinates(id, handle) {
-    local vector = ffi.new("float[3]")
-    self.getBodyPartCoordinatesCast(ffi.cast("void*", getCharPointer(handle)), vector, id, true)
-    return vector[0], vector[1], vector[2]
-}
-
-method ped::getPlayerWeaponNameById(id) {
-    local result, ped = sampGetCharHandleBySampPlayerId(id)
-    if result {
-        return require("game.weapons").names[getCurrentCharWeapon(ped)]
+sampev.onTextDrawSetString = fn(id, text) {
+    if string.find(text, "~y~%(%d+%)") {
+        spectator.textDrawId = id
+        spectator::setTo(tonumber(string.match(text, "%((%d+)%)")))
+    } elseif string.find(text, "HP") && string.find(text, "ID") {
+        spectator::setInformation({
+            health              = string.match(text, "HP: (%d+)") || "None"
+            moveSpeedCurrent    = string.match(text, "(%d+) / [%-]?%d+") || "None"
+            moveSpeedMax        = string.match(text, "%d+ / [%-]?(%d+)") || "None"
+        })
     }
-    return nil
-}
 
-return ped
+    if string.find(text, "Android: .+") {
+        spectator.platform = (#string.match(text, "Android: (.+)") == 2) ? PLATFORM_MOBILE : PLATFORM_PC
+    }
+}

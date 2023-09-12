@@ -18,36 +18,66 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
-local spectator = {}; spectator.__index = spectator
+@import "game.sa.Ped" => ped
 
-spectator.isInSpectator = false
-spectator.id            = -1
-spectator.nickname      = ""
+global enum {
+    PLATFORM_AWAITING_OR_NONE,
+    PLATFORM_PC,
+    PLATFORM_ANDROID,
+}
+
+static __spectator__ = {
+    id          = -1
+    nickname    = ""
+    
+    platform    = PLATFORM_AWAITING_OR_NONE
+    status      = true
+
+    stats = {
+        lastChecked = os.clock()
+        checking = false
+    }
+
+    textDrawId  = nil
+    information = {}
+}
 
 /**
- * @return boolean Whether the player (PLAYER_PED) is in spectator.
+ * @return table User information in spectator.
  */
-method spectator::getStatus() { return self.status }
+method __spectator__::getInformation() {
+    return {
+        platform    = self.platform
+        ping        = sampGetPlayerPing(self.id)
+        weapon      = ped::getPlayerWeaponNameById(self.id)
+        accountId   = self.information.accountId
+        health      = self.information.health
+        statsId     = self.information.statsId
+        money       = self.information.money
+        bank        = self.information.bank
+        fraction    = self.information.fraction
+        vehicle     = self.information.vehicle
+        house       = self.information.house
+        vip         = self.information.vip
+        regDate     = self.information.regDate
+        warnings    = self.information.warnings
+        stage       = self.information.stage
+        moveSpeed   = {
+            current = self.information.moveSpeedCurrent
+            max     = self.information.moveSpeedMax
+        }
+    }
+}
 
 /**
- * Switch the spectator status ONLY in the table. To set player tracking, use spectator::setTo.
- * 
- * @see spectator::setTo
- *
- * @param _status boolean Spectator status (default = `false`).
+ * @param information table Set user information in spectator.
  * @return void
  */
-method spectator::setStatus(_status = false) { self.status = _status }
-
-/**
- * @return string The player nickname who was last (or currently) spectated by the user.
- */
-method spectator::getNickname() { return self.nickname }
-
-/**
- * @return string The player id who was last (or currently) spectated by the user.
- */
-method spectator::getId() { return self.id }
+method __spectator__::setInformation(information = {}) {
+    for key, value of information {
+        self.information[key] = value
+    }
+}
 
 /**
  * Go in to spectator to a specific player.
@@ -56,32 +86,32 @@ method spectator::getId() { return self.id }
  * @param useDelay boolean  Use delay after sending message. By default it's false, delay taken from $COMMAND_DELAY const variable.
  * @return void
  */
-method spectator::setTo(playerId, useDelay = false) {
-    @ifdef __GADMIN_DEBUG__ {
-        $debugInformation!("spectator::setTo", "called with playerId: " .. tostring(player) .. ". useDelay: " .. tostring(useDelay))
-    }
-    
-    self::setStatus(true)
-    self.id        = playerId
-    self.nickname  = sampGetPlayerNickname(playerId)
+method __spectator__::setTo(playerId) {
+    self.status     = true
+    self.id         = playerId
+    self.nickname   = sampGetPlayerNickname(playerId)
 
-    if (useDelay) { wait($COMMAND_DELAY) }
-    sampSendChat("/sp " .. tostring(playerId))
+    if tonumber(self.information.statsId) != self.id
+       && os.clock() - self.stats.lastChecked > 1
+       && !sampIsDialogActive() && !self.stats.checking
+    {
+        sampSendMenuSelectRow(3)
+        self.stats.checking     = true
+        self.stats.lastChecked  = os.clock()
+    }
 }
 
 /**
- * Get out of spectating a player. spectator.id and spectator.nickname will not changed.
+ * Get out of spectating a player. spectator.nickname will not changed.
  * 
  * @param useDefault boolean Use delay after sending message. By default it's false, delay taken from $COMMAND_DELAY const variable.
  * @return void
  */
-method spectator::exit(useDelay = false) {
-    @ifdef __GADMIN_DEBUG__ { $debugInformation!("spectator::exit", "called with useDelay:" .. tostring(useDelay)) }
-
-    self::setStatus()
-    
-    if (useDelay) { wait($COMMAND_DELAY) }
-    sampSendChat("/unsp")
+method __spectator__::exit() {
+    self.status         = false
+    self.id             = -1
+    self.platform       = PLATFORM_AWAITING_OR_NONE
+    self.information    = {}
 }
 
-return spectator
+return __spectator__

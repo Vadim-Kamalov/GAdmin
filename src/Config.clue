@@ -139,7 +139,8 @@ static __config__ = {
             gunInfo             = { use = false },
             autoLogin           = { use = false },
             autoAdminLogin      = { use = false },
-            carInfo             = { use = false }
+            carInfo             = { use = false },
+            spectatorActions    = { use = true }
         },
 
         fix = {

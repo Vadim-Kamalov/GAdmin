@@ -22,6 +22,30 @@
 @import "imgui.Assets"      => imguiAssets
 @import "Config"            => config
 
+@macro SETUP_EVENT_MV(msg, wparam) {
+    {
+        local this = __movableWindows__
+        if this.changingWindowsPositions {
+            if $msg == wm.WM_SYSKEYDOWN || $msg == wm.WM_KEYDOWN {
+                local keys = {
+                    [VK_1] = MV_ONLY_IN_SPECTATOR,
+                    [VK_2] = MV_ONLY_NOT_IN_SPECTATOR,
+                    [VK_3] = MV_DEFAULT
+                }
+
+                if keys[wparam] {
+                    __movableWindows__.viewMode = keys[$wparam]
+                    sampAddChatMessage("Режим отображения окон переключен: " .. MV_VIEW_DESCRIPTIONS[this.viewMode], -1)
+                    consumeWindowMessage(true, false)
+                } elseif wparam == VK_ESCAPE {
+                    this::executeChangingWindowsPositions()
+                    consumeWindowMessage(true, false)
+                }
+            }
+        }
+    }
+}
+
 static enum /* MV_WINDOW_DISPLAY_TYPE */ {
     MV_ONLY_IN_SPECTATOR,
     MV_ONLY_NOT_IN_SPECTATOR,
@@ -31,41 +55,20 @@ static enum /* MV_WINDOW_DISPLAY_TYPE */ {
 static __movableWindows__ = {
     changingWindowsPositions = false,
     viewMode = MV_DEFAULT,
-
-    viewConditions = {
-        [MV_ONLY_IN_SPECTATOR]      = fn { return spectator::getStatus() },
-        [MV_ONLY_NOT_IN_SPECTATOR]  = fn { return !spectator::getStatus() },
-        [MV_DEFAULT]                = fn { return true }
-    },
-
-    viewDescriptions = {
-        [MV_ONLY_IN_SPECTATOR]      = "[1]: Отображение окон только в режиме наблюдения",
-        [MV_ONLY_NOT_IN_SPECTATOR]  = "[2]: Отображение окон не в режиме наблюдения",
-        [MV_DEFAULT]                = "[3]: Отображение всех окон"
-    } 
+    handlerRegistered = false,
 }
 
-addEventHandler("onWindowMessage", fn(msg, wparam, lparam) {
-    local this = __movableWindows__
-    if this.changingWindowsPositions {
-        if msg == wm.WM_SYSKEYDOWN || msg == wm.WM_KEYDOWN {
-            local keys = {
-                [VK_1] = MV_ONLY_IN_SPECTATOR,
-                [VK_2] = MV_ONLY_NOT_IN_SPECTATOR,
-                [VK_3] = MV_DEFAULT
-            }
+static MV_VIEW_DESCRIPTIONS = {
+    [MV_ONLY_IN_SPECTATOR]      = "[1]: Отображение окон только в режиме наблюдения",
+    [MV_ONLY_NOT_IN_SPECTATOR]  = "[2]: Отображение окон не в режиме наблюдения",
+    [MV_DEFAULT]                = "[3]: Отображение всех окон"
+} 
 
-            if keys[wparam] {
-                __movableWindows__.viewMode = keys[wparam]
-                sampAddChatMessage("Режим отображения окон переключен: " .. this.viewDescriptions[this.viewMode], -1)
-                consumeWindowMessage(true, false)
-            } elseif wparam == VK_ESCAPE {
-                this::executeChangingWindowsPositions()
-                consumeWindowMessage(true, false)
-            }
-        }
-    }
-})
+local MV_VIEW_CONDITIONS = {
+    [MV_ONLY_IN_SPECTATOR]      = fn { return spectator.status }
+    [MV_ONLY_NOT_IN_SPECTATOR]  = fn { return !spectator.status }
+    [MV_DEFAULT]                = fn { return true }
+}
 
 /**
  * @return boolean Wheather is changing windows position.
@@ -84,20 +87,9 @@ method __movableWindows__::executeChangingWindowsPositions() {
     self.changingWindowsPositions = !$
     imguiAssets::switchCursorStatus()
 
-    @ifdef __GADMIN_DEBUG__ {
-        $debugInformation!(
-            "__movableWindows__::executeChangingWindowsPositions",
-            "called function"
-        )
-        $debugInformation!(
-            "__movableWindows__::executeChangingWindowsPositions",
-            "self.changingWindowsPositions = " .. tostring(self.changingWindowsPositions)
-        )
-    }
-
     if self.changingWindowsPositions {
         sampAddChatMessage("Используйте клавиши на клавиатуре [1-3] чтобы переключаться между режимами:", -1)
-        for _, viewModeDescription in self.viewDescriptions {
+        for _, viewModeDescription in MV_VIEW_DESCRIPTIONS {
             sampAddChatMessage(string.rep(" ", 4) .. viewModeDescription, -1)
         }
         sampAddChatMessage("Чтобы выйти из режима редактирования, нажмите ESC.", -1)
@@ -127,6 +119,12 @@ method __movableWindows__::executeChangingWindowsPositions() {
 method __movableWindows__::setupThisWindow(window) {
     if self.changingWindowsPositions {
         if window.isHovered {
+            @ifdef __GADMIN_DEBUG__ {
+                window.description ..= " | DEBUG("
+                    .. tostring(select(1, getScreenResolution()) / window.pos.x) .. ", "
+                    .. tostring(select(2, getScreenResolution()) / window.pos.y) .. ")"
+            }
+
             local dl = imgui.GetBackgroundDrawList()
             dl::AddRectFilled(
                 imgui.ImVec2(window.pos.x - 2, window.pos.y - 25),
@@ -144,18 +142,15 @@ method __movableWindows__::setupThisWindow(window) {
                 config.root.movableWindows[window.id].y + imgui.GetIO().MouseDelta.y
             local sizeX, sizeY = window.size.x, window.size.y
 
-            local centerOffsetX = math.floor((sw - sizeX) / 2)
-            if math.abs(posX - centerOffsetX) <= 5 {
-                posX = centerOffsetX
-            } elseif math.abs(posX - centerOffsetX - sizeX) <= 5 {
-                posX = centerOffsetX + sizeX
+            local centerX = posX + window.size.x / 2
+            local centerY = posY + window.size.y / 2
+            
+            if math.abs(centerX - (sw / 2)) < 5 {
+                posX = math.floor(sw / 2) - window.size.x / 2
             }
-
-            local centerOffsetY = math.floor((sh - sizeY) / 2)
-            if math.abs(posY - centerOffsetY) <= 5 {
-                posY = centerOffsetY
-            } elseif math.abs(posY - centerOffsetY - sizeY) <= 5 {
-                posY = centerOffsetY + sizeY
+            
+            if math.abs(centerY - (sh / 2)) < 5 {
+                posY = math.floor(sh / 2) - window.size.y / 2
             }
 
             // Screen Exit Checks ( for sides )
@@ -193,7 +188,7 @@ method __movableWindows__::setupThisWindow(window) {
  * @param type number MV_ONLY_IN_SPECTATOR | MV_ONLY_NOT_IN_SPECTATOR | MV_DEFAULT
  */
 method __movableWindows__::setupThisWindowCondition(type) {
-    return !isGamePaused() && self.viewConditions[type]() 
+    return !isGamePaused() && MV_VIEW_CONDITIONS[type]() 
            || (self.changingWindowsPositions && (self.viewMode == type || self.viewMode == MV_DEFAULT))
 }
 

@@ -37,12 +37,12 @@ imgui.OnFrame(fn { return notify.active }, fn(self) {
         + imgui.WindowFlags.NoScrollbar + imgui.WindowFlags.NoScrollWithMouse + imgui.WindowFlags.NoBringToFrontOnFocus
 
     self.style = StyleChanger::new({
-        WindowBg            = { new = "22222200", old = imgui.ImVec4(0.07, 0.07, 0.07, 1) },
-        WindowBorderSize    = { new = 0, old = 1 }
-        ChildBg             = { new = "222222", old = imgui.ImVec4(0.07, 0.07, 0.07, 1) },
-        ChildRounding       = { new = 8, old = 1 },
-        ItemSpacing         = { new = imgui.ImVec2(0, 15), old = imgui.ImVec2(5, 5) }
-        WindowPadding       = { new = imgui.ImVec2(0, 0), old = imgui.ImVec2(5, 5) }
+        WindowBg            = "22222200"
+        WindowBorderSize    = 0
+        ChildBg             = "222222"
+        ChildRounding       = 8
+        ItemSpacing         = imgui.ImVec2(0, 15)
+        WindowPadding       = imgui.ImVec2(0, 0)
     })
 
     self.notification = fn(notification, closeCallback) {
