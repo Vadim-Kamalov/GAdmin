@@ -26,9 +26,9 @@ sampev.onTextDrawSetString = fn(id, text) {
         spectator::setTo(tonumber(string.match(text, "%((%d+)%)")))
     } elseif string.find(text, "HP") && string.find(text, "ID") {
         spectator::setInformation({
-            health              = string.match(text, "HP: (%d+)") || "None"
-            moveSpeedCurrent    = string.match(text, "(%d+) / [%-]?%d+") || "None"
-            moveSpeedMax        = string.match(text, "%d+ / [%-]?(%d+)") || "None"
+            health              = string.match(text, "HP: (%d+)")
+            moveSpeedCurrent    = string.match(text, "(%d+) / [%-]?%d+")
+            moveSpeedMax        = string.match(text, "%d+ / [%-]?(%d+)")
         })
     }
 

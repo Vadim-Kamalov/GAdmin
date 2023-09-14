@@ -18,7 +18,7 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
-src/@import "Common"        => common
+@import "Common"        => common
 @import "imgui.Style"   => style
 
 local StyleChanger = {}; StyleChanger.__index = StyleChanger

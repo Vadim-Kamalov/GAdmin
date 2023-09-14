@@ -31,7 +31,7 @@ static __spectator__ = {
     nickname    = ""
     
     platform    = PLATFORM_AWAITING_OR_NONE
-    status      = true
+    status      = false
 
     stats = {
         lastChecked = os.clock()
@@ -47,24 +47,24 @@ static __spectator__ = {
  */
 method __spectator__::getInformation() {
     return {
-        platform    = self.platform
-        ping        = sampGetPlayerPing(self.id)
-        weapon      = ped::getPlayerWeaponNameById(self.id)
-        accountId   = self.information.accountId
-        health      = self.information.health
-        statsId     = self.information.statsId
-        money       = self.information.money
-        bank        = self.information.bank
-        fraction    = self.information.fraction
-        vehicle     = self.information.vehicle
-        house       = self.information.house
-        vip         = self.information.vip
-        regDate     = self.information.regDate
-        warnings    = self.information.warnings
-        stage       = self.information.stage
+        platform    = self.platform || "N/A"
+        ping        = (self.id != -1) ? sampGetPlayerPing(self.id) : 0
+        weapon      = ped::getPlayerWeaponNameById(self.id) || "N/A"
+        accountId   = self.information.accountId || "N/A"
+        health      = self.information.health || "N/A"
+        statsId     = self.information.statsId || "N/A"
+        money       = self.information.money || "N/A"
+        bank        = self.information.bank || "N/A"
+        fraction    = self.information.fraction || "N/A"
+        vehicle     = self.information.vehicle || "N/A"
+        house       = self.information.house || "N/A"
+        vip         = self.information.vip || "N/A"
+        regDate     = self.information.regDate || "N/A"
+        warnings    = self.information.warnings || "N/A"
+        stage       = self.information.stage || "N/A"
         moveSpeed   = {
-            current = self.information.moveSpeedCurrent
-            max     = self.information.moveSpeedMax
+            current = self.information.moveSpeedCurrent || "N/A"
+            max     = self.information.moveSpeedMax || "N/A"
         }
     }
 }
@@ -79,6 +79,14 @@ method __spectator__::setInformation(information = {}) {
     }
 }
 
+method __spectator__::platformToString() {
+    return match self.platform {
+        PLATFORM_PC     => "PC",
+        PLATFORM_MOBILE => "MOBILE",
+        default         => "N/A"
+    }
+}
+
 /**
  * Go in to spectator to a specific player.
  *
@@ -87,17 +95,19 @@ method __spectator__::setInformation(information = {}) {
  * @return void
  */
 method __spectator__::setTo(playerId) {
-    self.status     = true
-    self.id         = playerId
-    self.nickname   = sampGetPlayerNickname(playerId)
+    if playerId {
+        self.status     = true
+        self.id         = playerId
+        self.nickname   = sampGetPlayerNickname(playerId)
 
-    if tonumber(self.information.statsId) != self.id
-       && os.clock() - self.stats.lastChecked > 1
-       && !sampIsDialogActive() && !self.stats.checking
-    {
-        sampSendMenuSelectRow(3)
-        self.stats.checking     = true
-        self.stats.lastChecked  = os.clock()
+        if tonumber(self.information.statsId) != self.id
+           && os.clock() - self.stats.lastChecked > 1
+           && !sampIsDialogActive() && !self.stats.checking
+        {
+            sampSendMenuSelectRow(3)
+            self.stats.checking     = true
+            self.stats.lastChecked  = os.clock()
+        }
     }
 }
 

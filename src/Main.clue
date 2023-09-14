@@ -70,7 +70,7 @@ imgui.OnInitialize(fn {
     icons::init(30)
     style::apply()
     
-    global bold10      = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellBold, 18.0, nil, glyphRanges)
+    global bold10      = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellBold, 16.0, nil, glyphRanges)
     global bold14      = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellBold, 22.0, nil, glyphRanges)
     global bold17      = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellBold, 27.0, nil, glyphRanges)
     global bold15      = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellBold, 23.0, nil, glyphRanges)
