@@ -20,7 +20,17 @@
 
 @import "game.sa.Ped" => ped
 
-global enum {
+global enum /* SPECTATOR_MENU */ {
+    SPECTATOR_MENU_NEXT     = 0,
+    SPECTATOR_MENU_SWITCH   = 1,
+    SPECTATOR_MENU_BACK     = 2,
+    SPECTATOR_MENU_STATS    = 3,
+    SPECTATOR_MENU_SESSIONS = 4,
+    SPECTATOR_MENU_FRISK    = 5,
+    SPECTATOR_MENU_EXIT     = 6
+}
+
+global enum /* PLATFORM */ {
     PLATFORM_AWAITING_OR_NONE,
     PLATFORM_PC,
     PLATFORM_ANDROID,
@@ -79,6 +89,10 @@ method __spectator__::setInformation(information = {}) {
     }
 }
 
+/**
+ * Get platform of spectator as string.
+ * @return string
+ */
 method __spectator__::platformToString() {
     return match self.platform {
         PLATFORM_PC     => "PC",

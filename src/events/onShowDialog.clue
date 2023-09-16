@@ -37,8 +37,13 @@ sampev.onShowDialog = fn(id, style, title, firstButton, secondButton, text) {
                 if string.find(line, "^.*%[%d+%] %- [1-5] уровень") {
                     local oocNickname, adminId, adminLvl = string.match(line, "^{FFFFFF}(.*)%[(%d+)%] %- ([1-5]) уровень")
                     if tonumber(adminId) == user::getId() && user::getOOCNickname() != oocNickname {
-                        config.root.user.oocNickname = oocNickname
-                        config::save()
+                        if user::getOOCNickname() != oocNickname {
+                            user::setOOCNickname(oocNickname)
+                        }
+
+                        if user::getAdminLvl() != tonumber(adminLvl) {
+                            user::setAdminLvl(tonumber(adminLvl))    
+                        }
                     } else {
                         admins::insert({
                             id  = tonumber(adminId),

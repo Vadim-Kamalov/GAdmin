@@ -61,12 +61,23 @@ static __config__ = {
 
             adminList = {
                 use                     = false,
-                textAlignMode           = ALIGN_LEFT,
-                showAdminLvl            = false,
-                textColorBasedOnClist   = false,
+                textAlignMode           = ALIGN_RIGHT,
+                showAdminLvl            = true,
+                textColorBasedOnClist   = true,
                 strokeSize              = 1
             },
 
+            playersNearby = {
+                use                     = false,
+                textAlignMode           = ALIGN_LEFT,
+                showDistance            = true,
+                showAdmins              = true,
+                sortByDistance          = true, // Works only with `showDistance` enabled.
+                maxPlayers              = 10,
+                playerColorBasedOnClist = true,
+                strokeSize              = 1
+            },
+            
             adminPanel = {
                 show    = true,
                 width   = 200,
@@ -161,6 +172,7 @@ static __config__ = {
 
         user = {
             oocNickname = "",
+            adminLvl = -1,
 
             password = {
                 admin   = "",
@@ -168,9 +180,9 @@ static __config__ = {
             },
         },
 
-        shortCommands = {
-            gg = {
-                message = "Приятной игры!"
+        binder = {
+            commands = {
+                gg = { message = "Приятной игры!" }
             }
         },
 

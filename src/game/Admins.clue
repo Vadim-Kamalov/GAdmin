@@ -56,4 +56,19 @@ method __admins__::remove(index) {
     table.remove(self, index)
 }
 
+/**
+ * Get admin information by his id.
+ * 
+ * @param id number
+ * @return table|nil
+ */
+method __admins__::getAdminById(id) {
+    for _, admin in self {
+        if admin.id == id {
+            return admin
+        }
+    }
+    return nil
+}
+
 return __admins__

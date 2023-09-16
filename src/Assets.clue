@@ -20,6 +20,34 @@
 
 local assets = {}
 
+assets.randomICNicknames = {
+    "Matvei_Romanov",
+    "Manato_Imai",
+    "Alberto_Barcia",
+    "Antonella_Rosado",
+    "Manon_Villard",
+    "Max_Lindstrom",
+    "Melanie_Fansler",
+    "Nikolaj_Conradsen",
+    "Iuliana_Zaituc",
+    "Tyler_Dzone",
+    "Eva_Levina"
+}
+
+assets.randomOOCNicknames = {
+    "covboy",
+    "defaultzone",
+    "montreal",
+    "ivanrampage",
+    "Toshik",
+    "Furofushi",
+    "dontkillme",
+    "GoblinJr",
+    "krutenka",
+    "refraction",
+    "GMengland"
+}
+
 /**
  * Download a list of files. The `files` argument is represented by a table, device:
  *
@@ -95,6 +123,12 @@ method assets::convertUnicode2Utf8(code) {
     return string.reverse(string.char(table.unpack(t)))
 }
 
+/**
+ * Expode ARGB number to variables.
+ * 
+ * @param argb number
+ * @return number, number, number, number
+ */
 method assets::explodeARGB(argb) {
     local a = (argb >> 24) & 255
     local r = (argb >> 16) & 255

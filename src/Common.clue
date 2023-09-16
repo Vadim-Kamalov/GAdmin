@@ -62,6 +62,10 @@ method common::makeDirectoryTree(tree) {
     }
 }
 
+method common::isCursorActive() {
+    return isCursorActive() && sampIsChatInputActive() && isSampfuncsConsoleActive() && sampIsDialogActive()
+}
+
 /**
  * Translation of RGB (or RGBA) string color into ImVec4 format.
  *

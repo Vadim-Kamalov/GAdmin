@@ -53,10 +53,10 @@ windows::new("imgui.windows.AdminList", {
                 ? string.format("[LVL: %d] %s[%d]", admin.lvl, admin.nickname.ooc, admin.id)
                 : string.format("%s[%d]", admin.nickname.ooc, admin.id)
 
-            match config.root.windows.adminList.textAlignMode {
-                ALIGN_LEFT      => { pos.x = pos.x }
-                ALIGN_CENTER    => { pos.x = self.size.x / 2 - imgui.CalcTextSize(text).x / 2 }
-                ALIGN_RIGHT     => { pos.x = self.size.x - imgui.CalcTextSize(text).x - 5 }
+            pos.x = match config.root.windows.adminList.textAlignMode {
+                ALIGN_CENTER    => self.size.x / 2 - imgui.CalcTextSize(text).x / 2,
+                ALIGN_RIGHT     => self.size.x - imgui.CalcTextSize(text).x - 5,
+                default         => pos.x
             }
 
             imgui.SetCursorPos(pos)

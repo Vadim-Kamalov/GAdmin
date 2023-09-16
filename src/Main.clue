@@ -41,6 +41,7 @@ encoding.default  = "CP1251"
 static u8 = encoding.UTF8
 
 require("moonloader")
+math.randomseed(os.time())
 
 static enum /* ALIGN_TYPE */ {
     ALIGN_LEFT,

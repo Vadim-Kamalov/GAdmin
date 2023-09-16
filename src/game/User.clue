@@ -56,7 +56,7 @@ method __user__::getId() {
  * @return string User in-game IC nickname.
  */
 method __user__::getNickname() {
-    return sampGetPlayerIdByNickname(self::getId())
+    return sampGetPlayerNickname(self::getId())
 }
 
 /**
@@ -68,10 +68,28 @@ method __user__::getOOCNickname() {
 
 /**
  * Set OOC nickname and save it in to configuration file.
+ * @param nickname string
  * @return void
  */
 method __user__::setOOCNickname(nickname) {
     config.root.user.oocNickname = nickname
+}
+
+/**
+ * Get user administator lvl.
+ * @return number
+ */
+method __user__::getAdminLvl() {
+    return config.root.user.adminLvl
+}
+
+/**
+ * Set administator lvl and save it in to the configuration file.
+ * @param lvl number
+ * @return void
+ */
+method __user__::setAdminLvl(lvl) {
+    config.root.user.adminLvl = lvl
 }
 
 return __user__

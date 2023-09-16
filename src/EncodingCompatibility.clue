@@ -23,7 +23,7 @@ global fn sampAddChatMessage(text, color) {
     _sampAddChatMessage(u8::decode(text), color)
 }
 
-global _sampSendCHat = sampSendChat
+global _sampSendChat = sampSendChat
 global fn sampSendChat(message) {
     _sampSendChat(u8::decode(message))
 }

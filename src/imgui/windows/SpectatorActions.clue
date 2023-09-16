@@ -23,9 +23,10 @@
 @import "imgui.Animations"      => animations
 @import "imgui.StyleChanger"    => StyleChanger
 
-@import "Config"            => config
 @import "game.Spectator"    => spectator
+@import "game.User"         => user
 
+@import "Config"            => config
 @import "Notifications"     => notify
 @import "Icons"             => icons
 
@@ -53,57 +54,88 @@ windows::new("imgui.windows.SpectatorActions", {
         self.specInfo.ping
     )
 
-    self.setPreviousItemAbleToCopy = fn(
-        text,
-        notifyTitle         = "Текст скопирован.",
-        notifyDescription   = "Следующий текст успешно скопирован: " .. text
-    ) {
-        if imgui.IsItemHovered() {
-            imgui.GetWindowDrawList()::AddLine(
-                imgui.ImVec2(imgui.GetItemRectMin().x, imgui.GetItemRectMax().y),
-                imgui.GetItemRectMax(),
-                -1,
-                2
-            )
-        } if imgui.IsItemClicked() {
-            setClipboardText(tostring(text))
-            notify::send({
-                icon    = icons.ICON_KEYBOARD
-                title   = notifyTitle
-                text    = notifyDescription
-            })
-        }
-    }
-
-    /// TODO
     self.buttons = {
-        { title = "*Вы тут?*", callback = fn {}},
-        { title = "ANS", callback = fn {}}, 
-        { title = "AHEAL", callback = fn {}},
-        { title = "STATS", callback = fn {}},
-        { title = "AFRISK", callback = fn {}},
-        { title = "PAME", callback = fn {}},
-        { title = "GG", callback = fn {}},
-        { title = "SLAP", callback = fn {}},
-        { title = "SWITCH", callback = fn {}},
-        { title = "BAN", callback = fn {}},
-        { title = "KICK", callback = fn {}},
-        { title = "MUTE", callback = fn {}},
-        { title = "BMUTE", callback = fn {}},
-        { title = "PK", callback = fn {}},
-        { title = "JAIL", callback = fn {}},
-        { title = "CK", callback = fn {}}
+        { title = "*Вы тут?*", callback = fn {
+            sampSendChat("/ans " .. tostring(spectator.id) .. " Вы тут? Ответ в /b или /pm " .. tostring(user::getId()))
+        }},
+
+        { title = "ANS", callback = fn {
+            sampSetChatInputEnabled(true)
+            sampSetChatInputText("/ans " .. tostring(spectator.id) .. " ")
+        }},
+
+        { title = "AHEAL", callback = fn {
+            sampSendChat("/aheal " .. tostring(spectator.id))
+        }},
+
+        { title = "STATS", callback = fn {
+            sampSendMenuSelectRow(SPECTATOR_MENU_STATS)
+        }},
+
+        { title = "AFRISK", callback = fn {
+            sampSendMenuSelectRow(SPECTATOR_MENU_FRISK)
+        }},
+
+        { title = "PAME", callback = fn {
+            sampSendChat("/pame " .. tostring(spectator.id))
+        }},
+
+        { title = "GG", callback = fn {
+            sampSendChat(string.format("/ans %d %s" , spectator.id, config.root.binder.commands.gg.message))
+        }},
+
+        { title = "SLAP", callback = fn {
+            sampSendChat("/slap " .. tostring(spectator.id))
+        }},
+
+        { title = "SWITCH", callback = fn {
+            sampSendMenuSelectRow(SPECTATOR_MENU_SWITCH)
+        }},
+
+        { title = "BAN", callback = fn {
+            sampSetChatInputEnabled(true)
+            sampSetChatInputText(string.format("/ban %d ", spectator.id))
+        }},
+
+        { title = "KICK", callback = fn {
+            sampSetChatInputEnabled(true)
+            sampSetChatInputText(string.format("/kick %d ", spectator.id))
+        }},
+
+        { title = "MUTE", callback = fn {
+            sampSetChatInputEnabled(true)
+            sampSetChatInputText(string.format("/mute %d ", spectator.id))
+        }},
+
+        { title = "BMUTE", callback = fn {
+            sampSetChatInputEnabled(true)
+            sampSetChatInputText(string.format("/bmute %d ", spectator.id))
+        }},
+
+        { title = "PK", callback = fn {
+            sampSendChat("/pk " .. tostring(spectator.id))
+        }},
+
+        { title = "JAIL", callback = fn {
+            sampSetChatInputEnabled(true)
+            sampSetChatInputText(string.format("/jail %d ", spectator.id))
+        }},
+        
+        { title = "CK", callback = fn {
+            sampSetChatInputEnabled(true)
+            sampSetChatInputText(string.format("/ck %d ", spectator.id))
+        }}
     }
 
     self::begin(self.id, fn {
         imgui.PushStyleVarVec2(imgui.StyleVar.ItemSpacing, imgui.ImVec2(0, 0))
             imguiAssets::textWithFont(string.gsub(spectator.nickname, "_", " "), bold10)
-            self.setPreviousItemAbleToCopy(spectator.nickname, "Никнейм скопирован.", string.format("Успешно скопирован никнейм: %s", spectator.nickname))
+            imguiAssets::setPreviousItemAbleToCopy(spectator.nickname, "Никнейм скопирован.", string.format("Успешно скопирован никнейм: %s", spectator.nickname))
 
             imgui.SameLine()
 
             imguiAssets::textWithFont(string.format("[%d]", spectator.id), bold10)
-            self.setPreviousItemAbleToCopy(spectator.id, "Айди скопирован.", string.format("Успешно скопирован айди: %d", spectator.id))
+            imguiAssets::setPreviousItemAbleToCopy(spectator.id, "Айди скопирован.", string.format("Успешно скопирован айди: %d", spectator.id))
         imgui.PopStyleVar()
 
         imguiAssets::textWithFont(self.centeredText, regular9, imgui.ImVec2(self.size.x / 2 - imgui.CalcTextSize(self.centeredText).x / 2.3, 6.5))
@@ -112,7 +144,12 @@ windows::new("imgui.windows.SpectatorActions", {
         imgui.BeginGroup()
             imgui.BeginGroup() // GO_TO_PREVIOUS_PLAYER
                 local pos, windowPos = imgui.GetCursorPos(), imgui.GetWindowPos()
-                animations::button("##sp:GO_TO_PREVIOUS_PLAYER", imgui.ImVec2(33, 68.5), 5)
+                if animations::button("##sp:GO_TO_PREVIOUS_PLAYER", imgui.ImVec2(33, 68.5), 5)
+                   && !self.isChangingWindowsPositions
+                {
+                    sampSendMenuSelectRow(SPECTATOR_MENU_BACK)
+                }
+                
                 imguiAssets::textWithFont(icons.ICON_CHEVRON_LEFT, nil, imgui.ImVec2(6, 58))
                 imgui.GetWindowDrawList()::AddRectFilled(
                     imgui.ImVec2(windowPos.x + 34, windowPos.y + 27.5),
@@ -129,7 +166,9 @@ windows::new("imgui.windows.SpectatorActions", {
                         for index, button in self.buttons {
                             if index == 9 { imgui.NewLine() }
                             imgui.SetCursorPosY((index > 8) ? 60 : 26)
-                            if animations::button(button.title .. "##sp:MIDDLE_BUTTONS", imgui.ImVec2(78, 34.5)) {
+                            if animations::button(button.title .. "##sp:MIDDLE_BUTTONS", imgui.ImVec2(78, 34.5))
+                               && !self.isChangingWindowsPositions
+                            {
                                 button.callback()
                             }
                             imgui.SameLine()
@@ -141,7 +180,11 @@ windows::new("imgui.windows.SpectatorActions", {
             imgui.SameLine(657)
             imgui.BeginGroup() // GO_TO_NEXT_PLAYER
                 local pos, windowPos = imgui.GetCursorPos(), imgui.GetWindowPos()
-                animations::button(" ##sp:GO_TO_NEXT_PLAYER", imgui.ImVec2(33, 68.5), 10)
+                if animations::button(" ##sp:GO_TO_NEXT_PLAYER", imgui.ImVec2(33, 68.5), 10)
+                   && !self.isChangingWindowsPositions
+                {
+                    sampSendMenuSelectRow(SPECTATOR_MENU_NEXT)
+                }
                 imguiAssets::textWithFont(icons.ICON_CHEVRON_RIGHT, nil, imgui.ImVec2(665, 58))
                 imgui.GetWindowDrawList()::AddRectFilled(
                     imgui.ImVec2(windowPos.x + 663, windowPos.y + 27.5),

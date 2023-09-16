@@ -21,11 +21,12 @@
 @import "game.Spectator"    => spectator
 @import "imgui.Assets"      => imguiAssets
 @import "Config"            => config
+@import "Common"            => common
 
 @macro SETUP_EVENT_MV(msg, wparam) {
     {
         local this = __movableWindows__
-        if this.changingWindowsPositions {
+        if this.changingWindowsPositions && !common::isCursorActive() {
             if $msg == wm.WM_SYSKEYDOWN || $msg == wm.WM_KEYDOWN {
                 local keys = {
                     [VK_1] = MV_ONLY_IN_SPECTATOR,

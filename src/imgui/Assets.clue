@@ -18,6 +18,9 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
+@import "Icons"         => icons
+@import "Notifications" => notify
+
 local imguiAssets = {}; imguiAssets.__index = imguiAssets
 
 imguiAssets.cursor = true
@@ -56,6 +59,15 @@ method imguiAssets::textWithFont(text, font, pos) {
     imgui.PopFont()
 }
 
+/**
+ * Bring float from first to second float.
+ *
+ * @param from number
+ * @param to number
+ * @param startTime number os.clock()
+ * @param duration number
+ * @return number, boolean 
+ */
 method imguiAssets::bringFloatTo(from, to, startTime, duration) {
     local timer = os.clock() - startTime
     if timer >= 0.00 && timer <= duration {
@@ -65,6 +77,15 @@ method imguiAssets::bringFloatTo(from, to, startTime, duration) {
     return (timer > duration) ? to : from, false
 }
 
+/**
+ * Bring ImVec4 from first to second ImVec4
+ *
+ * @param from ImVec4
+ * @param to ImVec4
+ * @param startTime number os.clock()
+ * @param duration number
+ * @return number, boolean
+ */
 method imguiAssets::bringVec4To(from, to, startTime, duration) {
     local timer = os.clock() - startTime
     if timer >= 0.00 && timer <= duration {
@@ -109,6 +130,38 @@ method imguiAssets::addStrokedText(text, strokeWidth = 0, color = imgui.ImVec4(1
     imgui.EndGroup()
 
     return imgui.IsItemClicked(), imgui.IsItemHovered()
+}
+
+/**
+ * Set previous ImGui item able to copy.
+ *
+ * @param text string
+ * @param notifyTitle string|nil
+ * @param notifyDescription string|nil
+ * @param notification table|nil
+ * @return void
+ */
+method imguiAssets::setPreviousItemAbleToCopy(
+    text,
+    notifyTitle         = "Текст скопирован.",
+    notifyDescription   = "Следующий текст успешно скопирован: " .. text,
+    notification        = {
+        icon    = icons.ICON_KEYBOARD
+        title   = notifyTitle
+        text    = notifyDescription
+    }
+) {
+    if imgui.IsItemHovered() {
+        imgui.GetWindowDrawList()::AddLine(
+            imgui.ImVec2(imgui.GetItemRectMin().x, imgui.GetItemRectMax().y),
+            imgui.GetItemRectMax(),
+            -1,
+            2
+        )
+    } if imgui.IsItemClicked() {
+        setClipboardText(tostring(text))
+        notify::send(notification)
+    }
 }
 
 return imguiAssets

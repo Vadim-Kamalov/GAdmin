@@ -56,7 +56,8 @@ method windows::begin(
         + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoScrollbar 
         + imgui.WindowFlags.AlwaysAutoResize
 ) {
-    imgui.Begin(label, nil, flags)
+    self.flags = flags
+    imgui.Begin(label, nil, self.flags)
         self.window = {
             pos         = self.pos,
             isFocused   = imgui.IsWindowFocused(),
@@ -109,7 +110,6 @@ method windows::new(id, configuration, render) {
         y = select(2, getScreenResolution())
     }
 
-    self.isChangingWindowsPositions         = movableWindows::isChangingWindowsPositions()
     self.executeChangingWindowsPositions    = fn { movableWindows::executeChangingWindowsPositions() }
     self.closeWindow                        = fn { self.condition = fn { return false }}
 
@@ -123,6 +123,8 @@ method windows::new(id, configuration, render) {
     imgui.OnFrame(fn { return movableWindows::setupThisWindowCondition(self.type) && self.condition() }, fn(window) {
         window.HideCursor = imguiAssets::getCursorStatus()
     
+        self.isChangingWindowsPositions = movableWindows::isChangingWindowsPositions()
+
         if self.size {
             imgui.SetNextWindowSize(imgui.ImVec2(self.size.x, self.size.y))
         }
