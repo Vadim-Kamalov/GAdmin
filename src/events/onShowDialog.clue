@@ -65,12 +65,16 @@ sampev.onShowDialog = fn(id, style, title, firstButton, secondButton, text) {
     }
 
     if string.find(text, "Информация о игроке") && spectator.stats.checking {
-        text = string.gsub($, "{......}", "")
+        text                = string.gsub($, "{......}", "")
+        local money, bank   = string.match(text, "Деньги: ([%$%-0-9]-)\nБанк%: ([%$%-0-9]-)\n")
+        
         spectator::setInformation({
             statsId     = string.match(text, "Информация о игроке .+%[(%d+)%]")
             accountId   = string.match(text, "ID Аккаунта: (%d+)")
-            money, bank = string.match(text, "Деньги: (%$[%-]?%d+)\nБанк%: (%$[%-]?%d+)\n")
+            money       = money
+            bank        = bank
             fraction    = string.match(text, "Фракция: (.-)\n")
+            rang        = string.match(text, "Должность: (.-)\n")
             vehicle     = string.match(text, "Транспорт: (.-)\n")
             house       = string.match(text, "Дом: (.-)\n")
             vip         = string.match(text, "Премиум аккаунт: (.-)\n")

@@ -18,8 +18,9 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
-@import "game.Admins"   => admins
-@import "Config"        => config
+@import "game.Admins"       => admins
+@import "game.Spectator"    => spectator
+@import "Config"            => config
 
 sampev.onServerMessage = fn(color, text) {
     local text = u8($)
@@ -82,6 +83,19 @@ sampev.onServerMessage = fn(color, text) {
                 admins::remove(index)
             }
         }
+    }
+
+    if string.find(text, "Игрок не AFK!") && spectator.afk.awaiting.message {
+        spectator.afk.awaiting.message = false
+        return false
+    }
+
+    if spectator.afk.awaiting.message && string.find(text, "^.+%-%s+%d+$") {
+        spectator.afk.time              = tonumber(string.match(text, "^.+%-%s+(%d+)$"))
+        spectator.afk.clock             = os.clock()
+        spectator.afk.awaiting.cycle    = true
+        spectator.afk.awaiting.message  = false
+        return false
     }
 
     return { color, u8::decode(text) }

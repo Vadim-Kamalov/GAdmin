@@ -54,11 +54,6 @@ static __config__ = {
         },
 
         windows = {
-            playersNearby = {
-                use     = false,
-                alpha   = 0
-            },
-
             adminList = {
                 use                     = false,
                 textAlignMode           = ALIGN_RIGHT,
@@ -93,11 +88,15 @@ static __config__ = {
                 }
             },
 
-            autoComletion   = { use = false },
+            spectatorInformation = {
+                use     = true,
+                type    = 2
+            },
+
+            autoCompletion  = { use = false },
             checker         = { /* not implemented (fuck yea) */ },
             online          = { use = true },
             farChat         = { use = false },
-            playerStats     = { mode = 1 },
             keyWatcher      = { use = false }
         },
 

@@ -39,7 +39,19 @@ global enum /* PLATFORM */ {
 static __spectator__ = {
     id          = -1
     nickname    = ""
-    
+    handle      = -1
+    time        = nil
+
+    afk = {
+        thread  = nil
+        time    = 0
+        clock   = -1 
+        awaiting = {
+            message = false
+            cycle   = false
+        }
+    }
+
     platform    = PLATFORM_AWAITING_OR_NONE
     status      = false
 
@@ -58,6 +70,7 @@ static __spectator__ = {
 method __spectator__::getInformation() {
     return {
         platform    = self.platform || "N/A"
+        armor       = (self.id != -1) ? sampGetPlayerArmor(self.id) : 0
         ping        = (self.id != -1) ? sampGetPlayerPing(self.id) : 0
         weapon      = ped::getPlayerWeaponNameById(self.id) || "N/A"
         accountId   = self.information.accountId || "N/A"
@@ -66,15 +79,23 @@ method __spectator__::getInformation() {
         money       = self.information.money || "N/A"
         bank        = self.information.bank || "N/A"
         fraction    = self.information.fraction || "N/A"
+        rang        = self.information.rang || "N/A"
         vehicle     = self.information.vehicle || "N/A"
         house       = self.information.house || "N/A"
         vip         = self.information.vip || "N/A"
         regDate     = self.information.regDate || "N/A"
         warnings    = self.information.warnings || "N/A"
         stage       = self.information.stage || "N/A"
-        moveSpeed   = {
+        afkTime     = self.afk.time || "N/A"
+
+        moveSpeed = {
             current = self.information.moveSpeedCurrent || "N/A"
             max     = self.information.moveSpeedMax || "N/A"
+        }
+
+        shot = {
+            total   = self.information.shotTotal || "0"
+            hit     = self.information.shotHit || "0"
         }
     }
 }
@@ -102,6 +123,29 @@ method __spectator__::platformToString() {
 }
 
 /**
+ * Get active time from time where self.active was set to true.
+ * @return string Time as MM:SS.
+ */
+method __spectator__::getActiveTime() {
+    if self.time {
+        local time      = os.date("*t")
+        local minutes   = math.floor(time.min - self.time.min)
+        local seconds   = math.floor((time.sec - self.time.sec) % 60)
+        return string.format("%02d:%02d", minutes, seconds)
+    } else {
+        return "00:00"
+    }
+}
+
+/**
+ * Get handle of spectating player.
+ * @return boolean, number
+ */
+method __spectator__::getHandle() {
+    return sampGetCharHandleBySampPlayerId(self.id)
+}
+
+/**
  * Go in to spectator to a specific player.
  *
  * @param playerId number   The player id that user should spectate to.
@@ -111,6 +155,7 @@ method __spectator__::platformToString() {
 method __spectator__::setTo(playerId) {
     if playerId {
         self.status     = true
+        if self.id != playerId || !self.time { self.time = os.date("*t") }
         self.id         = playerId
         self.nickname   = sampGetPlayerNickname(playerId)
 
@@ -119,8 +164,18 @@ method __spectator__::setTo(playerId) {
            && !sampIsDialogActive() && !self.stats.checking
         {
             sampSendMenuSelectRow(3)
-            self.stats.checking     = true
-            self.stats.lastChecked  = os.clock()
+            self.stats.checking         = true
+            self.stats.lastChecked      = os.clock()
+            self.afk.time               = 0
+            self.afk.awaiting.cycle     = false
+
+            if !self.afk.awaiting.message {
+                lua_thread.create(fn {
+                    wait($COMMAND_DELAY)
+                    self.afk.awaiting.message = true
+                    sampSendChat(string.format("/afk %d", self.id))
+                })
+            }
         }
     }
 }
@@ -133,6 +188,7 @@ method __spectator__::setTo(playerId) {
  */
 method __spectator__::exit() {
     self.status         = false
+    self.time           = nil
     self.id             = -1
     self.platform       = PLATFORM_AWAITING_OR_NONE
     self.information    = {}
