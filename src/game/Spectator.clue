@@ -48,7 +48,6 @@ static __spectator__ = {
         clock   = -1 
         awaiting = {
             message = false
-            cycle   = false
         }
     }
 
@@ -129,7 +128,7 @@ method __spectator__::platformToString() {
 method __spectator__::getActiveTime() {
     if self.time {
         local time      = os.date("*t")
-        local minutes   = math.floor(time.min - self.time.min)
+        local minutes   = math.floor((time.min - self.time.min + 60) % 60)
         local seconds   = math.floor((time.sec - self.time.sec) % 60)
         return string.format("%02d:%02d", minutes, seconds)
     } else {
@@ -167,7 +166,6 @@ method __spectator__::setTo(playerId) {
             self.stats.checking         = true
             self.stats.lastChecked      = os.clock()
             self.afk.time               = 0
-            self.afk.awaiting.cycle     = false
 
             if !self.afk.awaiting.message {
                 lua_thread.create(fn {

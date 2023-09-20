@@ -107,7 +107,7 @@ global fn main() {
         wait(0)
 
         if spectator.status {
-            if sampIsPlayerPaused(spectator.id) && spectator.afk.awaiting.cycle {
+            if sampIsPlayerPaused(spectator.id) {
                 if os.clock() - spectator.afk.clock >= 1 {
                     spectator.afk.time += 1
                     spectator.afk.clock = os.clock()

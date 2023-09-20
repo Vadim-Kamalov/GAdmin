@@ -93,7 +93,6 @@ sampev.onServerMessage = fn(color, text) {
     if spectator.afk.awaiting.message && string.find(text, "^.+%-%s+%d+$") {
         spectator.afk.time              = tonumber(string.match(text, "^.+%-%s+(%d+)$"))
         spectator.afk.clock             = os.clock()
-        spectator.afk.awaiting.cycle    = true
         spectator.afk.awaiting.message  = false
         return false
     }
