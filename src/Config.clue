@@ -146,6 +146,7 @@ static __config__ = {
             idInKillList        = { use = false },
             deathNotifyInChat   = { use = false },
             showAdmins          = { use = true },
+            displayIdInIc       = { use = false },
             gunInfo             = { use = false },
             autoLogin           = { use = false },
             autoAdminLogin      = { use = false },

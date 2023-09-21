@@ -21,6 +21,7 @@
 @import "game.Admins"       => admins
 @import "game.Spectator"    => spectator
 @import "Config"            => config
+@import "game.samp.Player"  => player
 
 sampev.onServerMessage = fn(color, text) {
     local text = u8($)
@@ -48,7 +49,12 @@ sampev.onServerMessage = fn(color, text) {
             return false
         }
     }
-
+    if string.find(text, "^(%w+.*) говорит:(.*)") && config.root.additions.displayIdInIc.use {
+        local nickname, message = string.match(text, "^(%w+.*) говорит:(.*)")
+        
+        nickname = string.gsub(nickname, " ", "_")
+        text = nickname .. "[" .. player::getIdByNickname(nickname) .. "]" .. " говорит:" .. message
+    }
     if string.find(text, "^%[A%] .*%[%d+%] авторизовался как администратор %d+ уровня%.$") {
         @ifdef __GADMIN_DEBUG__ { $debugInformation!("onServerMessage", "found connected administrator") }
 
