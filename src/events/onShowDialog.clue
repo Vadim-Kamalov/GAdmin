@@ -58,6 +58,7 @@ sampev.onShowDialog = fn(id, style, title, firstButton, secondButton, text) {
                 }
             }
 
+            user::setAloginStatus(true)
             checkedAdminList = true
             
             return false

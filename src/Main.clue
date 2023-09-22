@@ -21,12 +21,12 @@
 @define COMMAND_DELAY   800
 @define GADMIN_VERSION  "0.1"
 
-@define UNIQUE_STRING tostring(os.clock())
-
 @macro debugSuccessful(entryPoint, message)     { sampfuncsLog("{00FF00}__GADMIN__DEBUG__ [+][" .. $entryPoint .. "]:{FFFFFF} " .. $message) }
 @macro debugWarning(entryPoint, message)        { sampfuncsLog("{FFA500}__GADMIN__DEBUG__ [~][" .. $entryPoint .. "]:{FFFFFF} " .. $message) }
 @macro debugInformation(entryPoint, message)    { sampfuncsLog("{00BFFF}__GADMIN__DEBUG__ [?][" .. $entryPoint .. "]:{FFFFFF} " .. $message) }
 @macro debugError(entryPoint, message)          { sampfuncsLog("{FF0000}__GADMIN__DEBUG__ [-][" .. $entryPoint .. "]:{FFFFFF} " .. $message) }
+
+@macro PLAYER_COLOR_TO_HEX(id) { string.format("%06X", sampGetPlayerColor($id) & 0xFFFFFF) }
 
 static memory       = require("memory")
 static encoding     = require("encoding")
@@ -127,6 +127,12 @@ global fn onScriptTerminate(scr, quitGame) {
 
 global fn onWindowMessage(msg, wparam, lparam) {
     $SETUP_EVENT_MV!(msg, wparam)
+}
+
+global fn onReceivePacket(id) {
+    if id == 36 || id == 32 || id == 37 {
+        user::setAloginStatus(false)
+    }
 }
 
 @ifdef __GADMIN_DEBUG__ {

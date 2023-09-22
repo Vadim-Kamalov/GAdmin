@@ -143,14 +143,16 @@ method imguiAssets::addStrokedText(text, strokeWidth = 0, color = imgui.ImVec4(1
  */
 method imguiAssets::setPreviousItemAbleToCopy(
     text,
-    notifyTitle         = "Текст скопирован.",
-    notifyDescription   = "Следующий текст успешно скопирован: " .. text,
-    notification        = {
+    notifyTitle = "Текст скопирован",
+    notifyDescription = "Следующий текст успешно скопирован: " .. text,
+    notification
+) {
+    notification = notification || {
         icon    = icons.ICON_KEYBOARD
         title   = notifyTitle
         text    = notifyDescription
     }
-) {
+
     if imgui.IsItemHovered() {
         imgui.GetWindowDrawList()::AddLine(
             imgui.ImVec2(imgui.GetItemRectMin().x, imgui.GetItemRectMax().y),

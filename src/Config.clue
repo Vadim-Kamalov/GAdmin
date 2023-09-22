@@ -93,10 +93,32 @@ static __config__ = {
                 type    = 2
             },
 
+            farChat = {
+                use         = false,
+                maxLines    = 8,
+                strokeSize  = 1,
+                ignore      = {
+                    "открыл.*бардачок",
+                    "что%-то говорит",
+                    "шепчется с", "%(%-а%) что%-то",
+                    "ровал.*двери", "пьёт",
+                    "сотовый телефон",
+                    "багажник",
+                    "%S+ дверь дома",
+                    "ест .+",
+                    "передал деньги"
+                },
+
+                displayTime = true,
+
+                // In cases when message can repeated (for example, /phone message can spam),
+                // use this option. Delay in seconds.
+                delay       = 2.5
+            }
+
             autoCompletion  = { use = false },
             checker         = { /* not implemented (fuck yea) */ },
             online          = { use = true },
-            farChat         = { use = false },
             keyWatcher      = { use = false }
         },
 

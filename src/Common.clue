@@ -63,7 +63,7 @@ method common::makeDirectoryTree(tree) {
 }
 
 method common::isCursorActive() {
-    return isCursorActive() && sampIsChatInputActive() && isSampfuncsConsoleActive() && sampIsDialogActive()
+    return isCursorActive() || sampIsChatInputActive() || isSampfuncsConsoleActive() || sampIsDialogActive()
 }
 
 /**

@@ -64,7 +64,7 @@ windows::new("imgui.windows.AdminList", {
                 text,
                 config.root.windows.adminList.strokeSize,
                 (config.root.windows.adminList.textColorBasedOnClist) ?
-                    common::convertHex2ImVec4(string.format("%06X", sampGetPlayerColor(admin.id) & 0xFFFFFF)) : nil
+                    common::convertHex2ImVec4($PLAYER_COLOR_TO_HEX!(admin.id)) : nil
             )
 
             if isHovered {

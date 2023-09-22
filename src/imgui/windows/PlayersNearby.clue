@@ -102,9 +102,6 @@ window::new("imgui.windows.PlayersNearby", {
     size        = { x = 0, y = 0 }
     defaultPos  = { x = 0, y = sizeY / 2 }
     initialize  = {
-        popupInformation    = {}
-        tempPlayers         = {}
-
         style = StyleChanger::new({
             WindowBorderSize    = 0
             WindowPadding       = imgui.ImVec2(0, 0)
