@@ -21,7 +21,7 @@
 @import "Config" => config
 
 sampev.onPlayerChatBubble = fn(playerId, color, distance, duration, message) {
-    if config.root.windows.farChat.use {
+    if config.root.windows.farChat.use && color != -413892353 {
         for _, ignoredText in config.root.windows.farChat.ignore {
             if string.find(u8(message), ignoredText) {
                 return { playerId, color, distance, duration, message }
@@ -29,7 +29,7 @@ sampev.onPlayerChatBubble = fn(playerId, color, distance, duration, message) {
         }
 
         if local it = farChatMessages[#farChatMessages] {
-            if os.clock() - it.clock <= config.root.windows.farChat.delay && u8(message) != it.message && playerId != it.id {
+            if os.clock() - it.clock <= config.root.windows.farChat.delay && u8(message) == it.message && playerId == it.id {
                 return { playerId, color, distance, duration, message }
             }
         }

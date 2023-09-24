@@ -163,4 +163,11 @@ global fn onReceivePacket(id) {
         print(spectator.id)
         print(spectator::getInformation()[key])
     })
+
+    sampfuncsRegisterConsoleCommand("debug.addCheckerPlayer", fn(args) {
+        table.insert(config.root.windows.playerChecker.players, {
+            nickname    = string.match(args, "^(%S+) .*"),
+            commentary  = string.match(args, "^%S+ (.*)")
+        })
+    })
 }

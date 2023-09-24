@@ -24,8 +24,8 @@
 @import "Common" => common
 
 static __config__ = {
-    initialized = false,    // Module status. In config file it's always be true.
-    def         = nil,
+    initialized = false,    // Module initializing status.
+    def         = nil,      // Same as `root`, but with default values.
 
     // We need this to save config if it was changed (compare JSON file with self.root).
     jsonStrings = {
@@ -97,27 +97,28 @@ static __config__ = {
                 use         = false,
                 maxLines    = 8,
                 strokeSize  = 1,
-                ignore      = {
-                    "открыл.*бардачок",
-                    "что%-то говорит",
-                    "шепчется с", "%(%-а%) что%-то",
-                    "ровал.*двери", "пьёт",
-                    "сотовый телефон",
-                    "багажник",
-                    "%S+ дверь дома",
-                    "ест .+",
-                    "передал деньги"
-                },
+                ignore      = {},
 
                 displayTime = true,
 
                 // In cases when message can repeated (for example, /phone message can spam),
                 // use this option. Delay in seconds.
                 delay       = 2.5
-            }
+            },
+            
+            playerChecker = { 
+                            use                     = false,
+                            chatNotice              = true,
+                            strokeSize              = 1,
+                            textAlignMode           = ALIGN_RIGHT,
+                            displayOfflinePlayers   = true,
+                            playerColorBasedOnClist = true,
+                            players                 = {
+                                /** { nickname = string, commentary = string|nil }... */
+                            }
+                        },
 
             autoCompletion  = { use = false },
-            checker         = { /* not implemented (fuck yea) */ },
             online          = { use = true },
             keyWatcher      = { use = false }
         },

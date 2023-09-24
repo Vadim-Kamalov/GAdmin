@@ -28,6 +28,7 @@ method player::getIdByNickname(nickname) {
             return i
         }
     }
+    return -1
 }
 
 return player

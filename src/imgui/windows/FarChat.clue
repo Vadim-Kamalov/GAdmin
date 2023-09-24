@@ -67,7 +67,7 @@ window::new("imgui.windows.FarChat", {
         style = StyleChanger::new({
             ItemSpacing         = imgui.ImVec2(0, 5)
             WindowBorderSize    = 0
-            WindowPadding       = imgui.ImVec2(0, 0)
+            WindowPadding       = imgui.ImVec2(0, 2)
             WindowBg            = imgui.ImVec4(0, 0, 0, 0)
         })
     }
@@ -102,7 +102,10 @@ window::new("imgui.windows.FarChat", {
                     }
                 }
 
-                local message = (#this.message >= 140) ? string.sub(this.message, 1, 140) .. "..." : this.message
+                local message = this.message
+                if self.isChangingWindowsPositions {
+                    message = (#this.message >= 140) ? string.sub(this.message, 1, 140) .. "..." : this.message
+                }
 
                 imguiAssets::addStrokedText("> ", strokeSize, playerColor)
 

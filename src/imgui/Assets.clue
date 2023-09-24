@@ -52,10 +52,10 @@ method imguiAssets::switchCursorStatus() { self.cursor = !$ }
  * @param pos ImVec2
  * @return void
  */
-method imguiAssets::textWithFont(text, font, pos) {
+method imguiAssets::textWithFont(text, font, pos, color = imgui.GetStyle().Colors[imgui.Col.Text]) {
     imgui.PushFont(font)
         if (pos) { imgui.SetCursorPos(pos) }
-        imgui.Text(text)
+        imgui.TextColored(color, text)
     imgui.PopFont()
 }
 
