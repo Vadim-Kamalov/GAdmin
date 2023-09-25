@@ -20,6 +20,12 @@
 
 @define COMMAND_DELAY   800
 @define GADMIN_VERSION  "0.1"
+@define ALL_MODULES     modules 
+
+@define SAMP_BASE                       getModuleHandle("samp.dll")
+@define RECALL_UP_ADDR                  $SAMP_BASE + 0x65990
+@define RECALL_DOWN_ADDR                $SAMP_BASE + 0x65A00
+@define GET_BODY_PART_COORDINATES_ADDR  0x5E4280   
 
 @macro debugSuccessful(entryPoint, message)     { sampfuncsLog("{00FF00}__GADMIN__DEBUG__ [+][" .. $entryPoint .. "]:{FFFFFF} " .. $message) }
 @macro debugWarning(entryPoint, message)        { sampfuncsLog("{FFA500}__GADMIN__DEBUG__ [~][" .. $entryPoint .. "]:{FFFFFF} " .. $message) }
@@ -49,22 +55,17 @@ static enum /* ALIGN_TYPE */ {
     ALIGN_RIGHT
 }
 
+@import "Hook"              => hook
 @import "Icons"             => icons
 @import "Common"            => common
 @import "Config"            => config
-@import "CompressedData"    => compressed
 @import "Notifications"     => notify
-
-@import "game.User"         => user
-@import "game.Spectator"    => spectator
-@import "game.Admins"       => admins
-
-@import "game.sa.Vehicle"   => vehicle
-@import "game.sa.Ped"       => ped
+@import "CompressedData"    => compressed
 
 @import "imgui.Style" => style
 
-// All ImGui imports that uses some of font that defined here should connected after this function.
+@import "game.Spectator" => spectator
+
 imgui.OnInitialize(fn {
     local glyphRanges = imgui.GetIO().Fonts::GetGlyphRangesCyrillic()
 
@@ -88,12 +89,6 @@ imgui.OnInitialize(fn {
     imgui.GetIO().IniFilename = nil
 })
 
-@import "MovableWindows"    => movableWindows
-@import "AutoUpdate"        => autoUpdate
-
-@import "imgui.Assets"          => imguiAssets
-@import "imgui.drawList.Text"   => imguiText
-
 global fn main() {
     while !isSampAvailable() { wait(0) }
 
@@ -102,6 +97,9 @@ global fn main() {
     }
 
     common::makeDirectoryTree({ "GAdmin", "GAdmin/temp", "GAdmin/config" })
+
+    $JMP_HOOK_NEW onRecallUpHook = hook::new("void(__thiscall*)(void*)", onRecallUpHook, $RECALL_UP_ADDR)
+    $JMP_HOOK_NEW onRecallDownHook = hook::new("void(__thiscall*)(void*)", onRecallDownHook, $RECALL_DOWN_ADDR)
 
     while true {
         wait(0)
@@ -119,19 +117,19 @@ global fn main() {
     }
 }
 
-global fn onScriptTerminate(scr, quitGame) {
-    if scr == script.this {
-        config::saveIfChanged()
+$JMP_HOOK /** void(__thiscall*)(void*) */ onRecallUpHook(...) {
+    if config.root.windows.autoCompletion.use && isKeyDown(VK_CONTROL) && autoCompletion.condition() {
+        autoCompletion.position = ($ == 1) ? autoCompletion.commandsLength : $ - 1
+    } else {
+        onRecallUpHook(...)
     }
 }
 
-global fn onWindowMessage(msg, wparam, lparam) {
-    $SETUP_EVENT_MV!(msg, wparam)
-}
-
-global fn onReceivePacket(id) {
-    if id == 36 || id == 32 || id == 37 {
-        user::setAloginStatus(false)
+$JMP_HOOK /** void(__thiscall*)(void*) */ onRecallDownHook(...) {
+    if config.root.windows.autoCompletion.use && isKeyDown(VK_CONTROL) && autoCompletion.condition() {
+        autoCompletion.position = ($ == autoCompletion.commandsLength) ? 1 : $ + 1
+    } else {
+        onRecallDownHook(...)
     }
 }
 

@@ -21,14 +21,14 @@
 @import "Icons"         => icons
 @import "Notifications" => notify
 
-local imguiAssets = {}; imguiAssets.__index = imguiAssets
-
-imguiAssets.cursor = true
+static __imguiAssets__ = {
+    cursor = true
+}
 
 /**
  * @return boolean Whether the ImGui cursor is active (Cursor Status).
  */
-method imguiAssets::getCursorStatus() { return self.cursor }
+method __imguiAssets__::getCursorStatus() { return self.cursor }
 
 /**
  * Change the global cursor display ONLY for ImGui windows.
@@ -36,13 +36,13 @@ method imguiAssets::getCursorStatus() { return self.cursor }
  * @param status boolean Cursor status (default = false).
  * @return void
  */
-method imguiAssets::setCursorStatus(status = false) { self.cursor = status  }
+method __imguiAssets__::setCursorStatus(status = false) { self.cursor = status  }
 
 /**
  * Globally change the state of the ImGui cursor.
  * @return void
  */
-method imguiAssets::switchCursorStatus() { self.cursor = !$ }
+method __imguiAssets__::switchCursorStatus() { self.cursor = !$ }
 
 /**
  * Drawing imgui text with a specific font, optionally with a position.
@@ -52,7 +52,7 @@ method imguiAssets::switchCursorStatus() { self.cursor = !$ }
  * @param pos ImVec2
  * @return void
  */
-method imguiAssets::textWithFont(text, font, pos, color = imgui.GetStyle().Colors[imgui.Col.Text]) {
+method __imguiAssets__::textWithFont(text, font, pos, color = imgui.GetStyle().Colors[imgui.Col.Text]) {
     imgui.PushFont(font)
         if (pos) { imgui.SetCursorPos(pos) }
         imgui.TextColored(color, text)
@@ -68,7 +68,7 @@ method imguiAssets::textWithFont(text, font, pos, color = imgui.GetStyle().Color
  * @param duration number
  * @return number, boolean 
  */
-method imguiAssets::bringFloatTo(from, to, startTime, duration) {
+method __imguiAssets__::bringFloatTo(from, to, startTime, duration) {
     local timer = os.clock() - startTime
     if timer >= 0.00 && timer <= duration {
         local count = timer / (duration / 100)
@@ -86,7 +86,7 @@ method imguiAssets::bringFloatTo(from, to, startTime, duration) {
  * @param duration number
  * @return number, boolean
  */
-method imguiAssets::bringVec4To(from, to, startTime, duration) {
+method __imguiAssets__::bringVec4To(from, to, startTime, duration) {
     local timer = os.clock() - startTime
     if timer >= 0.00 && timer <= duration {
         local count = timer / (duration / 100)
@@ -109,7 +109,7 @@ method imguiAssets::bringVec4To(from, to, startTime, duration) {
  * @vararg any
  * @return boolean, boolean (imgui.IsItemClicked() and imgui.IsItemHovered())
  */
-method imguiAssets::addStrokedText(text, strokeWidth = 0, color = imgui.ImVec4(1, 1, 1, 1), ...) {
+method __imguiAssets__::addStrokedText(text, strokeWidth = 0, color = imgui.ImVec4(1, 1, 1, 1), ...) {
     local text  = string.format($, ...)
     local pos   = imgui.GetCursorPos()
 
@@ -141,7 +141,7 @@ method imguiAssets::addStrokedText(text, strokeWidth = 0, color = imgui.ImVec4(1
  * @param notification table|nil
  * @return void
  */
-method imguiAssets::setPreviousItemAbleToCopy(
+method __imguiAssets__::setPreviousItemAbleToCopy(
     text,
     notifyTitle = "Текст скопирован",
     notifyDescription = "Следующий текст успешно скопирован: " .. text,
@@ -166,4 +166,4 @@ method imguiAssets::setPreviousItemAbleToCopy(
     }
 }
 
-return imguiAssets
+return __imguiAssets__

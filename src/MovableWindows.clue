@@ -26,7 +26,7 @@
 @macro SETUP_EVENT_MV(msg, wparam) {
     {
         local this = __movableWindows__
-        if this.changingWindowsPositions && !common::isCursorActive() {
+        if this.changingWindowsPositions && !sampIsChatInputActive() && !sampIsDialogActive() && !isSampfuncsConsoleActive() {
             if $msg == wm.WM_SYSKEYDOWN || $msg == wm.WM_KEYDOWN {
                 local keys = {
                     [VK_1] = MV_ONLY_IN_SPECTATOR,

@@ -19,7 +19,7 @@
  */
 
 local ped = {
-    getBodyPartCoordinatesCast = ffi.cast("int(__thiscall*)(void*, float*, int, bool)", 0x5E4280)
+    getBodyPartCoordinatesCast = ffi.cast("int(__thiscall*)(void*, float*, int, bool)", $GET_BODY_PART_COORDINATES_ADDR)
 }
 
 /**
