@@ -18,9 +18,21 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
-@import "Config" => config
+@define WEEK_NUMBER tonumber(os.date("%W")) + tonumber(os.date("%y"))
 
-static __user__ = { alogin = false }
+@import "Config" => config
+@import "Assets" => assets
+
+static __user__ = {
+    alogin          = false,
+    weekNumber      = tostring(tonumber(os.date("%W")) + tonumber(os.date("%y"))),
+    answersCount    = 0,
+
+    online = {
+        session = 0,
+        clock   = os.clock()
+    }
+}
 
 /**
  * @return boolean Wheather user is logged-in as administrator.
@@ -60,6 +72,13 @@ method __user__::getNickname() {
 }
 
 /**
+ * @return number User in-game ping.
+ */
+method __user__::getPing() {
+    return sampGetPlayerPing(self::getId())
+}
+
+/**
  * @return string User in-game OOC nickname.
  */
 method __user__::getOOCNickname() {
@@ -76,7 +95,7 @@ method __user__::setOOCNickname(nickname) {
 }
 
 /**
- * Get user administator lvl.
+ * Get user administrator lvl.
  * @return number
  */
 method __user__::getAdminLvl() {
@@ -90,6 +109,99 @@ method __user__::getAdminLvl() {
  */
 method __user__::setAdminLvl(lvl) {
     config.root.user.adminLvl = lvl
+}
+
+/**
+ * Update user time(session, total, week). Only for use in while-true loop!
+ * @return void
+ */
+method __user__::updateTime() {
+    if os.clock() - self.online.clock >= 1 {
+        self.online.clock               = os.clock()
+        self.online.session             += (self::getAloginStatus()) ? 1 : 0
+        config.root.user.online.total   += 1
+        
+        if local this = config.root.user.online.weeks {
+            if this[#this] && this[#this].weekPos == $WEEK_NUMBER {
+                this[#this].days[tonumber(os.date("%w"))] += 1
+            } else {
+                table.insert(this, {
+                    weekPos = $WEEK_NUMBER,
+                    days    = { 0, 0, 0, 0, 0, 0, 0 }
+                })
+            
+                this[#this].days[tonumber(os.date("%w"))] += 1
+            }
+        }
+    }
+}
+
+/**
+ * Get table with time information. Each value of returned table is another table,
+ * that was created by os.date("*t", ...), except `week`.
+ * 
+ * @return table { session = table, total = table, week = table }
+ */
+method __user__::getTime() {
+    return {
+        session     = assets::explodeDate(self.online.session)
+        total       = assets::explodeDate(config.root.user.online.total)
+        week        = config.root.user.online.weeks[#config.root.user.online.weeks]
+        weekTotal   = (fn {
+            local total = 0
+            if local this = config.root.user.online.weeks[#config.root.user.online.weeks] {
+                if this.weekPos == tonumber(os.date("%W")) + tonumber(os.date("%y")) {
+                    for _, time in this.days {
+                        total += time
+                    }
+                }
+            }
+            return assets::explodeDate(total)
+        })()
+    }
+}
+
+/**
+ * Increment answers count/
+ * @return void
+ */
+method __user__::incrementAnswersCount() {
+    self.answersCount               += 1
+    config.root.user.answers.total  += 1
+    
+    if local this = config.root.user.answers.weeks {
+        if this[#this] && this[#this].weekPos == $WEEK_NUMBER {
+            this[#this].days[tonumber(os.date("%w"))] += 1
+        } else {
+            table.insert(this, {
+                weekPos = $WEEK_NUMBER,
+                days    = { 0, 0, 0, 0, 0, 0, 0 }
+            })
+
+            this[#this].days[tonumber(os.date("%w"))] += 1
+        }
+    }
+}
+
+/**
+ * Just get answers count. Returns table where all values are number.
+ * @return table
+ */
+method __user__::getAnswersCount() {
+    return {
+        session     = self.answersCount
+        total       = config.root.user.answers.total
+        week        = config.root.user.answers.weeks[#config.root.user.answers.weeks]
+        weekTotal   = (fn {
+            local total = 0
+            if local this = config.root.user.answers.weeks[#config.root.user.answers.weeks] {
+                for _, answers in this.days {
+                    total += answers
+                }
+            }
+            return total
+        })()
+    }
 }
 
 return __user__

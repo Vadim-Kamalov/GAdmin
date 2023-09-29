@@ -18,14 +18,64 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
+@import "Config" => config
 @import "Common" => common
 
-static __style__ = { def = {} }
+static __style__ = {
+    windows = {}
+    def     = {}
+}
 
 local enum /* STYLE_TYPE */ {
     STYLE_TYPE_NUMBER,
     STYLE_TYPE_IMVEC2,
     STYLE_TYPE_IMVEC4
+}
+
+/**
+ * Allow next window be style changeable. Must called before using `imgui.Begin(...)` function.
+ * After `imgui.End()` must called `style::endWindowStyleChangeable(id)` function.
+ *
+ * @param id string Window-ID.
+ * @return void
+ */
+method __style__::beginWindowStyleChangeable(id) {
+    if local this = config.root.styleChangeableWindows[id] {
+        // Expecting that all vectors of `this` are packed tables with `StyleChanger::getConfigSafeTable()`.
+        local style = (fn {
+            local result = {}
+            for property, value of this {
+                if type(value) == "table" {
+                    result[property] = imgui[(#value == 2) ? "ImVec2" : "ImVec4"](table.unpack(value))
+                } else {
+                    result[property] = value
+                }
+            }
+            return result
+        })()
+
+        // Why not just `@import "imgui.StyleChanger"`?
+        // Reason is simple: this will cause table overflow, and later - stack overflow.
+        // Why this will cause overflow? I don't know and not want to know.
+        //
+        // This check is need to prevent import spam.
+        if !self.windows[id] {
+            self.windows[id] = import("imgui.StyleChanger")::new(style)
+        }
+
+        self.windows[id]::apply()
+    }
+}
+
+/**
+ * Just reset window style after changing by `style::beginWindowStyleChangeable(id)`.
+ * @param id string Window-ID.
+ * @return void
+ */
+method __style__::endWindowStyleChangeable(id) {
+    if config.root.styleChangeableWindows[id] {
+        self.windows[id]::reset()
+    }
 }
 
 /**

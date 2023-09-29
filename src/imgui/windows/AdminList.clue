@@ -30,17 +30,15 @@
 @import "Notifications" => notify 
 
 windows::new("imgui.windows.AdminList", {
-    description = "Список администраторов в сети",
-    type        = MV_DEFAULT,
+    description = "Список администраторов в сети"
+    type        = MV_DEFAULT
     size        = { x = 200, y = 0 }
-    condition   = fn {
-        return config.root.windows.adminList.use
-    },
+    condition   = fn { return config.root.windows.adminList.use }
 
     initialize  = {
         windowStyle = StyleChanger::new({
-            WindowBorderSize    = 0,
-            WindowPadding       = imgui.ImVec2(0, 0),
+            WindowBorderSize    = 0
+            WindowPadding       = imgui.ImVec2(0, 0)
             WindowBg            = imgui.ImVec4(0, 0, 0, 0)
         })
     }

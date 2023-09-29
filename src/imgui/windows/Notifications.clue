@@ -24,6 +24,7 @@
 @import "Assets"                => assets
 
 @import "imgui.Assets"          => imguiAssets
+@import "imgui.Style"           => style
 @import "imgui.StyleChanger"    => StyleChanger
 @import "imgui.Animations"      => animations
 @import "imgui.drawList.Shadow" => shadow
@@ -111,6 +112,7 @@ imgui.OnFrame(fn { return notify.active }, fn(self) {
     imgui.SetNextWindowPos(imgui.ImVec2(sizeX - 360, sizeY - 80 * self.notifySize))
     imgui.SetNextWindowSize(imgui.ImVec2(860, 80 * self.notifySize))
 
+    style::beginWindowStyleChangeable("imgui.windows.Notifications")
     imgui.Begin("imgui.windows.Notifications", nil, self.flags)
         for i = 1, config.root.notifications.maxItems {
             if local notification = notify::get()[i] {
@@ -131,5 +133,6 @@ imgui.OnFrame(fn { return notify.active }, fn(self) {
             }
         }
     imgui.End()
+    style::endWindowStyleChangeable("imgui.windows.Notifications")
     self.style::reset()
 })

@@ -64,7 +64,8 @@ static enum /* ALIGN_TYPE */ {
 
 @import "imgui.Style" => style
 
-@import "game.Spectator" => spectator
+@import "game.User"         => user
+@import "game.Spectator"    => spectator
 
 imgui.OnInitialize(fn {
     local glyphRanges = imgui.GetIO().Fonts::GetGlyphRangesCyrillic()
@@ -103,6 +104,8 @@ global fn main() {
 
     while true {
         wait(0)
+
+        user::updateTime()
 
         if spectator.status {
             if sampIsPlayerPaused(spectator.id) {

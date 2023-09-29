@@ -19,9 +19,11 @@
  */
 
 @import "game.Admins"       => admins
+@import "game.User"         => user
 @import "game.Spectator"    => spectator
-@import "Config"            => config
 @import "game.samp.Player"  => player
+
+@import "Config"            => config
 
 sampev.onServerMessage = fn(color, text) {
     local text = u8($)
@@ -70,7 +72,10 @@ sampev.onServerMessage = fn(color, text) {
             }
         }
        
-        @ifdef __GADMIN_DEBUG__ { $debugInformation!("onServerMessage", "connectionPassed: " .. tostring(connectionPassed)) }
+@ifdef __GADMIN_DEBUG__
+{
+        $debugInformation!("onServerMessage", "connectionPassed: " .. tostring(connectionPassed))
+}
         
         if connectionPassed {
             admins::insert({
@@ -85,9 +90,18 @@ sampev.onServerMessage = fn(color, text) {
         }
     } elseif string.find(text, "^%[A%] .*%[%d+%] вышел как администратор%.$") {
         local adminId = tonumber(string.match(text, "^%[A%] .*%[(%d+)%] вышел как администратор%.$"))
+    
+        if adminId == user::getId() {
+            user::setAloginStatus(false)
+            checkedAdminList = false
+        }
+
         for index, data in admins {
             if data.id == adminId {
-                @ifdef __GADMIN_DEBUG__ { $debugSuccessful!("onServerMessage", "removed disconnected administrator from `admins` table") }
+@ifdef __GADMIN_DEBUG__
+{
+                $debugSuccessful!("onServerMessage", "removed disconnected administrator from `admins` table") 
+}
                 admins::remove(index)
             }
         }
@@ -110,6 +124,10 @@ sampev.onServerMessage = fn(color, text) {
             wait($COMMAND_DELAY)
             sampSendChat("/adm")
         })
+    }
+
+    if string.find(text, "^%[A%] " .. user::getOOCNickname() .. "%[%d+%] ответил .*%[%d+%]: .*") {
+        user::incrementAnswersCount()
     }
 
     return { color, u8::decode(text) }

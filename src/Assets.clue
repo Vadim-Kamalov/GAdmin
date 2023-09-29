@@ -18,6 +18,22 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
+ffi.cdef("
+    typedef unsigned short WORD;
+    typedef struct {
+        WORD wYear;
+        WORD wMonth;
+        WORD wDayOfWeek;
+        WORD wDay;
+        WORD wHour;
+        WORD wMinute;
+        WORD wSecond;
+        WORD wMilliseconds;
+    } SYSTEMTIME, *PSYSTEMTIME;
+
+    void GetSystemTime(PSYSTEMTIME lpSystemTime);
+")
+
 local assets = {}
 
 assets.randomICNicknames = {
@@ -127,6 +143,34 @@ method assets::downloadFileList(files, afterDownloadCallback) {
 }
 
 /**
+ * Explode timestamp to date-table.
+ * 
+ * @param timestamp number
+ * @return table
+ */
+method assets::explodeDate(timestamp) {
+    local seconds   = timestamp % 60
+    timestamp       = (timestamp - seconds) / 60
+    local minutes   = timestamp % 60
+    timestamp       = (timestamp - minutes) / 60
+    local hours     = timestamp % 24
+    timestamp       = (timestamp - hours) / 24
+    local days      = timestamp % 31 + 1
+    timestamp       = (timestamp - days + 1) / 31
+    local months    = timestamp % 12 + 1
+    local years     = (timestamp - months + 1) / 12 + 1970
+
+    return {
+        sec     = seconds,
+        min     = minutes,
+        hour    = hours,
+        day     = days,
+        month   = months,
+        year    = years
+    } 
+}
+
+/**
  * Convert Unicode character to UTF8 string.
  *
  * @param code number   Unicode character.
@@ -141,6 +185,16 @@ method assets::convertUnicode2Utf8(code) {
     }
     table.insert(t, 256 - 2 * h + code)
     return string.reverse(string.char(table.unpack(t)))
+}
+
+/**
+ * Get system time.
+ * @return table
+ */
+method assets::getSystemTime() {
+    local time = ffi.new("SYSTEMTIME")
+    ffi.C.GetSystemTime(time)
+    return time
 }
 
 /**

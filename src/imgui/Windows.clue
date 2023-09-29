@@ -20,6 +20,7 @@
 
 @import "Config"            => config
 @import "imgui.Assets"      => imguiAssets
+@import "imgui.Style"       => style
 @import "MovableWindows"    => movableWindows
 
 /**
@@ -57,6 +58,8 @@ method windows::begin(
         + imgui.WindowFlags.AlwaysAutoResize
 ) {
     self.flags = flags
+
+    style::beginWindowStyleChangeable(self.id)
     imgui.Begin(label, nil, self.flags)
         self.window = {
             pos         = self.pos,
@@ -70,6 +73,7 @@ method windows::begin(
         
         callback()
     imgui.End()
+    style::endWindowStyleChangeable(self.id)
 }
 
 /**

@@ -78,4 +78,25 @@ method StyleChanger::reset() {
     }
 }
 
+/**
+ * Get safe table for writing it in config. Converts all ImGui vectors
+ * to packed tables, strings to vectors, numbers are unchanged.
+ *
+ * @return table
+ */
+method StyleChanger::getConfigSafeTable() {
+    local result = {}
+    for property, value of self {
+        if string.find(tostring(value), "^ImVec2") {
+            result[property] = { value.x, value.y }
+        } elseif type(value) == "number" {
+            result[property] = value
+        } else {
+            local value = (type($) == "string") ? common::convertHex2ImVec4(value) : $
+            result[property] = { value.x, value.y, value.z, value.w }
+        }
+    }
+    return result
+}
+
 return StyleChanger
