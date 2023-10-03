@@ -23,6 +23,20 @@
 
 local animations = {}
 
+method animations::limit(v, min = 0.0, max = 1.0) {
+    return (v < min) ? min : ((v > max) ? max : v)
+}
+
+method animations::getContrastColor(
+    backgroundColor,
+    colorA = imgui.ImVec4(0, 0, 0, 1),
+    colorB = imgui.ImVec4(1, 1, 1, 1)
+) {
+    return ((1 - (0.299 * backgroundColor.x + 0.587 * backgroundColor.y + 0.114 * backgroundColor.z)) < 0.5) 
+        ? colorA
+        : colorB
+}
+
 /**
  * Draw animated and clickable text.
  *
@@ -107,133 +121,222 @@ method animations::button(
     duration        = { 0.2, 0.4, 0.3 },
     colors          = {
         def     = imgui.GetStyle().Colors[imgui.Col.Button],
-		hovered = imgui.GetStyle().Colors[imgui.Col.ButtonHovered],
-		active  = imgui.GetStyle().Colors[imgui.Col.ButtonActive],
-		window  = imgui.GetStyle().Colors[imgui.Col.WindowBg]
+        hovered = imgui.GetStyle().Colors[imgui.Col.ButtonHovered],
+        active  = imgui.GetStyle().Colors[imgui.Col.ButtonActive],
+        window  = imgui.GetStyle().Colors[imgui.Col.WindowBg]
     }
 ) {
-	local result    = false
-	local rounding  = imgui.GetStyle().FrameRounding
+    local result = false
+    local rounding = imgui.GetStyle().FrameRounding
+    local id = label
    
-    local fn limit(v, min = 0.0, max = 1.0) {
-        return (v < min) ? min : ((v > max) ? max : v)
-    }
-
     if !UI_ANIMATED_BUTTON {
         global UI_ANIMATED_BUTTON = {}
     }
 
-	if !UI_ANIMATED_BUTTON[label] {
-		UI_ANIMATED_BUTTON[label] = {
-			radius  = 0
-			clock   = {0, 0}
-			pos     = nil
-			size    = nil
-			hovered = {
-				state   = false
-				before  = nil
-				clock   = 0
-				color   = colors.hovered
-			}
-		}
+    if !UI_ANIMATED_BUTTON[id] {
+        UI_ANIMATED_BUTTON[id] = {
+            radius  = 0
+            clock   = { 0, 0 }
+            pos     = nil
+            size    = nil
+            hovered = {
+                state   = false
+                before  = nil
+                clock   = 0
+                color   = colors.hovered
+            }
+        }
     }
 
-	local this      = UI_ANIMATED_BUTTON[label]
+    local this      = UI_ANIMATED_BUTTON[id]
     local label     = string.gsub(label, "##.*$", "")
-	local textSize  = imgui.CalcTextSize(label)
+    local textSize  = imgui.CalcTextSize(label)
     local p         = imgui.GetCursorScreenPos()
-	
+ 
     if !size {
-		local padding   = imgui.GetStyle().FramePadding
-		size            = imgui.ImVec2(textSize.x + (padding.x * 2), textSize.y + (padding.y * 2))
+        local padding = imgui.GetStyle().FramePadding
+        size = imgui.ImVec2(textSize.x + (padding.x * 2), textSize.y + (padding.y * 2))
     }
 
-	if this.size {
+    if this.size {
         this.hovered.color = match this.hovered.state {
-            true    => imguiAssets::bringVec4To($, colors.hovered, this.hovered.clock, duration[3]),
-            false   => imguiAssets::bringVec4To($, colors.active, this.hovered.clock, duration[3]) 
+            true => imguiAssets::bringVec4To($, colors.hovered, this.hovered.clock, duration[3]),
+            false => imguiAssets::bringVec4To($, colors.active, this.hovered.clock, duration[3]) 
         }
 
-		imgui.GetWindowDrawList()::AddRect(
-			p,
-			imgui.ImVec2(p.x + this.size.x, p.y + this.size.y),
-			imgui.ColorConvertFloat4ToU32(this.hovered.color),
-			rounding,
-			onHoveredFlags
-		)
+        imgui.GetWindowDrawList()::AddRect(
+            p,
+            imgui.ImVec2(p.x + this.size.x, p.y + this.size.y),
+            imgui.ColorConvertFloat4ToU32(this.hovered.color),
+            rounding,
+            onHoveredFlags
+        )
     }
 
-	imgui.PushStyleVarFloat(imgui.StyleVar.ChildRounding, rounding)
-	imgui.PushStyleColor(imgui.Col.ChildBg, colors.def)
-	    local pos = imgui.GetCursorPos()
-	    imgui.SetCursorPos(imgui.ImVec2(pos.x + 1, pos.y + 1))
-	    imgui.BeginChild(label .. ":UIANIMATEDBUTTON", imgui.ImVec2(size.x - 2, size.y - 2), false)
-		    local dl = imgui.GetWindowDrawList()
-		    if this.pos {
-			    local alpha = 0.00
+    imgui.PushStyleVarFloat(imgui.StyleVar.ChildRounding, rounding)
+    imgui.PushStyleColor(imgui.Col.ChildBg, colors.def)
+    local pos = imgui.GetCursorPos()
+    imgui.SetCursorPos(imgui.ImVec2(pos.x + 1, pos.y + 1))
+    imgui.BeginChild(id .. ".UI_ANIMATED_BUTTON", imgui.ImVec2(size.x - 2, size.y - 2), false)
+        local dl = imgui.GetWindowDrawList()
+        if this.pos {
+            local alpha = 0.00
 
-			    local timer = os.clock() - this.clock[2]
-			    if timer <= duration[2] {
-				    alpha = limit(1.00 - ((1.00 / duration[2]) * timer), 0.0, 1.0)
-                }
-
-			    local timer = os.clock() - this.clock[1]
-			    if timer <= duration[1] {
-				    alpha       = limit((1.00 / duration[1]) * timer, 0.0, 1.0)
-				    this.radius = (size.x * 1.5 / duration[1]) * timer
-                }
-
-			    local col = imgui.GetStyle().Colors[imgui.Col.ButtonActive]
-			    dl::AddCircleFilled(
-				    this.pos, 
-				    this.radius, 
-				    imgui.ColorConvertFloat4ToU32(imgui.ImVec4(col.x, col.y, col.z, alpha)), 
-				    64
-			    )
-
-			    local a, b = p, imgui.ImVec2(p.x + this.size.x, p.y + this.size.y)
-			    local color = imgui.ColorConvertFloat4ToU32(colors.window)
-	            dl::PathLineTo(a)
-	            dl::PathArcTo(imgui.ImVec2(a.x + rounding, a.y + rounding), rounding, -3.0, -1.500)
-	            dl::PathFillConvex(color)
-
-	            dl::PathLineTo(imgui.ImVec2(b.x, a.y))
-	            dl::PathArcTo(imgui.ImVec2(b.x - rounding, a.y + rounding), rounding, -1.5, -0.205)
-	            dl::PathFillConvex(color)
-
-	            dl::PathLineTo(imgui.ImVec2(b.x, b.y))
-	            dl::PathArcTo(imgui.ImVec2(b.x - rounding, b.y - rounding), rounding, 1.5, 0.205)
-	            dl::PathFillConvex(color)
-
-	            dl::PathLineTo(imgui.ImVec2(a.x, b.y))
-
-
-			    if alpha <= 0 { this.pos = nil }
+            local timer = os.clock() - this.clock[2]
+            if timer <= duration[2] {
+                alpha = self::limit(1.00 - ((1.00 / duration[2]) * timer), 0.0, 1.0)
             }
 
-		    local ws, al = imgui.GetWindowSize(), imgui.GetStyle().ButtonTextAlign
-		    imgui.SetCursorPos(imgui.ImVec2((ws.x - textSize.x) * al.x, (ws.y - textSize.y) * al.y))
-		    imgui.TextUnformatted(label)
-	    imgui.EndChild()
-	imgui.PopStyleColor()
-	imgui.PopStyleVar()
+            local timer = os.clock() - this.clock[1]
+            if timer <= duration[1] {
+                alpha = self::limit((1.00 / duration[1]) * timer, 0.0, 1.0)
+                this.radius = (size.x * 1.5 / duration[1]) * timer
+            }
 
-	local size          = imgui.GetItemRectSize()
-	this.size           = imgui.ImVec2(size.x + 2, size.y + 2)
-	this.hovered.state  = imgui.IsItemHovered() || os.clock() - this.clock[2] < 0
-	if this.hovered.state != this.hovered.before {
-		this.hovered.before = this.hovered.state
-		this.hovered.clock  = os.clock()
+            local col = imgui.GetStyle().Colors[imgui.Col.ButtonActive]
+            dl::AddCircleFilled(
+                this.pos, 
+                this.radius, 
+                imgui.ColorConvertFloat4ToU32(imgui.ImVec4(col.x, col.y, col.z, alpha)), 
+                64
+            )
+
+            local a, b = p, imgui.ImVec2(p.x + this.size.x, p.y + this.size.y)
+            local color = imgui.ColorConvertFloat4ToU32(colors.window)
+            dl::PathLineTo(a)
+            dl::PathArcTo(imgui.ImVec2(a.x + rounding, a.y + rounding), rounding, -3.0, -1.500)
+            dl::PathFillConvex(color)
+
+            dl::PathLineTo(imgui.ImVec2(b.x, a.y))
+            dl::PathArcTo(imgui.ImVec2(b.x - rounding, a.y + rounding), rounding, -1.5, -0.205)
+            dl::PathFillConvex(color)
+
+            dl::PathLineTo(imgui.ImVec2(b.x, b.y))
+            dl::PathArcTo(imgui.ImVec2(b.x - rounding, b.y - rounding), rounding, 1.5, 0.205)
+            dl::PathFillConvex(color)
+
+            dl::PathLineTo(imgui.ImVec2(a.x, b.y))
+
+            if alpha <= 0 { this.pos = nil }
+        }
+
+        local ws, al = imgui.GetWindowSize(), imgui.GetStyle().ButtonTextAlign
+        imgui.SetCursorPos(imgui.ImVec2((ws.x - textSize.x) * al.x, (ws.y - textSize.y) * al.y))
+        imgui.TextUnformatted(label)
+    imgui.EndChild()
+    imgui.PopStyleColor()
+    imgui.PopStyleVar()
+
+    local size          = imgui.GetItemRectSize()
+    this.size           = imgui.ImVec2(size.x + 2, size.y + 2)
+    this.hovered.state  = imgui.IsItemHovered() || os.clock() - this.clock[2] < 0
+    
+    if this.hovered.state != this.hovered.before {
+        this.hovered.before = this.hovered.state
+        this.hovered.clock  = os.clock()
     }
 
-	if imgui.IsItemClicked() {
-		this.radius     = 0
-		this.pos        = imgui.GetMousePos()
-		this.clock      = { os.clock(), os.clock() + duration[1] }
-		result          = true
+    if imgui.IsItemClicked() {
+        this.radius     = 0
+        this.pos        = imgui.GetMousePos()
+        this.clock      = { os.clock(), os.clock() + duration[1] }
+        result          = true
     }
 
-	return result
+    return result
+}
+
+method animations::hint(
+    label,
+    hoverCallback = imgui.IsItemHovered,
+    duration = 0.2,
+    hintColor = imgui.GetStyle().Colors[imgui.Col.PopupBg]
+) {
+    local originalPos   = imgui.GetCursorPos()
+    local hovered       = hoverCallback()
+    local id            = label
+    local show          = true
+    label               = string.gsub($, "##.*", "")
+
+    imgui.SameLine(nil, 0)
+
+    if !UI_HINTS {
+        global UI_HINTS = {}
+    }
+
+    if !UI_HINTS[id] {
+        UI_HINTS[id] = {
+            status  = false,
+            timer   = 0
+        }
+    }
+
+    for uiId, hint of UI_HINTS {
+        if uiId != id && os.clock() - hint.timer <= duration {
+            show = false
+        }
+    }
+
+    if local this = UI_HINTS[id] {
+        if show && this.status != hovered {
+            this.status = hovered
+            this.timer  = os.clock()
+        }
+
+        local fn render(alpha) {
+            local size      = imgui.GetItemRectSize()
+            local screenPos = imgui.GetCursorScreenPos()
+            local dl        = imgui.GetWindowDrawList()
+            local center    = imgui.ImVec2(screenPos.x - (size.x / 2), screenPos.y + (size.y / 2) - (alpha * 4) + 10)
+            local a         = imgui.ImVec2(center.x - 7, center.y - size.y - 3)
+            local b         = imgui.ImVec2(center.x + 7, center.y - size.y - 3)
+            local c         = imgui.ImVec2(center.x, center.y - size.y + 3)
+            local color     = imgui.ColorConvertFloat4ToU32(imgui.ImVec4(hintColor.x, hintColor.y, hintColor.z, alpha))
+            local flags     = imgui.WindowFlags.Tooltip + imgui.WindowFlags.NoResize 
+                + imgui.WindowFlags.NoScrollbar + imgui.WindowFlags.NoTitleBar 
+
+            dl::AddTriangleFilled(a, b, c, color)
+            imgui.SetNextWindowPos(imgui.ImVec2(center.x, center.y - size.y - 3), imgui.Cond.Always, imgui.ImVec2(0.5, 1))
+            imgui.PushStyleColor(imgui.Col.PopupBg, hintColor)
+            imgui.PushStyleColor(imgui.Col.Border, hintColor)
+            imgui.PushStyleColor(imgui.Col.Text, self::getContrastColor(hintColor))
+		    imgui.PushStyleVarVec2(imgui.StyleVar.WindowPadding, imgui.ImVec2(8, 8))
+		    imgui.PushStyleVarFloat(imgui.StyleVar.WindowRounding, 6)
+		    imgui.PushStyleVarFloat(imgui.StyleVar.Alpha, alpha)
+
+                local fn maxWidth(text) {
+                    local result = 0
+                    for line with string.gmatch(text, "[^\n]+") {
+                        if imgui.CalcTextSize(line).x > result {
+                            result = imgui.CalcTextSize(line).x
+                        }
+                    }
+                    return result
+                }
+
+                imgui.SetNextWindowSize(imgui.ImVec2(maxWidth(label) + imgui.GetStyle().WindowPadding.x * 2, -1), imgui.Cond.Always)
+                imgui.Begin(id, nil, flags)
+                    for line with string.gmatch(label, "[^\n]+") {
+                        imgui.SetCursorPosX((imgui.GetWindowWidth() - imgui.CalcTextSize(line).x) / 2)
+                        imgui.Text(line)
+                    }
+                imgui.End()
+		    imgui.PopStyleVar(3)
+		    imgui.PopStyleColor(3)
+        }
+
+        if show {
+            local between = os.clock() - this.timer
+            if between <= duration {
+                render((hovered) ? self::limit(between / duration, 0.00, 1.00) : self::limit(1.00 - between / duration, 0.00, 1.00))
+            } elseif hovered {
+                render(1.00)
+            }
+        }
+    }
+
+    imgui.SetCursorPos(originalPos)
 }
 
 return animations

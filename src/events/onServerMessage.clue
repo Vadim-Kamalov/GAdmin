@@ -23,7 +23,7 @@
 @import "game.Spectator"    => spectator
 @import "game.samp.Player"  => player
 
-@import "Config"            => config
+@import "Config" => config
 
 sampev.onServerMessage = fn(color, text) {
     local text = u8($)

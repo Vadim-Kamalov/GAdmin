@@ -23,6 +23,16 @@
 @import "Config" => config
 @import "Assets" => assets
 
+global enum /* WEEK_DAY */ {
+    WEEK_DAY_SUNDAY = 0,
+    WEEK_DAY_MONDAY,
+    WEEK_DAY_TUESDAY,
+    WEEK_DAY_WEDNESDAY,
+    WEEK_DAY_THURSDAY,
+    WEEK_DAY_FRIDAY,
+    WEKK_DAY_SATURDAY
+}
+
 static __user__ = {
     alogin          = false,
     weekNumber      = tostring(tonumber(os.date("%W")) + tonumber(os.date("%y"))),
@@ -123,14 +133,14 @@ method __user__::updateTime() {
         
         if local this = config.root.user.online.weeks {
             if this[#this] && this[#this].weekPos == $WEEK_NUMBER {
-                this[#this].days[tonumber(os.date("%w"))] += 1
+                this[#this].days[tonumber(os.date("%w")) + 1] += 1
             } else {
                 table.insert(this, {
                     weekPos = $WEEK_NUMBER,
                     days    = { 0, 0, 0, 0, 0, 0, 0 }
                 })
             
-                this[#this].days[tonumber(os.date("%w"))] += 1
+                this[#this].days[tonumber(os.date("%w")) + 1] += 1
             }
         }
     }
@@ -171,14 +181,14 @@ method __user__::incrementAnswersCount() {
     
     if local this = config.root.user.answers.weeks {
         if this[#this] && this[#this].weekPos == $WEEK_NUMBER {
-            this[#this].days[tonumber(os.date("%w"))] += 1
+            this[#this].days[tonumber(os.date("%w")) + 1] += 1
         } else {
             table.insert(this, {
                 weekPos = $WEEK_NUMBER,
                 days    = { 0, 0, 0, 0, 0, 0, 0 }
             })
 
-            this[#this].days[tonumber(os.date("%w"))] += 1
+            this[#this].days[tonumber(os.date("%w")) + 1] += 1
         }
     }
 }

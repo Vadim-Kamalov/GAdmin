@@ -19,6 +19,8 @@
  */
 
 @import "imgui.Windows" => windows
+@import "imgui.Animations" => animations
+@import "imgui.HotKey"  => HotKey
 
 @ifdef __GADMIN_DEBUG__ {
     windows::new("imgui.windows.TestWindow", {
@@ -33,13 +35,26 @@
     }, fn(self) {
         self::begin("JustTestWindow", fn {
             imgui.Text("Hello, world!")
+            
             if imgui.Button("Increment test number") {
                 self.var.testNumber += 1
             }
+            
+            animations::hint("Just testing this preety cool hint!")
+            
             imgui.Text("Your test number is " .. tostring(self.var.testNumber))
+           
             if imgui.Button("Execute changing windows positions") {
                 self.executeChangingWindowsPositions()
             }
+
+            HotKey::new(self.id .. ".TestHotkey", { VK_CONTROL, VK_Q })
+                  ::registerCallback(fn { print("clicked VK_CONTROL + VK_Q") })
+                  ::render()
+            
+            HotKey::new(self.id .. ".TestHotk1348318941ey2", { VK_CONTROL, VK_Z })
+                  ::registerCallback(fn { print("clicked VK_CONTROL + VK_Z") })
+                  ::render()
         })
     })
 }

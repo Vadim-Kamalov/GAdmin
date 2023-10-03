@@ -18,9 +18,21 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
+@import "Hook"              => hook
+@import "Icons"             => icons
+@import "Common"            => common
+@import "Config"            => config
+@import "Notifications"     => notify
+@import "CompressedData"    => compressed
+
+@import "imgui.Style"   => style
+@import "imgui.HotKey"  => HotKey
+
+@import "game.User"         => user
+@import "game.Spectator"    => spectator
+
 @define COMMAND_DELAY   800
 @define GADMIN_VERSION  "0.1"
-@define ALL_MODULES     modules 
 
 @define SAMP_BASE                       getModuleHandle("samp.dll")
 @define RECALL_UP_ADDR                  $SAMP_BASE + 0x65990
@@ -42,9 +54,8 @@ static ffi          = require("ffi")
 static neatJSON     = require("neatjson")
 static xml2lua      = require("xml2lua")
 static sampev       = require("samp.events")
-
-encoding.default  = "CP1251"
-static u8 = encoding.UTF8
+static vkeys        = require("vkeys")
+static u8           = encoding.UTF8
 
 require("moonloader")
 math.randomseed(os.time())
@@ -54,18 +65,6 @@ static enum /* ALIGN_TYPE */ {
     ALIGN_CENTER,
     ALIGN_RIGHT
 }
-
-@import "Hook"              => hook
-@import "Icons"             => icons
-@import "Common"            => common
-@import "Config"            => config
-@import "Notifications"     => notify
-@import "CompressedData"    => compressed
-
-@import "imgui.Style" => style
-
-@import "game.User"         => user
-@import "game.Spectator"    => spectator
 
 imgui.OnInitialize(fn {
     local glyphRanges = imgui.GetIO().Fonts::GetGlyphRangesCyrillic()
@@ -93,18 +92,21 @@ imgui.OnInitialize(fn {
 global fn main() {
     while !isSampAvailable() { wait(0) }
 
+    encoding.default = "CP1251"
+    
     if sampGetCurrentServerAddress() != "46.174.48.194" {
         script::unload()
     }
 
     common::makeDirectoryTree({ "GAdmin", "GAdmin/temp", "GAdmin/config" })
 
-    $JMP_HOOK_NEW onRecallUpHook = hook::new("void(__thiscall*)(void*)", onRecallUpHook, $RECALL_UP_ADDR)
-    $JMP_HOOK_NEW onRecallDownHook = hook::new("void(__thiscall*)(void*)", onRecallDownHook, $RECALL_DOWN_ADDR)
+    $JMP_HOOK_NEW onRecallUpHook    = hook::new("void(__thiscall*)(void*)", onRecallUpHook, $RECALL_UP_ADDR)
+    $JMP_HOOK_NEW onRecallDownHook  = hook::new("void(__thiscall*)(void*)", onRecallDownHook, $RECALL_DOWN_ADDR)
 
     while true {
         wait(0)
 
+        HotKey::setupWatcher()
         user::updateTime()
 
         if spectator.status {

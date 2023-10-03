@@ -245,7 +245,7 @@ static __config__ = {
         },
 
         styleChangeableWindows  = {},
-        hotkeys                 = {},
+        hotKeys                 = {},
         movableWindows          = {}
     }
 }

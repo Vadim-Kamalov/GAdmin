@@ -31,7 +31,7 @@ ffi.cdef("
         WORD wMilliseconds;
     } SYSTEMTIME, *PSYSTEMTIME;
 
-    void GetSystemTime(PSYSTEMTIME lpSystemTime);
+    void GetLocalTime(PSYSTEMTIME lpSystemTime);
 ")
 
 local assets = {}
@@ -191,9 +191,9 @@ method assets::convertUnicode2Utf8(code) {
  * Get system time.
  * @return table
  */
-method assets::getSystemTime() {
+method assets::getLocalTime() {
     local time = ffi.new("SYSTEMTIME")
-    ffi.C.GetSystemTime(time)
+    ffi.C.GetLocalTime(time)
     return time
 }
 

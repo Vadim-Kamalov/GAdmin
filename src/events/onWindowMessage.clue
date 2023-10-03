@@ -18,9 +18,15 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
-// Used in $SETUP_EVENT_MV!(msg, wparam) macro.
-@import "Config" => config
+@import "Config"        => config // Used in $SETUP_EVENT_MV!(msg, wparam) macro.
+@import "imgui.HotKey"  => HotKey 
 
 global fn onWindowMessage(msg, wparam, lparam) {
     $SETUP_EVENT_MV!(msg, wparam)
+
+    if msg == wm.WM_CHAR || msg == wm.WM_KEYDOWN || msg == wm.WM_SYSKEYDOWN {
+        if #HotKey::getDownKeys() > 0 && changingHotKey {
+            consumeWindowMessage(true, false)
+        } 
+    }
 }

@@ -54,7 +54,6 @@ imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
             }
         } // if config.root.additions.carInfo.use
 
-        /// TODO: https://github.com/users/Vadim-Kamalov/projects/4/views/1?pane=issue&itemId=37651862
         for _, player in getAllChars() {
             local _, id                     = sampGetPlayerIdByCharHandle(player)
             local charResult, char          = sampGetCharHandleBySampPlayerId(id)

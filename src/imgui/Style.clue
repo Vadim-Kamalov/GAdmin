@@ -129,7 +129,7 @@ method __style__::apply() {
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "TextDisabled", imgui.ImVec4(0.50, 0.50, 0.50, 1.00))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "WindowBg", common::convertHex2ImVec4("222222"))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "ChildBg", imgui.ImVec4(0.07, 0.07, 0.07, 1.00))
-    self::setDefaultValue(STYLE_TYPE_IMVEC4, "PopupBg", imgui.ImVec4(0.07, 0.07, 0.07, 1.00))
+    self::setDefaultValue(STYLE_TYPE_IMVEC4, "PopupBg", common::convertHex2ImVec4("424242"))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "Border", imgui.ImVec4(0.25, 0.25, 0.26, 0.54))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "BorderShadow", imgui.ImVec4(0.00, 0.00, 0.00, 0.00))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "FrameBg", imgui.ImVec4(0.12, 0.12, 0.12, 1.00))

@@ -167,12 +167,6 @@ method __movableWindows__::setupThisWindow(window) {
         }
 
         if imgui.IsMouseDown(0) && window.isFocused {
-            local sw, sh = getScreenResolution()
-            local posX, posY =
-                config.root.movableWindows[window.id].x + imgui.GetIO().MouseDelta.x,
-                config.root.movableWindows[window.id].y + imgui.GetIO().MouseDelta.y
-            local sizeX, sizeY = window.size.x, window.size.y
-
             local centerX = posX + window.size.x / 2
             local centerY = posY + window.size.y / 2
             
@@ -182,30 +176,6 @@ method __movableWindows__::setupThisWindow(window) {
             
             if math.abs(centerY - (sh / 2)) < 5 {
                 posY = math.floor(sh / 2) - window.size.y / 2
-            }
-
-            // Screen Exit Checks ( for sides )
-            if posX > sw - sizeX {
-                posX = sw - sizeX
-            } elseif posX <= 0 {
-                posX = 0
-            } elseif posY >= sh - sizeY {
-                posY = sh - sizeY
-            } elseif posY <= 0 {
-                posY = 0
-            }
-
-            // Screen Exit Checks ( for corners )
-            if posX + sizeX > sw {
-                posX = sw - sizeX
-            } elseif posX <= 0 {
-                posX = 0
-            }
-
-            if posY + sizeY > sh {
-                posY = sh - sizeY
-            } elseif posY <= 0 {
-                posY = 0
             }
 
             config.root.movableWindows[window.id].x = posX

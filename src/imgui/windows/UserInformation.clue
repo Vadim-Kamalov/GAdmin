@@ -70,7 +70,7 @@ window::new("imgui.windows.UserInformation", {
 
     self.var.style::apply()
     self::begin(self.id, fn {
-        local time          = assets::getSystemTime()
+        local time          = assets::getLocalTime()
         local online        = user::getTime()
         local answers       = user::getAnswersCount()
 
