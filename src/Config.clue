@@ -141,7 +141,9 @@ static __config__ = {
                 }
             },
 
-            keyWatcher      = { use = false }
+            spectatorActions = {
+                use = true
+            }
         },
 
         render = {

@@ -33,6 +33,6 @@ sampev.onTextDrawSetString = fn(id, text) {
     }
 
     if string.find(text, "Android: .+") {
-        spectator.platform = (#string.match(text, "Android: (.+)") == 2) ? PLATFORM_MOBILE : PLATFORM_PC
+        spectator.platform = (#string.match(text, "Android: (.+)") == 2) ? PLATFORM_ANDROID : PLATFORM_PC
     }
 }

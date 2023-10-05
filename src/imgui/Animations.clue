@@ -339,4 +339,53 @@ method animations::hint(
     imgui.SetCursorPos(originalPos)
 }
 
+method animations::keyCap(label, isPressed, size) {
+    local dl        = imgui.GetWindowDrawList()
+    local p         = imgui.GetCursorScreenPos()
+    local rounding  = imgui.GetStyle().FrameRounding
+    local colors    = {
+        [true]  = imgui.GetStyle().Colors[imgui.Col.ButtonActive],
+        [false] = imgui.GetStyle().Colors[imgui.Col.Button]
+    }    
+
+    if !UI_KEY_CAP {
+        global UI_KEY_CAP = {}
+    }
+
+    if !UI_KEY_CAP[label] {
+        UI_KEY_CAP[label] = {
+            status  = isPressed
+            color   = colors[isPressed]
+            clock   = nil
+        }
+    }
+
+    if local this = UI_KEY_CAP[label] {
+        if isPressed != this.status {
+            this.status, this.clock = isPressed, os.clock()
+        }
+
+        if this.clock {
+            this.color = imguiAssets::bringVec4To(colors[!isPressed], colors[isPressed], this.clock, 0.1)
+        }
+
+        local text      = string.gsub(label, "##.*", "")
+        local textSize  = imgui.CalcTextSize(text)
+        local textPos   = imgui.ImVec2(p.x + (size.x - textSize.x) / 2, p.y + (size.y - textSize.y) / 2)
+
+        imgui.Dummy(size)
+        dl::AddRectFilled(p, p + size, imgui.ColorConvertFloat4ToU32(this.color), rounding)
+        dl::AddRect(p, p + size, imgui.ColorConvertFloat4ToU32(colors[true]), rounding, _, 1)
+   
+        if this.color.w <= 0.5 {
+            dl::AddText(imgui.ImVec2(textPos.x + 1, textPos.y + 1), 0xFF000000, text)
+            dl::AddText(imgui.ImVec2(textPos.x - 1, textPos.y - 1), 0xFF000000, text)
+            dl::AddText(imgui.ImVec2(textPos.x + 1, textPos.y - 1), 0xFF000000, text)
+            dl::AddText(imgui.ImVec2(textPos.x - 1, textPos.y + 1), 0xFF000000, text)
+        }
+
+        dl::AddText(textPos, -1, text)
+    }
+}
+
 return animations

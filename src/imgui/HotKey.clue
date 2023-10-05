@@ -101,10 +101,12 @@ method HotKey::setupWatcher() {
         }
     }
 
-    if #self::getDownKeys() > 0 && !changingHotKey {
-        local isDefined, hotKeyId = self::isKeysDefined(self::getDownKeys())
-        if isDefined && (!self.cursor || !common::isCursorActive()) {
-            hotKeysCallbacks[hotKeyId].callback()
+    if local keys = self::getDownKeys() {
+        if #keys > 0 && !changingHotKey {
+            local isDefined, hotKeyId = self::isKeysDefined(keys)
+            if isDefined && (!self.cursor || !common::isCursorActive()) && isKeyJustPressed(keys[#keys]) {
+                hotKeysCallbacks[hotKeyId].callback()
+            }
         }
     }
 }

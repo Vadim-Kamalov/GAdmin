@@ -21,19 +21,28 @@
 @import "game.sa.Ped" => ped
 
 global enum /* SPECTATOR_MENU */ {
-    SPECTATOR_MENU_NEXT     = 0,
-    SPECTATOR_MENU_SWITCH   = 1,
-    SPECTATOR_MENU_BACK     = 2,
-    SPECTATOR_MENU_STATS    = 3,
-    SPECTATOR_MENU_SESSIONS = 4,
-    SPECTATOR_MENU_FRISK    = 5,
-    SPECTATOR_MENU_EXIT     = 6
+    SPECTATOR_MENU_NEXT = 0,
+    SPECTATOR_MENU_SWITCH,
+    SPECTATOR_MENU_BACK,
+    SPECTATOR_MENU_STATS,
+    SPECTATOR_MENU_SESSIONS,
+    SPECTATOR_MENU_FRISK,
+    SPECTATOR_MENU_EXIT
 }
 
-global enum /* PLATFORM */ {
-    PLATFORM_AWAITING_OR_NONE,
+static enum /* PLATFORM */ {
+    PLATFORM_AWAITING_OR_NONE = 0,
     PLATFORM_PC,
     PLATFORM_ANDROID,
+}
+
+static enum /* SYNC_KEYS */ {
+    SYNC_KEYS_PLAYER,
+    SYNC_KEYS_VEHICLE,
+
+    /// Used only when `self.platform == PLATFORM_ANDROID`, contains joy stick position
+    /// by x and y.
+    SYNC_KEYS_JOY_STICK
 }
 
 static __spectator__ = {
@@ -48,6 +57,23 @@ static __spectator__ = {
         clock   = -1 
         awaiting = {
             message = false
+        }
+    },
+
+    keys = {
+        [PLATFORM_PC] = {
+            [SYNC_KEYS_PLAYER]      = {}
+            [SYNC_KEYS_VEHICLE]     = {}
+        },
+        
+        [PLATFORM_ANDROID] = {
+            [SYNC_KEYS_PLAYER]      = {}
+            [SYNC_KEYS_VEHICLE]     = {}
+            [SYNC_KEYS_JOY_STICK]   = {
+                new     = { x = 0, y = 0 }
+                old     = { x = 0, y = 0 }
+                clock   = os.clock()
+            }
         }
     }
 
@@ -99,6 +125,22 @@ method __spectator__::getInformation() {
     }
 }
 
+method __spectator__::setupJoyStickWatcher(x, y) {
+    if local this = self.keys[PLATFORM_ANDROID][SYNC_KEYS_JOY_STICK] { 
+        if os.clock() - this.clock > 0.1 {
+            this.clock = os.clock()
+            this.old.x = this.new.x
+            this.old.y = this.new.y
+            this.new.x = (!x) ? 0 : ((x > 128) ? x - 0xFFFF : x)
+            this.new.y = (!y) ? 0 : ((y > 128) ? y - 0xFFFF : y)
+        }
+    }
+}
+
+method __spectator__::setKeyStatus(syncType, key, status) {
+    self.keys[self.platform][syncType][key] = status
+}
+
 /**
  * @param information table Set user information in spectator.
  * @return void
@@ -115,9 +157,9 @@ method __spectator__::setInformation(information = {}) {
  */
 method __spectator__::platformToString() {
     return match self.platform {
-        PLATFORM_PC     => "PC",
-        PLATFORM_MOBILE => "MOBILE",
-        default         => "N/A"
+        PLATFORM_PC         => "PC",
+        PLATFORM_ANDROID    => "MOBILE",
+        default             => "N/A"
     }
 }
 

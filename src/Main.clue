@@ -39,6 +39,8 @@
 @define RECALL_DOWN_ADDR                $SAMP_BASE + 0x65A00
 @define GET_BODY_PART_COORDINATES_ADDR  0x5E4280   
 
+@macro IMVEC4_TO_RGB(vector) { string.format("%06X", vector.x + vector.y + vector.z) }
+
 @macro debugSuccessful(entryPoint, message)     { sampfuncsLog("{00FF00}__GADMIN__DEBUG__ [+][" .. $entryPoint .. "]:{FFFFFF} " .. $message) }
 @macro debugWarning(entryPoint, message)        { sampfuncsLog("{FFA500}__GADMIN__DEBUG__ [~][" .. $entryPoint .. "]:{FFFFFF} " .. $message) }
 @macro debugInformation(entryPoint, message)    { sampfuncsLog("{00BFFF}__GADMIN__DEBUG__ [?][" .. $entryPoint .. "]:{FFFFFF} " .. $message) }
