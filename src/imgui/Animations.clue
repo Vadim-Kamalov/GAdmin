@@ -339,7 +339,7 @@ method animations::hint(
     imgui.SetCursorPos(originalPos)
 }
 
-method animations::keyCap(label, isPressed, size) {
+method animations::keyCap(label, isPressed = false, size) {
     local dl        = imgui.GetWindowDrawList()
     local p         = imgui.GetCursorScreenPos()
     local rounding  = imgui.GetStyle().FrameRounding

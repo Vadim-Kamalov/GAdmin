@@ -141,7 +141,7 @@ static __config__ = {
                 }
             },
 
-            spectatorActions = {
+            spectatorKeys = {
                 use = true
             }
         },

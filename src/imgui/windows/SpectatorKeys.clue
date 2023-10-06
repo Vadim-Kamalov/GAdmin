@@ -25,6 +25,7 @@
 
 @import "game.Spectator" => spectator
 
+@import "Config"    => config
 @import "Icons"     => icons
 @import "Common"    => common
 
@@ -34,7 +35,8 @@ window::new("imgui.windows.SpectatorKeys", {
     description = "Нажатые клавиши игрока"
     type        = MV_ONLY_IN_SPECTATOR
     condition   = fn { return config.root.windows.spectatorKeys.use }
-    size        = { x = sizeX / 2.346, y = sizeY / 1.242 }
+    size        = { x = 0, y = 0 }
+    defaultPos  = { x = sizeX / 2.346, y = sizeY / 1.242 }
     initialize  = {
         style = StyleChanger::new({
             WindowBg = "22222200"
@@ -149,11 +151,11 @@ window::new("imgui.windows.SpectatorKeys", {
                                     if item == "NewLine" {
                                         imgui.NewLine()
                                     } else {
-                                        animations::keyCap(string.upper(item) .. id, spectator.keys[platform][currentSyncType][item] || false, imgui.ImVec2(35, 35))
+                                        animations::keyCap(string.upper(item) .. id, spectator.keys[platform][currentSyncType][item], imgui.ImVec2(35, 35))
                                         imgui.SameLine()
                                     }
                                 } elseif type(item) == "table" {
-                                    animations::keyCap(string.upper(item[1]) .. id, spectator.keys[platform][currentSyncType][item] || false, item[2])
+                                    animations::keyCap(string.upper(item[1]) .. id, spectator.keys[platform][currentSyncType][item[1]], item[2])
                                     imgui.SameLine()
                                 }
                             } 
