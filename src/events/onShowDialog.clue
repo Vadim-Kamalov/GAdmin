@@ -28,6 +28,21 @@ static checkedAdminList = false
 sampev.onShowDialog = fn(id, style, title, firstButton, secondButton, text) {
     title, firstButton, secondButton, text = u8($1), u8($2), u8($3), u8($4)
 
+    if config.root.additions.autoLogin.use && #config.root.user.password.game > 3
+       && style == 3 && string.find(text, "Для продолжения игры, Вам необходимо авторизоваться")
+    {
+        sampSendDialogResponse(id, 1, 0, config.root.user.password.game)
+        return false
+    }
+
+    if style == 3 && firstButton == "Далее" && secondButton == "Отмена"
+       && string.find(text, "{4a86b6}Авторизация.*{FFFFFF}Введите пароль:")
+       && #config.root.user.password.admin > 3
+    {
+        sampSendDialogResponse(id, 1, 0, config.root.user.password.admin)
+        return false
+    }
+
     if !checkedAdminList && !user::getAloginStatus() {
         if string.find(text, "Администрация в игре.*Лог отключений") {
             sampSendDialogResponse(id, 1, 0, nil)

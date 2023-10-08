@@ -20,6 +20,8 @@
 
 @import "game.Spectator" => spectator
 
+@import "Config" => config
+
 @define TARGET_ID_NONE 65535
 
 sampev.onBulletSync = fn(id, data) {
@@ -30,5 +32,27 @@ sampev.onBulletSync = fn(id, data) {
             shotTotal   = information.shot.total + 1
             shotHit     = information.shot.hit + shotHit
         })
+    }
+
+    if config.root.additions.tracers.use {
+        if data.target.x == -1 || data.target.y == -1 || data.target.z == -1 {
+            return true
+        }
+
+        bulletData.lastId += 1
+
+        if bulletData.lastId < 1 || bulletData.lastId > config.root.additions.tracers.maxLines {
+            bulletData.lastId = 1
+        }
+
+        if local id = bulletData.lastId {
+            bulletData[id].enable   = true
+            bulletData[id].type     = data.targetType
+            bulletData[id].time     = os.time() + 15
+            bulletData[id].o.x, bulletData[id].o.y, bulletData[id].o.z = 
+                data.origin.x, data.origin.y, data.origin.z
+            bulletData[id].t.x, bulletData[id].t.y, bulletData[id].t.z = 
+                data.target.x, data.target.y, data.target.z
+        }
     }
 }

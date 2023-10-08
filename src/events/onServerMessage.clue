@@ -36,7 +36,7 @@ sampev.onServerMessage = fn(color, text) {
     }
 
     local fn rgb2color(rgb) {
-        return rgb && bit.tobit(tonumber(string.format("%s%02X", rgb, color & 0xFF)), 16))
+        return rgb && bit.tobit(tonumber(string.format("%s%02X", rgb, color & 0xFF), 16))
     }
 
     for _, data in config.root.chat.changeColor {
@@ -59,8 +59,26 @@ sampev.onServerMessage = fn(color, text) {
         text = nickname .. "[" .. player::getIdByNickname(nickname) .. "]" .. " говорит:" .. message
     }
 
+    if string.find(text, "^%[A%] .*%[%d+%]: %S+") && config.root.additions.mention.use {
+        local possibleMention = string.match(text, "^%[A%] .*%[%d+]: (%S+)")
+
+        for _, pattern in ({
+            "^(%d+),",
+            "^@(%d+)",
+            "^(%d+)$",
+            "^@(%d+)$"
+        }) {
+            if tonumber(string.match(possibleMention, pattern)) == user::getId() {
+                color = rgb2color(config.root.additions.mention.color)
+            }
+        }
+    }
+
     if string.find(text, "^%[A%] .*%[%d+%] авторизовался как администратор %d+ уровня%.$") {
-        @ifdef __GADMIN_DEBUG__ { $debugInformation!("onServerMessage", "found connected administrator") }
+@ifdef __GADMIN_DEBUG__
+{
+        $debugInformation!("onServerMessage", "found connected administrator")
+}
 
         local oocNickname, adminId, adminLvl = string.match(text, "^%[A%] (.*)%[(%d+)%] авторизовался как администратор (%d+) уровня%.$")
         local connectionPassed = true

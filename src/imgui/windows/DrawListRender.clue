@@ -20,10 +20,13 @@
 
 @import "imgui.Assets"          => imguiAssets
 @import "imgui.drawList.Text"   => imguiText
-@import "game.sa.Vehicle"       => vehicle
-@import "game.sa.Ped"           => ped
-@import "game.Admins"           => admins
-@import "Config"                => config
+
+@import "game.sa.Vehicle"   => vehicle
+@import "game.sa.Ped"       => ped
+@import "game.Admins"       => admins
+
+@import "Common" => common
+@import "Config" => config
 
 imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
     self.HideCursor = imguiAssets::getCursorStatus()
@@ -100,6 +103,27 @@ imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
                         config.root.render.size.wallhack, 
                         1
                     )
+                }
+            }
+
+            if config.root.additions.tracers.use {
+                for i = 1, config.root.additions.tracers.maxLines {
+                    if local bullet = bulletData[i] {
+                        if bullet.enable && os.time() <= bullet.time {
+                            local o, t = bullet.o, bullet.t
+                            if isPointOnScreen(o.x, o.y, o.z) && isPointOnScreen(t.x, t.y, t.z) {
+                                local sX, sY    = convert3DCoordsToScreen(o.x, o.y, o.z)
+						        local fX, fY    = convert3DCoordsToScreen(t.x, t.y, t.z)
+                                local hitColor  = common::convertHex2ImVec4(config.root.additions.tracers.hitColor)
+                                local missColor = common::convertHex2ImVec4(config.root.additions.tracers.missColor)
+                                local color     = imgui.ColorConvertFloat4ToU32((bullet.type == 0) ? missColor : hitColor)
+                                local dl        = imgui.GetBackgroundDrawList()
+
+                                dl::AddLine(imgui.ImVec2(sX, sY), imgui.ImVec2(fX, fY), color, 1)
+                                dl::AddCircleFilled(imgui.ImVec2(fX + 1.5, fY + 1.5), 3, color, 16)
+                            }
+                        }
+                    }
                 }
             }
         } // for _, player in getAllChars()

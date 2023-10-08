@@ -35,7 +35,7 @@ local sizeX, sizeY = getScreenResolution()
 windows::new("imgui.windows.SpectatorActions", {
     description = "Окно действий в режиме наблюдения"
     type        = MV_ONLY_IN_SPECTATOR
-    condition   = fn { return config.root.additions.spectatorActions.use }
+    condition   = fn { return config.root.windows.spectatorActions.use }
     size        = { x = 700, y = 100 }
     defaultPos  = { x = sizeX / 2 - 350, y = sizeY / 1.128 }
     initialize  = {

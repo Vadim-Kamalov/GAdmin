@@ -38,7 +38,7 @@ local import, modules
 do
     function import(name)
         if modules[name] == nil then
-            print("Invalid module import: " .. name)
+            sampfuncLog("{FF0000}__GADMIN_DEBUG__: {FFFFFF} attempting to import non-existent module: " .. name)
         else
             return modules[name]()
         end

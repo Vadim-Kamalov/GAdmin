@@ -18,8 +18,13 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
-@import "Config"        => config // Used in $SETUP_EVENT_MV!(msg, wparam) macro.
-@import "imgui.HotKey"  => HotKey 
+@import "Config"        => config
+@import "imgui.HotKey"  => HotKey
+
+@import "game.Spectator" => spectator
+
+@define MOUSE_WHEEL_VERTICAL_SIDE_UP    0x780000
+@define MOUSE_WHEEL_VERTICAL_SIDE_DOWN  0xFF880000
 
 global fn onWindowMessage(msg, wparam, lparam) {
     $SETUP_EVENT_MV!(msg, wparam)
@@ -28,5 +33,19 @@ global fn onWindowMessage(msg, wparam, lparam) {
         if #HotKey::getDownKeys() > 0 && changingHotKey {
             consumeWindowMessage(true, false)
         } 
+    } elseif msg == wm.WM_MOUSEWHEEL {
+        if spectator.status && config.root.additions.zoomSpectatorCamera.use {
+            local step = config.root.additions.zoomSpectatorCamera.step
+
+            if wparam == $MOUSE_WHEEL_VERTICAL_SIDE_UP {
+                spectatorCameraFov = math.min(getCameraFov() + step, 130)
+            } elseif wparam == $MOUSE_WHEEL_VERTICAL_SIDE_DOWN {
+                spectatorCameraFov = math.max(getCameraFov() - step, 50)
+            }
+
+            consumeWindowMessage(true, true)
+        } else {
+            spectatorCameraFov = -1
+        }
     }
 }

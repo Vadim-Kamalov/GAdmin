@@ -33,7 +33,7 @@ sampev.onPassengerSync = fn(id, data) {
                 { "d",      data.leftRightKeys == 0x80 },
                 { "h",      (data.keysData & 0x2) == 0x2 },
                 { "space",  (data.keysData & 0x80) == 0x80 },
-                { "ctrl",   (data.keysData & 0x8) == 0x8 },
+                { "ctrl",   (data.keysData & 0x1) == 0x1 },
                 { "alt",    (data.keysData & 0x4) == 0x4 },
                 { "q",      (data.keysData & 0x100) == 0x100 },
                 { "e",      (data.keysData & 0x40) == 0x40 },

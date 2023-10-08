@@ -34,17 +34,6 @@ static __config__ = {
     },
 
     root = {
-        online = {
-            total       = 0,
-            monday      = 0,
-            tuesday     = 0,
-            wednesday   = 0,
-            thursday    = 0,
-            friday      = 0,
-            saturday    = 0,
-            sunday      = 0
-        },
-
         windows = {
             adminList = {
                 use                     = false,
@@ -141,9 +130,8 @@ static __config__ = {
                 }
             },
 
-            spectatorKeys = {
-                use = true
-            }
+            spectatorKeys       = { use = true },
+            spectatorActions    = { use = true }
         },
 
         render = {
@@ -152,19 +140,10 @@ static __config__ = {
                 gunInfo     = $DEFAULT_RENDER_SIZE,
                 admins      = $DEFAULT_RENDER_SIZE,
                 wallhack    = $DEFAULT_RENDER_SIZE,
-                fpsCounter  = $DEFAULT_RENDER_SIZE
             }
         },
 
         cheats = {
-            tracers = {
-                use         = false,
-                maxLines    = 15,
-                hitColor    = "FFC700",
-                missColor   = "FFFFFF"
-            },
-
-            noCollision = { onChar = { use = false } },
             airbreak    = { use = false },
             wallhack    = { use = false }
         },
@@ -176,18 +155,23 @@ static __config__ = {
                           // ... plugin (that allows change fov within safe range without any visible artifacts).
             },
         
-            fpsCounter = {
-                use     = false,
-                color   = "FFFFFF"
-            },
-
             mention = {
                 use     = false,
-                color   = "4A86B6",
-                alert   = { use = false } // TODO: implement
+                color   = "4A86B6"
             },
 
-            zoomSpectatorCamera = { use = false },
+            zoomSpectatorCamera = {
+                use     = false
+                step    = 5
+            },
+
+            tracers = {
+                use         = true,
+                maxLines    = 15,
+                hitColor    = "FFC700",
+                missColor   = "FFFFFF"
+            },
+
             swapLayout          = { use = false },
             idInKillList        = { use = false },
             deathNotifyInChat   = { use = false },
@@ -195,13 +179,12 @@ static __config__ = {
             displayIdInIc       = { use = false },
             gunInfo             = { use = false },
             autoLogin           = { use = false },
-            autoAdminLogin      = { use = false },
-            carInfo             = { use = false },
-            spectatorActions    = { use = true }
+            autoAdminLogin      = { use = false }, //! TODO
+            carInfo             = { use = false }
         },
 
         fix = {
-            chatOnVK_T = false
+            chatOnVK_T = true
         },
 
         chat = {

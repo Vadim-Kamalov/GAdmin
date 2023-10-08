@@ -39,6 +39,8 @@
 @define RECALL_DOWN_ADDR                $SAMP_BASE + 0x65A00
 @define GET_BODY_PART_COORDINATES_ADDR  0x5E4280   
 
+@define DEFAULT_FOV_VALUE 70
+
 @macro IMVEC4_TO_RGB(vector) { string.format("%06X", vector.x + vector.y + vector.z) }
 
 @macro debugSuccessful(entryPoint, message)     { sampfuncsLog("{00FF00}__GADMIN__DEBUG__ [+][" .. $entryPoint .. "]:{FFFFFF} " .. $message) }
@@ -57,10 +59,16 @@ static neatJSON     = require("neatjson")
 static xml2lua      = require("xml2lua")
 static sampev       = require("samp.events")
 static vkeys        = require("vkeys")
-static u8           = encoding.UTF8
 
 require("moonloader")
 math.randomseed(os.time())
+
+static u8                   = encoding.UTF8
+static spectatorCameraFov   = -1
+static bulletData           = { lastId = 0 }
+
+local airbreak              = { status = false, speed = 1.0, coords = {} }
+local fishEyeWeaponLock     = false
 
 static enum /* ALIGN_TYPE */ {
     ALIGN_LEFT,
@@ -95,6 +103,16 @@ global fn main() {
     while !isSampAvailable() { wait(0) }
 
     encoding.default = "CP1251"
+
+    for id = 1, config.root.additions.tracers.maxLines {
+        bulletData[id] = {
+            enable  = false,
+            o       = {x, y, z},
+            t       = {x, y, z},
+            time    = 0,
+            type    = 0
+        }
+    }
     
     if sampGetCurrentServerAddress() != "46.174.48.194" {
         script::unload()
@@ -119,6 +137,112 @@ global fn main() {
                 }
             } else {
                 spectator.afk.time = 0
+            }
+        }
+
+        if config.root.fix.chatOnVK_T && isKeyJustPressed(VK_T) {
+            sampSetChatInputEnabled(true)
+        }
+
+        if config.root.cheats.airbreak.use && user::getAloginStatus() {
+            //! @hotKey
+            if !common::isCursorActive() && isKeyJustPressed(VK_RSHIFT) {
+                airbreak.status = !$
+                
+                if airbreak.status {
+                    airbreak.coords = { getCharCoordinates(PLAYER_PED) }
+                    notify::send({
+                        icon        = icons.ICON_ARROW_UP
+                        title       = "AirBreak включен"
+                        text        = "Для увеличения/уменьшения скорости используйте Num + / Num - соответстсвенно"
+                        duration    = 2
+                    })
+                } else {
+                    notify::send({
+                        icon        = icons.ICON_ARROW_UP
+                        title       = "AirBreak выключен"
+                        text        = "Чтобы опять включить, нажмите эту клавишу повторно"
+                        duration    = 2
+                    })
+                }
+            }
+
+            if airbreak.status {
+                local heading                   = getCharHeading(PLAYER_PED)
+                local camCoordX, camCoordY      = getActiveCameraCoordinates()
+                local targetCamX, targetCamY    = getActiveCameraPointAt()
+                local angle                     = getHeadingFromVector2d(targetCamX - camCoordX, targetCamY - camCoordY)
+                local difference                = 1.0
+            
+                if isCharInAnyCar(PLAYER_PED) {
+                    heading     = getCarHeading(storeCarCharIsInNoSave(PLAYER_PED))
+                    difference  = 0.79
+                }
+
+                setCharCoordinates(PLAYER_PED, airbreak.coords[1], airbreak.coords[2], airbreak.coords[3] - difference)
+
+                if !common::isCursorActive() {
+                    if isKeyDown(VK_W) {
+                        airbreak.coords[1] += airbreak.speed * math.sin(-math.rad(angle))
+                        airbreak.coords[2] += airbreak.speed * math.cos(-math.rad(angle))
+
+                        if !isCharInAnyCar(playerPed) {
+                            setCharHeading(playerPed, angle)
+                        } else {
+                            setCarHeading(storeCarCharIsInNoSave(playerPed), angle)
+                        }
+                    } elseif isKeyDown(VK_S) {
+                        airbreak.coords[1] -= airbreak.speed * math.sin(-math.rad(heading))
+                        airbreak.coords[2] -= airbreak.speed * math.cos(-math.rad(heading))    
+                    }
+
+                    if isKeyDown(VK_A) {
+                        airbreak.coords[1] -= airbreak.speed * math.sin(-math.rad(heading - 90))
+                        airbreak.coords[2] -= airbreak.speed * math.cos(-math.rad(heading - 90))
+                    } elseif isKeyDown(VK_D) {
+                        airbreak.coords[1] -= airbreak.speed * math.sin(-math.rad(heading + 90))
+                        airbreak.coords[2] -= airbreak.speed * math.cos(-math.rad(heading + 90))
+                    }
+
+                    if isKeyDown(VK_SPACE) || isKeyDown(VK_UP) {
+                        airbreak.coords[3] += airbreak.speed / 2.0
+                    }
+
+                    if isKeyDown(VK_LSHIFT) || isKeyDown(VK_DOWN) && airbreak.coords[3] > -95.0 {
+                        airbreak.coords[3] -= airbreak.speed / 2.0 
+                    } 
+
+                    if isKeyDown(VK_ADD) {
+                        airbreak.speed = math.min($ + 0.1, 3.0)
+                    } elseif isKeyDown(VK_SUBTRACT) {
+                        airbreak.speed = math.max($ - 0.1, 0.1)
+                    }
+                }
+            }
+        }
+
+        if config.root.additions.fishEye.use || config.root.additions.zoomSpectatorCamera.use {
+            local fov = {
+                user        = (config.root.additions.fishEye.use) ? config.root.additions.fishEye.fov : $DEFAULT_FOV_VALUE
+                spectator   = (config.root.additions.zoomSpectatorCamera.use)
+                    ? spectatorCameraFov
+                    : $DEFAULT_FOV_VALUE
+            }
+
+            fov.spectator = ($ == -1) ? fov.user : $
+
+            local currentFov    = (spectator.status) ? fov.spectator : fov.user
+            local charTargeting = memory.getint8(getCharPointer(PLAYER_PED) + 0x528, false) == 19
+            local shiperRifleId = 34
+
+            if isCurrentCharWeapon(PLAYER_PED, sniperRifleId) && charTargeting {
+                if !fishEyeWeaponLock {
+                    cameraSetLerpFov(70, 70, 1000, 1)
+                    fishEyeWeaponLock = true
+                }
+            } else {
+                cameraSetLerpFov(currentFov, currentFov, 1000, 1)
+                fishEyeWeaponLock = false
             }
         }
     }
