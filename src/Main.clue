@@ -24,6 +24,7 @@
 @import "Config"            => config
 @import "Notifications"     => notify
 @import "CompressedData"    => compressed
+@import "CommandRequester"  => commandRequester
 
 @import "imgui.Style"   => style
 @import "imgui.HotKey"  => HotKey
@@ -41,7 +42,7 @@
 
 @define DEFAULT_FOV_VALUE 70
 
-@macro IMVEC4_TO_RGB(vector) { string.format("%06X", vector.x + vector.y + vector.z) }
+@macro IMVEC4_TO_RGB(vector) { string.format("%02X%02X%02X", $vector.x * 255, $vector.y * 255, $vector.z * 255) }
 
 @macro debugSuccessful(entryPoint, message)     { sampfuncsLog("{00FF00}__GADMIN__DEBUG__ [+][" .. $entryPoint .. "]:{FFFFFF} " .. $message) }
 @macro debugWarning(entryPoint, message)        { sampfuncsLog("{FFA500}__GADMIN__DEBUG__ [~][" .. $entryPoint .. "]:{FFFFFF} " .. $message) }
@@ -127,6 +128,7 @@ global fn main() {
         wait(0)
 
         HotKey::setupWatcher()
+        commandRequester::setupTimeWatcher()
         user::updateTime()
 
         if spectator.status {

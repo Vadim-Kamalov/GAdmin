@@ -54,7 +54,7 @@ method __imguiAssets__::switchCursorStatus() { self.cursor = !$ }
  */
 method __imguiAssets__::textWithFont(text, font, pos, color = imgui.GetStyle().Colors[imgui.Col.Text]) {
     imgui.PushFont(font)
-        if (pos) { imgui.SetCursorPos(pos) }
+        if pos { imgui.SetCursorPos(pos) }
         imgui.TextColored(color, text)
     imgui.PopFont()
 }

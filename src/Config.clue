@@ -154,7 +154,21 @@ static __config__ = {
                 fov = 101 // Safe range is `60 .. 110` without `skygrad.asi` ...
                           // ... plugin (that allows change fov within safe range without any visible artifacts).
             },
-        
+
+            commandRequester = {
+                displayType     = COMMAND_REQUEST_DISPLAY_BOTTOM_BAR,
+                allowedCommands = {
+                    { "pk",     COMMAND_REQUEST_TYPE_ANSWER },
+                    { "ck",     COMMAND_REQUEST_TYPE_ANSWER },
+                    { "ban",    COMMAND_REQUEST_TYPE_COMMENTARY },
+                    { "kick",   COMMAND_REQUEST_TYPE_COMMENTARY },
+                    { "mute",   COMMAND_REQUEST_TYPE_COMMENTARY },
+                    { "bmute",  COMMAND_REQUEST_TYPE_COMMENTARY },
+                    { "iban",   COMMAND_REQUEST_TYPE_COMMENTARY },
+                    { "jail",   COMMAND_REQUEST_TYPE_COMMENTARY },
+                }
+            },
+
             mention = {
                 use     = false,
                 color   = "4A86B6"

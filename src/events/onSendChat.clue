@@ -18,7 +18,8 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
-@import "Config" => config
+@import "Config"            => config
+@import "CommandRequester"  => commandRequester
 
 /**
  * Swap language layout from russian to english.

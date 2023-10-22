@@ -43,14 +43,15 @@ method __notifications__::get() {
  *     title        = String|nil
  *     text         = String|nil
  *     duration     = Number|nil
+ *     condition    = Function|nil
  *     buttons      = Table|nil: {
  *         first    = {
- *             text     = String
- *             call     = Function
+ *             text = String
+ *             call = Function|nil
  *         }
  *         second   = {
- *             text     = String
- *             call     = Function
+ *             text = String
+ *             call = Function|nil
  *         }
  *     }
  * }
@@ -70,6 +71,7 @@ method __notifications__::send(notification = {}) {
             clock       = os.clock()
             pos         = 0
             buttons     = notification.buttons
+            condition   = notification.condition
         })
     }
 }

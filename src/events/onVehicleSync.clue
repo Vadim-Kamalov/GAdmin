@@ -41,7 +41,6 @@ sampev.onVehicleSync = fn(id, _, data) {
                 spectator::setKeyStatus(SYNC_KEYS_VEHICLE, table.unpack(arguments))
             }
         } elseif spectator.platform == PLATFORM_ANDROID {
-            print(data.keysData, data.leftRightKeys, data.upDownKeys)
             for _, arguments in ({
                 { "signal",     (data.keysData & 0x2) == 0x2 },
                 { "forward",    (data.keysData & 0x8) == 0x8 },

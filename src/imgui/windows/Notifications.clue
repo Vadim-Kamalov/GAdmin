@@ -85,7 +85,7 @@ imgui.OnFrame(fn { return notify.active }, fn(self) {
                             imgui.ImVec2(size.x - 263, 32),
                             0.25
                         ) {
-                            this.call(closeCallback)
+                            this.call?(closeCallback)
                         }
                     }
 
@@ -98,7 +98,7 @@ imgui.OnFrame(fn { return notify.active }, fn(self) {
                             imgui.ImVec2(size.x - 263, 32),
                             0.25
                         ) {
-                            this.call(closeCallback)
+                            this.call?(closeCallback)
                         }
                     }
                 imgui.EndGroup()
@@ -124,6 +124,11 @@ imgui.OnFrame(fn { return notify.active }, fn(self) {
 
                 if notification.pos == 380 {
                     notify::remove(i)
+                }
+
+                if notification.condition?() {
+                    notification.clock      = os.clock() - notification.duration
+                    notification.condition  = nil
                 }
 
                 imgui.SetCursorPosX(notification.pos)

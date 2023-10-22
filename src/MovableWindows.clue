@@ -177,10 +177,12 @@ method __movableWindows__::setupThisWindow(window) {
             if math.abs(centerY - (sh / 2)) < 5 {
                 posY = math.floor(sh / 2) - window.size.y / 2
             }
+        }
+    } // if self.changingWindowsPositions
 
-            config.root.movableWindows[window.id].x = posX
-            config.root.movableWindows[window.id].y = posY
-        } // if imgui.IsMouseDown(0) && window.isFocused
+    if posX != config.root.movableWindows[window.id].x || posY != config.root.movableWindows[window.id].y {
+        config.root.movableWindows[window.id].x = posX
+        config.root.movableWindows[window.id].y = posY
     }
 }
 

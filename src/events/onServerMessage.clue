@@ -23,10 +23,13 @@
 @import "game.Spectator"    => spectator
 @import "game.samp.Player"  => player
 
+@import "CommandRequester" => commandRequester
 @import "Config" => config
 
 sampev.onServerMessage = fn(color, text) {
     local text = u8($)
+
+    commandRequester::setupChatWatcher(text, color)
 
     local fn compare(pattern, clr) {
         return (pattern && color) ? string.find(text, pattern) && color == clr :
@@ -39,19 +42,6 @@ sampev.onServerMessage = fn(color, text) {
         return rgb && bit.tobit(tonumber(string.format("%s%02X", rgb, color & 0xFF), 16))
     }
 
-    for _, data in config.root.chat.changeColor {
-        if compare(data.pattern, rgb2color(data.colors.old)) {
-            color = rgb2color(data.colors.new)
-            break
-        }
-    }
-    
-    for _, data in config.root.chat.remove {
-        if compare(data.pattern, rgb2color(data.color)) {
-            return false
-        }
-    }
-
     if string.find(text, "^(%w+.*) говорит:(.*)") && config.root.additions.displayIdInIc.use {
         local nickname, message = string.match(text, "^(%w+.*) говорит:(.*)")
         
@@ -59,7 +49,7 @@ sampev.onServerMessage = fn(color, text) {
         text = nickname .. "[" .. player::getIdByNickname(nickname) .. "]" .. " говорит:" .. message
     }
 
-    if string.find(text, "^%[A%] .*%[%d+%]: %S+") && config.root.additions.mention.use {
+    if string.find(text, "^%[A%] .*%[%d+%]: %S+") && color == 866792362 && config.root.additions.mention.use {
         local possibleMention = string.match(text, "^%[A%] .*%[%d+]: (%S+)")
 
         for _, pattern in ({
@@ -146,6 +136,19 @@ sampev.onServerMessage = fn(color, text) {
 
     if string.find(text, "^%[A%] " .. user::getOOCNickname() .. "%[%d+%] ответил .*%[%d+%]: .*") {
         user::incrementAnswersCount()
+    }
+
+    for _, data in config.root.chat.changeColor {
+        if compare(data.pattern, rgb2color(data.colors.old)) {
+            color = rgb2color(data.colors.new)
+            break
+        }
+    }
+    
+    for _, data in config.root.chat.remove {
+        if compare(data.pattern, rgb2color(data.color)) {
+            return false
+        }
     }
 
     return { color, u8::decode(text) }
