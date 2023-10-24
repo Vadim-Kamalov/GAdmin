@@ -1,34 +1,62 @@
 # GAdmin - Lua скрипт облегчающий работу администраторов на проекте Gambit - RP
 
-Этот репозиторий(как и исходный код) доступен для всех под стандартной [GNU General Public License v3 (GPLv3)](https://github.com/Vadim-Kamalov/GAdmin/blob/main/LICENSE) лицензией, он  содержит исходный код скрипта **`gadmin.lua`**, а также всех написанных/измененных библиотек для скрипта.<br>
-Репозиторий также используется для баг репортов связанных со скриптом или [запросов на изменение исходного кода](https://github.com/Vadim-Kamalov/GAdmin/pulls).
-### Если вы нашли ошибку
-В случае если вы нашли ошибку связанную со скриптом, то вы можете создать баг репорт в соответствующем [разделе](https://github.com/Vadim-Kamalov/GAdmin/issues).
-<br>
-Перед созданием баг репорта, убедитесь что вы:
+Этот репозиторий(как и исходный код) доступен для всех под стандартной [GNU General Public License v3 (GPLv3)](https://github.com/Vadim-Kamalov/GAdmin/blob/main/LICENSE) лицензией.
+Репозиторий также используется для создания репортов о каких-либо ошибках связанными со скриптом,
+или [запросов на изменение исходного кода](https://github.com/Vadim-Kamalov/GAdmin/pulls).
 
-- имеете последнюю, стабильную версию скрипта(вы можете получить последнюю версию в разделе `Release`);
-- имеете все библиотеки которые прописаны в файле [`LIBRARIES`](https://github.com/Vadim-Kamalov/GAdmin/blob/main/LIBRARIES);
-- не создали одинаковый или подобный баг репорт, который уже создали ранее.
+Исходный код написан на диалекте Lua - [Clue](https://github.com/ClueLang/Clue). Имейте ввиду то, что если вы переместите файлы из
+`src/` директории в вашу `gta_sa/moonloader/` директорию, то ничего не произойдет, поскольку потребуется компиляция `.clue` файлов в один общий Lua файл.
+Для инструкций по компиляции смотрите ниже.
 
-Учтите, что название репорта должно отображать всю суть ошибки, не должно быть никаких "ошибка на строке 1894".
-Для создания баг репорта есть определенный шаблон, он вставится сразу в тело репорта. 
+# Компиляция/установка
 
-### Зависимости
+В скрипте присутствует автообновление: одна установка скрипта - всегда будет стабильная версия скрипта.
+Обновление также можно пропустить, в этом случае не будет появляться окно с обновлением до следующего релиза версии.
+
+Чтобы установить скрипт необходимо сперва скачать последнюю версию скрипта.
+Затем скомпилированный файл(последней версии) из раздела [Releases](https://github.com/Vadim-Kamalov/GAdmin/releases)
+необходимо переместить по пути `<путь до игры>/moonloader`. Также необходимы
+библиотеки скрипта, полный список содержится в файле [`LIBRARIES`](https://github.com/Vadim-Kamalov/GAdmin/blob/main/LIBRARIES).
+Устанавливать их нужно по пути `<путь до игры>/moonloader/lib/<библиотеки из LIBRARIES>`.
+
+Помимо библиотек необходимо то, что будет выполнять Lua файл, а конкретно:
 
 - MoonLoader    >= **v.026.5-beta**
 - SAMPFUNCS     >= **v5.4.1-final**
 - CLEO          >= **v4.1.1**
-- Все библиотеки из `LIBRARIES` файла.
 
-# Помощь в разработке
-Есть много путей как вы можете помочь в разработке, как пример вы можете
+### Компиляция
 
-- [создавать баг репорты](https://github.com/Vadim-Kamalov/GAdmin/issues)
-- смотреть [изменения в исходном коде](https://github.com/Vadim-Kamalov/GAdmin/commits/main)
+Для компиляции необходима последняя версия компилятора [Clue](https://github.com/ClueLang/Clue). `clue` должен содержать путь до исполняемого
+файла компилятора Clue. Во всех случаях вы должны быть в корневой директории репозитория. Скомпилированный файл будет находиться по пути `<repo_dir>/main.lua`
 
-Если вы заинтересованы в решении ошибок, или в добавлении изменений в исходный код, то вы можете создавать [запросы на изменение исходного кода](https://github.com/Vadim-Kamalov/GAdmin/pulls).<br>
-Учтите, что основной язык скрипта - **Lua**, а написан для игры GTA: San Andreas Multiplayer, используя **Moonloader API**. Больше информации вы можете узнать в файле [`CONTRIBUTING.md`](https://github.com/Vadim-Kamalov/GAdmin/blob/main/CONTRIBUTING.md).
-# License
-Copyright (C) 2023 The Contributors\*.<br> Licensed under the [GNU General Public License v3 (GPLv3)](https://github.com/Vadim-Kamalov/GAdmin/blob/main/LICENSE).
-> \* Вы можете найти всех кто внес вклад в разработку GAdmin в файле `CONTRIBUTORS`.
+#### Windows:Release
+
+```powershell
+clue -t=luajit --base base\Release.lua src\
+```
+
+#### Windows:Debug
+
+```powershell
+set __GADMIN_DEBUG__=1 & clue -t=luajit --base base\Debug.lua src\
+```
+
+#### Linux:Release
+
+```bash
+clue -t=luajit --base base/Release.lua src/
+```
+
+#### Linux:Debug
+
+```bash
+__GADMIN_DEBUG__=1 clue -t=luajit --base base/Release.lua src/
+```
+
+# Лицензия
+
+Copyright (C) 2023 The Contributors\*.
+*Licensed under the GNU General Public License v3 (GPLv3)*.
+
+> [The Contributors\*](https://github.com/Vadim-Kamalov/GAdmin/blob/main/CONTRIBUTORS)

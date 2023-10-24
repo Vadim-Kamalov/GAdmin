@@ -103,7 +103,7 @@ imgui.OnFrame(fn { return autoUpdate.windowState }, fn(self) {
                     imgui.SameLine()
                     
                     if animations::button(autoUpdate.imgui.buttons.second, imgui.ImVec2(imgui.GetWindowWidth() / 3, 40)) {
-                        config.root.autoUpdate.skipVersionUpdate = $GADMIN_VERSION
+                        config.root.autoUpdate.skipVersionUpdate = autoUpdate.imgui.version
 
                         autoUpdate.response     = AUTOUPDATE_RESPONSE_BAD
                         autoUpdate.windowState  = false

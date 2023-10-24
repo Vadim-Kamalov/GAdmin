@@ -186,6 +186,27 @@ static __config__ = {
                 missColor   = "FFFFFF"
             },
 
+            shortCommands = {
+                use         = true,
+                commands    = {
+                    vr  = "vrepair %s",
+                    vs  = "vspawn %s",
+                    as  = "aspawn %s",
+                    ah  = "aheal %s",
+                    af  = "afrisk %s",
+                    uf  = "unfreeze %s",
+                    g   = "goto %s",
+                    gh  = "gethere %s",
+                    gc  = "getcar %s",
+                    gbc = "getbuycar %s",
+                    jb  = "ans %s Пишите жалобу на форум, туда со всеми доказательствами",
+                    asl = "ans %s Слежу за игроком",
+                    ar  = "kick %s AFK on ROAD",
+                    ak  = "kick %s AFK without ESC",
+                    ap  = "kick %s AFK public place"
+                }
+            },
+
             swapLayout          = { use = false },
             idInKillList        = { use = false },
             deathNotifyInChat   = { use = false },
@@ -233,7 +254,7 @@ static __config__ = {
             },
         },
 
-        binder = {
+        binder = { //! TODO
             commands = {
                 gg = { message = "Приятной игры!" }
             }

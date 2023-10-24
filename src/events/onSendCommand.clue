@@ -18,8 +18,19 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
-@import "CommandRequester" => commandRequester
+@import "CommandRequester"  => commandRequester
+@import "Config"            => config
 
 sampev.onSendCommand = fn(command) {
     commandRequester::setupUserCommandWatcher(command)
+
+    if config.root.additions.shortCommands.use {
+        for key, value of config.root.additions.shortCommands.commands {
+            if command == key {
+                command = value .. string.match($, "^/%S+(.*)")
+            }
+        }
+    }
+
+    return { command }
 }

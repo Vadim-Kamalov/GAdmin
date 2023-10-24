@@ -121,10 +121,20 @@ global fn main() {
     }
     
     if sampGetCurrentServerAddress() != "46.174.48.194" {
-        script::unload()
+        thisScript()::unload()
     }
 
     common::makeDirectoryTree({ "GAdmin", "GAdmin/temp", "GAdmin/config" })
+
+    if config.root.additions.shortCommands.use {
+        for key, value of config.root.additions.shortCommands.commands {
+            sampRegisterChatCommand(key, fn(arguments) {
+                if arguments {
+                    sampSendChat("/" .. string.format(value, arguments))
+                }
+            })
+        }
+    }
  
 @if all(not(def(__GADMIN_DEBUG__)), not(cmp(AUTOUPDATE_URL == "")))
 {

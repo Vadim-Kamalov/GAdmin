@@ -142,7 +142,7 @@ method __autoUpdate__::checkUpdates(url) {
                 os.remove(tempFileDestination)
 
                 if self.handler.root.AutoUpdate._attr.version != $GADMIN_VERSION 
-                   && config.root.autoUpdate.skipVersionUpdate != $GADMIN_VERSION
+                   && config.root.autoUpdate.skipVersionUpdate != self.handler.root.AutoUpdate._attr.version
                 {
                     self.imgui.body             = string.match(content, "<body>%s*(.*)%s*</body>")
                     self.imgui.title            = self.handler.root.AutoUpdate.title
