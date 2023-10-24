@@ -18,8 +18,9 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
-@import "Config"        => config
-@import "imgui.HotKey"  => HotKey
+@import "Config" => config
+
+@import "imgui.HotKey" => HotKey
 
 @import "game.Spectator" => spectator
 

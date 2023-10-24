@@ -166,8 +166,8 @@ method animations::button(
         }
 
         imgui.GetWindowDrawList()::AddRect(
-            p,
-            imgui.ImVec2(p.x + this.size.x, p.y + this.size.y),
+            p - imgui.ImVec2(1, 1),
+            imgui.ImVec2(p.x + this.size.x - 1, p.y + this.size.y - 1),
             imgui.ColorConvertFloat4ToU32(this.hovered.color),
             rounding,
             onHoveredFlags
@@ -177,8 +177,8 @@ method animations::button(
     imgui.PushStyleVarFloat(imgui.StyleVar.ChildRounding, rounding)
     imgui.PushStyleColor(imgui.Col.ChildBg, colors.def)
     local pos = imgui.GetCursorPos()
-    imgui.SetCursorPos(imgui.ImVec2(pos.x + 1, pos.y + 1))
-    imgui.BeginChild(id .. ".UI_ANIMATED_BUTTON", imgui.ImVec2(size.x - 2, size.y - 2), false)
+    imgui.SetCursorPos(imgui.ImVec2(pos.x, pos.y))
+    imgui.BeginChild(id .. ".UI_ANIMATED_BUTTON", imgui.ImVec2(size.x, size.y), false)
         local dl = imgui.GetWindowDrawList()
         if this.pos {
             local alpha = 0.00
@@ -205,15 +205,15 @@ method animations::button(
             local a, b = p, imgui.ImVec2(p.x + this.size.x, p.y + this.size.y)
             local color = imgui.ColorConvertFloat4ToU32(colors.window)
             dl::PathLineTo(a)
-            dl::PathArcTo(imgui.ImVec2(a.x + rounding, a.y + rounding), rounding, -3.0, -1.500)
+            dl::PathArcTo(imgui.ImVec2(a.x + rounding - 1, a.y + rounding - 1), rounding, -3.0, -1.500)
             dl::PathFillConvex(color)
 
             dl::PathLineTo(imgui.ImVec2(b.x, a.y))
-            dl::PathArcTo(imgui.ImVec2(b.x - rounding, a.y + rounding), rounding, -1.5, -0.205)
+            dl::PathArcTo(imgui.ImVec2(b.x - rounding - 1, a.y + rounding - 1), rounding, -1.5, -0.205)
             dl::PathFillConvex(color)
 
             dl::PathLineTo(imgui.ImVec2(b.x, b.y))
-            dl::PathArcTo(imgui.ImVec2(b.x - rounding, b.y - rounding), rounding, 1.5, 0.205)
+            dl::PathArcTo(imgui.ImVec2(b.x - rounding - 1, b.y - rounding - 1), rounding, 1.5, 0.205)
             dl::PathFillConvex(color)
 
             dl::PathLineTo(imgui.ImVec2(a.x, b.y))

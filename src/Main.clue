@@ -18,6 +18,8 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
+@version 3.4.4
+
 @import "Hook"              => hook
 @import "Icons"             => icons
 @import "Common"            => common
@@ -25,6 +27,8 @@
 @import "Notifications"     => notify
 @import "CompressedData"    => compressed
 @import "CommandRequester"  => commandRequester
+@import "AutoUpdate"        => autoUpdate
+@import "Assets"            => assets
 
 @import "imgui.Style"   => style
 @import "imgui.HotKey"  => HotKey
@@ -33,7 +37,8 @@
 @import "game.Spectator"    => spectator
 
 @define COMMAND_DELAY   800
-@define GADMIN_VERSION  "0.1"
+@define GADMIN_VERSION  "0.2"
+@define AUTOUPDATE_URL  ""
 
 @define SAMP_BASE                       getModuleHandle("samp.dll")
 @define RECALL_UP_ADDR                  $SAMP_BASE + 0x65990
@@ -108,8 +113,8 @@ global fn main() {
     for id = 1, config.root.additions.tracers.maxLines {
         bulletData[id] = {
             enable  = false,
-            o       = {x, y, z},
-            t       = {x, y, z},
+            o       = { x, y, z },
+            t       = { x, y, z },
             time    = 0,
             type    = 0
         }
@@ -120,6 +125,11 @@ global fn main() {
     }
 
     common::makeDirectoryTree({ "GAdmin", "GAdmin/temp", "GAdmin/config" })
+ 
+@if all(not(def(__GADMIN_DEBUG__)), not(cmp(AUTOUPDATE_URL == "")))
+{
+    autoUpdate::checkUpdates($AUTOUPDATE_URL)
+}
 
     $JMP_HOOK_NEW onRecallUpHook    = hook::new("void(__thiscall*)(void*)", onRecallUpHook, $RECALL_UP_ADDR)
     $JMP_HOOK_NEW onRecallDownHook  = hook::new("void(__thiscall*)(void*)", onRecallDownHook, $RECALL_DOWN_ADDR)

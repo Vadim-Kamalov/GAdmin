@@ -36,12 +36,12 @@ windows::new("imgui.windows.SpectatorActions", {
     description = "Окно действий в режиме наблюдения"
     type        = MV_ONLY_IN_SPECTATOR
     condition   = fn { return config.root.windows.spectatorActions.use }
-    size        = { x = 700, y = 100 }
+    size        = { x = 718, y = 104 }
     defaultPos  = { x = sizeX / 2 - 350, y = sizeY / 1.128 }
     initialize  = {
         middleButtons = StyleChanger::new({
             FrameRounding   = 0
-            ItemSpacing     = imgui.ImVec2(1, 0)
+            ItemSpacing     = imgui.ImVec2(2, 0)
         })
     }
 }, fn(self) {
@@ -144,7 +144,7 @@ windows::new("imgui.windows.SpectatorActions", {
         imgui.BeginGroup()
             imgui.BeginGroup() // GO_TO_PREVIOUS_PLAYER
                 local pos, windowPos = imgui.GetCursorPos(), imgui.GetWindowPos()
-                if animations::button("##sp:GO_TO_PREVIOUS_PLAYER", imgui.ImVec2(33, 68.5), 5)
+                if animations::button("##sp:GO_TO_PREVIOUS_PLAYER", imgui.ImVec2(33, 72), 5)
                    && !self.isChangingWindowsPositions
                 {
                     sampSendMenuSelectRow(SPECTATOR_MENU_BACK)
@@ -152,21 +152,21 @@ windows::new("imgui.windows.SpectatorActions", {
                 
                 imguiAssets::textWithFont(icons.ICON_CHEVRON_LEFT, nil, imgui.ImVec2(6, 58))
                 imgui.GetWindowDrawList()::AddRectFilled(
-                    imgui.ImVec2(windowPos.x + 34, windowPos.y + 27.5),
-                    imgui.ImVec2(windowPos.x + 37, windowPos.y + 93.5),
+                    imgui.ImVec2(windowPos.x + 33, windowPos.y + 26),
+                    imgui.ImVec2(windowPos.x + 38, windowPos.y + 98),
                     imgui.ColorConvertFloat4ToU32(imgui.GetStyle().Colors[imgui.Col.Button])
                 )
             imgui.EndGroup() // GO_TO_PREVIOUS_PLAYER
 
-            imgui.SameLine(33)
+            imgui.SameLine(35)
 
             self.var.middleButtons::apply()
                 imgui.PushFont(regular9)
                     imgui.BeginGroup() // MIDDLE_BUTTONS
                         for index, button in self.buttons {
                             if index == 9 { imgui.NewLine() }
-                            imgui.SetCursorPosY((index > 8) ? 60 : 26)
-                            if animations::button(button.title .. "##sp:MIDDLE_BUTTONS", imgui.ImVec2(78, 34.5))
+                            imgui.SetCursorPosY((index > 8) ? 63 : 26)
+                            if animations::button(button.title .. "##sp:MIDDLE_BUTTONS", imgui.ImVec2(78, 35))
                                && !self.isChangingWindowsPositions
                             {
                                 button.callback()
@@ -176,19 +176,19 @@ windows::new("imgui.windows.SpectatorActions", {
                     imgui.EndGroup() // MIDDLE_BUTTONS
                 imgui.PopFont()
             self.var.middleButtons::reset()
-
-            imgui.SameLine(657)
+// 657
+            imgui.SameLine(675)
             imgui.BeginGroup() // GO_TO_NEXT_PLAYER
                 local pos, windowPos = imgui.GetCursorPos(), imgui.GetWindowPos()
-                if animations::button(" ##sp:GO_TO_NEXT_PLAYER", imgui.ImVec2(33, 68.5), 10)
+                if animations::button(" ##sp:GO_TO_NEXT_PLAYER", imgui.ImVec2(33, 72), 10)
                    && !self.isChangingWindowsPositions
                 {
                     sampSendMenuSelectRow(SPECTATOR_MENU_NEXT)
                 }
-                imguiAssets::textWithFont(icons.ICON_CHEVRON_RIGHT, nil, imgui.ImVec2(665, 58))
+                imguiAssets::textWithFont(icons.ICON_CHEVRON_RIGHT, nil, imgui.ImVec2(683, 58))
                 imgui.GetWindowDrawList()::AddRectFilled(
-                    imgui.ImVec2(windowPos.x + 663, windowPos.y + 27.5),
-                    imgui.ImVec2(windowPos.x + 665, windowPos.y + 93.5),
+                    imgui.ImVec2(windowPos.x + 680, windowPos.y + 26),
+                    imgui.ImVec2(windowPos.x + 684, windowPos.y + 98),
                     imgui.ColorConvertFloat4ToU32(imgui.GetStyle().Colors[imgui.Col.Button])
                 )
             imgui.EndGroup() // GO_TO_NEXT_PLAYER

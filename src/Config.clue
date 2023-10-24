@@ -243,6 +243,11 @@ static __config__ = {
             maxItems = 5 // 1 .. 5
         },
 
+        autoUpdate = {
+            hasUpdateInstalled  = false,
+            skipVersionUpdate   = "0.0"
+        },
+
         styleChangeableWindows  = {},
         hotKeys                 = {},
         movableWindows          = {}

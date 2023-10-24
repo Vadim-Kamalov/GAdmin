@@ -43,8 +43,9 @@ static __commandRequester__ = {
     lastUserCommand = "",
 
     states = {
-        requester   = false,
-        frame       = false // window or notification.      
+        requester           = false,
+        frame               = false, // window or notification.
+        ignoreNextCommands  = false
     },
     
     current = {
@@ -84,7 +85,9 @@ method __commandRequester__::setupTimeWatcher() {
  * @return void
  */
 method __commandRequester__::setupUserCommandWatcher(command) {
-    self.lastUserCommand = command
+    if !self.states.ignoreNextCommands {
+        self.lastUserCommand = command
+    }
 }
 
 /**
@@ -141,16 +144,22 @@ method __commandRequester__::setupChatWatcher(text, color) {
 method __commandRequester__::approve() {
     local command, args = self.current.command.splitted.name, self.current.command.splitted.args
     local type          = self.current.command.type
+
+    self.states.ignoreNextCommands = true
     
     if type == COMMAND_REQUEST_TYPE_NO_COMMENTARY {
         lua_thread.create(fn {
             sampSendChat(string.format("/%s %s", command, args))
             wait($COMMAND_DELAY)
             sampSendChat(string.format("/a Форма \"%s %s\" принята!", command, args))
+            
+            self.states.ignoreNextCommands = false
         })
     } elseif type == COMMAND_REQUEST_TYPE_COMMENTARY {
         if local admin = admins::getAdminById(self.current.id.from) {
             sampSendChat(string.format("/%s %s // %s", command, args, admin.nickname.ooc))
+            
+            self.states.ignoreNextCommands = false
         }
     } elseif type == COMMAND_REQUEST_TYPE_ANSWER {
         if local admin = admins::getAdminById(self.current.id.from) {
@@ -158,6 +167,8 @@ method __commandRequester__::approve() {
                 sampSendChat(string.format("/%s %s", command, args))
                 wait($COMMAND_DELAY)
                 sampSendChat(string.format("/ans %d %s by %s", self.current.id.to, string.upper(command), admin.nickname.ooc))
+                
+                self.states.ignoreNextCommands = false
             })
         }
     }
@@ -170,9 +181,9 @@ method __commandRequester__::approve() {
  * @return void
  */
 method __commandRequester__::remove() {
-    self.states.requester   = false
-    self.states.frame       = false
-    self.current            = {
+    self.states.requester           = false
+    self.states.frame               = false
+    self.current                    = {
         clock = os.clock(),
 
         id = {

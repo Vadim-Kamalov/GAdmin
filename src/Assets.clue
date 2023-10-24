@@ -88,7 +88,7 @@ assets.randomOOCNicknames = {
  * Download a list of files. The `files` argument is represented by a table, device:
  *
  * ```clue
- * files = { { url = String, destination = String}... }
+ * files = { { url = String, destination = String }... }
  * ```
  * 
  * Note that each file is downloaded every second to prevent undefined behavior.
@@ -102,44 +102,66 @@ assets.randomOOCNicknames = {
  */
 method assets::downloadFileList(files, afterDownloadCallback) {
     local downloadStatus    = require("moonloader").download_status
-    local total             = {}
+    local total             = 0
     local time              = os.clock()
+    local result            = false
+
+    lua_thread.create(fn {
+        while true {
+            wait(0)
+            if total == #files {
+                result = true
+                afterDownloadCallback(files)
+                break
+            } else {
+                if os.clock() - time >= 120 {
+@ifdef __GADMIN_DEBUG__
+{
+                    $debugError!("assets::downloadFileList", "`files` not downloaded after 120 seconds. `entryPoint` returned false")
+}
+                    break
+                }
+            }
+        }
+    })
 
     for _, data in files {
         lua_thread.create(fn {
             wait(1000) // We need to add delay to avoid the "device or resource busy: device or resource busy" error.
             downloadUrlToFile(data.url, data.destination, fn(_, status, p1, p2) {
                 if status == downloadStatus.STATUS_ENDDOWNLOADDATA {
-                    table.insert(total, 0)
-                    @ifdef __GADMIN_DEBUG__ { $debugSuccessful!("assets::downloadFileList", "loaded " .. data.destination .. " from " .. data.url) }
+                    total += 1
+@ifdef __GADMIN_DEBUG__
+                    {
+                    $debugSuccessful!("assets::downloadFileList", "loaded " .. data.destination .. " from " .. data.url)
+}
                 } else {
-                    @ifdef __GADMIN_DEBUG__ {
-                        $debugInformation!("assts::downloadFileList", "loading " .. data.destination .. ". Remaining " .. string.format("%d of %d.", p1, p2))
-                    }
+@ifdef __GADMIN_DEBUG__
+{
+                    $debugInformation!("assets::downloadFileList", "loading " .. data.destination .. ". Downloaded " .. string.format("%d of %d.", p1, p2))
+}
                 }
             })
         })   
-
-        lua_thread.create(fn {
-            while true {
-                wait(0)
-                if #total == #files {
-                    if afterDownloadCallback { afterDownloadCallback(files) }
-                    @ifdef __GADMIN_DEBUG__ {
-                        $debugSuccessful!("assets::downloadFileList", "`files` loaded. afterDownloadCallback called (if present).") 
-                    }
-                    return true
-                } else {
-                    if os.clock() - time >= 120 {
-                        @ifdef __GADMIN_DEBUG__ {
-                            $debugError!("assets::downloadFileList", "`files` not downloaded after 120 seconds. `entryPoint` returned false")
-                        }
-                        return false
-                    }
-                }
-            }
-        })
     }
+}
+
+/**
+ * Merge two tables into one.
+ *
+ * @param first table
+ * @param second table
+ * @return table
+ */
+method assets::mergeTables(first, second) {
+    for key, value of second {
+        if type(value) == "table" && type(first[key] || false) == "table" {
+            mergeTables(first[key], second[key])
+        } else {
+            first[key] = value
+        }
+    }
+    return first
 }
 
 /**
