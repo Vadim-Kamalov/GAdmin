@@ -42,13 +42,13 @@ clue -t=luajit --base base\Release.lua src\
 set __GADMIN_DEBUG__=1 & clue -t=luajit --base base\Debug.lua src\
 ```
 
-#### Linux:Release
+#### Linux/OSX:Release
 
 ```bash
 clue -t=luajit --base base/Release.lua src/
 ```
 
-#### Linux:Debug
+#### Linux/OSX:Debug
 
 ```bash
 __GADMIN_DEBUG__=1 clue -t=luajit --base base/Release.lua src/
