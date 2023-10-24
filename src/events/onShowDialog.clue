@@ -1,0 +1,106 @@
+/**
+ * GAdmin - Script simplifying the work of administrators on the Gambit-RP
+ * Copyright (C) 2023 The Contributors.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * SDPX-License-Identifier: GPL-3.0-only
+ */
+
+@import "game.User"         => user
+@import "game.Admins"       => admins
+@import "game.Spectator"    => spectator
+@import "Config"            => config
+
+static checkedAdminList = false
+
+sampev.onShowDialog = fn(id, style, title, firstButton, secondButton, text) {
+    title, firstButton, secondButton, text = u8($1), u8($2), u8($3), u8($4)
+
+    if config.root.additions.autoLogin.use && #config.root.user.password.game > 3
+       && style == 3 && string.find(text, "Для продолжения игры, Вам необходимо авторизоваться")
+    {
+        sampSendDialogResponse(id, 1, 0, config.root.user.password.game)
+        return false
+    }
+
+    if style == 3 && firstButton == "Далее" && secondButton == "Отмена"
+       && string.find(text, "{4a86b6}Авторизация.*{FFFFFF}Введите пароль:")
+       && #config.root.user.password.admin > 3
+    {
+        sampSendDialogResponse(id, 1, 0, config.root.user.password.admin)
+        return false
+    }
+
+    if !checkedAdminList && !user::getAloginStatus() {
+        if string.find(text, "Администрация в игре.*Лог отключений") {
+            sampSendDialogResponse(id, 1, 0, nil)
+            return false
+        } elseif string.find(text, "Администраторы в сети:") {
+            for line with string.gmatch(text, "[^\n]+") {
+                if string.find(line, "^.*%[%d+%] %- [1-5] уровень") {
+                    local oocNickname, adminId, adminLvl = string.match(line, "^{FFFFFF}(.*)%[(%d+)%] %- ([1-5]) уровень")
+                    if tonumber(adminId) == user::getId() && user::getOOCNickname() != oocNickname {
+                        if user::getOOCNickname() != oocNickname {
+                            user::setOOCNickname(oocNickname)
+                        }
+
+                        if user::getAdminLvl() != tonumber(adminLvl) {
+                            user::setAdminLvl(tonumber(adminLvl))    
+                        }
+                    } else {
+                        admins::insert({
+                            id  = tonumber(adminId),
+                            lvl = tonumber(adminLvl),
+
+                            nickname = {
+                                ooc = oocNickname,
+                                ic  = icNickname
+                            }
+                        })
+                    }
+                }
+            }
+
+            user::setAloginStatus(true)
+            checkedAdminList = true
+            
+            return false
+        }
+    }
+
+    if string.find(text, "Информация о игроке") && spectator.stats.checking {
+        text                = string.gsub($, "{......}", "")
+        local money, bank   = string.match(text, "Деньги: ([%$%-0-9]-)\nБанк%: ([%$%-0-9]-)\n")
+        
+        spectator::setInformation({
+            statsId     = string.match(text, "Информация о игроке .+%[(%d+)%]")
+            accountId   = string.match(text, "ID Аккаунта: (%d+)")
+            money       = money
+            bank        = bank
+            fraction    = string.match(text, "Фракция: (.-)\n")
+            rang        = string.match(text, "Должность: (.-)\n")
+            vehicle     = string.match(text, "Транспорт: (.-)\n")
+            house       = string.match(text, "Дом: (.-)\n")
+            vip         = string.match(text, "Премиум аккаунт: (.-)\n")
+            regDate     = string.match(text, "Дата регистрации: (.-)\n")
+            warnings    = (string.find(text, "Предупреждения:.*%d+")) ? string.match(text, "Предупреждения:.*(%d+)") : "0"
+            stage       = "0"
+        })
+
+        sampSendDialogResponse(id, 0, 0, "")
+        spectator.stats.checking = false
+        return false
+    }
+}

@@ -1,13 +1,5 @@
-*
+LICENSE
 
-!/src/
-!/src/lib/
-
-!.gitignore
-!CONTRIBUTING.md
-!CONTRIBUTORS
-!LIBRARIES
-!LICENSE
-!README.md
-!.github/*
-!AutoUpdate.xml
+/out/
+/.idea/
+/.vscode/
