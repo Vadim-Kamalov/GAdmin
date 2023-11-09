@@ -156,7 +156,7 @@ method assets::downloadFileList(files, afterDownloadCallback) {
 method assets::mergeTables(first, second) {
     for key, value of second {
         if type(value) == "table" && type(first[key] || false) == "table" {
-            mergeTables(first[key], second[key])
+            self::mergeTables(first[key], second[key])
         } else {
             first[key] = value
         }
