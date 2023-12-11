@@ -32,10 +32,9 @@ ffi.cdef("
 
 static __hooks__ = { hooks = {} }
 
-method __hooks__::new(cast, callback, hookAddress, size) {
+method __hooks__::new(cast, callback, hookAddress, size = 5) {
     jit.off(callback, true)
 
-    local size = size || 5
     local newHook = { status = false }
     local detourAddress = tonumber(ffi.cast("intptr_t", ffi.cast("void*", ffi.cast(cast, callback))))
     local voidAddress = ffi.cast("void*", hookAddress)

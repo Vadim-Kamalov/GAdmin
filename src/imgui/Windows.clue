@@ -24,6 +24,12 @@
 @import "MovableWindows"    => movableWindows
 
 /**
+ * All windows that registered by this class. Array of `{ id: string, description: string }`.
+ * @see ImguiWindow
+ */
+static registeredWindows = {}
+
+/**
  * `windows` module, represented as class. Note that each import of this module registers this class.
  * @class ImguiWindow
  */
@@ -105,7 +111,6 @@ method windows::new(id, configuration, render) {
     self.condition      = configuration.condition || (fn { return true })
     self.type           = configuration.type || MV_DEFAULT
     self.defaultPos     = configuration.defaultPos || WIN_DEFAULT_POS_CENTER
-    self.size           = configuration.size || { x = 0, y = 0 }
     self.id             = id
     self.var            = {}
     
@@ -116,6 +121,8 @@ method windows::new(id, configuration, render) {
 
     self.executeChangingWindowsPositions    = fn { movableWindows::executeChangingWindowsPositions() }
     self.closeWindow                        = fn { self.condition = fn { return false }}
+
+    table.insert(registeredWindows, { id = id, description = self.description })
 
     if configuration.initialize {
         // Initialisation of variables outside of the ImGui renderer without using any local variables.
@@ -128,10 +135,9 @@ method windows::new(id, configuration, render) {
         window.HideCursor = imguiAssets::getCursorStatus()
     
         self.isChangingWindowsPositions = movableWindows::isChangingWindowsPositions()
+        self.size = (type(configuration.size) == "function") ? configuration.size() : (configuration.size || ({ x = 0, y = 0 }))
 
-        if self.size {
-            imgui.SetNextWindowSize(imgui.ImVec2(self.size.x, self.size.y))
-        }
+        imgui.SetNextWindowSize(imgui.ImVec2(self.size.x, self.size.y))
 
         if local pos = config.root.movableWindows[id] {
             imgui.SetNextWindowPos(imgui.ImVec2(pos.x, pos.y))

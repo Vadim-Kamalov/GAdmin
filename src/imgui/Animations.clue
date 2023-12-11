@@ -37,6 +37,11 @@ method animations::getContrastColor(
         : colorB
 }
 
+method animations::isPlaceHovered(a, b) {
+    local m = imgui.GetMousePos()
+    return (m.x >= a.x && m.y >= a.y) && (m.x <= b.x && m.y <= b.y)
+}
+
 /**
  * Draw animated and clickable text.
  *
@@ -162,7 +167,12 @@ method animations::button(
     if this.size {
         this.hovered.color = match this.hovered.state {
             true => imguiAssets::bringVec4To($, colors.hovered, this.hovered.clock, duration[3]),
-            false => imguiAssets::bringVec4To($, colors.active, this.hovered.clock, duration[3]) 
+            false => imguiAssets::bringVec4To($, imgui.ImVec4(
+                colors.hovered.x,
+                colors.hovered.y,
+                colors.hovered.z,
+                0.0
+            ), this.hovered.clock, duration[3])
         }
 
         imgui.GetWindowDrawList()::AddRect(
@@ -174,74 +184,57 @@ method animations::button(
         )
     }
 
-    imgui.PushStyleVarFloat(imgui.StyleVar.ChildRounding, rounding)
-    imgui.PushStyleColor(imgui.Col.ChildBg, colors.def)
-    local pos = imgui.GetCursorPos()
-    imgui.SetCursorPos(imgui.ImVec2(pos.x, pos.y))
-    imgui.BeginChild(id .. ".UI_ANIMATED_BUTTON", imgui.ImVec2(size.x, size.y), false)
-        local dl = imgui.GetWindowDrawList()
-        if this.pos {
-            local alpha = 0.00
+    local pos   = imgui.GetCursorPos()
+    local dl    = imgui.GetWindowDrawList()
 
-            local timer = os.clock() - this.clock[2]
-            if timer <= duration[2] {
-                alpha = self::limit(1.00 - ((1.00 / duration[2]) * timer), 0.0, 1.0)
-            }
+    dl::AddRectFilled(p, p + size, imgui.ColorConvertFloat4ToU32(colors.def), rounding, onHoveredFlags)
+    dl::PushClipRect(p + imgui.ImVec2(1, 1), p + size - imgui.ImVec2(1, 1))
 
-            local timer = os.clock() - this.clock[1]
-            if timer <= duration[1] {
-                alpha = self::limit((1.00 / duration[1]) * timer, 0.0, 1.0)
-                this.radius = (size.x * 1.5 / duration[1]) * timer
-            }
+    if this.pos {
+        local alpha = 0.00
 
-            local col = imgui.GetStyle().Colors[imgui.Col.ButtonActive]
-            dl::AddCircleFilled(
-                this.pos, 
-                this.radius, 
-                imgui.ColorConvertFloat4ToU32(imgui.ImVec4(col.x, col.y, col.z, alpha)), 
-                64
-            )
-
-            local a, b = p, imgui.ImVec2(p.x + this.size.x, p.y + this.size.y)
-            local color = imgui.ColorConvertFloat4ToU32(colors.window)
-            dl::PathLineTo(a)
-            dl::PathArcTo(imgui.ImVec2(a.x + rounding - 1, a.y + rounding - 1), rounding, -3.0, -1.500)
-            dl::PathFillConvex(color)
-
-            dl::PathLineTo(imgui.ImVec2(b.x, a.y))
-            dl::PathArcTo(imgui.ImVec2(b.x - rounding - 1, a.y + rounding - 1), rounding, -1.5, -0.205)
-            dl::PathFillConvex(color)
-
-            dl::PathLineTo(imgui.ImVec2(b.x, b.y))
-            dl::PathArcTo(imgui.ImVec2(b.x - rounding - 1, b.y - rounding - 1), rounding, 1.5, 0.205)
-            dl::PathFillConvex(color)
-
-            dl::PathLineTo(imgui.ImVec2(a.x, b.y))
-
-            if alpha <= 0 { this.pos = nil }
+        local timer = os.clock() - this.clock[2]
+        if timer <= duration[2] {
+            alpha = self::limit(1.00 - ((1.00 / duration[2]) * timer), 0.0, 1.0)
         }
 
-        local ws, al = imgui.GetWindowSize(), imgui.GetStyle().ButtonTextAlign
-        imgui.SetCursorPos(imgui.ImVec2((ws.x - textSize.x) * al.x, (ws.y - textSize.y) * al.y))
-        imgui.TextUnformatted(label)
-    imgui.EndChild()
-    imgui.PopStyleColor()
-    imgui.PopStyleVar()
+        local timer = os.clock() - this.clock[1]
+        if timer <= duration[1] {
+            alpha = self::limit((1.00 / duration[1]) * timer, 0.0, 1.0)
+            this.radius = (size.x * 1.5 / duration[1]) * timer
+        }
 
-    local size          = imgui.GetItemRectSize()
+        local col = imgui.GetStyle().Colors[imgui.Col.ButtonActive]
+        dl::AddCircleFilled(
+            this.pos, 
+            this.radius, 
+            imgui.ColorConvertFloat4ToU32(imgui.ImVec4(col.x, col.y, col.z, alpha)), 
+            0xFF
+        )
+            
+        if alpha <= 0 { this.pos = nil }
+    }
+
+    dl::PopClipRect()
+
+    local al = imgui.GetStyle().ButtonTextAlign
+    imgui.SetCursorPos(imgui.ImVec2((size.x - textSize.x) * al.x, (size.y - textSize.y) * al.y) + pos)
+    imgui.TextUnformatted(label)
+
+    imgui.SetCursorPos(pos)
+    if imgui.InvisibleButton(id .. ".UI_ANIMATED_BUTTON", size) {
+        this.radius     = 0
+        this.pos        = imgui.GetMousePos()
+        this.clock      = { os.clock(), os.clock() + duration[1] }
+        result          = true
+    }
+
     this.size           = imgui.ImVec2(size.x + 2, size.y + 2)
     this.hovered.state  = imgui.IsItemHovered() || os.clock() - this.clock[2] < 0
     
     if this.hovered.state != this.hovered.before {
         this.hovered.before = this.hovered.state
         this.hovered.clock  = os.clock()
-    }
-
-    if imgui.IsItemClicked() {
-        this.radius     = 0
-        this.pos        = imgui.GetMousePos()
-        this.clock      = { os.clock(), os.clock() + duration[1] }
-        result          = true
     }
 
     return result
@@ -251,7 +244,7 @@ method animations::hint(
     label,
     hoverCallback = imgui.IsItemHovered,
     duration = 0.2,
-    hintColor = imgui.GetStyle().Colors[imgui.Col.PopupBg]
+    hintColor = imgui.GetStyle().Colors[imgui.Col.FrameBg]
 ) {
     local originalPos   = imgui.GetCursorPos()
     local hovered       = hoverCallback()
@@ -304,7 +297,6 @@ method animations::hint(
 		    imgui.PushStyleVarVec2(imgui.StyleVar.WindowPadding, imgui.ImVec2(8, 8))
 		    imgui.PushStyleVarFloat(imgui.StyleVar.WindowRounding, 6)
 		    imgui.PushStyleVarFloat(imgui.StyleVar.Alpha, alpha)
-
                 local fn maxWidth(text) {
                     local result = 0
                     for line with string.gmatch(text, "[^\n]+") {
@@ -386,6 +378,150 @@ method animations::keyCap(label, isPressed = false, size) {
 
         dl::AddText(textPos, -1, text)
     }
+}
+
+method animations::toggleButton(label, state, size = imgui.ImVec2(40, 20), duration = 0.3, colors = {
+    enabled     = imgui.GetStyle().Colors[imgui.Col.FrameBgActive],
+    disabled    = imgui.GetStyle().Colors[imgui.Col.FrameBg]
+}) {
+    local p         = imgui.GetCursorScreenPos()
+    local dl        = imgui.GetWindowDrawList()
+    local text      = string.gsub(label, "##.*$", "")
+    local textSize  = imgui.CalcTextSize(title)
+    local radius    = 6
+    local result    = false
+    local o         = {
+        x = 4,
+        y = p.y + (size.y / 2)
+    }
+
+    local alpha     = imgui.GetStyle().Alpha
+    colors.enabled  = imgui.ImVec4($.x, $.y, $.z, alpha)
+    colors.disabled = imgui.ImVec4($.x, $.y, $.z, alpha)
+
+    local a = imgui.ImVec2(p.x + radius + o.x, o.y)
+    local b = imgui.ImVec2(p.x + size.x - radius - o.x, o.y)
+    
+    if !UI_TOGGLE_BUTTON {
+        global UI_TOGGLE_BUTTON = {}
+    }
+
+    if local this = UI_TOGGLE_BUTTON[label] {
+        imgui.BeginGroup()
+            local pos   = imgui.GetCursorPos()
+            result      = imgui.InvisibleButton(label, size)
+            
+            if result {
+                state[0], this.clock = !$, os.clock()
+            }
+
+            if #text > 0 {
+                imgui.SetCursorPos(pos + imgui.ImVec2(size.x + imgui.GetStyle().ItemSpacing.x, (size.y - textSize.y) / 2))
+                imgui.Text(text)
+            }
+        imgui.EndGroup()
+
+        if this.clock && os.clock() - this.clock <= duration {
+            this.color  = imguiAssets::bringVec4To($, colors[(state[0]) ? "enabled" : "disabled"], this.clock, duration)
+            this.pos    = imguiAssets::bringVec2To($, (state[0]) ? b : a, this.clock, duration)
+        } else {
+            this.color  = colors[(state[0]) ? "enabled" : "disabled"]
+            this.pos    = (state[0]) ? b : a 
+        }
+
+        dl::AddRect(p, p + size, imgui.ColorConvertFloat4ToU32(this.color), 10, 15, 1)
+        dl::AddCircleFilled(this.pos, radius, imgui.ColorConvertFloat4ToU32(this.color), 0xFF)
+    } else {
+        UI_TOGGLE_BUTTON[label] = {
+            clock   = nil,
+            color   = colors[(state[0]) ? "enabled" : "disaabled"],
+            pos     = (state[0]) ? b : a
+        }
+    }
+
+    return result
+}
+
+method animations::clickableUnderlinedText(label, state = false, duration = { 0.5, 0.3 }, colors = {
+    idle        = imgui.GetStyle().Colors[imgui.Col.TextDisabled],
+    hovered     = imgui.GetStyle().Colors[imgui.Col.Text],
+    selected    = imgui.GetStyle().Colors[imgui.Col.ButtonActive]
+}) {
+    local dl        = imgui.GetWindowDrawList()
+    local id        = label
+    local label     = string.gsub($, "##.*$", "")
+    local result    = false
+
+    if !UI_CLICKABLE_UNDERLINED_TEXT {
+        global UI_CLICKABLE_UNDERLINED_TEXT = {}
+    }
+
+    if local this = UI_CLICKABLE_UNDERLINED_TEXT[id] {
+        imgui.BeginGroup()
+            local pos, p = imgui.GetCursorPos(), imgui.GetCursorScreenPos()
+            
+            imgui.TextColored(this.color, label)
+
+            local s = imgui.GetItemRectSize()
+            local hovered, clicked = self::isPlaceHovered(p, p + s), imgui.IsItemClicked()
+
+            if this.hovered.state != hovered && !state {
+                this.hovered.state = hovered
+                this.hovered.clock = os.clock()
+            }
+
+            if clicked {
+                this.clock = os.clock()
+                result = true
+            }
+
+            if os.clock() - this.clock <= duration[1] {
+                this.color = imguiAssets::bringVec4To(
+                    $,
+                    (state) ? colors.selected : ((hovered) ? colors.hovered : colors.idle),
+                    this.clock,
+                    duration[1]
+                )
+            } else {
+                this.color = (state) ? colors.selected : ((hovered) ? colors.hovered : colors.idle)
+            }
+
+            if this.hovered.clock {
+                if os.clock() - this.hovered.clock <= duration[2] {
+                    this.hovered.alpha = imguiAssets::bringFloatTo(
+                        $,
+                        (this.hovered.state) ? 1.00 : 0.00,
+                        this.hovered.clock,
+                        duration[2]
+                    )
+                } else {
+                    this.hovered.alpha = (this.hovered.state) ? 1.00 : 0.00
+                    if !this.hovered.state {
+                        this.hovered.clock = nil
+                    }
+                }
+
+                local max, y = s.x / 2, p.y + s.y + 3
+                local mid = p.x + max
+                local color = imgui.ColorConvertFloat4ToU32(imgui.ImVec4(this.color.x, this.color.y, this.color.z, this.hovered.alpha))
+
+                dl::AddLine(imgui.ImVec2(mid, y), imgui.ImVec2(mid + (max * this.hovered.alpha), y), color, 3)
+                dl::AddLine(imgui.ImVec2(mid, y), imgui.ImVec2(mid - (max * this.hovered.alpha), y), color, 3)
+            }
+        imgui.EndGroup()
+    } else {
+        UI_CLICKABLE_UNDERLINED_TEXT[id] = {
+            color = (state) ? colors.selected : colors.idle,
+            clock = os.clock() + duration[1],
+            hovered = {
+                state = state,
+                alpha = (state) ? 1.00 : 0.00,
+                clock = os.clock() + duration[2]
+            }
+        }
+    }
+
+    return result
 }
 
 return animations

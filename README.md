@@ -27,31 +27,14 @@
 
 ### Компиляция
 
-Для компиляции необходима последняя версия компилятора [Clue](https://github.com/ClueLang/Clue). `clue` должен содержать путь до исполняемого
-файла компилятора Clue. Во всех случаях вы должны быть в корневой директории репозитория. Скомпилированный файл будет находиться по пути `<repo_dir>/main.lua`
+Используйте вспомогательный скрипт сборки: `./build.sh`
 
-#### Windows:Release
-
-```powershell
-clue -t=luajit --base base\Release.lua src\
 ```
-
-#### Windows:Debug
-
-```powershell
-set __GADMIN_DEBUG__=1 & clue -t=luajit --base base\Debug.lua src\
-```
-
-#### Linux/OSX:Release
-
-```bash
-clue -t=luajit --base base/Release.lua src/
-```
-
-#### Linux/OSX:Debug
-
-```bash
-__GADMIN_DEBUG__=1 clue -t=luajit --base base/Release.lua src/
+build.sh [TARGET] [--output [PARAMETER]]
+ 
+TARGET:
+   debug   - Compile source with __GADMIN_DEBUG__ environment variable and with debug base-script.
+   release - Just compile source with release base-script.
 ```
 
 # Лицензия

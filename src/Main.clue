@@ -37,7 +37,7 @@
 @import "game.Spectator"    => spectator
 
 @define COMMAND_DELAY   800
-@define GADMIN_VERSION  "0.2"
+@define GADMIN_VERSION  "0.1"
 @define AUTOUPDATE_URL  ""
 
 @define SAMP_BASE                       getModuleHandle("samp.dll")
@@ -47,12 +47,50 @@
 
 @define DEFAULT_FOV_VALUE 70
 
+@define SERVER_ADDRESS      "46.174.48.194"
+@define SERVER_MAX_PLAYERS  600
+
 @macro IMVEC4_TO_RGB(vector) { string.format("%02X%02X%02X", $vector.x * 255, $vector.y * 255, $vector.z * 255) }
 
-@macro debugSuccessful(entryPoint, message)     { sampfuncsLog("{00FF00}__GADMIN__DEBUG__ [+][" .. $entryPoint .. "]:{FFFFFF} " .. $message) }
-@macro debugWarning(entryPoint, message)        { sampfuncsLog("{FFA500}__GADMIN__DEBUG__ [~][" .. $entryPoint .. "]:{FFFFFF} " .. $message) }
-@macro debugInformation(entryPoint, message)    { sampfuncsLog("{00BFFF}__GADMIN__DEBUG__ [?][" .. $entryPoint .. "]:{FFFFFF} " .. $message) }
-@macro debugError(entryPoint, message)          { sampfuncsLog("{FF0000}__GADMIN__DEBUG__ [-][" .. $entryPoint .. "]:{FFFFFF} " .. $message) }
+@macro debugSuccessful(entryPoint, message) {
+    sampfuncsLog(string.format(
+        "{00FF00}[DATE: %s] [CLOCK: %.2f] [GADMIN.DEBUG.SUCCESS] in <%s>:{FFFFFF} %s",
+        os.date(),
+        os.clock(),
+        $entryPoint,
+        $message
+    ))
+}
+
+@macro debugWarning(entryPoint, message) {
+    sampfuncsLog(string.format(
+        "{FFA500}[DATE: %s] [CLOCK: %.2f] [GADMIN.DEBUG.WARNING] in <%s>:{FFFFFF} %s",
+        os.date(),
+        os.clock(),
+        $entryPoint,
+        $message
+    ))
+}
+
+@macro debugInformation(entryPoint, message) {
+    sampfuncsLog(string.format(
+        "{00BFFF}[DATE: %s] [CLOCK: %.2f] [GADMIN.DEBUG.INFORMATION] in <%s>:{FFFFFF} %s",
+        os.date(),
+        os.clock(),
+        $entryPoint,
+        $message
+    ))
+}
+
+@macro debugError(entryPoint, message) {
+    sampfuncsLog(string.format(
+        "{FF0000}[DATE: %s] [CLOCK: %.2f] [GADMIN.DEBUG.FATAL] in <%s>:{FFFFFF} %s",
+        os.date(),
+        os.clock(),
+        $entryPoint,
+        $message
+    ))
+}
 
 @macro PLAYER_COLOR_TO_HEX(id) { string.format("%06X", sampGetPlayerColor($id) & 0xFFFFFF) }
 
@@ -65,6 +103,7 @@ static neatJSON     = require("neatjson")
 static xml2lua      = require("xml2lua")
 static sampev       = require("samp.events")
 static vkeys        = require("vkeys")
+static moonMonet    = require("MoonMonet")
 
 require("moonloader")
 math.randomseed(os.time())
@@ -75,6 +114,38 @@ static bulletData           = { lastId = 0 }
 
 local airbreak              = { status = false, speed = 1.0, coords = {} }
 local fishEyeWeaponLock     = false
+
+//! Initializing hot keys that used in this module.
+
+local hotKeyCallbacks = {}
+
+hotKeyCallbacks.airbreak = fn {
+    if config.root.cheats.airbreak.use && user::getAloginStatus() && !common::isCursorActive() {
+        print("before", airbreak.status)
+        airbreak.status = !$
+        print("after", airbreak.status)
+
+        if airbreak.status {
+            airbreak.coords = { getCharCoordinates(PLAYER_PED) }
+            notify::send({
+                icon        = icons.ICON_ARROW_UP
+                title       = "AirBreak включен"
+                text        = "Для увеличения/уменьшения скорости используйте Num + / Num - соответстсвенно"
+                duration    = 2
+            })
+        } else {
+            notify::send({
+                icon        = icons.ICON_ARROW_UP
+                title       = "AirBreak выключен"
+                text        = "Чтобы опять включить, нажмите эту клавишу повторно"
+                duration    = 2
+            })
+        }
+    }
+}
+
+HotKey::new("main->airbreak", { VK_RSHIFT }, "Аирбрейк")
+      ::registerCallback(hotKeyCallbacks.airbreak)
 
 static enum /* ALIGN_TYPE */ {
     ALIGN_LEFT,
@@ -89,12 +160,14 @@ imgui.OnInitialize(fn {
     style::apply()
     
     global bold10      = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellBold, 16.0, nil, glyphRanges)
-    global bold14      = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellBold, 22.0, nil, glyphRanges)
+    global bold9       = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellBold, 14.0, nil, glyphRanges)
+    global bold14      = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellBold, 20.0, nil, glyphRanges)
     global bold17      = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellBold, 27.0, nil, glyphRanges)
     global bold15      = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellBold, 23.0, nil, glyphRanges)
     global bold18      = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellBold, 26.0, nil, glyphRanges)
     global bold25      = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellBold, 33.0, nil, glyphRanges)
     global regular9    = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellRegular, 14.0, nil, glyphRanges)
+    global regular12   = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellRegular, 16.0, nil, glyphRanges)
     global regular14   = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellRegular, 19.0, nil, glyphRanges)
     global regular15   = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellRegular, 23.0, nil, glyphRanges)
     global bold        = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellBold, 25.0, nil, glyphRanges)
@@ -120,7 +193,7 @@ global fn main() {
         }
     }
     
-    if sampGetCurrentServerAddress() != "46.174.48.194" {
+    if sampGetCurrentServerAddress() != $SERVER_ADDRESS {
         thisScript()::unload()
     }
 
@@ -136,7 +209,7 @@ global fn main() {
         }
     }
  
-@if all(not(def(__GADMIN_DEBUG__)), not(cmp(AUTOUPDATE_URL == "")))
+@if all(not(def(__GADMIN_DEBUG__)), cmp(AUTOUPDATE_URL != ""))
 {
     autoUpdate::checkUpdates($AUTOUPDATE_URL)
 }
@@ -144,10 +217,17 @@ global fn main() {
     $JMP_HOOK_NEW onRecallUpHook    = hook::new("void(__thiscall*)(void*)", onRecallUpHook, $RECALL_UP_ADDR)
     $JMP_HOOK_NEW onRecallDownHook  = hook::new("void(__thiscall*)(void*)", onRecallDownHook, $RECALL_DOWN_ADDR)
 
+@ifdef __GADMIN_DEBUG__
+{
+    $debugInformation!("system", "samp.dll base address: 0x" .. bit.tohex($SAMP_BASE))
+    $debugSuccessful!("system", "CInput::RecallUp hook installed. Base address: 0x" .. bit.tohex($RECALL_UP_ADDR))
+    $debugSuccessful!("system", "CInput::RecallDown hook installed. Base address: 0x" .. bit.tohex($RECALL_DOWN_ADDR))
+    $debugSuccessful!("system", "GAdmin " .. $GADMIN_VERSION .." compelety loaded!")
+}
+
     while true {
         wait(0)
 
-        HotKey::setupWatcher()
         commandRequester::setupTimeWatcher()
         user::updateTime()
 
@@ -162,83 +242,59 @@ global fn main() {
             }
         }
 
-        if config.root.fix.chatOnVK_T && isKeyJustPressed(VK_T) {
+        if config.root.fix.chatOnVK_T && isKeyJustPressed(VK_T) && !common::isInputsActive() {
             sampSetChatInputEnabled(true)
         }
 
-        if config.root.cheats.airbreak.use && user::getAloginStatus() {
-            //! @hotKey
-            if !common::isCursorActive() && isKeyJustPressed(VK_RSHIFT) {
-                airbreak.status = !$
-                
-                if airbreak.status {
-                    airbreak.coords = { getCharCoordinates(PLAYER_PED) }
-                    notify::send({
-                        icon        = icons.ICON_ARROW_UP
-                        title       = "AirBreak включен"
-                        text        = "Для увеличения/уменьшения скорости используйте Num + / Num - соответстсвенно"
-                        duration    = 2
-                    })
-                } else {
-                    notify::send({
-                        icon        = icons.ICON_ARROW_UP
-                        title       = "AirBreak выключен"
-                        text        = "Чтобы опять включить, нажмите эту клавишу повторно"
-                        duration    = 2
-                    })
-                }
+        if airbreak.status && config.root.cheats.airbreak.use {
+            local heading                   = getCharHeading(PLAYER_PED)
+            local camCoordX, camCoordY      = getActiveCameraCoordinates()
+            local targetCamX, targetCamY    = getActiveCameraPointAt()
+            local angle                     = getHeadingFromVector2d(targetCamX - camCoordX, targetCamY - camCoordY)
+            local difference                = 1.0
+            
+            if isCharInAnyCar(PLAYER_PED) {
+                heading     = getCarHeading(storeCarCharIsInNoSave(PLAYER_PED))
+                difference  = 0.79
             }
 
-            if airbreak.status {
-                local heading                   = getCharHeading(PLAYER_PED)
-                local camCoordX, camCoordY      = getActiveCameraCoordinates()
-                local targetCamX, targetCamY    = getActiveCameraPointAt()
-                local angle                     = getHeadingFromVector2d(targetCamX - camCoordX, targetCamY - camCoordY)
-                local difference                = 1.0
-            
-                if isCharInAnyCar(PLAYER_PED) {
-                    heading     = getCarHeading(storeCarCharIsInNoSave(PLAYER_PED))
-                    difference  = 0.79
+            setCharCoordinates(PLAYER_PED, airbreak.coords[1], airbreak.coords[2], airbreak.coords[3] - difference)
+
+            if !common::isCursorActive() {
+                if isKeyDown(VK_W) {
+                    airbreak.coords[1] += airbreak.speed * math.sin(-math.rad(angle))
+                    airbreak.coords[2] += airbreak.speed * math.cos(-math.rad(angle))
+
+                    if !isCharInAnyCar(playerPed) {
+                        setCharHeading(playerPed, angle)
+                    } else {
+                        setCarHeading(storeCarCharIsInNoSave(playerPed), angle)
+                    }
+                } elseif isKeyDown(VK_S) {
+                    airbreak.coords[1] -= airbreak.speed * math.sin(-math.rad(heading))
+                    airbreak.coords[2] -= airbreak.speed * math.cos(-math.rad(heading))    
                 }
 
-                setCharCoordinates(PLAYER_PED, airbreak.coords[1], airbreak.coords[2], airbreak.coords[3] - difference)
+                if isKeyDown(VK_A) {
+                    airbreak.coords[1] -= airbreak.speed * math.sin(-math.rad(heading - 90))
+                    airbreak.coords[2] -= airbreak.speed * math.cos(-math.rad(heading - 90))
+                } elseif isKeyDown(VK_D) {
+                    airbreak.coords[1] -= airbreak.speed * math.sin(-math.rad(heading + 90))
+                    airbreak.coords[2] -= airbreak.speed * math.cos(-math.rad(heading + 90))
+                }
 
-                if !common::isCursorActive() {
-                    if isKeyDown(VK_W) {
-                        airbreak.coords[1] += airbreak.speed * math.sin(-math.rad(angle))
-                        airbreak.coords[2] += airbreak.speed * math.cos(-math.rad(angle))
+                if isKeyDown(VK_SPACE) || isKeyDown(VK_UP) {
+                    airbreak.coords[3] += airbreak.speed / 2.0
+                }
 
-                        if !isCharInAnyCar(playerPed) {
-                            setCharHeading(playerPed, angle)
-                        } else {
-                            setCarHeading(storeCarCharIsInNoSave(playerPed), angle)
-                        }
-                    } elseif isKeyDown(VK_S) {
-                        airbreak.coords[1] -= airbreak.speed * math.sin(-math.rad(heading))
-                        airbreak.coords[2] -= airbreak.speed * math.cos(-math.rad(heading))    
-                    }
+                if isKeyDown(VK_LSHIFT) || isKeyDown(VK_DOWN) && airbreak.coords[3] > -95.0 {
+                    airbreak.coords[3] -= airbreak.speed / 2.0 
+                } 
 
-                    if isKeyDown(VK_A) {
-                        airbreak.coords[1] -= airbreak.speed * math.sin(-math.rad(heading - 90))
-                        airbreak.coords[2] -= airbreak.speed * math.cos(-math.rad(heading - 90))
-                    } elseif isKeyDown(VK_D) {
-                        airbreak.coords[1] -= airbreak.speed * math.sin(-math.rad(heading + 90))
-                        airbreak.coords[2] -= airbreak.speed * math.cos(-math.rad(heading + 90))
-                    }
-
-                    if isKeyDown(VK_SPACE) || isKeyDown(VK_UP) {
-                        airbreak.coords[3] += airbreak.speed / 2.0
-                    }
-
-                    if isKeyDown(VK_LSHIFT) || isKeyDown(VK_DOWN) && airbreak.coords[3] > -95.0 {
-                        airbreak.coords[3] -= airbreak.speed / 2.0 
-                    } 
-
-                    if isKeyDown(VK_ADD) {
-                        airbreak.speed = math.min($ + 0.1, 3.0)
-                    } elseif isKeyDown(VK_SUBTRACT) {
-                        airbreak.speed = math.max($ - 0.1, 0.1)
-                    }
+                if isKeyDown(VK_ADD) {
+                    airbreak.speed = math.min($ + 0.1, 3.0)
+                } elseif isKeyDown(VK_SUBTRACT) {
+                    airbreak.speed = math.max($ - 0.1, 0.1)
                 }
             }
         }

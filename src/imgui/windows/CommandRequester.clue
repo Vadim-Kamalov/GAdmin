@@ -20,13 +20,16 @@
 
 @import "imgui.Assets"          => imguiAssets
 @import "imgui.StyleChanger"    => StyleChanger
+@import "imgui.HotKey"          => HotKey
 
 @import "game.Admins" => admins
 
 @import "Common"            => common
 @import "CommandRequester"  => commandRequester
 
-local sizeX, sizeY = getScreenResolution()
+local sizeX, sizeY  = getScreenResolution()
+local hotKey        = HotKey::new("imgui.windows.CommandRequester", { VK_CONTROL, VK_Q }, "Принять форму")
+                            ::registerCallback(commandRequester.hotKeyCallback)
 
 imgui.OnFrame(fn { return commandRequester.states.frame }, fn(self) {
     self.HideCursor = imguiAssets::getCursorStatus()
@@ -51,8 +54,7 @@ imgui.OnFrame(fn { return commandRequester.states.frame }, fn(self) {
 
         imgui.Begin("imgui.windows.CommandRequester", nil, self.flags)
             imgui.PushFont(bold10)
-                //! TODO: @HotKey
-                imgui.Text("Пришла форма от %s · Принять - %s", self.admin.nickname.ooc, "Ctrl + Z")
+                imgui.Text("Пришла форма от %s · Принять - %s", self.admin.nickname.ooc, tostring(hotKey))
                 imgui.SameLine(sizeX / 2 - imgui.CalcTextSize(self.command).x / 2)
                 imgui.Text(self.command)
                 imgui.SameLine(sizeX - imgui.GetStyle().WindowPadding.x - imgui.CalcTextSize(self.timer).x)

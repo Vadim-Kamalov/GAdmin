@@ -20,6 +20,7 @@
 
 @import "Icons"         => icons
 @import "Notifications" => notify
+@import "Common"        => common
 
 static __imguiAssets__ = {
     cursor = true
@@ -74,7 +75,28 @@ method __imguiAssets__::bringFloatTo(from, to, startTime, duration) {
         local count = timer / (duration / 100)
         return from + (count * (to - from) / 100), true
     }
-    return (timer > duration) ? to : from, false
+    return ((timer > duration) ? to : from), false
+}
+
+/**
+ * Bring ImVec2 from first to second ImVec2.
+ *
+ * @param from ImVec2
+ * @param second ImVec2
+ * @param startTime number os.clock()
+ * @param duration number
+ * @return number, boolean
+ */
+method __imguiAssets__::bringVec2To(from, to, startTime, duration) {
+    local timer = os.clock() - startTime
+    if timer >= 0.00 && timer <= duration {
+        local count = timer / (duration / 100)
+        return imgui.ImVec2(
+            from.x + (count * (to.x - from.x) / 100),
+            from.y + (count * (to.y - from.y) / 100)
+        ), true
+    }
+    return ((timer > duration) ? to : from), false
 }
 
 /**
@@ -130,6 +152,22 @@ method __imguiAssets__::addStrokedText(text, strokeWidth = 0, color = imgui.ImVe
     imgui.EndGroup()
 
     return imgui.IsItemClicked(), imgui.IsItemHovered()
+}
+
+/**
+ * Convert hex to C-float number type (size == 3).
+ * @param hex string
+ * @return cdata
+ */
+method __imguiAssets__::convertHex2Float3(hex) {
+    local vector = common::convertHex2ImVec4(hex)
+    local float3 = ffi.new("float[3]")
+
+    float3[0] = vector.x
+    float3[1] = vector.y
+    float3[2] = vector.z
+
+    return float3
 }
 
 /**

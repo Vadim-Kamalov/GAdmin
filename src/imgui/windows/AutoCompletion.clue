@@ -143,7 +143,6 @@ imgui.OnFrame(fn { return autoCompletion.condition() && config.root.windows.auto
                 imguiAssets::addStrokedText(text, config.root.windows.autoCompletion.strokeSize)
                 imgui.SetCursorPos(_pos)
 
-                /// TODO: Hotkey to replace `isKeyJustPressed(VK_TAB)`, fix with hotkey module implemented.
                 if imgui.Selectable(text, autoCompletion.position == pos)
                    || (autoCompletion.position == pos && isKeyJustPressed(VK_TAB))
                 {

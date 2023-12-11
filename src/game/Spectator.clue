@@ -40,8 +40,8 @@ static enum /* SYNC_KEYS */ {
     SYNC_KEYS_PLAYER,
     SYNC_KEYS_VEHICLE,
 
-    /// Used only when `self.platform == PLATFORM_ANDROID`, contains joy stick position
-    /// by x and y.
+    //! Used only when `self.platform == PLATFORM_ANDROID`, contains joy stick position
+    //! by x and y.
     SYNC_KEYS_JOY_STICK
 }
 
@@ -198,7 +198,6 @@ method __spectator__::setTo(playerId) {
         self.status     = true
         if self.id != playerId || !self.time { self.time = os.date("*t") }
         self.id         = playerId
-        self.nickname   = sampGetPlayerNickname(playerId)
 
         if tonumber(self.information.statsId) != self.id
            && os.clock() - self.stats.lastChecked > 1

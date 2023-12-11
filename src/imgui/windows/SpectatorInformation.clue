@@ -29,18 +29,17 @@
 @import "Config" => config
 
 static enum /* SPECTATOR_INFORMATION_TYPE */ {
-    SPECTATOR_INFORMATION_TYPE_SINGLE = 2,
-    SPECTATOR_INFORMATION_TYPE_DOUBLE = 4
+    SPECTATOR_INFORMATION_TYPE_SINGLE,
+    SPECTATOR_INFORMATION_TYPE_DOUBLE
 }
 
-local sizeX, sizeY  = getScreenResolution()
-local windowSizeX   = 125 * config.root.windows.spectatorInformation.type
+local sizeX, sizeY = getScreenResolution()
 
 window::new("imgui.windows.SpectatorInformation", {
     description = "Информация о игроке в спектаторе"
     type        = MV_ONLY_IN_SPECTATOR
     condition   = fn { return config.root.windows.spectatorInformation.use }
-    size        = { x = windowSizeX, y = 0 }
+    size        = fn { return { x = 125 * (config.root.windows.spectatorInformation.type * 2), y = 0 } }
     defaultPos  = { x = 0, y = sizeY / 2.336 }
     initialize  = {
         columnsPadding = StyleChanger::new({
@@ -92,6 +91,8 @@ window::new("imgui.windows.SpectatorInformation", {
     }
 
     self.addColumns = fn(columnsCount, columns, id) {
+        columnsCount *= 2
+
         imgui.Columns(columnsCount, id, true)
         for index, item in columns {
             item.color  = item.color || imgui.GetStyle().Colors[imgui.Col.Text]

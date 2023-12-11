@@ -134,9 +134,8 @@ window::new("imgui.windows.UserInformation", {
                                 self.size.x += math.abs(rectMinX)
                             }
 
-                            local rectMaxX = imgui.GetItemRectMax().x - self.pos.x
-                            if rectMaxX > self.size.x {
-                                self.size.x = rectMaxX
+                            if imgui.GetItemRectSize().x > self.size.x {
+                                self.size.x = imgui.GetItemRectSize().x
                             }
                         }
                     }

@@ -98,7 +98,7 @@ local fn getAllPlayersNearby(isChangingWindowsPositions) {
 window::new("imgui.windows.PlayersNearby", {
     description = "Список игроков рядом"
     type        = MV_DEFAULT
-    condition   = fn { return config.root.windows.playersNearby.use && user::getAloginStatus() }
+    condition   = fn { return config.root.windows.playersNearby.use }
     size        = { x = 0, y = 0 }
     defaultPos  = { x = 0, y = sizeY / 2 }
     initialize  = {
@@ -115,12 +115,16 @@ window::new("imgui.windows.PlayersNearby", {
             FrameBorderSize     = 0
             ItemSpacing         = imgui.ImVec2(0, 0)
             WindowPadding       = imgui.ImVec2(2, 2)
-        })
+        }),
+
+        
     }
 }, fn(self) {
     self.var.style::apply()
     self::begin(self.id, fn {
         local players = getAllPlayersNearby(self.isChangingWindowsPositions)
+
+        // if !self.isChangingWindowsPositions && !user::getAloginStatus() { return }
 
         for i = 1, config.root.windows.playersNearby.maxPlayers {
             if local player = players[i] {
@@ -136,7 +140,7 @@ window::new("imgui.windows.PlayersNearby", {
 
                 local alignX = match config.root.windows.playersNearby.textAlignMode {
                     ALIGN_CENTER    => self.size.x / 2 - textSize.x / 2,
-                    ALIGN_RIGHT     => self.size.x - textSize.x - 5
+                    ALIGN_RIGHT     => self.size.x - textSize.x - 10
                     default         => imgui.GetCursorPos().x
                 } 
 
@@ -168,7 +172,7 @@ window::new("imgui.windows.PlayersNearby", {
                     }
 
                     if config.root.windows.playersNearby.showDistance {
-                        imgui.SameLine()
+                        imgui.SameLine(nil, 0)
                         imguiAssets::addStrokedText("[X: %1.f]", strokeSize, color, player.distance)
                         imguiAssets::setPreviousItemAbleToCopy(
                             string.format("%1.f", player.distance),
@@ -178,7 +182,8 @@ window::new("imgui.windows.PlayersNearby", {
                     }
 
                     if config.root.windows.playersNearby.showAdmins && player.admin {
-                        imgui.SameLine()
+                        // imgui.SameLine()
+                        imgui.SameLine(nil, 0)
                         imguiAssets::addStrokedText("[%s]", strokeSize, color, player.admin.nickname.ooc)
                         imguiAssets::setPreviousItemAbleToCopy(player.admin.nickname.ooc, nil, nil, {
                             icon        = icons.ICON_KEYBOARD
@@ -204,6 +209,17 @@ window::new("imgui.windows.PlayersNearby", {
                         })
                     }
                 imgui.EndGroup()
+
+                if self.size && self.pos {
+                    local rectMinX = imgui.GetItemRectMin().x - self.pos.x
+                    if rectMinX < 0 {
+                        self.size.x += math.abs(rectMinX)
+                    }
+
+                    if imgui.GetItemRectSize().x > self.size.x {
+                        self.size.x = imgui.GetItemRectSize().x
+                    }
+                }
             }
         }
 
@@ -219,13 +235,6 @@ window::new("imgui.windows.PlayersNearby", {
                         sampSendChat("/sp " .. tostring(self.var.popupInformation.id))
                         imgui.CloseCurrentPopup()
                     }
-                    
-                    local rectMax = imgui.GetItemRectMax()
-                    imgui.GetWindowDrawList()::AddRectFilled(
-                        imgui.ImVec2(rectMax.x - 68, rectMax.y - 8),
-                        rectMax,
-                        imgui.ColorConvertFloat4ToU32(imgui.GetStyle().Colors[imgui.Col.Button])
-                    )
                 imgui.PopStyleVar() 
                 
                 if animations::button(
@@ -246,15 +255,6 @@ window::new("imgui.windows.PlayersNearby", {
                         sampSendChat("/pame " .. tostring(self.var.popupInformation.id))
                         imgui.CloseCurrentPopup()
                     }
-
-                    local rectMin = imgui.GetItemRectMin()
-                    local rectMax = imgui.GetItemRectMax()
-
-                    imgui.GetWindowDrawList()::AddRectFilled(
-                        rectMin,
-                        imgui.ImVec2(rectMax.x, rectMin.y + 7),
-                        imgui.ColorConvertFloat4ToU32(imgui.GetStyle().Colors[imgui.Col.Button])
-                    )
                 imgui.PopStyleVar() 
             imgui.PopFont()
         }

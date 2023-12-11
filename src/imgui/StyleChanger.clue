@@ -79,6 +79,18 @@ method StyleChanger::reset() {
 }
 
 /**
+ * Update properties in `self` with `style` parameter.
+ * 
+ * @param style table
+ * @return void
+ */
+method StyleChanger::update(style) {
+    for property, value of style {
+        self[property] = value
+    }
+}
+
+/**
  * Get safe table for writing it in config. Converts all ImGui vectors
  * to packed tables, strings to vectors, numbers are unchanged.
  *

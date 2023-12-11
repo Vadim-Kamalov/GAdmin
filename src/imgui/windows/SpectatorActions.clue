@@ -151,11 +151,6 @@ windows::new("imgui.windows.SpectatorActions", {
                 }
                 
                 imguiAssets::textWithFont(icons.ICON_CHEVRON_LEFT, nil, imgui.ImVec2(6, 58))
-                imgui.GetWindowDrawList()::AddRectFilled(
-                    imgui.ImVec2(windowPos.x + 33, windowPos.y + 26),
-                    imgui.ImVec2(windowPos.x + 38, windowPos.y + 98),
-                    imgui.ColorConvertFloat4ToU32(imgui.GetStyle().Colors[imgui.Col.Button])
-                )
             imgui.EndGroup() // GO_TO_PREVIOUS_PLAYER
 
             imgui.SameLine(35)
@@ -176,7 +171,7 @@ windows::new("imgui.windows.SpectatorActions", {
                     imgui.EndGroup() // MIDDLE_BUTTONS
                 imgui.PopFont()
             self.var.middleButtons::reset()
-// 657
+            
             imgui.SameLine(675)
             imgui.BeginGroup() // GO_TO_NEXT_PLAYER
                 local pos, windowPos = imgui.GetCursorPos(), imgui.GetWindowPos()
@@ -185,12 +180,8 @@ windows::new("imgui.windows.SpectatorActions", {
                 {
                     sampSendMenuSelectRow(SPECTATOR_MENU_NEXT)
                 }
+
                 imguiAssets::textWithFont(icons.ICON_CHEVRON_RIGHT, nil, imgui.ImVec2(683, 58))
-                imgui.GetWindowDrawList()::AddRectFilled(
-                    imgui.ImVec2(windowPos.x + 680, windowPos.y + 26),
-                    imgui.ImVec2(windowPos.x + 684, windowPos.y + 98),
-                    imgui.ColorConvertFloat4ToU32(imgui.GetStyle().Colors[imgui.Col.Button])
-                )
             imgui.EndGroup() // GO_TO_NEXT_PLAYER
         imgui.EndGroup()
     })

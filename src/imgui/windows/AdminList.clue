@@ -47,7 +47,7 @@ windows::new("imgui.windows.AdminList", {
     self::begin(self.id, fn {
         for _, admin in admins {
             local pos   = imgui.GetCursorPos()
-            local text  = (config.root.windows.showAdminLvl)
+            local text  = (config.root.windows.adminList.showAdminLvl)
                 ? string.format("[LVL: %d] %s[%d]", admin.lvl, admin.nickname.ooc, admin.id)
                 : string.format("%s[%d]", admin.nickname.ooc, admin.id)
 

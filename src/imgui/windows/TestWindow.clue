@@ -47,14 +47,6 @@
             if imgui.Button("Execute changing windows positions") {
                 self.executeChangingWindowsPositions()
             }
-
-            HotKey::new(self.id .. ".TestHotkey", { VK_CONTROL, VK_Q })
-                  ::registerCallback(fn { print("clicked VK_CONTROL + VK_Q") })
-                  ::render()
-            
-            HotKey::new(self.id .. ".TestHotk1348318941ey2", { VK_CONTROL, VK_Z })
-                  ::registerCallback(fn { print("clicked VK_CONTROL + VK_Z") })
-                  ::render()
         })
     })
 }

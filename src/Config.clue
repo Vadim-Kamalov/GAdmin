@@ -53,21 +53,6 @@ static __config__ = {
                 playerColorBasedOnClist = true,
                 strokeSize              = 1
             },
-            
-            adminPanel = {
-                show    = true,
-                width   = 200,
-                alpha   = 1.00,
-                items   = {
-                    { name = "NEXT", action = "{NEXT}", position = 1 },
-                    { name = "SWITCH", action = "{SWITCH}", position = 2 },
-                    { name = "BACK", action = "{BACK}", position = 3 },
-                    { name = "STATS", action = "{STATS}", position = 4 },
-                    { name = "SESSION", action = "{SESSION}", position = 5 },
-                    { name = "FRISK", action = "{FRISK}", position = 6 },
-                    { name = "EXIT", action = "{EXIT}", position = 7 }
-                }
-            },
 
             spectatorInformation = {
                 use     = true,
@@ -84,7 +69,7 @@ static __config__ = {
 
                 // In cases when message can repeated (for example, /phone message can spam),
                 // use this option. Delay in seconds.
-                delay       = 2.5
+                delay       = 2
             },
             
             playerChecker = { 
@@ -106,7 +91,7 @@ static __config__ = {
             },
 
             userInformation = {
-                use             = true,
+                use             = false,
                 textAlignMode   = 3,
                 strokeSize      = 1,
                 display         = {
@@ -156,7 +141,8 @@ static __config__ = {
             },
 
             commandRequester = {
-                displayType     = COMMAND_REQUEST_DISPLAY_BOTTOM_BAR,
+                use             = true,
+                displayType     = 2,
                 allowedCommands = {
                     { "pk",     COMMAND_REQUEST_TYPE_ANSWER },
                     { "ck",     COMMAND_REQUEST_TYPE_ANSWER },
@@ -170,7 +156,7 @@ static __config__ = {
             },
 
             mention = {
-                use     = false,
+                use     = true,
                 color   = "4A86B6"
             },
 
@@ -215,11 +201,12 @@ static __config__ = {
             gunInfo             = { use = false },
             autoLogin           = { use = false },
             autoAdminLogin      = { use = false }, //! TODO
-            carInfo             = { use = false }
+            carInfo             = { use = false },
+            hideIpAddresses     = { use = false }
         },
 
         fix = {
-            chatOnVK_T = true
+            chatOnVK_T = { use = true }
         },
 
         chat = {
@@ -235,7 +222,7 @@ static __config__ = {
         },
 
         user = {
-            oocNickname = "",
+            oocNickname = "Администратор",
             adminLvl    = -1,
 
             online = {

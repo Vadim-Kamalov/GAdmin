@@ -46,6 +46,7 @@ imgui.OnFrame(fn { return autoUpdate.windowState }, fn(self) {
     self.style::apply()
         imgui.Begin("imgui.windows.AutoUpdate", nil, self.flags)
             imgui.PushStyleVarFloat(imgui.StyleVar.ChildRounding, imgui.GetStyle().WindowRounding)
+            imgui.PushStyleColor(imgui.Col.ChildBg, imgui.GetStyle().Colors[imgui.Col.Button])
                 imgui.BeginChild("imgui.windows.AutoUpdate.header", imgui.ImVec2(0, 40), true)
                     imguiAssets::textWithFont(
                         autoUpdate.imgui.title,
@@ -63,6 +64,7 @@ imgui.OnFrame(fn { return autoUpdate.windowState }, fn(self) {
                     )
                 imgui.EndChild()
             imgui.PopStyleVar()
+            imgui.PopStyleColor()
 
             if local rectMin, rectMax = imgui.GetItemRectMin(), imgui.GetItemRectMax() {
                 imgui.GetWindowDrawList()::AddRectFilled(
@@ -89,38 +91,40 @@ imgui.OnFrame(fn { return autoUpdate.windowState }, fn(self) {
             imgui.PopStyleColor()
 
             imgui.SetCursorPosY(imgui.GetWindowHeight() - 40 - windowPadding.y)
-            imgui.BeginChild("imgui.windows.AutoUpdate.actions", imgui.ImVec2(0, 0), true)
-                imgui.PushFont(bold10)
-                    if animations::button(autoUpdate.imgui.buttons.first, imgui.ImVec2(imgui.GetWindowWidth() / 3 - 1, 40), 15) {
-                        autoUpdate.response     = AUTOUPDATE_RESPONSE_OK
-                        autoUpdate.windowState  = false
+            imgui.PushStyleColor(imgui.Col.ChildBg, imgui.GetStyle().Colors[imgui.Col.Button])
+                imgui.BeginChild("imgui.windows.AutoUpdate.actions", imgui.ImVec2(0, 0), true)
+                    imgui.PushFont(bold10)
+                        if animations::button(autoUpdate.imgui.buttons.first, imgui.ImVec2(imgui.GetWindowWidth() / 3 - 1, 40), 15) {
+                            autoUpdate.response     = AUTOUPDATE_RESPONSE_OK
+                            autoUpdate.windowState  = false
 
-                        autoUpdate::update()
-                    }
+                            autoUpdate::update()
+                        }
 
-                    animations::hint("Эта версия установится.")
+                        animations::hint("Эта версия установится.")
                     
-                    imgui.SameLine()
+                        imgui.SameLine()
                     
-                    if animations::button(autoUpdate.imgui.buttons.second, imgui.ImVec2(imgui.GetWindowWidth() / 3, 40)) {
-                        config.root.autoUpdate.skipVersionUpdate = autoUpdate.imgui.version
+                        if animations::button(autoUpdate.imgui.buttons.second, imgui.ImVec2(imgui.GetWindowWidth() / 3, 40)) {
+                            config.root.autoUpdate.skipVersionUpdate = autoUpdate.imgui.version
 
-                        autoUpdate.response     = AUTOUPDATE_RESPONSE_BAD
-                        autoUpdate.windowState  = false
-                    }
+                            autoUpdate.response     = AUTOUPDATE_RESPONSE_BAD
+                            autoUpdate.windowState  = false
+                        }
 
-                    animations::hint("Эта версия пропустится, окно не будет появляться до следующего обновления.")
+                        animations::hint("Эта версия пропустится, окно не будет появляться до следующего обновления.")
 
-                    imgui.SameLine()
+                        imgui.SameLine()
     
-                    if animations::button(autoUpdate.imgui.buttons.third, imgui.ImVec2(imgui.GetWindowWidth() / 3, 40)) {
-                        autoUpdate.response     = AUTOUPDATE_RESPONSE_BAD
-                        autoUpdate.windowState  = false
-                    }
+                        if animations::button(autoUpdate.imgui.buttons.third, imgui.ImVec2(imgui.GetWindowWidth() / 3, 40)) {
+                            autoUpdate.response     = AUTOUPDATE_RESPONSE_BAD
+                            autoUpdate.windowState  = false
+                        }
 
-                    animations::hint("Это окно не будет появляться до следующего запуска скрипта.")
-                imgui.PopFont()
-            imgui.EndChild()
+                        animations::hint("Это окно не будет появляться до следующего запуска скрипта.")
+                    imgui.PopFont()
+                imgui.EndChild()
+            imgui.PopStyleColor()
         imgui.End()
     self.style::reset()
 })

@@ -156,7 +156,7 @@ method assets::downloadFileList(files, afterDownloadCallback) {
 method assets::mergeTables(first, second) {
     for key, value of second {
         if type(value) == "table" && type(first[key] || false) == "table" {
-            self::mergeTables(first[key], second[key])
+            mergeTables(first[key], second[key])
         } else {
             first[key] = value
         }
@@ -190,6 +190,32 @@ method assets::explodeDate(timestamp) {
         month   = months,
         year    = years
     } 
+}
+
+/**
+ * Convert week table-representation to string.
+ * @param week table
+ * @return string
+ */
+method assets::weekToString(week) {
+    local result, days = "", {
+        "Понедельник",
+        "Вторник",
+        "Среда",
+        "Четверг",
+        "Пятница",
+        "Суббота"
+    }
+
+    for day = 2, #week {
+        local time = self::explodeDate(week[day] || 0)
+        result ..= string.format("%s: %02d:%02d:%02d\n", days[day - 1], time.hour, time.min, time.sec)
+    }
+
+    local time = self::explodeDate(week[1] || 0)
+    result ..= string.format("Воскресенье: %02d:%02d:%02d", time.hour, time.min, time.sec)
+
+    return result
 }
 
 /**
@@ -231,6 +257,56 @@ method assets::explodeARGB(argb) {
     local g = (argb >> 8) & 255
     local b = argb & 255
     return a, r, g, b
+}
+
+/**
+ * Convert U32 to ARGB.
+ * @param u32 number
+ * @return number
+ */
+method assets::convertU32ToARGB(abgr) {
+    local r     = abgr & 255
+    local g     = (abgr >> 8) & 255
+    local b     = (abgr >> 16) & 255
+    local a     = (abgr >> 24) & 255
+    return b | (g << 8) | (r << 16) | (a << 24)
+}
+
+/**
+ * Convert ARGB to U32.
+ * @param argb number
+ * @return number
+ */
+method assets::convertARGBToU32(argb) {
+    local a = (argb >> 24) & 255
+    local r = (argb >> 16) & 255
+    local g = (argb >> 8) & 255
+    local b = argb & 255
+    return r | (g << 8) | (b << 16) | (a << 24)
+}
+
+/**
+ * Copy table with handling next cases:
+ *  tables as keys,
+ *  preserving metatables, and
+ *  recursive tables.
+ * @author https://stackoverflow.com/a/26367080
+ *
+ * @param object table
+ * @param seen table|nil
+ * @return table
+ */
+method assets::copyTable(object, seen) {
+    if type(object) != "table" { return object }
+    if seen?[object] { return seen[object] }
+
+    local s         = seen || {}
+    local result    = setmetatable({}, getmetatable(object))
+    s[object]       = result
+
+    for key, value of object { result[self::copyTable(key, value)] = self::copyTable(value, s) }
+
+    return result
 }
 
 return assets

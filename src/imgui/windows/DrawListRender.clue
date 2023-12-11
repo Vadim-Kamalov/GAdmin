@@ -20,6 +20,7 @@
 
 @import "imgui.Assets"          => imguiAssets
 @import "imgui.drawList.Text"   => imguiText
+@import "imgui.HotKey"          => HotKey
 
 @import "game.sa.Vehicle"   => vehicle
 @import "game.sa.Ped"       => ped
@@ -27,6 +28,11 @@
 
 @import "Common" => common
 @import "Config" => config
+
+local useWallhack = true
+
+HotKey::new("imgui.windows.DrawListRender->wallhack", { VK_CONTROL, VK_Z }, "Wallhack")
+      ::registerCallback(fn { useWallhack = !$ })
 
 imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
     self.HideCursor = imguiAssets::getCursorStatus()
@@ -94,7 +100,7 @@ imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
                     }
                 }
 
-                if config.root.cheats.wallhack.use {
+                if config.root.cheats.wallhack.use && useWallhack {
                     imguiText::addColored(
                         self.DL,
                         string.format("{%s}{%s[%s] [X: %1.f]}", clistColorHex, sampGetPlayerNickname(id), id, distance),

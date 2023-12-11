@@ -23,7 +23,7 @@ local player = {}
 method player::getIdByNickname(nickname) {
     local _, myid = sampGetPlayerIdByCharHandle(PLAYER_PED)
     if nickname == sampGetPlayerNickname(myid) { return myid }
-    for i = 0, 1003 {
+    for i = 0, $SERVER_MAX_PLAYERS {
         if sampIsPlayerConnected(i) && sampGetPlayerNickname(i) == nickname {
             return i
         }

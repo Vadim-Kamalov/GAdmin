@@ -67,6 +67,19 @@ static __commandRequester__ = {
 }
 
 /**
+ * Callback for `HotKey` class. Approves last command request, if present.
+ * @see HotKey
+ * @return void
+ */
+__commandRequester__.hotKeyCallback = fn {
+    if local self = __commandRequester__ {
+        if self.states.frame {
+            self::approve()
+        }
+    }
+}
+
+/**
  * Setup time watcher, to remove request after `$COMMAND_REQUEST_SECONDS_DURATION` seconds passed.
  * Only for use in while-true loop!
  *
@@ -119,7 +132,9 @@ method __commandRequester__::setupChatWatcher(text, color) {
                     self::remove()
                 }
             }
-        } elseif type == COMMAND_REQUEST_TYPE_COMMENTARY {
+        }
+
+        if type == COMMAND_REQUEST_TYPE_COMMENTARY {
             if local from = string.match(text, "^Администратор .+%. Причина:.*// (.+)$") {
                 if local admin = admins::getAdminById(self.current.id.from) {
                     if from == admin.nickname.ooc {
@@ -127,9 +142,11 @@ method __commandRequester__::setupChatWatcher(text, color) {
                     }
                 }
             }
-        } elseif type == COMMAND_REQUEST_TYPE_ANSWER {
+        } 
+
+        if type == COMMAND_REQUEST_TYPE_ANSWER {
             if local to, name = string.match(text, "^%[A%] .+%[%d+%] ответил .+%[(%d+)%]: (%w+) by .+") {
-                if to == self.current.id.to && string.lower(name) == string.lower(self.current.command.splitted.name) {
+                if tonumber(to) == tonumber(self.current.id.to) && string.lower(name) == string.lower(self.current.command.splitted.name) {
                     self::remove()
                 }
             }
@@ -211,6 +228,8 @@ method __commandRequester__::remove() {
  * @return void
  */
 method __commandRequester__::new(from, command) {
+    if isGamePaused() || !config.root.additions.commandRequester.use { return }
+
     local commandType = COMMAND_REQUEST_TYPE_NONE
 
     if local this = config.root.additions.commandRequester {

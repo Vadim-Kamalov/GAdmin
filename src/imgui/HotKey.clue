@@ -26,8 +26,11 @@ static hotKeysCallbacks = {}
 static changingHotKey   = false
 static keysStatus       = {}
 static wasDownKeys      = {}
+static allHotKeys       = {}
 
-local HotKey = {}; HotKey.__index = HotKey //! @class HotKey
+local HotKey = {
+    _hasAppended = false
+}; HotKey.__index = HotKey //! @class HotKey
 
 /**
  * Convert list of `keys` to their names as string using `require("vkeys").id_to_name` function.
@@ -56,9 +59,25 @@ method HotKey::keysToString(keys, separator = " + ") {
 method HotKey::getDownKeys(limit = 4) {
     local keys = {}
     
-    for key, keyInformation of keysStatus {
-        if keyInformation.down && #keys != limit {
-            table.insert(keys, key)
+    for _, key of vkeys {
+        if #keys != limit {
+            if isKeyDown(key) && (
+                key == VK_MENU || key == VK_CONTROL || key == VK_SHIFT || key == VK_LMENU ||
+                key == VK_RMENU || key == VK_RCONTROL || key == VK_LCONTROL || key == VK_LSHIFT ||
+                key == VK_RSHIFT 
+            ) {
+                if key != VK_MENU && key != VK_CONTROL && key != VK_SHIFT {
+                    table.insert(keys, key)
+                }
+            }
+
+            if isKeyDown(key) && (
+                key != VK_MENU && key != VK_CONTROL && key != VK_SHIFT && key != VK_LMENU &&
+                key != VK_RMENU && key != VK_RCONTROL && key != VK_LCONTROL && key != VK_LSHIFT &&
+                key != VK_RSHIFT
+            ) {
+                table.insert(keys, key)
+            }
         }
     }
 
@@ -67,45 +86,18 @@ method HotKey::getDownKeys(limit = 4) {
     return keys
 }
 
-/**
- * @return boolean Wheather is key released.
- */
-method HotKey::isKeyReleased(key) {
-    return keysStatus[key].wasReleased
-}
 
 /**
- * Setup HotKey watcher. Only for use in while-true loop, with no delay!
+ * Setup HotKey watcher. Only for use in onWindowMessage event!
  * @return void
  */
-method HotKey::setupWatcher() {
-    for i = 1, 512 {
-        if !keysStatus[i] { keysStatus[i] = {} }
-        if local key = keysStatus {
-            key[i].down = imgui.GetIO().KeysDown[i]
-            
-            if !wasDownKeys[i] && key[i].down {
-                table.insert(wasDownKeys, i, i)
-            }
-
-            if key[i].down && key[i].wasReleased {
-                key[i].wasReleased = false
-            }
-        }
-    }
-
-    for pos, key of wasDownKeys {
-        if imgui.GetIO().KeysDownDuration[key] == -1 && !imgui.GetIO().KeysDown[key] {
-            keysStatus[key].wasReleased = true
-            wasDownKeys[pos] = nil
-        }
-    }
-
+method HotKey::setupWatcher(wparam) {
     if local keys = self::getDownKeys() {
         if #keys > 0 && !changingHotKey {
             local isDefined, hotKeyId = self::isKeysDefined(keys)
-            if isDefined && (!self.cursor || !common::isCursorActive()) && isKeyJustPressed(keys[#keys]) {
+            if isDefined && (!self.cursor || !common::isCursorActive()) && isKeyJustPressed(keys[#keys]) && !common::isInputsActive() {
                 hotKeysCallbacks[hotKeyId].callback()
+                consumeWindowMessage(true, true)
             }
         }
     }
@@ -132,10 +124,11 @@ method HotKey::isKeysDefined(sourceKeys, exceptId) {
  * 
  * @param id string                     HotKey-ID, need for saving and reading keys from/in configuration file.
  * @param keys table                    Default keys. Can changed with `HotKey::changeKeysTo(keys)`.
- * @param ignoreActiveCursor boolean    If true, key bind won't call hot key callback if `!commom::isCursorActive()` (default = false).
+ * @param ignoreActiveCursor boolean    If true, key bind won't call hot key callback if `!commom::isCursorActive()` (default = true).
+ * @param description string|nil        Optional description for main window.
  * @return HotKey
  */
-method HotKey::new(id, keys, ignoreActiveCursor = false) {
+method HotKey::new(id, keys, description, ignoreActiveCursor = true) {
     table.sort(keys)
     
     if config.root.hotKeys[id] {
@@ -144,7 +137,12 @@ method HotKey::new(id, keys, ignoreActiveCursor = false) {
         config.root.hotKeys[id] = keys
     }
 
-    return setmetatable({ keys = keys, id = id, cursor = ignoreActiveCursor }, self)
+    return setmetatable({
+        keys        = keys,
+        id          = id,
+        cursor      = ignoreActiveCursor,
+        description = description
+    }, self)
 }
 
 /**
@@ -191,6 +189,8 @@ method HotKey::registerCallback(callback) {
             keys        = self.keys,
             callback    = callback
         }
+
+        table.insert(allHotKeys, self)
     }
     return self
 }
@@ -236,7 +236,7 @@ method HotKey::render(defaultSize = imgui.ImVec2(80, 25)) {
         if this.active {
             if #this.keys > 0 {
                 for _, key in this.keys {
-                    if self::isKeyReleased(key) {
+                    if wasKeyReleased(key) {
                         self::changeKeysTo(this.keys)
                         
                         this.active                     = false
@@ -247,6 +247,10 @@ method HotKey::render(defaultSize = imgui.ImVec2(80, 25)) {
             }
     
             if local keys = self::getDownKeys() {
+                animations::hint("Эти клавиши уже зарегистрированы!", fn {
+                    return #keys > 0 && self::isKeysDefined(keys, self.id)
+                }, nil, common::convertHex2ImVec4("E46876"))
+
                 if #keys == 0 || (#keys > 0 && self::isKeysDefined(keys, self.id)) {
                     if os.clock() - this.tick.clock >= 0.5 {
                         this.tick.status    = !$
@@ -254,10 +258,6 @@ method HotKey::render(defaultSize = imgui.ImVec2(80, 25)) {
                     }
 
                     this.label = (#keys > 0) ? self::keysToString(self::getDownKeys()) : ((this.tick.status) ? "" : "Ожидание")
-                    
-                    animations::hint("Эти клавиши уже зарегистрированы!", fn {
-                        return #keys > 0 && self::isKeysDefined(keys, self.id)
-                    }, nil, common::convertHex2ImVec4("E46876"))
                 } else {
                     this.label = self::keysToString(this.keys)
                     if #this.keys < #keys {

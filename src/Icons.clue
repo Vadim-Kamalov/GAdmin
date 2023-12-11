@@ -227,7 +227,6 @@ local icons = {
     ["ICON_PLUS_CIRCLE"] = "\u{F199}"
 }
 
-
 /**
  * @todo docs for this
  */

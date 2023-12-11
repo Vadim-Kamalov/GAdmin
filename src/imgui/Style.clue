@@ -33,6 +33,21 @@ local enum /* STYLE_TYPE */ {
 }
 
 /**
+ * Register window and insert it in `registeredWindows` array. We need this method when
+ * we need to create new style changeable window without creating `ImguiWindow` class.
+ *
+ * @see ImguiWindow
+ *
+ * @param id string             Window identifier that will used in config.
+ * @param description string    Window description.
+ * @return void
+ */
+method __style__::registerWindow(id, description) {
+    table.insert(registeredWindows, { id = id, description = description })
+    config.root.styleChangeableWindows[id] ??= {}
+}
+
+/**
  * Allow next window be style changeable. Must called before using `imgui.Begin(...)` function.
  * After `imgui.End()` must called `style::endWindowStyleChangeable(id)` function.
  *
@@ -41,28 +56,33 @@ local enum /* STYLE_TYPE */ {
  */
 method __style__::beginWindowStyleChangeable(id) {
     if local this = config.root.styleChangeableWindows[id] {
-        // Expecting that all vectors of `this` are packed tables with `StyleChanger::getConfigSafeTable()`.
         local style = (fn {
             local result = {}
-            for property, value of this {
-                if type(value) == "table" {
-                    result[property] = imgui[(#value == 2) ? "ImVec2" : "ImVec4"](table.unpack(value))
+            for _, data in this {
+                //! data[1]: string         - Property name
+                //! data[2]: table|number   - Value
+                if type(data[2]) == "table" {
+                    result[data[1]] = imgui[(#data[2] == 2) ? "ImVec2" : "ImVec4"](table.unpack(data[2]))
                 } else {
-                    result[property] = value
+                    result[data[1]] = data[2]
                 }
             }
             return result
         })()
 
-        // Why not just `@import "imgui.StyleChanger"`?
-        // Reason is simple: this will cause table overflow, and later - stack overflow.
-        // Why this will cause overflow? I don't know and not want to know.
-        //
-        // This check is need to prevent import spam.
-        if !self.windows[id] {
-            self.windows[id] = import("imgui.StyleChanger")::new(style)
+        //! Why not just `@import "imgui.StyleChanger"`?
+        //! Reason is simple: this will cause table overflow, and later - stack overflow.
+        //! Why this will cause overflow? I don't know.
+        //!
+        //! This check (`??=`) is needed to prevent import spam.
+        self.windows[id] ??= import("imgui.StyleChanger")::new(style)
+
+        if id == "imgui.window.Main" {
+            print(id)
+            print(self.windows[id])
         }
 
+        self.windows[id]::update(style)
         self.windows[id]::apply()
     }
 }
@@ -110,7 +130,7 @@ method __style__::apply() {
     self::setDefaultValue(STYLE_TYPE_NUMBER, "FrameBorderSize", 1)
     self::setDefaultValue(STYLE_TYPE_NUMBER, "TabBorderSize", 1)
     self::setDefaultValue(STYLE_TYPE_NUMBER, "WindowRounding", 8)
-    self::setDefaultValue(STYLE_TYPE_NUMBER, "ChildRounding", 5)
+    self::setDefaultValue(STYLE_TYPE_NUMBER, "ChildRounding", 8)
     self::setDefaultValue(STYLE_TYPE_NUMBER, "FrameRounding", 5)
     self::setDefaultValue(STYLE_TYPE_NUMBER, "PopupRounding", 5)
     self::setDefaultValue(STYLE_TYPE_NUMBER, "ScrollbarRounding", 5)
@@ -128,13 +148,13 @@ method __style__::apply() {
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "Text", imgui.ImVec4(1.00, 1.00, 1.00, 1.00))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "TextDisabled", imgui.ImVec4(0.50, 0.50, 0.50, 1.00))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "WindowBg", common::convertHex2ImVec4("222222"))
-    self::setDefaultValue(STYLE_TYPE_IMVEC4, "ChildBg", common::convertHex2ImVec4("424242"))
-    self::setDefaultValue(STYLE_TYPE_IMVEC4, "PopupBg", common::convertHex2ImVec4("424242"))
+    self::setDefaultValue(STYLE_TYPE_IMVEC4, "ChildBg", common::convertHex2ImVec4("2B2B2B"))
+    self::setDefaultValue(STYLE_TYPE_IMVEC4, "PopupBg", common::convertHex2ImVec4("222222"))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "Border", imgui.ImVec4(0.25, 0.25, 0.26, 0.54))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "BorderShadow", imgui.ImVec4(0.00, 0.00, 0.00, 0.00))
-    self::setDefaultValue(STYLE_TYPE_IMVEC4, "FrameBg", imgui.ImVec4(0.12, 0.12, 0.12, 1.00))
-    self::setDefaultValue(STYLE_TYPE_IMVEC4, "FrameBgHovered", imgui.ImVec4(0.25, 0.25, 0.26, 1.00))
-    self::setDefaultValue(STYLE_TYPE_IMVEC4, "FrameBgActive", imgui.ImVec4(0.25, 0.25, 0.26, 1.00))
+    self::setDefaultValue(STYLE_TYPE_IMVEC4, "FrameBg", common::convertHex2ImVec4("424242"))
+    self::setDefaultValue(STYLE_TYPE_IMVEC4, "FrameBgHovered", common::convertHex2ImVec4("2B2B2B"))
+    self::setDefaultValue(STYLE_TYPE_IMVEC4, "FrameBgActive", common::convertHex2ImVec4("555554"))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "TitleBg", imgui.ImVec4(0.12, 0.12, 0.12, 1.00))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "TitleBgActive", imgui.ImVec4(0.12, 0.12, 0.12, 1.00))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "TitleBgCollapsed", imgui.ImVec4(0.12, 0.12, 0.12, 1.00))
@@ -144,8 +164,8 @@ method __style__::apply() {
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "ScrollbarGrabHovered", common::convertHex2ImVec4("555554"))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "ScrollbarGrabActive", common::convertHex2ImVec4("333333"))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "CheckMark", imgui.ImVec4(1.00, 1.00, 1.00, 1.00))
-    self::setDefaultValue(STYLE_TYPE_IMVEC4, "SliderGrab", imgui.ImVec4(0.21, 0.20, 0.20, 1.00))
-    self::setDefaultValue(STYLE_TYPE_IMVEC4, "SliderGrabActive", imgui.ImVec4(0.21, 0.20, 0.20, 1.00))
+    self::setDefaultValue(STYLE_TYPE_IMVEC4, "SliderGrab", common::convertHex2ImVec4("222222"))
+    self::setDefaultValue(STYLE_TYPE_IMVEC4, "SliderGrabActive", common::convertHex2ImVec4("222222"))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "Button", common::convertHex2ImVec4("424242"))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "ButtonHovered", common::convertHex2ImVec4("555554"))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "ButtonActive", common::convertHex2ImVec4("333333"))
@@ -155,18 +175,11 @@ method __style__::apply() {
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "Separator", imgui.ImVec4(0.47, 0.47, 0.47, 1.00))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "SeparatorHovered", imgui.ImVec4(0.47, 0.47, 0.47, 1.00))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "SeparatorActive", imgui.ImVec4(0.47, 0.47, 0.47, 1.00))
-    self::setDefaultValue(STYLE_TYPE_IMVEC4, "ResizeGrip", imgui.ImVec4(1.00, 1.00, 1.00, 0.25))
-    self::setDefaultValue(STYLE_TYPE_IMVEC4, "ResizeGripHovered", imgui.ImVec4(1.00, 1.00, 1.00, 0.67))
-    self::setDefaultValue(STYLE_TYPE_IMVEC4, "ResizeGripActive", imgui.ImVec4(1.00, 1.00, 1.00, 0.95))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "Tab", imgui.ImVec4(0.12, 0.12, 0.12, 1.00))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "TabHovered", imgui.ImVec4(0.28, 0.28, 0.28, 1.00))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "TabActive", imgui.ImVec4(0.30, 0.30, 0.30, 1.00))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "TabUnfocused", imgui.ImVec4(0.07, 0.10, 0.15, 0.97))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "TabUnfocusedActive", imgui.ImVec4(0.14, 0.26, 0.42, 1.00))
-    self::setDefaultValue(STYLE_TYPE_IMVEC4, "PlotLines", imgui.ImVec4(0.61, 0.61, 0.61, 1.00))
-    self::setDefaultValue(STYLE_TYPE_IMVEC4, "PlotLinesHovered", imgui.ImVec4(1.00, 0.43, 0.35, 1.00))
-    self::setDefaultValue(STYLE_TYPE_IMVEC4, "PlotHistogram", imgui.ImVec4(0.90, 0.70, 0.00, 1.00))
-    self::setDefaultValue(STYLE_TYPE_IMVEC4, "PlotHistogramHovered", imgui.ImVec4(1.00, 0.60, 0.00, 1.00))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "TextSelectedBg", imgui.ImVec4(1.00, 0.00, 0.00, 0.35))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "DragDropTarget", imgui.ImVec4(1.00, 1.00, 0.00, 0.90))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "NavHighlight", imgui.ImVec4(0.26, 0.59, 0.98, 1.00))

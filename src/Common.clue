@@ -62,8 +62,18 @@ method common::makeDirectoryTree(tree) {
     }
 }
 
+/**
+ * @return boolean Wheather cursor active or not.
+ */
 method common::isCursorActive() {
     return isCursorActive() || sampIsChatInputActive() || isSampfuncsConsoleActive() || sampIsDialogActive()
+}
+
+/**
+ * @return boolean Wheather any input is active (including imgui InputText).
+ */
+method common::isInputsActive() {
+    return sampIsChatInputActive() || isSampfuncsConsoleActive() || sampIsDialogActive() || imgui.GetIO().WantTextInput
 }
 
 /**
