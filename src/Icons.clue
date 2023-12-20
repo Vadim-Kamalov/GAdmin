@@ -22,7 +22,7 @@
 @import "Assets"            => assets
 
 @define MIN_ICON 0xF000
-@define MAX_ICON 0XFFFF
+@define MAX_ICON 0xFFFF
 
 local icons = {
     ["ICON_XLS_DOCUMENT"] = "\u{F000}",

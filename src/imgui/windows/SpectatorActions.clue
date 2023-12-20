@@ -129,8 +129,8 @@ windows::new("imgui.windows.SpectatorActions", {
 
     self::begin(self.id, fn {
         imgui.PushStyleVarVec2(imgui.StyleVar.ItemSpacing, imgui.ImVec2(0, 0))
-            imguiAssets::textWithFont(string.gsub(spectator.nickname, "_", " "), bold10)
-            imguiAssets::setPreviousItemAbleToCopy(spectator.nickname, "Никнейм скопирован.", string.format("Успешно скопирован никнейм: %s", spectator.nickname))
+            imguiAssets::textWithFont(string.gsub(spectator.nickname || "", "_", " "), bold10)
+            imguiAssets::setPreviousItemAbleToCopy(spectator.nickname || "", "Никнейм скопирован.", string.format("Успешно скопирован никнейм: %s", spectator.nickname))
 
             imgui.SameLine()
 

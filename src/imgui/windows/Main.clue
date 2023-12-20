@@ -140,7 +140,7 @@ local window        = {
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
 
             { "autoCompletion", "Авто-заполнение", {
-                { "use", "Работает только в режиме ", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.autoCompletion.use) },
+                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.autoCompletion.use) },
                 { "strokeSize", "Размер обводки", WINDOW_WIDGET_SLIDER, 1, 5, imgui.new.int(config.root.windows.autoCompletion.strokeSize) },
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
 
@@ -151,12 +151,18 @@ local window        = {
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
 
             { "spectatorKeys", "Клавиши игрока в /sp", {
-                { "use", "", WINDOW_WIDGET_TYPE_SWITCH, imgui.new.bool(config.root.windows.spectatorKeys.use) }
+                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.spectatorKeys.use) }
             }},
 
             { "spectatorActions", "Действия в /sp", {
-                { "use", "", WINDOW_WIDGET_TYPE_SWITCH, imgui.new.bool(config.root.windows.spectatorActions.use) }
+                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.spectatorActions.use) }
             }},
+
+            { "greport", "Улучшенный /greport", {
+                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.greport.use) },
+                { "preferNotifications", "Использовать оповещения GAdmin", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.greport.preferNotifications) },
+                { "inputCopyButtons", "Кнопки вставляющие текст в поле ввода", WINDOW_WIDGET_CUSTOM, $GREPORT_MAKE_CUSTOM_ELEMENT!() }
+            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP }
         }},
 
         { "cheats", "Читы", {
@@ -473,7 +479,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                 imguiAssets::textWithFont(thisScript().authors[1], regular9)
                                 imguiAssets::setPreviousItemAbleToCopy(thisScript().authors[1])
                             imgui.EndGroup()
-                            imguiAssets::textWithFont("Copyright (C) 2023 The Contributors. Licensed under the GNU General Public License v3 (GPLv3).", regular9)
+                            imguiAssets::textWithFont("Copyright (C) " .. $COPYRIGHT_YEARS .. " The Contributors. Licensed under the GNU General Public License v3 (GPLv3).", regular9)
                             imgui.PopTextWrapPos()
 
                             imgui.PushStyleVarVec2(imgui.StyleVar.ItemSpacing, imgui.ImVec2(2, 5))
@@ -529,8 +535,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                     imgui.EndGroup()
                 } elseif window.menu.selectedFrame == WINDOW_SELECTED_FRAME_SETTINGS {
                     for sectionIndex, section in window.configuration {
-                        if sectionIndex != 1 && sectionIndex != 2 { imgui.NewLine() } // too bad
-                        
+                        if sectionIndex != 1 { imgui.NewLine() }
                         imguiAssets::textWithFont(section[2], bold14)
 
                         for index, setting in section[3] {
@@ -612,9 +617,9 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                                                     imgui.GetItemRectMin() + imgui.ImVec2(4, 25),
                                                                     imgui.ColorConvertFloat4ToU32(vector)
                                                                 )
-                                                            } elseif item[4] == WINDOW_WIDGET_CUSTOM {
+                                                            } elseif item[3] == WINDOW_WIDGET_CUSTOM {
                                                                 imguiAssets::textWithFont(item[2], bold12)
-                                                                item[5](item)
+                                                                item[4](item)
                                                             }
                                                         }
                                                     }
@@ -993,7 +998,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
 
                                 if animations::button("Сбросить тему", imgui.ImVec2(widthAuto, 30)) {
                                     local baseStyle = getBaseStyle()
-                                    config.root.styleChangeableWindows[getSelectedId()] = nil
+                                    config.root.styleChangeableWindows[getSelectedId()] = nil 
                                     
                                     for index, style in window.customization.colorEditors[window.customization.combo.buffer[0] + 1] {
                                         style[2] = baseStyle[index][2]
@@ -1114,6 +1119,8 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                                 local colors        = moonMonet.buildColors(assets::convertU32ToARGB(colorU32), 1.0, true)
                                                 local colorArray    = getColorArray()
                                                 local colorConfig   = {}
+
+                                                config.root.styleChangeableWindows[getSelectedId()] ??= {}
 
                                                 for _, item in colorArray {
                                                     item[2] = (fn {

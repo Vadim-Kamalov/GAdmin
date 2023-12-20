@@ -27,3 +27,8 @@ global _sampSendChat = sampSendChat
 global fn sampSendChat(message) {
     _sampSendChat(u8::decode(message))
 }
+
+global _sampSendDialogResponse = sampSendDialogResponse
+global fn sampSendDialogResponse(id, button, listItem, input) {
+    _sampSendDialogResponse(id, button, listItem, (input) ? u8::decode(input) : "")
+}

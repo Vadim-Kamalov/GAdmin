@@ -158,6 +158,11 @@ method animations::button(
     local label     = string.gsub(label, "##.*$", "")
     local textSize  = imgui.CalcTextSize(label)
     local p         = imgui.GetCursorScreenPos()
+
+    colors.def      = imgui.ImVec4($.x, $.y, $.z, imgui.GetStyle().Alpha)
+    colors.hovered  = imgui.ImVec4($.x, $.y, $.z, imgui.GetStyle().Alpha)
+    colors.active   = imgui.ImVec4($.x, $.y, $.z, imgui.GetStyle().Alpha)
+    colors.def      = imgui.ImVec4($.x, $.y, $.z, imgui.GetStyle().Alpha)
  
     if !size {
         local padding = imgui.GetStyle().FramePadding

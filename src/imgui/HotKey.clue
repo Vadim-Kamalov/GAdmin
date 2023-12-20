@@ -58,7 +58,7 @@ method HotKey::keysToString(keys, separator = " + ") {
  */
 method HotKey::getDownKeys(limit = 4) {
     local keys = {}
-    
+   
     for _, key of vkeys {
         if #keys != limit {
             if isKeyDown(key) && (
@@ -86,7 +86,6 @@ method HotKey::getDownKeys(limit = 4) {
     return keys
 }
 
-
 /**
  * Setup HotKey watcher. Only for use in onWindowMessage event!
  * @return void
@@ -111,8 +110,11 @@ method HotKey::setupWatcher(wparam) {
  * @return boolean
  */
 method HotKey::isKeysDefined(sourceKeys, exceptId) {
+    table.sort(sourceKeys)
+
     for id, targetKeys of hotKeysCallbacks {
-        if id != exceptId && table.concat(targetKeys.keys, " ") == table.concat(sourceKeys, " ") {
+        table.sort(targetKeys)
+        if id != exceptId && string.find(table.concat(sourceKeys, " "), table.concat(targetKeys.keys, " ")) {
             return true, id
         }
     }

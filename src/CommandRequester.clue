@@ -38,7 +38,6 @@ static enum /* COMMAND_REQUEST_DISPLAY */ {
     COMMAND_REQUEST_DISPLAY_BOTTOM_BAR
 }
 
-//! TODO: @HotKey
 static __commandRequester__ = {
     lastUserCommand = "",
 
@@ -80,12 +79,12 @@ __commandRequester__.hotKeyCallback = fn {
 }
 
 /**
- * Setup time watcher, to remove request after `$COMMAND_REQUEST_SECONDS_DURATION` seconds passed.
+ * Main loop that handles removing request after `$COMMAND_REQUEST_SECONDS_DURATION` seconds passed.
  * Only for use in while-true loop!
  *
  * @return void
  */
-method __commandRequester__::setupTimeWatcher() {
+method __commandRequester__::loop() {
     if self.states.requester && os.clock() - self.current.clock >= $COMMAND_REQUEST_SECONDS_DURATION {
         self::remove()
     }

@@ -50,6 +50,8 @@
 @define SERVER_ADDRESS      "46.174.48.194"
 @define SERVER_MAX_PLAYERS  600
 
+@define COPYRIGHT_YEARS "2023"
+
 @macro IMVEC4_TO_RGB(vector) { string.format("%02X%02X%02X", $vector.x * 255, $vector.y * 255, $vector.z * 255) }
 
 @macro debugSuccessful(entryPoint, message) {
@@ -105,6 +107,15 @@ static sampev       = require("samp.events")
 static vkeys        = require("vkeys")
 static moonMonet    = require("MoonMonet")
 
+static enum /* DIALOG_STYLE */ {
+    DIALOG_STYLE_MSGBOX = 0,
+    DIALOG_STYLE_INPUT,
+    DIALOG_STYLE_LIST,
+    DIALOG_STYLE_PASSWORD,
+    DIALOG_STYLE_TABLIST,
+    DIALOG_STYLE_TABLIST_HEADERS
+}
+
 require("moonloader")
 math.randomseed(os.time())
 
@@ -121,9 +132,7 @@ local hotKeyCallbacks = {}
 
 hotKeyCallbacks.airbreak = fn {
     if config.root.cheats.airbreak.use && user::getAloginStatus() && !common::isCursorActive() {
-        print("before", airbreak.status)
         airbreak.status = !$
-        print("after", airbreak.status)
 
         if airbreak.status {
             airbreak.coords = { getCharCoordinates(PLAYER_PED) }
@@ -144,7 +153,7 @@ hotKeyCallbacks.airbreak = fn {
     }
 }
 
-HotKey::new("main->airbreak", { VK_RSHIFT }, "Аирбрейк")
+HotKey::new("main->airbreak", { VK_OEM_6 }, "Аирбрейк")
       ::registerCallback(hotKeyCallbacks.airbreak)
 
 static enum /* ALIGN_TYPE */ {
@@ -228,7 +237,7 @@ global fn main() {
     while true {
         wait(0)
 
-        commandRequester::setupTimeWatcher()
+        commandRequester::loop()
         user::updateTime()
 
         if spectator.status {
@@ -346,12 +355,16 @@ $JMP_HOOK /** void(__thiscall*)(void*) */ onRecallDownHook(...) {
     sampfuncsRegisterConsoleCommand("debug.enableWindow", fn(window) {
         config.root.windows[window].use = true
     })
+    
+    sampfuncsRegisterConsoleCommand("debug.abort", fn {
+        someUndefinedFunctionToCrashScript()
+    })
 
     sampfuncsRegisterConsoleCommand("debug.setAlignMode", fn(mode) {
         config.root.windows.adminList.textAlignMode = tonumber(mode)
     })
 
-    sampfuncsRegisterConsoleCommand("debug.addNotification", fn(title) {
+    sampfuncsRegisterConsoleCommand("debug.addNotification", fn {
         notify::send({
             buttons = {
                 first = {

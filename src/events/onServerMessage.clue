@@ -22,14 +22,16 @@
 @import "game.User"         => user
 @import "game.Spectator"    => spectator
 @import "game.samp.Player"  => player
+@import "game.GReport"      => greport
 
-@import "CommandRequester" => commandRequester
-@import "Config" => config
+@import "CommandRequester"  => commandRequester
+@import "Config"            => config
 
 sampev.onServerMessage = fn(color, text) {
     local text = u8($)
 
     commandRequester::setupChatWatcher(text, color)
+    greport::setupChatWatcher(text)
 
     local fn compare(pattern, clr) {
         return (pattern && color) ? string.find(text, pattern) && color == clr :

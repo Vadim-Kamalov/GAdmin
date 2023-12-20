@@ -47,6 +47,8 @@
             if imgui.Button("Execute changing windows positions") {
                 self.executeChangingWindowsPositions()
             }
+
+            animations::button("no click animation", nil, nil, { 0, 0, 0.4 })
         })
     })
 }
