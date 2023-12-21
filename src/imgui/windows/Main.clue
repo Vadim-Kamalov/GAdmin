@@ -757,7 +757,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                         imgui.PopStyleVar()
                         
                         if animations::button("Удалить", imgui.ImVec2(widthAuto / 2 - 5, 30)) && window.checker.selectedPlayer != -1 {
-                            config.root.windows.playerChecker.players[window.checker.selectedPlayer] = nil
+                            table.remove(config.root.windows.playerChecker.players, window.checker.selectedPlayer)
                         }
                     imgui.EndGroup()
                 } elseif window.menu.selectedFrame == WINDOW_SELECTED_FRAME_CUSTOMIZATION {
