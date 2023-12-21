@@ -31,7 +31,7 @@
 
 local useWallhack = true
 
-HotKey::new("imgui.windows.DrawListRender->wallhack", { VK_CONTROL, VK_Z }, "Wallhack")
+HotKey::new("imgui.windows.DrawListRender->wallhack", { VK_LCONTROL, VK_Z }, "Wallhack")
       ::registerCallback(fn { useWallhack = !$ })
 
 imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {

@@ -18,6 +18,8 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
+@define MAPVK_VSC_TO_VK_EX 3
+
 ffi.cdef("
     typedef unsigned short WORD;
     typedef struct {
@@ -30,6 +32,15 @@ ffi.cdef("
         WORD wSecond;
         WORD wMilliseconds;
     } SYSTEMTIME, *PSYSTEMTIME;
+
+    typedef void            *PVOID;
+    typedef PVOID           HANDLE;
+    typedef HANDLE          HKL;
+    typedef unsigned long   DWORD;
+    typedef unsigned int    UINT;
+
+    HKL GetKeyboardLayout(DWORD idThread);
+    UINT MapVirtualKeyExA(UINT uCode, UINT uMapType, HKL dwhkl);
 
     void GetLocalTime(PSYSTEMTIME lpSystemTime);
 ")
@@ -144,6 +155,18 @@ method assets::downloadFileList(files, afterDownloadCallback) {
             })
         })   
     }
+}
+
+/**
+ * Convert map scan code to virtual key.
+ * 
+ * @param scanCode number
+ * @return number
+ */
+method assets::mapScanCodeToVKey(scanCode) {
+    local layout    = ffi.C.GetKeyboardLayout(0)
+    local vkey      = ffi.C.MapVirtualKeyExA(scanCode, $MAPVK_VSC_TO_VK_EX, layout)
+    return vkey
 }
 
 /**

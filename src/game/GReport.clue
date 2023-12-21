@@ -81,6 +81,7 @@ static __greport__ = {
     }
 
     player = {
+        receivedAt  = nil,
         time        = nil,
         active      = false,
         nickname    = "",
@@ -89,9 +90,12 @@ static __greport__ = {
     }
 }
 
-local hotKey = HotKey::new("imgui.window.GReport", { VK_CONTROL, VK_B }, "Открыть /greport")::registerCallback(fn {
-    if __greport__.player.active {
-        __greport__.window::open()
+local hotKey = HotKey::new("imgui.window.GReport", { VK_LCONTROL, VK_C }, "Открыть/закрыть /greport")::registerCallback(fn {
+    if local this = __greport__ {
+        print(this.player.receivedAt && os.clock() - this.player.receivedAt, os.clock(), this.player.receivedAt, this.player.active, (this.player.receivedAt && (os.clock() - this.player.receivedAt <= 15)), this.player.active)
+        if this.player.active || (this.player.receivedAt && (os.clock() - this.player.receivedAt <= 15)) {
+            this.window::switch()
+        }
     }
 })
 
@@ -140,11 +144,11 @@ method __greport__.window::close(withDialog = true) {
  * Open or close window by `self.state` status.
  * @return void
  */
-method __greport__.window::switch() {
+method __greport__.window::switch(withDialog = true) {
     if self.state {
-        self::close()
+        self::close(withDialog)
     } else {
-        self::open()
+        self::open(withDialog)
     }
 }
 
@@ -306,6 +310,7 @@ method __greport__.player::moveReportToAdministration() {
  * @return void
  */
 method __greport__.player::reset() {
+    self.receivedAt = nil
     self.time       = nil
     self.active     = false
     self.nickname   = ""
@@ -326,6 +331,7 @@ method __greport__::setupChatWatcher(text) {
    
     if local nickname, id = string.match(text, "^%| На вас был назначен репорт от игрока (.+)%[(%d+)]%.") {
         self.player.nickname    = nickname
+        self.player.receivedAt  = os.clock() 
         self.player.id          = tonumber(id)
 
         if config.root.windows.greport.preferNotifications {
@@ -340,7 +346,7 @@ method __greport__::setupChatWatcher(text) {
     }
 
     if string.find(text, "^%| Обработка репорта завершена%. Игрок был отсоединён от сервера%.$") && self.player.active {
-        self.window::close(true)
+        self.window::close()
 
         if !self.window.state {
             self::reset()

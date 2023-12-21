@@ -30,13 +30,9 @@
 global fn onWindowMessage(msg, wparam, lparam) {
     $SETUP_EVENT_MV!(msg, wparam)
 
-    
-    if msg == wm.WM_CHAR || msg == wm.WM_KEYDOWN || msg == wm.WM_SYSKEYDOWN {
-        HotKey::setupWatcher(wparam)
-        if #HotKey::getDownKeys() > 0 && changingHotKey {
-            consumeWindowMessage(true, false)
-        } 
-    } elseif msg == wm.WM_MOUSEWHEEL {
+    HotKey::setupWatcher(msg, wparam, lparam)
+
+    if msg == wm.WM_MOUSEWHEEL {
         if spectator.status && config.root.additions.zoomSpectatorCamera.use {
             local step = config.root.additions.zoomSpectatorCamera.step
 

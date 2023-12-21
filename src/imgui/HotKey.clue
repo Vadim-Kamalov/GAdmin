@@ -19,18 +19,57 @@
  */
 
 @import "Config" => config
-@import "imgui.Animations" => animations
 @import "Common" => common
+@import "Assets" => assets
+
+@import "imgui.Animations" => animations
 
 static hotKeysCallbacks = {}
 static changingHotKey   = false
-static keysStatus       = {}
-static wasDownKeys      = {}
 static allHotKeys       = {}
 
-local HotKey = {
-    _hasAppended = false
-}; HotKey.__index = HotKey //! @class HotKey
+local HotKey = {}; HotKey.__index = HotKey //! @class HotKey
+
+/**
+ * Check that `key` is large. Large key is some of them:
+ *  VK_SHIFT, VK_SPACE, VK_CONTROL, VK_LMENU, VK_RETURN
+ *
+ * @param key number
+ * @return boolean
+ */
+method HotKey::isLargeKey(key) {
+    return match key {
+        VK_SHIFT    ||
+        VK_SPACE    ||
+        VK_CONTROL  ||
+        VK_LMENU    ||
+        VK_MENU     ||
+        VK_LMENU    ||
+        VK_RMENU    ||
+        VK_RCONTROL ||
+        VK_LCONTROL ||
+        VK_LSHIFT   ||
+        VK_RSHIFT   ||
+        VK_RETURN   => true,
+        default     => false
+    }
+}
+
+/**
+ * Sort keys. `keys` must be 1 or 2 size array.
+ * In sorted table if it's size equals to 2 at first index always
+ * will be large keys. For large keys, see above.
+ *
+ * @see HotKey::isLargeKey
+ * 
+ * @param keys table
+ * @return void
+ */
+method HotKey::sortKeys(keys) {
+    if #keys == 2 && !self::isLargeKey(keys[1]) && self::isLargeKey(keys[2]) {
+        keys[1], keys[2] = $2, $1
+    }
+}
 
 /**
  * Convert list of `keys` to their names as string using `require("vkeys").id_to_name` function.
@@ -53,14 +92,14 @@ method HotKey::keysToString(keys, separator = " + ") {
 /**
  * Get all keys-down. Each value of result table is VK-ID of down key.
  *
- * @param limit number|nil Limit output table to `limit` size (default = 4).
+ * @param limit number|nil Limit output table to `limit` size (default = 2).
  * @return table
  */
-method HotKey::getDownKeys(limit = 4) {
+method HotKey::getDownKeys(limit = 2) {
     local keys = {}
    
     for _, key of vkeys {
-        if #keys != limit {
+        if #keys != limit && key != VK_LBUTTON && key != VK_RBUTTON && key != VK_MBUTTON {
             if isKeyDown(key) && (
                 key == VK_MENU || key == VK_CONTROL || key == VK_SHIFT || key == VK_LMENU ||
                 key == VK_RMENU || key == VK_RCONTROL || key == VK_LCONTROL || key == VK_LSHIFT ||
@@ -81,8 +120,8 @@ method HotKey::getDownKeys(limit = 4) {
         }
     }
 
-    table.sort(keys)
-   
+    self::sortKeys(keys)
+
     return keys
 }
 
@@ -90,13 +129,40 @@ method HotKey::getDownKeys(limit = 4) {
  * Setup HotKey watcher. Only for use in onWindowMessage event!
  * @return void
  */
-method HotKey::setupWatcher(wparam) {
-    if local keys = self::getDownKeys() {
-        if #keys > 0 && !changingHotKey {
-            local isDefined, hotKeyId = self::isKeysDefined(keys)
-            if isDefined && (!self.cursor || !common::isCursorActive()) && isKeyJustPressed(keys[#keys]) && !common::isInputsActive() {
-                hotKeysCallbacks[hotKeyId].callback()
-                consumeWindowMessage(true, true)
+method HotKey::setupWatcher(event, wparam, lparam) {
+    if event == wm.WM_KEYDOWN || event == wm.WM_SYSKEYDOWN {
+        //! Consuming window message when changing any `HotKey` keys.
+        //! When pressed `VK_ESCAPE`, we will stop changing keys and reset to default keys.
+        if changingHotKey {
+            consumeWindowMessage(true, false)
+            if wparam == VK_ESCAPE {
+                for id, item of UI_ANIMATED_HOTKEY {
+                    if item.active {
+                        for _, hotKey in allHotKeys {
+                            if id == hotKey.id {
+                                hotKey::changeKeysTo(hotKey.keys)
+                                item.active     = false
+                                changingHotKey  = item.active
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            local key = assets::mapScanCodeToVKey((lparam & 0xFF0000) >> 16)
+            for _, hotKey in allHotKeys {
+                //! Implementing keys handling. Allowed length of registered keys is 2.
+                //! When this(ese) keys is(are) pressed, then we will consume this window message
+                //! and call callback that passed in `hotKeysCallbacks` table.
+                if (#hotKey.keys == 1 && key == hotKey.keys[1]) ||
+                   (#hotKey.keys == 2 && isKeyDown(hotKey.keys[1]) && key == hotKey.keys[2])
+                {
+                    if local item = hotKeysCallbacks[hotKey.id] {
+                        print("called")
+                        item.callback()
+                        consumeWindowMessage(true, false)
+                    }
+                }
             }
         }
     }
@@ -110,11 +176,11 @@ method HotKey::setupWatcher(wparam) {
  * @return boolean
  */
 method HotKey::isKeysDefined(sourceKeys, exceptId) {
-    table.sort(sourceKeys)
+    self::sortKeys(sourceKeys)
 
     for id, targetKeys of hotKeysCallbacks {
-        table.sort(targetKeys)
-        if id != exceptId && string.find(table.concat(sourceKeys, " "), table.concat(targetKeys.keys, " ")) {
+        self::sortKeys(targetKeys)
+        if id != exceptId && table.concat(sourceKeys, " ") == table.concat(targetKeys.keys, " ") {
             return true, id
         }
     }
@@ -131,7 +197,7 @@ method HotKey::isKeysDefined(sourceKeys, exceptId) {
  * @return HotKey
  */
 method HotKey::new(id, keys, description, ignoreActiveCursor = true) {
-    table.sort(keys)
+    self::sortKeys(keys)
     
     if config.root.hotKeys[id] {
         keys = config.root.hotKeys[id]
@@ -165,7 +231,7 @@ method HotKey::__tostring() {
  * @return HotKey
  */
 method HotKey::changeKeysTo(keys) {
-    table.sort(keys)
+    self::sortKeys(keys)
 
     if hotKeysCallbacks[self.id].keys {
         config.root.hotKeys[self.id], self.keys, hotKeysCallbacks[self.id].keys =
@@ -214,7 +280,6 @@ method HotKey::render(defaultSize = imgui.ImVec2(80, 25)) {
         UI_ANIMATED_HOTKEY[self.id] = {
             label       = tostring(self),
             active      = false,
-            keysAllowed = true,
             keys        = {},
             tick        = {
                 status  = false,
@@ -229,7 +294,7 @@ method HotKey::render(defaultSize = imgui.ImVec2(80, 25)) {
             ? self::keysToString(this.keys) 
             : this.label
 
-        if animations::button(string.format("%s##%s", buttonText, self.id), size) {
+        if animations::button(string.format("%s##%s", buttonText, self.id), size) && !changingHotKey {
             this.active     = !$
             changingHotKey  = this.active
             this.tick.clock = os.clock()

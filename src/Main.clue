@@ -153,7 +153,7 @@ hotKeyCallbacks.airbreak = fn {
     }
 }
 
-HotKey::new("main->airbreak", { VK_OEM_6 }, "Аирбрейк")
+HotKey::new("main->airbreak", { VK_RSHIFT }, "Аирбрейк")
       ::registerCallback(hotKeyCallbacks.airbreak)
 
 static enum /* ALIGN_TYPE */ {
