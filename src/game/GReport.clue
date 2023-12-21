@@ -92,7 +92,6 @@ static __greport__ = {
 
 local hotKey = HotKey::new("imgui.window.GReport", { VK_LCONTROL, VK_C }, "Открыть/закрыть /greport")::registerCallback(fn {
     if local this = __greport__ {
-        print(this.player.receivedAt && os.clock() - this.player.receivedAt, os.clock(), this.player.receivedAt, this.player.active, (this.player.receivedAt && (os.clock() - this.player.receivedAt <= 15)), this.player.active)
         if this.player.active || (this.player.receivedAt && (os.clock() - this.player.receivedAt <= 15)) {
             this.window::switch()
         }

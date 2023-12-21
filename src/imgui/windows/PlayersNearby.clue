@@ -104,7 +104,6 @@ window::new("imgui.windows.PlayersNearby", {
     initialize  = {
         style = StyleChanger::new({
             WindowBorderSize    = 0
-            WindowPadding       = imgui.ImVec2(0, 0)
             WindowBg            = imgui.ImVec4(0, 0, 0, 0)
         })
 
@@ -116,15 +115,11 @@ window::new("imgui.windows.PlayersNearby", {
             ItemSpacing         = imgui.ImVec2(0, 0)
             WindowPadding       = imgui.ImVec2(2, 2)
         }),
-
-        
     }
 }, fn(self) {
     self.var.style::apply()
     self::begin(self.id, fn {
         local players = getAllPlayersNearby(self.isChangingWindowsPositions)
-
-        // if !self.isChangingWindowsPositions && !user::getAloginStatus() { return }
 
         for i = 1, config.root.windows.playersNearby.maxPlayers {
             if local player = players[i] {
@@ -182,7 +177,6 @@ window::new("imgui.windows.PlayersNearby", {
                     }
 
                     if config.root.windows.playersNearby.showAdmins && player.admin {
-                        // imgui.SameLine()
                         imgui.SameLine(nil, 0)
                         imguiAssets::addStrokedText("[%s]", strokeSize, color, player.admin.nickname.ooc)
                         imguiAssets::setPreviousItemAbleToCopy(player.admin.nickname.ooc, nil, nil, {
@@ -210,15 +204,8 @@ window::new("imgui.windows.PlayersNearby", {
                     }
                 imgui.EndGroup()
 
-                if self.size && self.pos {
-                    local rectMinX = imgui.GetItemRectMin().x - self.pos.x
-                    if rectMinX < 0 {
-                        self.size.x += math.abs(rectMinX)
-                    }
-
-                    if imgui.GetItemRectSize().x > self.size.x {
-                        self.size.x = imgui.GetItemRectSize().x
-                    }
+                if imgui.GetItemRectSize().x >= self.size.x {
+                    self.size.x += (imgui.GetItemRectSize().x - self.size.x) + (imgui.GetStyle().WindowPadding.x * 2)
                 }
             }
         }

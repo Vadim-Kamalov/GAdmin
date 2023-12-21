@@ -50,13 +50,12 @@ window::new("imgui.windows.PlayerChecker", {
     description = "Чекер игроков"
     type        = MV_DEFAULT
     condition   = fn { return config.root.windows.playerChecker.use && isSampAvailable() }
-    size        = { x = 200, y = 0 }
+    size        = { x = 0, y = 0 }
     defaultPos  = WIN_DEFAULT_POS_CENTER
     initialize  = {
         popupInformation    = {}
         windowStyle         = StyleChanger::new({
             WindowBorderSize    = 0,
-            WindowPadding       = imgui.ImVec2(0, 2),
             WindowBg            = imgui.ImVec4(0, 0, 0, 0),
             ItemSpacing         = imgui.ImVec2(0, 5)
         })
@@ -126,14 +125,8 @@ window::new("imgui.windows.PlayerChecker", {
                 }
             imgui.EndGroup()
 
-            local rectMinX = imgui.GetItemRectMin().x - self.pos.x
-            if rectMinX < 0 {
-                self.size.x += math.abs(rectMinX)
-            }
-
-            local rectMaxX = imgui.GetItemRectMax().x - self.pos.x
-            if rectMaxX > self.size.x {
-                self.size.x = rectMaxX
+            if imgui.GetItemRectSize().x >= self.size.x {
+                self.size.x += (imgui.GetItemRectSize().x - self.size.x) + (imgui.GetStyle().WindowPadding.x * 2)
             }
 
             if imgui.IsItemClicked() {

@@ -35,7 +35,6 @@ window::new("imgui.windows.UserInformation", {
     initialize  = {
         style = StyleChanger::new({
             WindowBorderSize    = 0
-            WindowPadding       = imgui.ImVec2(0, 0)
             WindowBg            = imgui.ImVec4(0, 0, 0, 0)
         })
     }
@@ -70,77 +69,72 @@ window::new("imgui.windows.UserInformation", {
 
     self.var.style::apply()
     self::begin(self.id, fn {
-        local time          = assets::getLocalTime()
-        local online        = user::getTime()
-        local answers       = user::getAnswersCount()
+        imgui.BeginGroup()
+            local time          = assets::getLocalTime()
+            local online        = user::getTime()
+            local answers       = user::getAnswersCount()
 
-        {
-            local text = string.format(
-                "%d-%d-%d %02d:%02d:%02d",
-                time.wYear, time.wMonth, time.wDay,
-                time.wHour, time.wMinute, time.wSecond
-            )
+            {
+                local text = string.format(
+                    "%d-%d-%d %02d:%02d:%02d",
+                    time.wYear, time.wMonth, time.wDay,
+                    time.wHour, time.wMinute, time.wSecond
+                )
 
-            self.setNextItemAligned(text)
-            imguiAssets::addStrokedText(text, strokeSize)
-        }
+                self.setNextItemAligned(text)
+                imguiAssets::addStrokedText(text, strokeSize)
+            }
 
-        for _, item in self.sortArray({
-            { name = "ID", value = user::getId() }
-            { name = "IC никнейм", value = user::getNickname() },
-            { name = "OOC никнейм", value = user::getOOCNickname() },
-            { name = "Админ уровень", value = user::getAdminLvl() },
-            { name = "Пинг", value = user::getPing() },
+            for _, item in self.sortArray({
+                { name = "ID", value = user::getId() }
+                { name = "IC никнейм", value = user::getNickname() },
+                { name = "OOC никнейм", value = user::getOOCNickname() },
+                { name = "Админ уровень", value = user::getAdminLvl() },
+                { name = "Пинг", value = user::getPing() },
             
-            "NewLine",
+                "NewLine",
 
-            { name = "Общий онлайн", value = fn {
-                local this = online.total
-                return string.format("%02d:%02d:%02d", this.hour, this.min, this.sec)
-            }},
+                { name = "Общий онлайн", value = fn {
+                    local this = online.total
+                    return string.format("%02d:%02d:%02d", this.hour, this.min, this.sec)
+                }},
 
-            { name = "Онлайн за неделю", value = fn {
-                local this = online.weekTotal
-                return string.format("%02d:%02d:%02d", this.hour, this.min, this.sec)
-            }},
+                { name = "Онлайн за неделю", value = fn {
+                    local this = online.weekTotal
+                    return string.format("%02d:%02d:%02d", this.hour, this.min, this.sec)
+                }},
 
-            { name = "Онлайн за сессию", value = fn {
-                local this = online.session
-                return string.format("%02d:%02d:%02d", this.hour, this.min, this.sec)
-            }},
+                { name = "Онлайн за сессию", value = fn {
+                    local this = online.session
+                    return string.format("%02d:%02d:%02d", this.hour, this.min, this.sec)
+                }},
 
-            "NewLine",
+                "NewLine",
 
-            { name = "Ответов всего", value = answers.total },
-            { name = "Ответов за неделю", value = answers.weekTotal },
-            { name = "Ответов за сесcию", value = answers.session }
-        }, config.root.windows.userInformation.display) {
-            if item == "NewLine" {
-                imgui.NewLine()
-            } else {
-                for _, display in config.root.windows.userInformation.display {
-                    // display[1] = string, must equals to item.name.
-                    // display[2] = boolean, display status.
-                    if display[1] == item.name && display[2] {
-                        local name, value = item.name, tostring((type(item.value) == "function") ? item.value() : item.value)
+                { name = "Ответов всего", value = answers.total },
+                { name = "Ответов за неделю", value = answers.weekTotal },
+                { name = "Ответов за сесcию", value = answers.session }
+            }, config.root.windows.userInformation.display) {
+                if item == "NewLine" {
+                    imgui.NewLine()
+                } else {
+                    for _, display in config.root.windows.userInformation.display {
+                        // display[1] = string, must equals to item.name.
+                        // display[2] = boolean, display status.
+                        if display[1] == item.name && display[2] {
+                            local name, value = item.name, tostring((type(item.value) == "function") ? item.value() : item.value)
 
-                        self.setNextItemAligned(name .. ": " .. value)
-                        imguiAssets::addStrokedText("%s: %s", strokeSize, nil, name, value)
-                        imguiAssets::setPreviousItemAbleToCopy(value)
-
-                        if self.size && self.pos {
-                            local rectMinX = imgui.GetItemRectMin().x - self.pos.x
-                            if rectMinX < 0 {
-                                self.size.x += math.abs(rectMinX)
-                            }
-
-                            if imgui.GetItemRectSize().x > self.size.x {
-                                self.size.x = imgui.GetItemRectSize().x
-                            }
+                            self.setNextItemAligned(name .. ": " .. value)
+                            imguiAssets::addStrokedText("%s: %s", strokeSize, nil, name, value)
+                            imguiAssets::setPreviousItemAbleToCopy(value)
                         }
                     }
                 }
             }
+        imgui.EndGroup()
+        
+        if imgui.GetItemRectSize().x >= self.size.x {
+            self.size.x += (imgui.GetItemRectSize().x - self.size.x) + (imgui.GetStyle().WindowPadding.x * 2)
         }
     })
     self.var.style::reset()

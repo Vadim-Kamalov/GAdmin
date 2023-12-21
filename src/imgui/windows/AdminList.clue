@@ -22,7 +22,8 @@
 @import "imgui.Assets"          => imguiAssets
 @import "imgui.StyleChanger"    => StyleChanger
 
-@import "game.Admins" => admins
+@import "game.Admins"   => admins
+@import "game.User"     => user
 
 @import "Config"        => config
 @import "Icons"         => icons
@@ -32,13 +33,12 @@
 windows::new("imgui.windows.AdminList", {
     description = "Список администраторов в сети"
     type        = MV_DEFAULT
-    size        = { x = 200, y = 0 }
-    condition   = fn { return config.root.windows.adminList.use }
+    size        = { x = 0, y = 0 }
+    condition   = fn { return config.root.windows.adminList.use && user::getAloginStatus() }
 
     initialize  = {
         windowStyle = StyleChanger::new({
             WindowBorderSize    = 0
-            WindowPadding       = imgui.ImVec2(0, 0)
             WindowBg            = imgui.ImVec4(0, 0, 0, 0)
         })
     }
@@ -46,56 +46,62 @@ windows::new("imgui.windows.AdminList", {
     self.var.windowStyle::apply()
     self::begin(self.id, fn {
         for _, admin in admins {
-            local pos   = imgui.GetCursorPos()
-            local text  = (config.root.windows.adminList.showAdminLvl)
-                ? string.format("[LVL: %d] %s[%d]", admin.lvl, admin.nickname.ooc, admin.id)
-                : string.format("%s[%d]", admin.nickname.ooc, admin.id)
+            imgui.BeginGroup()
+                local pos   = imgui.GetCursorPos()
+                local text  = (config.root.windows.adminList.showAdminLvl)
+                    ? string.format("[LVL: %d] %s[%d]", admin.lvl, admin.nickname.ooc, admin.id)
+                    : string.format("%s[%d]", admin.nickname.ooc, admin.id)
 
-            pos.x = match config.root.windows.adminList.textAlignMode {
-                ALIGN_CENTER    => self.size.x / 2 - imgui.CalcTextSize(text).x / 2,
-                ALIGN_RIGHT     => self.size.x - imgui.CalcTextSize(text).x - 5,
-                default         => pos.x
-            }
+                pos.x = match config.root.windows.adminList.textAlignMode {
+                    ALIGN_CENTER    => self.size.x / 2 - imgui.CalcTextSize(text).x / 2,
+                    ALIGN_RIGHT     => self.size.x - imgui.CalcTextSize(text).x - 5,
+                    default         => pos.x
+                }
 
-            imgui.SetCursorPos(pos)
-            local isClicked, isHovered = imguiAssets::addStrokedText(
-                text,
-                config.root.windows.adminList.strokeSize,
-                (config.root.windows.adminList.textColorBasedOnClist) ?
-                    common::convertHex2ImVec4($PLAYER_COLOR_TO_HEX!(admin.id)) : nil
-            )
-
-            if isHovered {
-                imgui.GetWindowDrawList()::AddLine(
-                    imgui.ImVec2(self.pos.x + pos.x, self.pos.y + pos.y + imgui.CalcTextSize(text).y),
-                    imgui.ImVec2(imgui.GetItemRectMax().x - 2, self.pos.y + pos.y + imgui.CalcTextSize(text).y),
-                    -1,
-                    2
+                imgui.SetCursorPos(pos)
+                local isClicked, isHovered = imguiAssets::addStrokedText(
+                    text,
+                    config.root.windows.adminList.strokeSize,
+                    (config.root.windows.adminList.textColorBasedOnClist) ?
+                        common::convertHex2ImVec4($PLAYER_COLOR_TO_HEX!(admin.id)) : nil
                 )
-            } 
 
-            if isClicked && setClipboardText(admin.nickname.ooc) {
-                notify::send({
-                    icon        = icons.ICON_KEYBOARD
-                    title       = "Никнейм скопирован"
-                    text        = "Успешно скопирован OOC никнейм у администратора " .. admin.nickname.ooc .. "!"
-                    duration    = 3
-                    buttons     = {
-                        first   = {
-                            name = "Закрыть"
-                            call = fn(close) { close() }
-                        }
+                if imgui.GetItemRectSize().x >= self.size.x {
+                    self.size.x += (imgui.GetItemRectSize().x - self.size.x) + (imgui.GetStyle().WindowPadding.x * 2)
+                }
+                
+                if isHovered {
+                    imgui.GetWindowDrawList()::AddLine(
+                        imgui.ImVec2(self.pos.x + pos.x, self.pos.y + pos.y + imgui.CalcTextSize(text).y),
+                        imgui.ImVec2(imgui.GetItemRectMax().x - 2, self.pos.y + pos.y + imgui.CalcTextSize(text).y),
+                        -1,
+                        2
+                    )
+                } 
 
-                        second = {
-                            name = "Упомянуть"
-                            call = fn {
-                                sampSetChatInputEnabled(true)
-                                sampSetChatInputText("/a @" .. admin.nickname.ooc .. " ")
+                if isClicked && setClipboardText(admin.nickname.ooc) {
+                    notify::send({
+                        icon        = icons.ICON_KEYBOARD
+                        title       = "Никнейм скопирован"
+                        text        = "Успешно скопирован OOC никнейм у администратора " .. admin.nickname.ooc .. "!"
+                        duration    = 3
+                        buttons     = {
+                            first   = {
+                                name = "Закрыть"
+                                call = fn(close) { close() }
+                            }
+
+                            second = {
+                                name = "Упомянуть"
+                                call = fn {
+                                    sampSetChatInputEnabled(true)
+                                    sampSetChatInputText("/a @" .. admin.nickname.ooc .. " ")
+                                }
                             }
                         }
-                    }
-                })
-            }
+                    })
+                }
+            imgui.EndGroup()
         }
     })
     self.var.windowStyle::reset()
