@@ -29,11 +29,11 @@
 @import "imgui.Animations"      => animations
 @import "imgui.drawList.Shadow" => shadow
 
-local notifications = notify::get()
+style::registerWindow("imgui.windows.Notifications", "Оповещения")
 
 imgui.OnFrame(fn { return notify.active }, fn(self) {
     self.HideCursor = imguiAssets::getCursorStatus()
-    self.notifySize = math.min(5, #notifications)
+    self.notifySize = math.min(5, #notify::get())
     self.flags      = imgui.WindowFlags.NoMove + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize
         + imgui.WindowFlags.NoScrollbar + imgui.WindowFlags.NoScrollWithMouse + imgui.WindowFlags.NoBringToFrontOnFocus
 

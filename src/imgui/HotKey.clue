@@ -74,11 +74,13 @@ method HotKey::sortKeys(keys) {
 /**
  * Convert list of `keys` to their names as string using `require("vkeys").id_to_name` function.
  * 
- * @param keys table
+ * @param keys table 
  * @param separator string|nil (default = " + ")
  * @return string
  */
 method HotKey::keysToString(keys, separator = " + ") {
+    if #keys == 0 { return "-НЕТ-"}
+
     local stringKeys = ""
 
     for index, id in keys {
@@ -158,7 +160,6 @@ method HotKey::setupWatcher(event, wparam, lparam) {
                    (#hotKey.keys == 2 && isKeyDown(hotKey.keys[1]) && key == hotKey.keys[2])
                 {
                     if local item = hotKeysCallbacks[hotKey.id] {
-                        print("called")
                         item.callback()
                         consumeWindowMessage(true, false)
                     }
@@ -191,7 +192,7 @@ method HotKey::isKeysDefined(sourceKeys, exceptId) {
  * Create new HotKey class.
  * 
  * @param id string                     HotKey-ID, need for saving and reading keys from/in configuration file.
- * @param keys table                    Default keys. Can changed with `HotKey::changeKeysTo(keys)`.
+ * @param keys table|nil                Default keys. Can changed with `HotKey::changeKeysTo(keys)`.
  * @param ignoreActiveCursor boolean    If true, key bind won't call hot key callback if `!commom::isCursorActive()` (default = true).
  * @param description string|nil        Optional description for main window.
  * @return HotKey

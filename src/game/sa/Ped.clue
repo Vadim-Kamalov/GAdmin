@@ -49,4 +49,30 @@ method ped::getPlayerWeaponNameById(id) {
     return nil
 }
 
+/**
+ * Get closest handle.
+ *
+ * @param to number (default = PLAYER_PED)
+ * @return number | nil
+ */
+method ped::getClosestHandleTo(to = PLAYER_PED) {
+    local minDistance   = 9999
+    local closestHandle = nil
+    local x, y, z       = getCharCoordinates(PLAYER_PED)
+
+    for _, handle in getAllChars() {
+        local result, _ = sampGetPlayerIdByCharHandle(handle)
+        if result {
+            local xI, yI, zI    = getCharCoordinates(handle)
+            local distance      = math.sqrt((xI - x) ^ 2 + (yI - y) ^ 2 + (zI - z) ^ 2)
+            if distance < minDistance {
+                minDistance = distance
+                closestHandle = handle
+            }
+        }
+    }
+
+    return closestHandle
+}
+
 return ped

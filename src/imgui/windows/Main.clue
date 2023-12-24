@@ -18,14 +18,17 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
-@import "imgui.Assets"      => imguiAssets
-@import "imgui.Animations"  => animations
-@import "imgui.StyleChanger"=> StyleChanger
-@import "imgui.HotKey"      => HotKey
-@import "imgui.Style"       => style
+@import "imgui.Assets"          => imguiAssets
+@import "imgui.Animations"      => animations
+@import "imgui.StyleChanger"    => StyleChanger
+@import "imgui.HotKey"          => HotKey
+@import "imgui.Style"           => style
+@import "imgui.drawList.Shadow" => shadow
 
-@import "game.User"         => user
-@import "game.samp.Player"  => sampPlayer
+@import "game.binder.Variables" => binderVariables
+@import "game.Binder"           => binder
+@import "game.User"             => user
+@import "game.samp.Player"      => sampPlayer
 
 @import "MovableWindows"    => movableWindows
 @import "Assets"            => assets
@@ -38,7 +41,8 @@ local enum /* WINDOW_SELECTED_FRAME */ {
     WINDOW_SELECTED_FRAME_SETTINGS,
     WINDOW_SELECTED_FRAME_KEYBINDS,
     WINDOW_SELECTED_FRAME_PLAYERS_CHECKER,
-    WINDOW_SELECTED_FRAME_CUSTOMIZATION
+    WINDOW_SELECTED_FRAME_CUSTOMIZATION,
+    WINDOW_SELECTED_FRAME_BINDER
 }
 
 local enum /* WINDOW_WIDGET */ {
@@ -88,6 +92,21 @@ local window        = {
             buffer  = imgui.new.int(),
             array   = nil,
             size    = 0
+        }
+    },
+
+    binder = {
+        callPopup       = false,
+        selectedBind    = 1,
+        body            = {
+            title   = imgui.new.char[20]((config.root.binds[1]?.title) || ""),
+            value   = imgui.new.char[65535]((config.root.binds[1]?.value) || ""),
+            command = imgui.new.char[144]((config.root.binds[1]?.commandName) || ""),
+            delay   = imgui.new.int((config.root.binds[1]?.delay) || $COMMAND_DELAY)
+        },
+
+        popup = {
+            inputParameter = imgui.new.char[256]()
         }
     },
 
@@ -387,6 +406,19 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
 
     imgui.PushStyleVarVec2(imgui.StyleVar.WindowPadding, imgui.ImVec2(0, 0))
         imgui.Begin("imgui.windows.Main", nil, self.flags)
+            {
+                local pos   = imgui.GetWindowPos()
+                local size  = imgui.GetWindowSize()
+                shadow::apply(
+                    imgui.GetBackgroundDrawList(),
+                    imgui.ImVec2(pos.x + 5, pos.y + 5),
+                    imgui.ImVec2(size.x - 10, size.y - 10),
+                    24.0,
+                    100,
+                    2
+                )
+            }
+
             imgui.SetCursorPos(imgui.ImVec2(60 + imgui.GetStyle().ItemSpacing.x, 7))
             imgui.PushStyleVarFloat(imgui.StyleVar.Alpha, 1.0 - window.menu.alpha / 255 / 2 - window.menu.switchBetweenFramesAlpha)
             imgui.BeginGroup()
@@ -656,12 +688,14 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                     } 
                 } elseif window.menu.selectedFrame == WINDOW_SELECTED_FRAME_KEYBINDS {
                     imgui.SetScrollY(0)
-                    for index, hotKey in allHotKeys {
-                        imgui.PushFont(regular12)
-                            hotKey::render()
-                        imgui.PopFont()    
-                        imgui.SameLine()
-                        imguiAssets::textWithFont(hotKey.description, bold10, imgui.GetCursorPos() + imgui.ImVec2(0, 4))
+                    for _, hotKey in allHotKeys {
+                        if !string.find(hotKey.id, "^binderIndex%d+$") {
+                            imgui.PushFont(regular12)
+                                hotKey::render(imgui.ImVec2(100, 25))
+                            imgui.PopFont()    
+                            imgui.SameLine()
+                            imguiAssets::textWithFont(hotKey.description, bold10, imgui.GetCursorPos() + imgui.ImVec2(0, 4))
+                        }
                     }
                 } elseif window.menu.selectedFrame == WINDOW_SELECTED_FRAME_PLAYERS_CHECKER {
                     imgui.SetScrollY(0)
@@ -761,6 +795,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                         }
                     imgui.EndGroup()
                 } elseif window.menu.selectedFrame == WINDOW_SELECTED_FRAME_CUSTOMIZATION {
+                    imgui.SetScrollY(0)
                     imguiAssets::textWithFont("Кастомизация", bold14)
                    
                     local childHeight           = imgui.GetWindowHeight() - imgui.GetCursorPos().y - 6
@@ -1161,6 +1196,310 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                             imgui.PopFont()
                         imgui.EndGroup()
                     imgui.EndChild()
+                } elseif window.menu.selectedFrame == WINDOW_SELECTED_FRAME_BINDER {
+                    imgui.SetScrollY(0)
+                    
+                    local childHeight = imgui.GetWindowHeight() - imgui.GetCursorPos().y - 6
+
+                    imgui.BeginChild("imgui.windows.Main.binderMainChild", imgui.ImVec2(150, childHeight), true, self.flags)
+                        imgui.SetCursorPos(imgui.ImVec2(6, 6))
+                        imgui.BeginGroup()
+                            imguiAssets::textWithFont("Биндер", bold14)
+
+                            imgui.SetCursorPosX(0)
+                            imgui.BeginChild(
+                                "imgui.windows.Main.binderMainChild.scrollableContent",
+                                imgui.ImVec2(imgui.GetWindowWidth(), imgui.GetWindowHeight() - 73),
+                                false,
+                                self.flags
+                            )
+                                imgui.SetCursorPos(imgui.ImVec2(6, 6))
+                                imgui.PushFont(regular12)
+                                    imgui.BeginGroup()
+                                        for index, bind in config.root.binds {
+                                            if animations::button(bind.title .. "##imgui.windows.Main.binderIndex" .. index, imgui.ImVec2(imgui.GetWindowWidth() - 12, 25)) {
+                                                window.binder.selectedBind  = index
+                                                window.binder.body.delay[0] = bind.delay || $COMMAND_DELAY
+
+                                                imgui.StrCopy(window.binder.body.title, bind.title)
+                                                imgui.StrCopy(window.binder.body.value, bind.value)
+                                                imgui.StrCopy(window.binder.body.command, bind.commandName || "")
+                                            }
+                                        }
+                                    imgui.EndGroup()
+                                imgui.PopFont()
+                            imgui.EndChild()
+
+                            imgui.PushFont(bold10)
+                                imgui.SetCursorPosY(imgui.GetWindowHeight() - 36)
+                                if animations::button("Добавить##imgui.windows.Main.binder", imgui.ImVec2(imgui.GetWindowWidth() - 12, 30)) {
+                                    local bindTitle         = "Бинд #"
+                                    local bindTitleIndex    = #config.root.binds + 1
+                                    
+                                    for _, bind in config.root.binds {
+                                        if local index = string.match(bind.title, "^Бинд #(%d+)$") {
+                                            if tonumber(index) == bindTitleIndex {
+                                                bindTitleIndex += 1
+                                            }
+                                        }
+                                    }
+
+                                    binder::newBind(bindTitle .. bindTitleIndex, "")
+                                    
+                                    window.binder.selectedBind  = #config.root.binds
+                                    window.binder.body.delay[0] = $COMMAND_DELAY
+
+                                    imgui.StrCopy(window.binder.body.title, "Бинд #" .. #config.root.binds)
+                                    imgui.StrCopy(window.binder.body.value, "")
+                                    imgui.StrCopy(window.binder.body.command, "")
+                                }
+                            imgui.PopFont()
+                        imgui.EndGroup()
+                    imgui.EndChild()
+
+                    imgui.SameLine()
+
+                    imgui.BeginChild("imgui.windows.Main.selectedBindBody", imgui.ImVec2(475, childHeight), true, self.flags)
+                        if #config.root.binds == 0 {
+                            local text = "У вас еще нет ни одного бинда"
+                            local size = imgui.CalcTextSize(text)
+
+                            imguiAssets::textWithFont(
+                                text,
+                                regular12,
+                                imgui.ImVec2((imgui.GetWindowWidth() - size.x) / 2, (imgui.GetWindowHeight() - size.y) / 2),
+                                imgui.GetStyle().Colors[imgui.Col.TextDisabled]
+                            )
+                        } else {
+                            imgui.SetCursorPos(imgui.ImVec2(6, 6))
+                            imgui.BeginGroup()
+                                imgui.PushStyleColor(imgui.Col.FrameBg, imgui.ImVec4(0, 0, 0, 0))
+                                imgui.PushStyleVarFloat(imgui.StyleVar.FrameBorderSize, 0)
+                                imgui.PushFont(bold14)
+                                    imgui.SetCursorPosX(1)
+                                    imgui.SetNextItemWidth(200)
+                                    if imgui.InputText(
+                                        "##imgui.windows.Main.selectedBindBody.titleInput",
+                                        window.binder.body.title,
+                                        ffi.sizeof(window.binder.body.title)
+                                    ) {
+                                        config.root.binds[window.binder.selectedBind].title = ffi.string(window.binder.body.title)
+                                    }
+                                imgui.PopFont()
+                                imgui.PopStyleColor()
+                                imgui.PopStyleVar()
+
+                                imgui.BeginGroup()
+                                    imguiAssets::textWithFont("Команда", bold10)
+                                    imgui.PushFont(regular12)
+                                        imgui.SetNextItemWidth(215)
+                                        if imgui.InputTextWithHint(
+                                            "##imgui.windows.Main.selectedBindBody.commandInput",
+                                            "Отсутствует",
+                                            window.binder.body.command,
+                                            ffi.sizeof(window.binder.body.command)
+                                        ) {
+                                            local newCommand            = string.gsub(ffi.string(window.binder.body.command), "^/(.*)", "%1")
+                                            local newCommandCallback    = fn(args = "") {
+                                                local arguments = {}
+
+                                                for argument with string.gmatch(args, "[^%s]+") {
+                                                    table.insert(arguments, argument)
+                                                }
+
+                                                binder::sendString(
+                                                    config.root.binds[window.binder.selectedBind].value,
+                                                    arguments,
+                                                    config.root.binds[window.binder.selectedBind].delayBetweenMessages
+                                                )
+                                            }
+
+                                            if newCommand != "" {
+                                                if local sourceCommand = config.root.binds[window.binder.selectedBind].commandName {
+                                                    if sampIsChatCommandDefined(sourceCommand) {
+                                                        if !sampIsChatCommandDefined(newCommand) {
+                                                            sampUnregisterChatCommand(sourceCommand)
+                                                            sampRegisterChatCommand(newCommand, newCommandCallback)
+                                                
+                                                            config.root.binds[window.binder.selectedBind].commandName = newCommand
+                                                        }
+                                                    }
+                                                } else {
+                                                    if !sampIsChatCommandDefined(newCommand) {
+                                                        config.root.binds[window.binder.selectedBind].commandName = newCommand
+                                                        sampRegisterChatCommand(newCommand, newCommandCallback)
+                                                    }
+                                                }
+                                            } else {
+                                                if local sourceCommand = config.root.binds[window.binder.selectedBind].commandName {
+                                                    if sampIsChatCommandDefined(sourceCommand) {
+                                                        sampUnregisterChatCommand(sourceCommand)
+                                                        config.root.binds[window.binder.selectedBind].commandName = nil
+                                                    }
+                                                } 
+                                            }
+                                        }
+
+                                        animations::hint(
+                                            "Эта команда уже зарегистрирована!\nПопробуйте другую команду.",
+                                            fn {
+                                                local command = string.gsub(ffi.string(window.binder.body.command), "^/(.*)", "%1") 
+                                                return #command > 0
+                                                    && sampIsChatCommandDefined(command)
+                                                    && command != config.root.binds[window.binder.selectedBind].commandName 
+                                            },
+                                            nil,
+                                            common::convertHex2ImVec4("E46876")
+                                        )
+                                    imgui.EndGroup()
+
+                                    imgui.SameLine()
+
+                                    imgui.BeginGroup()
+                                        imgui.SetCursorPosY(imgui.GetCursorPos().y - 4)
+                                        imguiAssets::textWithFont("Задержка", bold10)
+                                        imgui.SetNextItemWidth(115)
+                                        imgui.SetCursorPosY(imgui.GetCursorPos().y + 4)
+                                        if imgui.InputInt("##imgui.windows.Main.selectedBindBody.delayInputInt", window.binder.body.delay, 10) {
+                                            config.root.binds[window.binder.selectedBind].delay = window.binder.body.delay[0]
+                                        }
+                                    imgui.EndGroup()
+
+                                    imgui.SameLine()
+
+                                    imgui.BeginGroup()
+                                        imgui.SetCursorPosY(imgui.GetCursorPos().y - 4)
+                                        imguiAssets::textWithFont("Клавиши", bold10)
+                                        for _, hotKey in allHotKeys {
+                                            if local index = string.match(hotKey.id, "^binderIndex(%d+)$") {
+                                                if tonumber(index) == window.binder.selectedBind {
+                                                    imgui.SetCursorPosY(imgui.GetCursorPos().y + 4)
+                                                    hotKey::render(imgui.ImVec2(123, 26))
+                                                }
+                                            }
+                                        }
+                                    imgui.EndGroup()
+                                imgui.PopFont()
+                                
+                                imgui.PushFont(regular12)
+                                    imguiAssets::textWithFont("Текст", bold10)
+                                    imgui.PushFont(bold10)
+                                        if animations::button("Вставить переменную##imgui.windows.Main.selectedBindBody", imgui.ImVec2(imgui.GetWindowWidth() - 12, 25)) {
+                                            window.popupModal.body = fn {
+                                                local fn insertVariable(variableName) {
+                                                    local value = string.format(
+                                                        "%s${{ %s%s }}",
+                                                        ffi.string(window.binder.body.value),
+                                                        variableName,
+                                                        (#ffi.string(window.binder.popup.inputParameter) > 0) ? ", " .. ffi.string(window.binder.popup.inputParameter) : "" 
+                                                    )
+                                        
+                                                    config.root.binds[window.binder.selectedBind].value = value
+
+                                                    imgui.StrCopy(window.binder.body.value, value)
+                                                    imgui.StrCopy(window.binder.popup.inputParameter, "")
+                                                    imgui.CloseCurrentPopup()
+                                                }
+
+                                                imgui.SetCursorPos(imgui.ImVec2(5, 5))
+                                                imgui.BeginGroup()
+                                                    imguiAssets::textWithFont("Переменные биндера", bold14)
+                                                    
+                                                    imgui.PushFont(regular12)
+                                                        imgui.SetNextItemWidth(260)
+                                                        imgui.InputTextWithHint(
+                                                            "##imgui.windows.Main.BinderPopup.inputParameter",
+                                                            "Параметр",
+                                                            window.binder.popup.inputParameter,
+                                                            ffi.sizeof(window.binder.popup.inputParameter)
+                                                        )
+                                                    imgui.PopFont()
+                                                    
+                                                    imgui.BeginChild("imgui.windows.Main.BinderPopup.variableList", imgui.ImVec2(imgui.GetWindowWidth() - 10, 300), true)
+                                                        imgui.SetCursorPos(imgui.ImVec2(5, 5))
+                                                        imgui.BeginGroup()
+                                                            imgui.PushFont(bold10)
+                                                                if animations::button("GET_ARGUMENT##imgui.windows.Main.BinderPopup.variable", imgui.ImVec2(240, 25)) {
+                                                                    insertVariable("GET_ARGUMENT")
+                                                                }
+                                                            imgui.PopFont()
+    
+                                                            imgui.PushFont(regular12)
+                                                                animations::hint("Получить значение аргумента по индексу, но только если бинд выполнен через команду\n"
+                                                                    .. "Обязательный параметр: индекс аргумента (начиная с 1)")
+                                                            imgui.PopFont()
+
+                                                            for _, id in binderVariables.order {
+                                                                imgui.PushFont(bold10)
+                                                                    if animations::button(id .. "##imgui.windows.Main.BinderPopup.variable", imgui.ImVec2(240, 25)) {
+                                                                        insertVariable(id)
+                                                                    }
+                                                                imgui.PopFont()
+                                                                imgui.PushFont(regular12)
+                                                                    animations::hint(binderVariables.description[id]
+                                                                        .. "\nНеобязательный параметр: текст который вставится если переменная ничего не вернула")
+                                                                imgui.PopFont()
+                                                            }
+                                                        imgui.EndGroup()
+                                                    imgui.EndChild()
+
+                                                    if animations::button(
+                                                        "Закрыть##imgui.windows.Main.BinderPopup.close",
+                                                        imgui.ImVec2(imgui.GetWindowWidth() - 10, 30)
+                                                    ) {
+                                                        imgui.CloseCurrentPopup()
+                                                    }
+                                                imgui.EndGroup()
+
+                                                window.popupModal.size = imgui.GetItemRectSize() + imgui.ImVec2(10, 10)
+                                            }
+
+                                            window.binder.callPopup = true
+                                        }
+                                    imgui.PopFont()
+                                    if imgui.InputTextMultiline(
+                                        "##imgui.windows.Main.selectedBindBody.valueInput",
+                                        window.binder.body.value,
+                                        ffi.sizeof(window.binder.body.value),
+                                        imgui.ImVec2(imgui.GetWindowWidth() - 12, 202)
+                                    ) {
+                                        config.root.binds[window.binder.selectedBind].value = ffi.string(window.binder.body.value)
+                                    }
+                                imgui.PopFont()
+
+                                imgui.PushFont(bold10)
+                                    if animations::button("Удалить бинд##imgui.windows.Main.selectedBindBody", imgui.ImVec2(imgui.GetWindowWidth() - 12, 25)) {
+                                        for index, hotKey in allHotKeys {
+                                            if local bindIndex = string.match(hotKey.id, "^binderIndex(%d+)$") {
+                                                if tonumber(bindIndex) == window.binder.selectedBind {
+                                                    hotKeysCallbacks[hotKey.id]     = nil
+                                                    config.root.hotKeys[hotKey.id]  = nil
+
+                                                    table.remove(allHotKeys, index)
+                                                }
+                                            }
+                                        }
+
+                                        table.remove(config.root.binds, window.binder.selectedBind)
+
+                                        if #config.root.binds > 0 {
+                                            window.binder.selectedBind  = #config.root.binds
+                                            window.binder.body.delay[0] = config.root.binds[window.binder.selectedBind].delay || $COMMAND_DELAY
+
+                                            imgui.StrCopy(window.binder.body.title, config.root.binds[window.binder.selectedBind].title)
+                                            imgui.StrCopy(window.binder.body.value, config.root.binds[window.binder.selectedBind].value)
+                                            imgui.StrCopy(window.binder.body.command, config.root.binds[window.binder.selectedBind].commandName || "")
+                                        }
+                                    }
+                                imgui.PopFont()
+                            imgui.EndGroup()
+                        }
+                    imgui.EndChild()
+
+                    if window.binder.callPopup {
+                        imgui.OpenPopup("imgui.windows.Main.Popup")
+                        window.binder.callPopup = false
+                    }
                 }
             imgui.EndGroup()
             imgui.PopStyleVar()
@@ -1213,6 +1552,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                         window.menu::item("imgui.windows.Main.menu.keybinds", icons.ICON_KEYBOARD, "Горячие клавиши", 3)
                         window.menu::item("imgui.windows.Main.menu.playerChecker", icons.ICON_PERSON, "Чекер игроков", 4)
                         window.menu::item("imgui.windows.Main.menu.customization", icons.ICON_PEN_BRUSH, "Кастомизация", 5)
+                        window.menu::item("imgui.windows.Main.menu.binder", icons.ICON_CLIPBOARD, "Биндер", 6)
                     imgui.EndGroup()
                 imgui.EndChild()
             imgui.PopStyleVar()

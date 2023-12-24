@@ -28,7 +28,7 @@
 @import "CommandRequester"  => commandRequester
 
 local sizeX, sizeY  = getScreenResolution()
-local hotKey        = HotKey::new("imgui.windows.CommandRequester", { VK_CONTROL, VK_Q }, "Принять форму")
+local hotKey        = HotKey::new("imgui.windows.CommandRequester", { VK_LSHIFT, VK_Z }, "Принять форму")
                             ::registerCallback(commandRequester.hotKeyCallback)
 
 imgui.OnFrame(fn { return commandRequester.states.frame }, fn(self) {

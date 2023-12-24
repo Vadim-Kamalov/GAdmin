@@ -33,6 +33,7 @@
 @import "imgui.Style"   => style
 @import "imgui.HotKey"  => HotKey
 
+@import "game.Binder"       => binder
 @import "game.User"         => user
 @import "game.Spectator"    => spectator
 
@@ -170,6 +171,7 @@ imgui.OnInitialize(fn {
     
     global bold10      = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellBold, 16.0, nil, glyphRanges)
     global bold9       = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellBold, 14.0, nil, glyphRanges)
+    global bold12      = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellBold, 16.0, nil, glyphRanges)
     global bold14      = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellBold, 20.0, nil, glyphRanges)
     global bold17      = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellBold, 27.0, nil, glyphRanges)
     global bold15      = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellBold, 23.0, nil, glyphRanges)
@@ -191,6 +193,8 @@ global fn main() {
     while !isSampAvailable() { wait(0) }
 
     encoding.default = "CP1251"
+
+    binder::initializeBinds()
 
     for id = 1, config.root.additions.tracers.maxLines {
         bulletData[id] = {

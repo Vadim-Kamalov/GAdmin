@@ -269,6 +269,7 @@ static __config__ = {
             skipVersionUpdate   = "0.0"
         },
 
+        binds                   = {},
         styleChangeableWindows  = {},
         hotKeys                 = {},
         movableWindows          = {}
