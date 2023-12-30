@@ -55,6 +55,7 @@ sampev.onShowDialog = fn(id, style, title, firstButton, secondButton, text) {
             for line with string.gmatch(text, "[^\n]+") {
                 if string.find(line, "^.*%[%d+%] %- [1-5] уровень") {
                     local oocNickname, adminId, adminLvl = string.match(line, "^{FFFFFF}(.*)%[(%d+)%] %- ([1-5]) уровень")
+
                     if tonumber(adminId) == user::getId() && user::getOOCNickname() != oocNickname {
                         if user::getOOCNickname() != oocNickname {
                             user::setOOCNickname(oocNickname)
@@ -73,6 +74,11 @@ sampev.onShowDialog = fn(id, style, title, firstButton, secondButton, text) {
                                 ic  = icNickname
                             }
                         })
+                    }
+
+                    if user::getOOCNickname() == "Администратор" && user::getAdminLvl() == -1 {
+                        user::setOOCNickname("Technical administrator")
+                        user::setAdminLvl(6)
                     }
                 }
             }

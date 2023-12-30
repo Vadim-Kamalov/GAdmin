@@ -213,14 +213,9 @@ imgui.OnInitialize(fn {
     global bold9       = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellBold, 14.0, nil, glyphRanges)
     global bold12      = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellBold, 16.0, nil, glyphRanges)
     global bold14      = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellBold, 20.0, nil, glyphRanges)
-    global bold17      = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellBold, 27.0, nil, glyphRanges)
-    global bold15      = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellBold, 23.0, nil, glyphRanges)
-    global bold18      = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellBold, 26.0, nil, glyphRanges)
-    global bold25      = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellBold, 33.0, nil, glyphRanges)
     global regular9    = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellRegular, 14.0, nil, glyphRanges)
     global regular12   = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellRegular, 16.0, nil, glyphRanges)
     global regular14   = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellRegular, 19.0, nil, glyphRanges)
-    global regular15   = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellRegular, 23.0, nil, glyphRanges)
     global bold        = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellBold, 25.0, nil, glyphRanges)
     global regular     = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellRegular, 25.0, nil, glyphRanges)
     
@@ -239,6 +234,12 @@ global fn main() {
     })
 
     binder::initializeBinds()
+
+    notify::send({
+        title   = "GAdmin успешно запущен!",
+        text    = "GAdmin версии " .. $GADMIN_VERSION .. " успешно инициализирован.",
+        icon    = icons.ICON_STAR
+    })
 
     for id = 1, config.root.additions.tracers.maxLines {
         bulletData[id] = {
