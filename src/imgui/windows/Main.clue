@@ -29,7 +29,9 @@
 @import "game.Binder"           => binder
 @import "game.User"             => user
 @import "game.samp.Player"      => sampPlayer
+@import "game.ServerTables"     => serverTables
 
+@import "Notifications"     => notify
 @import "MovableWindows"    => movableWindows
 @import "Assets"            => assets
 @import "Config"            => config
@@ -42,7 +44,9 @@ local enum /* WINDOW_SELECTED_FRAME */ {
     WINDOW_SELECTED_FRAME_KEYBINDS,
     WINDOW_SELECTED_FRAME_PLAYERS_CHECKER,
     WINDOW_SELECTED_FRAME_CUSTOMIZATION,
-    WINDOW_SELECTED_FRAME_BINDER
+    WINDOW_SELECTED_FRAME_BINDER,
+    WINDOW_SELECTED_FRAME_LOGS,
+    WINDOW_SELECTED_FRAME_SERVER_TABLES
 }
 
 local enum /* WINDOW_WIDGET */ {
@@ -50,6 +54,7 @@ local enum /* WINDOW_WIDGET */ {
     WINDOW_WIDGET_SLIDER,
     WINDOW_WIDGET_COLOR_PICKER,
     WINDOW_WIDGET_TYPE_SELECTOR,
+    WINDOW_WIDGET_INPUT,
     WINDOW_WIDGET_CUSTOM,
     WINDOW_WIDGET_CONFIGURATION_IN_POPUP
 }
@@ -110,6 +115,15 @@ local window        = {
         }
     },
 
+    logs = {
+        selected    = 1
+        filter      = imgui.ImGuiTextFilter(),
+    },
+
+    serverTables = {
+        selected = 0
+    },
+
     popupModal = {
         body = nil, // function
         size = imgui.ImVec2(0, 0)
@@ -159,7 +173,7 @@ local window        = {
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
 
             { "autoCompletion", "Авто-заполнение", {
-                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.autoCompletion.use) },
+                { "use", "TAB - вставить\nCTRL + Arrow Up/Down - переключение между элементами", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.autoCompletion.use) },
                 { "strokeSize", "Размер обводки", WINDOW_WIDGET_SLIDER, 1, 5, imgui.new.int(config.root.windows.autoCompletion.strokeSize) },
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
 
@@ -234,7 +248,6 @@ local window        = {
                 { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.idInKillList.use) }
             }},
 
-
             { "deathNotifyInChat", "Убийства в чат", {
                 { "use", "Логирует убийства в чат", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.deathNotifyInChat.use) }
             }},
@@ -252,11 +265,13 @@ local window        = {
             }},
 
             { "autoLogin", "Авто-ввод паролей", {
-                { "use", "Пароль (аккаунта, /alogin'а) запомнится при вводе вами", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.autoLogin.use) }
-            }},
+                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.autoLogin.use) },
+                { "accountPassword", "Пароль от аккаунта", WINDOW_WIDGET_INPUT, imgui.new.char[48](config.root.additions.autoLogin.accountPassword) },
+                { "aloginPassword", "Пароль от /alogin", WINDOW_WIDGET_INPUT, imgui.new.char[48](config.root.additions.autoLogin.aloginPassword) }
+            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
 
             { "autoAdminLogin", "/alogin при спавне", {
-                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.autoAdminLogin.use) }
+                { "use", "Для автоматического ввода пароля включите и настройте авто-ввод паролей", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.autoAdminLogin.use) }
             }},
 
             { "carInfo", "Информация о машине", {
@@ -265,6 +280,10 @@ local window        = {
 
             { "hideIpAddresses", "Прятать IP адреса", {
                 { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.hideIpAddresses.use) }
+            }},
+            
+            { "hideSpectatorMenu", "Прятать меню в /sp", {
+                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.hideSpectatorMenu.use) }
             }}
         }},
 
@@ -387,6 +406,16 @@ method window.frame::fillChildEx(size, useBorder = true) {
 
     dl::AddRectFilled(pos, pos + size, color, rounding)
 }
+
+addEventHandler("onWindowMessage", fn(event, wparam) {
+    if (event == wm.WM_KEYDOWN || event == wm.WM_SYSKEYDOWN) && !imgui.GetIO().WantTextInput {
+        if wparam == VK_ESCAPE && window.state[0] {
+            window.state[0] = false
+            consumeWindowMessage(true, false)
+            return
+        }
+    }
+})
 
 style::registerWindow("imgui.windows.Main", "Основное окно")
 HotKey::new("imgui.windows.Main", { VK_X }, "Открыть/закрыть это окно")::registerCallback(fn {
@@ -527,7 +556,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                     
                                 imgui.SameLine()
                     
-                                if animations::button((user::getAloginStatus()) ? "/alogout" : "/alogin", imgui.ImVec2(widthAuto / 3 - 5, 30), 0)
+                                if animations::button((user::getAloginStatus()) ? "/alogout" : "/alogin", imgui.ImVec2(widthAuto / 3 - 6, 30), 0)
                                    && window.menu.width <= 60
                                 {
                                     sampSendChat((user::getAloginStatus()) ? "/alogout" : "/alogin")
@@ -536,19 +565,40 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                 imgui.SameLine()                
 
                                 if animations::button("Собрать информацию о скрипте", imgui.ImVec2(widthAuto / 3, 30), 10) {
-                                    //! TODO
+                                    setClipboardText(assets::collectScriptInformation())
+                                    notify::send({
+                                        title   = "Информация собрана",
+                                        text    = "Информация скопирована в буфер обмена.",
+                                        icon    = icons.ICON_CHECKMARK
+                                    })
                                 }
 
-                                animations::hint("Необходимо для создания баг-репортов")
+                                animations::hint("Необходимо для создания баг-репортов.\nВ полученном логе ваши пароли будет заменены на \"***\".")
                                 
-                                if animations::button("Импортировать настройки", imgui.ImVec2(widthAuto / 3, 30), 5) {
-                                    //! TODO
+                                if animations::button("Применить тему", imgui.ImVec2(widthAuto / 3, 30), 5) {
+                                    if local theme = decodeJson(getClipboardText()) {
+                                        config.root.styleChangeableWindows = theme
+                                        thisScript()::reload()
+                                    } else {
+                                        notify::send({
+                                            title   = "Ошибка!",
+                                            text    = "Произошла ошибка при применении темы. Убедитесь, что вы скопировали правильную тему.",
+                                            icon    = icons.ICON_WARNING
+                                        })
+                                    }
                                 }
+                                
+                                animations::hint("Скрипт перезагрузится.##applyTheme")
 
                                 imgui.SameLine()
 
-                                if animations::button("Экспортировать настройки", imgui.ImVec2(widthAuto / 3 - 5, 30), 0) {
-                                    //! TODO
+                                if animations::button("Экспортировать тему", imgui.ImVec2(widthAuto / 3 - 6, 30), 0) {
+                                    setClipboardText(neatJSON(config.root.styleChangeableWindows, { sort = true, wrap = 40 }))
+                                    notify::send({
+                                        title   = "Успешно!",
+                                        text    = "Экспортированная тема записана в ваш буффер обмена.",
+                                        icon    = icons.ICON_CHECKMARK
+                                    })
                                 }
 
                                 imgui.SameLine()
@@ -557,6 +607,8 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                     config.root = config.def
                                     thisScript()::reload()
                                 }
+                                
+                                animations::hint("Скрипт перезагрузится.##resetSettings")
 
                                 if animations::button("Перезагрузить скрипт", imgui.ImVec2(widthAuto, 30)) {
                                     thisScript()::reload()
@@ -652,6 +704,16 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                                             } elseif item[3] == WINDOW_WIDGET_CUSTOM {
                                                                 imguiAssets::textWithFont(item[2], bold12)
                                                                 item[4](item)
+                                                            } elseif item[3] == WINDOW_WIDGET_INPUT {
+                                                                imguiAssets::textWithFont(item[2], bold12)
+                                                                imgui.SetNextItemWidth(imgui.GetWindowWidth() - 10)
+                                                                if imgui.InputText(
+                                                                    "##imgui.windows.Main.Popup.input." .. item[1] .. item[2],
+                                                                    item[4],
+                                                                    ffi.sizeof(item[4])
+                                                                ) {
+                                                                    config.root[section[1]][setting[1]][item[1]] = ffi.string(item[4])
+                                                                }
                                                             }
                                                         }
                                                     }
@@ -678,16 +740,19 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                             }
 
                             if setting[3][1][2] != "" {
-                                imgui.PushFont(bold10)
+                                imgui.PushFont(regular12)
                                     animations::hint(setting[3][1][2] .. "##imgui.windows.main.Popup.hint." .. setting[1], fn {
                                         return imgui.IsItemHovered() && window.menu.width <= 60
                                     })
                                 imgui.PopFont()
                             }
                         }
-                    } 
+                    }
+                    imgui.NewLine()
+                    imgui.Dummy(imgui.ImVec2(5, 5))
                 } elseif window.menu.selectedFrame == WINDOW_SELECTED_FRAME_KEYBINDS {
                     imgui.SetScrollY(0)
+                    imguiAssets::textWithFont("Горячие клавиши", bold14)
                     for _, hotKey in allHotKeys {
                         if !string.find(hotKey.id, "^binderIndex%d+$") {
                             imgui.PushFont(regular12)
@@ -720,7 +785,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
 
                                             if window.checker.filter::PassFilter(string.format("[%d] %s", playerId, nickname)) && !playerInChecker {
                                                 if imgui.Selectable(string.format("[%d] %s", playerId, nickname)) {
-                                                    window.checker.filter.InputBuf = ffi.new("char[256]", nickname)
+                                                    imgui.StrCopy(window.checker.filter.InputBuf, nickname)
                                                     window.checker.filter::Build()
                                                 }
                                             }
@@ -751,8 +816,8 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                         commentary  = commentary
                                     })
 
-                                    window.checker.playerNote       = ffi.new("char[65535]", "")
-                                    window.checker.filter.InputBuf  = ffi.new("char[256]", "")
+                                    imgui.StrCopy(window.checker.playerNote, "")
+                                    imgui.StrCopy(window.checker.filter.InputBuf, "")
                                     window.checker.filter::Build()
                                 }
                             }
@@ -1490,6 +1555,12 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                             imgui.StrCopy(window.binder.body.value, config.root.binds[window.binder.selectedBind].value)
                                             imgui.StrCopy(window.binder.body.command, config.root.binds[window.binder.selectedBind].commandName || "")
                                         }
+
+                                        if local command = string.gsub(ffi.string(window.binder.body.command), "^/(.*)", "%1") {
+                                            if sampIsChatCommandDefined(command) {
+                                                sampUnregisterChatCommand(command)
+                                            }
+                                        }
                                     }
                                 imgui.PopFont()
                             imgui.EndGroup()
@@ -1500,20 +1571,184 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                         imgui.OpenPopup("imgui.windows.Main.Popup")
                         window.binder.callPopup = false
                     }
+                } elseif window.menu.selectedFrame == WINDOW_SELECTED_FRAME_LOGS {
+                    imgui.SetScrollY(0)
+                    imgui.BeginChild("imgui.windows.Main.logs.LogSelection", imgui.ImVec2(widthAuto, 32), true, self.flags)
+                        imgui.SetCursorPos(imgui.ImVec2(6, 6))
+                        imgui.BeginGroup()
+                            imguiAssets::textWithFont("Логи", bold14)
+                            imgui.SameLine()
+                            imgui.PushFont(regular12)
+                                imgui.SetCursorPos(imgui.GetCursorPos() + imgui.ImVec2(5, 2))
+                                imgui.BeginGroup()
+                                    for index, section in loggedServerMessages {
+                                        if animations::clickableUnderlinedText(
+                                            section[1] .. "##imgui.windows.Main.logs.LogSelector",
+                                            window.logs.selected == index
+                                        ) {
+                                            window.logs.selected = index
+                                        }
+
+                                        imgui.SameLine(nil, 20)
+                                    }
+                                imgui.EndGroup()
+                            imgui.PopFont()
+                            imgui.NewLine()
+                        imgui.EndGroup()
+                    imgui.EndChild()
+
+                    imgui.BeginChild(
+                        "imgui.windows.Main.logs.SelectedLog",
+                        imgui.ImVec2(widthAuto, imgui.GetWindowHeight() - imgui.GetCursorPos().y - 6),
+                        true,
+                        self.flags
+                    )
+                        imgui.SetCursorPos(imgui.ImVec2(6, 6))
+                        imgui.BeginGroup()
+                            imgui.SetNextItemWidth(imgui.GetWindowWidth() - 12)
+                            imgui.PushFont(regular12)
+                                if imgui.InputTextWithHint(
+                                    "##imgui.windows.logs.LogFilter",
+                                    "Поиск",
+                                    window.logs.filter.InputBuf,
+                                    ffi.sizeof(window.logs.filter.InputBuf)
+                                ) {
+                                    window.logs.filter::Build()
+                                }
+                            imgui.PopFont()
+                            
+                            imgui.BeginChild(
+                                "imgui.windows.Main.logs.Messages",
+                                imgui.ImVec2(imgui.GetWindowWidth() - 12, imgui.GetWindowHeight() - imgui.GetCursorPos().y - 6),
+                                false,
+                                self.flags
+                            )
+                                imgui.SetCursorPos(imgui.ImVec2(6, 6))
+                                imgui.BeginGroup()
+                                    if #loggedServerMessages[window.logs.selected][2] == 0 {
+                                        local text = "Пока нет никаких логов"
+                                        imguiAssets::textWithFont(text, regular12, imgui.ImVec2(
+                                            ((imgui.GetWindowWidth() - 12) - imgui.CalcTextSize(text).x) / 2,
+                                            ((imgui.GetWindowHeight() - imgui.GetCursorPos().y) - imgui.CalcTextSize(text).y) / 2
+                                        ), imgui.GetStyle().Colors[imgui.Col.TextDisabled])
+                                    }
+                                    
+                                    for _, message in loggedServerMessages[window.logs.selected][2] {
+                                        local fullText = string.format(
+                                            "[%02d:%02d:%02d] %s",
+                                            message.time.wHour,
+                                            message.time.wMinute,
+                                            message.time.wSecond,
+                                            message.text
+                                        ) 
+
+                                        if window.logs.filter::PassFilter(fullText) {
+                                            imgui.BeginGroup()
+                                                imguiAssets::textWithFont(string.format(
+                                                    "[%02d:%02d:%02d]",
+                                                    message.time.wHour,
+                                                    message.time.wMinute,
+                                                    message.time.wSecond
+                                                ), bold10)
+                                                imgui.SameLine(nil, 2)
+                                                imgui.SetCursorPosY(imgui.GetCursorPos().y + 1)
+                                                imgui.PushFont(regular9)
+                                                    imgui.TextWrapped(message.text)
+                                                imgui.PopFont()
+                                            imgui.EndGroup()
+
+                                            imguiAssets::setPreviousItemAbleToCopy(fullText, nil, "Лог успешно скопирован в буффер обмена!")
+                                        }
+                                    }
+                                imgui.EndGroup()
+                            imgui.EndChild()
+                        imgui.EndGroup()
+                    imgui.EndChild()
+                } elseif window.menu.selectedFrame == WINDOW_SELECTED_FRAME_SERVER_TABLES {
+                    imgui.SetScrollY(0)
+                    imgui.BeginChild(
+                        "imgui.windows.Main.serverTables.tableSelectorChild",
+                        imgui.ImVec2(widthAuto, 60),
+                        true,
+                        self.flags
+                    )
+                        imgui.SetCursorPos(imgui.ImVec2(6, 6))
+                        imgui.BeginGroup()
+                            imgui.PushFont(regular12)
+                                imguiAssets::textWithFont("Таблицы", bold14)
+                                imgui.SameLine(80)
+                            
+                                imgui.SetCursorPosY(imgui.GetCursorPos().y + 3)
+                                if animations::clickableUnderlinedText("Урон/эффекты оружий##serverTable", window.serverTables.selected == 0) {
+                                    window.serverTables.selected = 0
+                                }
+
+                                imguiAssets::textWithFont("| Цены", regular12, imgui.GetCursorPos() - imgui.ImVec2(0, 2))
+                                imgui.SameLine(80)
+                                imgui.SetCursorPosY(imgui.GetCursorPos().y + 1)
+                                for index, section in serverTables.prices {
+                                    if animations::clickableUnderlinedText(section[1] .. "##serverTable", window.serverTables.selected == index) {
+                                        window.serverTables.selected = index
+                                    }
+
+                                    imgui.SameLine(nil, 20)
+                                }
+                                imgui.NewLine()
+                            imgui.PopFont()
+                        imgui.EndGroup()
+                    imgui.EndChild()
+                    imgui.BeginChild(
+                        "imgui.windows.Main.serverTables.selectedTableChild",
+                        imgui.ImVec2(widthAuto, imgui.GetWindowHeight() - imgui.GetCursorPos().y - 12),
+                        true,
+                        self.flags
+                    )
+                        imgui.SetCursorPos(imgui.ImVec2(6, 6))
+                        imgui.BeginGroup()
+                            local title = (window.serverTables.selected == 0)
+                                ? "Урон/эффекты оружий"
+                                : serverTables.prices[window.serverTables.selected][1]
+
+                            imguiAssets::textWithFont(title, bold14)
+
+                            if window.serverTables.selected == 0 {
+                                imgui.Columns(#serverTables.weaponDamage[1], "imgui.windows.Main.serverTables.weaponDamage", true)
+                                for sectionIndex, section in serverTables.weaponDamage {
+                                    for valueIndex, value in section {
+                                        imgui.SetColumnWidth(valueIndex - 1, ({ 111, 69, 42, 39, 33, 46, 60, 224 })[valueIndex])
+                                        if local value = string.gsub($, "%%", "%%%%") {
+                                            imgui.PushFont((sectionIndex == 1) ? bold10 : regular9)
+                                                imgui.Text(value)
+                                                imgui.NextColumn()
+                                            imgui.PopFont()
+                                        }
+                                    }
+                                    imgui.Separator()
+                                }
+                            } else {
+                                local section = serverTables.prices[window.serverTables.selected][2]
+                                for index = 1, #section, 2 {
+                                    imgui.BeginGroup()
+                                        imguiAssets::textWithFont(section[index], bold10)
+                                        imgui.SameLine()
+                                        imgui.SetCursorPosY(imgui.GetCursorPos().y + 2)
+                                        imguiAssets::textWithFont(section[index + 1], regular9)
+                                    imgui.EndGroup()
+                                    imgui.SameLine(((index + 1) % 8) * 83)
+                                    if (index + 1) % 8 == 0 { imgui.NewLine() }
+                                }
+                                imgui.NewLine()
+                                imgui.Dummy(imgui.ImVec2(6, 6))
+                            }
+                        imgui.EndGroup()
+                    imgui.EndChild()
                 }
             imgui.EndGroup()
             imgui.PopStyleVar()
 
             if window.menu.clock {
-                window.menu.width = imguiAssets::bringFloatTo($, match window.menu.state {
-                    true    => 200,
-                    false   => 60
-                }, window.menu.clock, 0.1)
-                
-                window.menu.alpha = imguiAssets::bringFloatTo($, match window.menu.state {
-                    true    => 255,
-                    false   => 0
-                }, window.menu.clock, 0.8)
+                window.menu.width = imguiAssets::bringFloatTo($, (window.menu.state) ? 200 : 60, window.menu.clock, 0.1)
+                window.menu.alpha = imguiAssets::bringFloatTo($, (window.menu.state) ? 255 : 0, window.menu.clock, 0.8)
             }
 
             imgui.SetCursorPos(imgui.ImVec2(0, 0))
@@ -1553,6 +1788,8 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                         window.menu::item("imgui.windows.Main.menu.playerChecker", icons.ICON_PERSON, "Чекер игроков", 4)
                         window.menu::item("imgui.windows.Main.menu.customization", icons.ICON_PEN_BRUSH, "Кастомизация", 5)
                         window.menu::item("imgui.windows.Main.menu.binder", icons.ICON_CLIPBOARD, "Биндер", 6)
+                        window.menu::item("imgui.windows.Main.menu.logs", icons.ICON_BOOK_OPEN, "Логи", 7)
+                        window.menu::item("imgui.windows.Main.menu.serverTables", icons.ICON_VERTICAL_BAR_CHART, "Серверные таблицы", 8)
                     imgui.EndGroup()
                 imgui.EndChild()
             imgui.PopStyleVar()

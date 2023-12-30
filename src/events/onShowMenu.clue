@@ -18,22 +18,11 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
-global _sampAddChatMessage = sampAddChatMessage
-global fn sampAddChatMessage(text, color) {
-    _sampAddChatMessage(u8::decode(text), color)
-}
+@import "game.Spectator"    => spectator
+@import "Config"            => config
 
-global _sampSendChat = sampSendChat
-global fn sampSendChat(message) {
-    _sampSendChat(u8::decode(message))
-}
-
-global _sampSendDialogResponse = sampSendDialogResponse
-global fn sampSendDialogResponse(id, button, listItem, input) {
-    _sampSendDialogResponse(id, button, listItem, (input) ? u8::decode(input) : "")
-}
-
-global _setClipboardText = setClipboardText
-global fn setClipboardText(text) {
-    _setClipboardText(u8::decode(text))
+sampev.onShowMenu = fn {
+    if config.root.additions.hideSpectatorMenu.use {
+        return false
+    }
 }

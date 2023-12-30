@@ -104,8 +104,8 @@ assets.randomOOCNicknames = {
  * 
  * Note that each file is downloaded every second to prevent undefined behavior.
  * If no files are downloaded after 120 seconds, the function will return false.
- * After files are successfully downloaded, the `afterDownloadCallback` ...
- * ... argument is called (this is a function that accepts the list of `files` that was passed to the main function).
+ * After files are successfully downloaded, the `afterDownloadCallback`
+ * argument is called (this is a function that accepts the list of `files` that was passed to the main function).
  *
  * @param files table
  * @param afterDownloadCallback
@@ -330,6 +330,29 @@ method assets::copyTable(object, seen) {
     for key, value of object { result[self::copyTable(key, value)] = self::copyTable(value, s) }
 
     return result
+}
+
+/**
+ * Collect all information about this script. User password`s will replaced by `"***"` in `config.root`.
+ * @return string JSON
+ */
+method assets::collectScriptInformation() {
+    local config                                = self::copyTable(import("Config").root)
+    config.additions.autoLogin.accountPassword  = "***"
+    config.additions.autoLogin.aloginPassword   = "***"
+
+    return neatJSON({
+        time = {
+            clock   = os.clock(),
+            date    = os.date()
+        },
+
+        workingDirectory    = getWorkingDirectory(),
+        scriptVersion       = $GADMIN_VERSION,
+        usedMemory          = collectgarbage("count"),
+
+        config = config
+    }, { sort = true, wrap = 40 })
 }
 
 return assets

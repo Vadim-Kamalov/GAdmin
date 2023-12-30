@@ -31,18 +31,19 @@ sampev.onShowDialog = fn(id, style, title, firstButton, secondButton, text) {
 
     greport.dialog.state = false
 
-    if config.root.additions.autoLogin.use && #config.root.user.password.game > 3
-       && style == 3 && string.find(text, "Для продолжения игры, Вам необходимо авторизоваться")
+    if config.root.additions.autoLogin.use && #config.root.additions.autoLogin.accountPassword >= 3
+       && style == DIALOG_STYLE_PASSWORD && string.find(text, "Для продолжения игры, Вам необходимо авторизоваться")
     {
-        sampSendDialogResponse(id, 1, 0, config.root.user.password.game)
+        sampSendDialogResponse(id, 1, 0, config.root.additions.autoLogin.accountPassword)
         return false
     }
 
-    if style == 3 && firstButton == "Далее" && secondButton == "Отмена"
+    if style == DIALOG_STYLE_PASSWORD && firstButton == "Далее" && secondButton == "Отмена"
        && string.find(text, "{4a86b6}Авторизация.*{FFFFFF}Введите пароль:")
-       && #config.root.user.password.admin > 3
+       && #config.root.additions.autoLogin.aloginPassword >= 3
+       && config.root.additions.autoLogin.use
     {
-        sampSendDialogResponse(id, 1, 0, config.root.user.password.admin)
+        sampSendDialogResponse(id, 1, 0, config.root.additions.autoLogin.aloginPassword)
         return false
     }
 
@@ -118,9 +119,7 @@ sampev.onShowDialog = fn(id, style, title, firstButton, secondButton, text) {
 
         if style == DIALOG_STYLE_INPUT {
             if greport.dialog.awaiting.input[1] {
-                assert(greport.dialog.awaiting.input[2] != nil, "<value> must be passed in `greport.dialog.awaiting.input` at [2] index")
                 sampSendDialogResponse(id, 1, 0, greport.dialog.awaiting.input[2])
-                
                 greport.dialog.awaiting.inputs = { false, nil }
             }
         }
@@ -130,16 +129,12 @@ sampev.onShowDialog = fn(id, style, title, firstButton, secondButton, text) {
             greport.window::open(false)
         } elseif string.find(text, "Перейти в режим наблюдения за игроком") {
             if greport.dialog.awaiting.options[1] {
-                assert(greport.dialog.awaiting.options[2] != nil, "<listItemIndex> must be passed in `greport.dialog.awaiting.options` at [2] index")
                 sampSendDialogResponse(id, 1, greport.dialog.awaiting.options[2], "")
-                
                 greport.dialog.awaiting.options = { false, nil }
             }
         } elseif string.find(text, "Заблокировать на %d+ минут") {
             if greport.awaiting.special[1] {
-                assert(greport.dialog.awaiting.special[2] != nil, "<listItemIndex> must be passed in `greport.dialog.awaiting.special` at [2] index")
                 sampSendDialogResponse(id, 1, greport.dialog.awaiting.special[2], "")
-                
                 greport.dialog.awaiting.special = { false, nil }
             }
         }

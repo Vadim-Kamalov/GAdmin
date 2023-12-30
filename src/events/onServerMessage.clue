@@ -24,11 +24,76 @@
 @import "game.samp.Player"  => player
 @import "game.GReport"      => greport
 
+@import "Assets"            => assets
 @import "CommandRequester"  => commandRequester
 @import "Config"            => config
 
+static loggedServerMessages = {
+    { "IC чат/действия", {} },
+    { "OOC чат", {} },
+    { "Действия/чат администраторов", {} }
+}
+
+local logs = {
+    { "IC чат/действия", {
+        "^%w+.*говорит:",
+        "^%w+.*кричит:",                        // /s
+        "^%w+.*шепчет:",                        // /w
+        { "^%w+", -413892353 },                 // /me
+        { "%- сказал.+%w+.*, ", -413892353 },   // /todo
+        " %%(%( .* %)%)$"                       // /do
+    }},
+
+    { "OOC чат", {
+        "^%(%( %w+.*%[%d+]: .* %)%)$",                          // /b
+        { "^%(%( PM [отк] %w+.*%[%d+]: .* %)%)$", -3342081 }    // /pm (to/from)
+    }},
+
+    { "Действия/чаты администраторов", {
+        { "^%[A] .*%[%d+] ответил .+%[%d+]:", -6732374 },                                       // /ans
+        { "^%[A] .*%[%d+] вылечил .+%[%d+]%.$", -1347440726 },                                  // /heal
+        { "^%[A] .*%[%d+] подкинул .+%[%d+]%.$", -1347440726 },                                 // /slap
+        { "^%[A] .*%[%d+]:? ", 866792362 },                                                     // /a | actions in /a
+        { "^%[A] .*%[%d+] взялся за обработку репорта от игрока .+%[%d+]%.$", -1347440726 },    // /grep(ort) was taked by administrator
+        { "^%[A] .+%[%d+] перевёл деньги через банк .+%[%d+] %- %$%d+$", -1347440726 },         // money bank-transaction
+        { "^%[A] .+%[%d+] передал деньги .+%[%d+] %- %$%d+$", -1347440726 },                    // /pay
+        { "^%[A] .*%[%d+] удалил репорт от игрока .+%[%d+]%.$", -1347440726 },                  // /grep(ort) was removed by administrator
+        { "^%[A] .+%[%d+] нарисовал граффити%. MysqlID: %d+$", -65366 },                        // /graffiti
+        { "^%[A] .*%[%d+] починил машину с ID: %d+%.$", -1347440726 },                          // /vr(epair)
+        { "^%[A] .+%[%d+] установил описание: ", -1697828182 },                                 // /pame (ped description)
+        { "^%[A] .+%[%d+] установил описание авто: ", -1697828182 },                            // /pame (car description)
+        { "^%[A] .+%[%d+] установил слухи: ", -1697828182 },                                    // /pame (gossip)
+        { "^%[GBUY] [A-Za-z0-9]%[%d+] создал объвление %[%d+]: ", -1697828182 },                // GBUY advertisement creation
+        { "^%.%.%. ", -1697828182 },                                                            // /pame (ped description/car description/gossip/GBUY ad) continuation
+        { "^Администратор .+ .+%.Причина: ", -10270806 },                                       // /ban | /mute | /kick | /bmute | /warn
+        { "^Администратор .+ установил <Player Kill> персонажу .+%.$", -10270806 },             // /pk
+        { "^Администратор .+ установил <Character Kill> персонажу .+%.$", -10270806 },          // /ck
+    }}
+}
+
 sampev.onServerMessage = fn(color, text) {
     local text = u8($)
+
+    for sectionIndex, section in logs {
+        local log = {
+            time = assets::getLocalTime()
+            text = text
+        }
+
+        for _, item in section[2] {
+            if type(item) == "table" {
+                if string.find(text, item[1]) && color == item[2] {
+                    table.insert(loggedServerMessages[sectionIndex][2], log)
+                    break
+                }
+            } else {
+                if string.find(text, item) {
+                    table.insert(loggedServerMessages[sectionIndex][2], log)
+                    break
+                }
+            }
+        }
+    }
 
     commandRequester::setupChatWatcher(text, color)
     greport::setupChatWatcher(text)

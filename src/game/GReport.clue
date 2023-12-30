@@ -141,6 +141,8 @@ method __greport__.window::close(withDialog = true) {
 
 /**
  * Open or close window by `self.state` status.
+ *
+ * @param withDialog boolean (default = true)
  * @return void
  */
 method __greport__.window::switch(withDialog = true) {

@@ -134,7 +134,12 @@ imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
             }
         } // for _, player in getAllChars()
     } /* if !isGamePaused()*/ else {
-        local text = string.format("GAdmin v%s", $GADMIN_VERSION)
-        self.DL::AddText(imgui.ImVec2(sizeX - 100 - imgui.CalcTextSize(text).x / 2, sizeY - 40), -1, text)
+        for index, text in ({
+            string.format("GAdmin v%s", $GADMIN_VERSION),
+            "\nCopyright (C) " .. $COPYRIGHT_YEARS .. " The Contributors. All rights reserved.",
+            "\n\nLicensed under the GNU General Public License v3 (GPLv3)."
+        }) {
+            self.DL::AddTextFontPtr((index == 1) ? bold : regular, 18, imgui.ImVec2((sizeX - imgui.CalcTextSize(text).x) / 2, sizeY - 70 + (index * 2)), -1, text)
+        }
     }
 })

@@ -18,22 +18,18 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
-global _sampAddChatMessage = sampAddChatMessage
-global fn sampAddChatMessage(text, color) {
-    _sampAddChatMessage(u8::decode(text), color)
-}
+@import "game.User" => user
+@import "Config"    => config
 
-global _sampSendChat = sampSendChat
-global fn sampSendChat(message) {
-    _sampSendChat(u8::decode(message))
-}
+static onTogglePlayerControllableCount = 0
 
-global _sampSendDialogResponse = sampSendDialogResponse
-global fn sampSendDialogResponse(id, button, listItem, input) {
-    _sampSendDialogResponse(id, button, listItem, (input) ? u8::decode(input) : "")
-}
-
-global _setClipboardText = setClipboardText
-global fn setClipboardText(text) {
-    _setClipboardText(u8::decode(text))
+sampev.onTogglePlayerControllable = fn {
+    onTogglePlayerControllableCount += 1
+    if isSampAvailable() && sampGetPlayerScore(user::getId()) == 1
+       && scriptLoadedWithGame
+       && config.root.additions.autoAdminLogin.use
+       && onTogglePlayerControllableCount == 2
+    {
+        sampSendChat("/alogin")
+    }
 }

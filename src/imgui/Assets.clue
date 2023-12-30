@@ -173,7 +173,7 @@ method __imguiAssets__::convertHex2Float3(hex) {
 /**
  * Set previous ImGui item able to copy.
  *
- * @param text string
+ * @param text any
  * @param notifyTitle string|nil
  * @param notifyDescription string|nil
  * @param notification table|nil
@@ -185,7 +185,7 @@ method __imguiAssets__::setPreviousItemAbleToCopy(
     notifyDescription = "Следующий текст успешно скопирован: " .. text,
     notification
 ) {
-    notification = notification || {
+    notification ??= {
         icon    = icons.ICON_KEYBOARD
         title   = notifyTitle
         text    = notifyDescription

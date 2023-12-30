@@ -206,14 +206,20 @@ static __config__ = {
                 }
             },
 
+            autoLogin = {
+                use             = false,
+                accountPassword = "",
+                aloginPassword  = ""
+            },
+
+            hideSpectatorMenu   = { use = true },
             swapLayout          = { use = false },
             idInKillList        = { use = false },
             deathNotifyInChat   = { use = false },
             showAdmins          = { use = true },
             displayIdInIc       = { use = false },
             gunInfo             = { use = false },
-            autoLogin           = { use = false },
-            autoAdminLogin      = { use = false }, //! TODO
+            autoAdminLogin      = { use = false },
             carInfo             = { use = false },
             hideIpAddresses     = { use = false }
         },
@@ -247,17 +253,6 @@ static __config__ = {
                 total = 0,
                 weeks = {}
             },
-
-            password = {
-                admin   = "",
-                game    = ""
-            },
-        },
-
-        binder = { //! TODO
-            commands = {
-                gg = { message = "Приятной игры!" }
-            }
         },
 
         notifications = {
@@ -269,7 +264,22 @@ static __config__ = {
             skipVersionUpdate   = "0.0"
         },
 
-        binds                   = {},
+        binds = {
+            {
+                keys        = {},
+                value       = "/ans ${{ GET_ARGUMENT, 1 }} Приятной игры!",
+                commandName = "gg",
+                title       = "/gg"
+            },
+
+            { 
+                keys        = {},
+                value       = "/a Взял на слежку ${{ GET_ARGUMENT, 1 }} ID.\n/sp ${{ GET_ARGUMENT, 1 }}",
+                commandName = "asp",
+                title       = "/asp"
+            }
+        },
+
         styleChangeableWindows  = {},
         hotKeys                 = {},
         movableWindows          = {}

@@ -29,9 +29,11 @@
 @import "CommandRequester"  => commandRequester
 @import "AutoUpdate"        => autoUpdate
 @import "Assets"            => assets
+@import "MovableWindows"    => movableWindows
 
 @import "imgui.Style"   => style
 @import "imgui.HotKey"  => HotKey
+@import "imgui.Assets"  => imguiAssets
 
 @import "game.Binder"       => binder
 @import "game.User"         => user
@@ -122,10 +124,12 @@ math.randomseed(os.time())
 
 static u8                   = encoding.UTF8
 static spectatorCameraFov   = -1
+static scriptLoadedWithGame = false //! `true` only when called `sampev.onInitGame`.
 static bulletData           = { lastId = 0 }
 
 local airbreak              = { status = false, speed = 1.0, coords = {} }
 local fishEyeWeaponLock     = false
+local userFullyConnected    = false
 
 //! Initializing hot keys that used in this module.
 
@@ -154,8 +158,44 @@ hotKeyCallbacks.airbreak = fn {
     }
 }
 
+hotKeyCallbacks.switchCursorState = fn {
+    if !common::isInputsActive() {
+        imguiAssets::switchCursorStatus()
+    }
+}
+
+hotKeyCallbacks.switchSpectatorState = fn {
+    if spectator.status && !common::isInputsActive() {
+        sampSendMenuSelectRow(SPECTATOR_MENU_SWITCH)
+    }
+}
+
+hotKeyCallbacks.nextPlayerInSpectator = fn {
+    if spectator.status && !common::isInputsActive() {
+        sampSendMenuSelectRow(SPECTATOR_MENU_NEXT)
+    }
+}
+
+hotKeyCallbacks.previousPlayerInSpectator = fn {
+    if spectator.status && !common::isInputsActive() {
+        sampSendMenuSelectRow(SPECTATOR_MENU_BACK)
+    }
+}
+
 HotKey::new("main->airbreak", { VK_RSHIFT }, "Аирбрейк")
       ::registerCallback(hotKeyCallbacks.airbreak)
+
+HotKey::new("main->switchCursorState", { VK_B }, "Переключить курсор")
+      ::registerCallback(hotKeyCallbacks.switchCursorState)
+
+HotKey::new("main->switchSpectatorState", { VK_U }, "Переключить режим наблюдения")
+      ::registerCallback(hotKeyCallbacks.switchSpectatorState)
+
+HotKey::new("main->nextPlayerInSpectator", { VK_RIGHT }, "Следующий игрок в /sp")
+      ::registerCallback(hotKeyCallbacks.nextPlayerInSpectator)
+
+HotKey::new("main->previousPlayerInSpectator", { VK_LEFT }, "Предыдущий игрок в /sp")
+      ::registerCallback(hotKeyCallbacks.previousPlayerInSpectator)
 
 static enum /* ALIGN_TYPE */ {
     ALIGN_LEFT,
@@ -193,6 +233,10 @@ global fn main() {
     while !isSampAvailable() { wait(0) }
 
     encoding.default = "CP1251"
+
+    sampRegisterChatCommand("rec", fn(delay) {
+        user::reconnect(tonumber(delay))
+    })
 
     binder::initializeBinds()
 
@@ -238,11 +282,16 @@ global fn main() {
     $debugSuccessful!("system", "GAdmin " .. $GADMIN_VERSION .." compelety loaded!")
 }
 
-    while true {
+    loop {
         wait(0)
 
         commandRequester::loop()
         user::updateTime()
+
+        if movableWindows.changingWindowsPositions {
+            displayHud(movableWindows.viewMode != MV_ONLY_IN_SPECTATOR)
+            displayRadar(movableWindows.viewMode != MV_ONLY_IN_SPECTATOR)
+        } 
 
         if spectator.status {
             if sampIsPlayerPaused(spectator.id) {
@@ -353,45 +402,4 @@ $JMP_HOOK /** void(__thiscall*)(void*) */ onRecallDownHook(...) {
     } else {
         onRecallDownHook(...)
     }
-}
-
-@ifdef __GADMIN_DEBUG__ {
-    sampfuncsRegisterConsoleCommand("debug.enableWindow", fn(window) {
-        config.root.windows[window].use = true
-    })
-    
-    sampfuncsRegisterConsoleCommand("debug.abort", fn {
-        someUndefinedFunctionToCrashScript()
-    })
-
-    sampfuncsRegisterConsoleCommand("debug.setAlignMode", fn(mode) {
-        config.root.windows.adminList.textAlignMode = tonumber(mode)
-    })
-
-    sampfuncsRegisterConsoleCommand("debug.addNotification", fn {
-        notify::send({
-            buttons = {
-                first = {
-                    name    = "Закрыть"
-                    call    = fn(close) { close() }
-                }
-
-                second = {
-                    name = "AHelper govno"
-                }
-            }
-        })
-    })
-
-    sampfuncsRegisterConsoleCommand("debug.getSpectatorInformation", fn(key) {
-        print(spectator.id)
-        print(spectator::getInformation()[key])
-    })
-
-    sampfuncsRegisterConsoleCommand("debug.addCheckerPlayer", fn(args) {
-        table.insert(config.root.windows.playerChecker.players, {
-            nickname    = string.match(args, "^(%S+) .*"),
-            commentary  = string.match(args, "^%S+ (.*)")
-        })
-    })
 }

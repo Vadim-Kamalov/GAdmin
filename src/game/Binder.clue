@@ -76,7 +76,12 @@ method binder::sendString(input, arguments = {}, delayBetweenMessages = $COMMAND
 
     lua_thread.create(fn {
         for line with string.gmatch(input, "[^\n]+") {
-            sampSendChat(line)
+            if sampIsChatCommandDefined(string.match(line, "^/(.+)[ $]") || "-1") {
+                sampProcessChatInput(line)
+            } else {
+                sampSendChat(line)
+            }
+            
             wait(delayBetweenMessages)
         }
     })

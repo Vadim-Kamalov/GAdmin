@@ -37,11 +37,6 @@ method animations::getContrastColor(
         : colorB
 }
 
-method animations::isPlaceHovered(a, b) {
-    local m = imgui.GetMousePos()
-    return (m.x >= a.x && m.y >= a.y) && (m.x <= b.x && m.y <= b.y)
-}
-
 /**
  * Draw animated and clickable text.
  *
@@ -450,7 +445,7 @@ method animations::toggleButton(label, state, size = imgui.ImVec2(40, 20), durat
 method animations::clickableUnderlinedText(label, state = false, duration = { 0.5, 0.3 }, colors = {
     idle        = imgui.GetStyle().Colors[imgui.Col.TextDisabled],
     hovered     = imgui.GetStyle().Colors[imgui.Col.Text],
-    selected    = imgui.GetStyle().Colors[imgui.Col.ButtonActive]
+    selected    = imgui.GetStyle().Colors[imgui.Col.Text]
 }) {
     local dl        = imgui.GetWindowDrawList()
     local id        = label
@@ -468,7 +463,7 @@ method animations::clickableUnderlinedText(label, state = false, duration = { 0.
             imgui.TextColored(this.color, label)
 
             local s = imgui.GetItemRectSize()
-            local hovered, clicked = self::isPlaceHovered(p, p + s), imgui.IsItemClicked()
+            local hovered, clicked = imgui.IsItemHovered(), imgui.IsItemClicked()
 
             if this.hovered.state != hovered && !state {
                 this.hovered.state = hovered
@@ -508,7 +503,12 @@ method animations::clickableUnderlinedText(label, state = false, duration = { 0.
 
                 local max, y = s.x / 2, p.y + s.y + 3
                 local mid = p.x + max
-                local color = imgui.ColorConvertFloat4ToU32(imgui.ImVec4(this.color.x, this.color.y, this.color.z, this.hovered.alpha))
+                local color = imgui.ColorConvertFloat4ToU32(imgui.ImVec4(
+                    this.color.x,
+                    this.color.y,
+                    this.color.z,
+                    (this.hovered.state) ? imgui.GetStyle().Alpha : this.hovered.alpha
+                ))
 
                 dl::AddLine(imgui.ImVec2(mid, y), imgui.ImVec2(mid + (max * this.hovered.alpha), y), color, 3)
                 dl::AddLine(imgui.ImVec2(mid, y), imgui.ImVec2(mid - (max * this.hovered.alpha), y), color, 3)
