@@ -29,6 +29,23 @@
 @import "Common" => common
 @import "Config" => config
 
+@macro RENDER_CHANGE_CONFIGURATION() {
+    (fn {
+        global RENDER_CHANGE_CONFIGURATION_SLIDER =
+            RENDER_CHANGE_CONFIGURATION_SLIDER || imgui.new.int(config.root.render.size.common)
+
+        imgui.SetNextItemWidth(imgui.GetWindowWidth() - 10)
+        if imgui.SliderInt(
+            "##imgui.windows.Main.configuration.renderChangeSlider",
+            RENDER_CHANGE_CONFIGURATION_SLIDER,
+            10,
+            50
+        ) {
+            config.root.render.size.common = RENDER_CHANGE_CONFIGURATION_SLIDER[0]
+        }
+    })
+}
+
 local useWallhack = true
 
 HotKey::new("imgui.windows.DrawListRender->wallhack", { VK_LCONTROL, VK_Z }, "Wallhack")
@@ -72,41 +89,32 @@ imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
             local charCheck                 = charResult && isCharOnScreen(char) && id != select(2, sampGetPlayerIdByCharHandle(PLAYER_PED))
             local distance                  = getDistanceBetweenCoords3d(x, y, z, myx, myy, myz)
             local clistColorHex             = string.format("%06X", sampGetPlayerColor(id) & 0xFFFFFF)
+            local onPlayerRenderText        = ""
 
             if charCheck {
-                if config.root.additions.gunInfo.use && distance < 50 {
-                    imguiText::addColored(
-                        self.DL,
-                        "{FFFFFF}{" .. require("game.weapons").names[getCurrentCharWeapon(player)] .. "}",
-                        imgui.ImVec2(screenPosX, screenPosY),
-                        nil,
-                        config.root.render.size.gunInfo,
-                        1
-                    )
+                if config.root.cheats.wallhack.use && useWallhack {
+                    onPlayerRenderText ..= string.format("{%s}{%s[%s] [X: %1.f]}{FFFFFF}{\n}", clistColorHex, sampGetPlayerNickname(id), id, distance)
                 }
 
                 if config.root.additions.showAdmins.use && distance < 50 {
                     for _, data in admins {
                         if id == data.id {
-                            imguiText::addColored(
-                                self.DL,
-                                "{FF8585}{" .. data.nickname.ooc .. "}", 
-                                imgui.ImVec2(screenPosX, screenPosY - 15), 
-                                nil, 
-                                config.root.render.size.admins, 
-                                1
-                            )
+                            onPlayerRenderText ..= "{FF8585}{" .. data.nickname.ooc .. "}{FFFFFF}{\n}" 
                         }
                     }
                 }
 
-                if config.root.cheats.wallhack.use && useWallhack {
+                if config.root.additions.gunInfo.use && distance < 50 {
+                    onPlayerRenderText ..= "{FFFFFF}{" .. require("game.weapons").names[getCurrentCharWeapon(player)] .. "}{FFFFFF}{\n}"
+                }
+                
+                if #onPlayerRenderText > 0 {
                     imguiText::addColored(
                         self.DL,
-                        string.format("{%s}{%s[%s] [X: %1.f]}", clistColorHex, sampGetPlayerNickname(id), id, distance),
-                        imgui.ImVec2(screenPosX, screenPosY - 30), 
+                        onPlayerRenderText,
+                        imgui.ImVec2(screenPosX, screenPosY), 
                         nil, 
-                        config.root.render.size.wallhack, 
+                        config.root.render.size.common, 
                         1
                     )
                 }

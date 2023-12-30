@@ -59,8 +59,10 @@ local enum /* WINDOW_WIDGET */ {
     WINDOW_WIDGET_CONFIGURATION_IN_POPUP
 }
 
-local sizeX, sizeY  = getScreenResolution()
-local window        = {
+local sizeX, sizeY                  = getScreenResolution()
+local RENDER_CHANGE_CONFIGURATION   = $RENDER_CHANGE_CONFIGURATION!()
+
+local window = {
     state   = imgui.new.bool(),
     frame   = {},
     menu    = {
@@ -253,12 +255,14 @@ local window        = {
             }},
         
             { "showAdmins", "Показывать админов", {
-                { "use", "Показывать администраторов на скине, если он таковым является", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.showAdmins.use) }
-            }},
+                { "use", "Показывать администраторов на скине, если он таковым является", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.showAdmins.use) },
+                { "none", "Размер шрифта", WINDOW_WIDGET_CUSTOM, RENDER_CHANGE_CONFIGURATION }
+            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
 
             { "gunInfo", "Отображение оружия у игрока", {
-                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.gunInfo.use) }
-            }},
+                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.gunInfo.use) },
+                { "none", "Размер шрифта", WINDOW_WIDGET_CUSTOM, RENDER_CHANGE_CONFIGURATION }
+            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
             
             { "displayIdInIc", "Отображение айди в IC", {
                 { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.displayIdInIc.use) }
@@ -275,8 +279,9 @@ local window        = {
             }},
 
             { "carInfo", "Информация о машине", {
-                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.carInfo.use) }
-            }},
+                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.carInfo.use) },
+                { "none", "Размер шрифта", WINDOW_WIDGET_CUSTOM, RENDER_CHANGE_CONFIGURATION }
+            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
 
             { "hideIpAddresses", "Прятать IP адреса", {
                 { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.hideIpAddresses.use) }
@@ -603,12 +608,43 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
 
                                 imgui.SameLine()
 
-                                if animations::button("Сбросить настройки", imgui.ImVec2(widthAuto / 3, 30), 10) {
-                                    config.root = config.def
-                                    thisScript()::reload()
+                                if animations::button("Сброс настроек", imgui.ImVec2(widthAuto / 3, 30), 10) {
+                                    window.popupModal.body = fn {
+                                        imgui.SetCursorPos(imgui.ImVec2(5, 5))
+                                        imgui.BeginGroup()
+                                            imguiAssets::textWithFont("Сброс настроек", bold14)
+                                            imguiAssets::textWithFont("Учтите, что если вы были на /alogin в момент сброса всех настроек, то вам придется\n
+ввести /alogin еще раз для корректной работы функционала скрипта.", regular12)
+
+                                            imgui.PushFont(regular12)
+                                                if animations::button("Сбросить все настройки", imgui.ImVec2(imgui.GetWindowWidth() - 10, 25)) {
+                                                    config.root = config.def
+                                                    imgui.CloseCurrentPopup()
+                                                    thisScript()::reload()
+                                                }
+
+                                                if animations::button("Сбросить статистику", imgui.ImVec2(imgui.GetWindowWidth() - 10, 25)) {
+                                                    config.root.user.online     = config.def.user.online
+                                                    config.root.user.answers    = config.def.user.answers
+
+                                                    imgui.CloseCurrentPopup()
+                                                }
+                                                
+                                                if animations::button("Закрыть##imgui.windows.Main.Popup.resetConfiguration", imgui.ImVec2(imgui.GetWindowWidth() - 10, 30)) {
+                                                    imgui.CloseCurrentPopup()
+                                                }
+                                                
+                                                if animations::button("Закрыть##imgui.windows.Main.Popup.resetConfiguration", imgui.ImVec2(imgui.GetWindowWidth() - 10, 30)) {
+                                                    imgui.CloseCurrentPopup()
+                                                }
+                                            imgui.PopFont()
+                                        imgui.EndGroup()
+                                        
+                                        window.popupModal.size = imgui.GetItemRectSize() + imgui.ImVec2(10, 10)
+                                    }
+
+                                    imgui.OpenPopup("imgui.windows.Main.Popup")
                                 }
-                                
-                                animations::hint("Скрипт перезагрузится.##resetSettings")
 
                                 if animations::button("Перезагрузить скрипт", imgui.ImVec2(widthAuto, 30)) {
                                     thisScript()::reload()

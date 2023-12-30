@@ -63,10 +63,11 @@ method text::addStroke(drawList, text, color, pos, font, textSize, strokeWidth =
  * @return void
  */
 method text::addColored(drawList, text, pos, font = nil, textSize = 14, strokeWidth = 1) {
-    local textColoredList = (fn {
+    local changeablePos     = imgui.ImVec2(pos.x, pos.y)
+    local textColoredList   = (fn {
         local output = {}
         for color, coloredText with string.gmatch(text, "{(%x%x%x%x%x%x)}{(.-)}") {
-            table.insert(output, { text = coloredText, hex = color, sizeX = imgui.CalcTextSize(coloredText).x })
+            table.insert(output, { text = coloredText, hex = color, size = imgui.CalcTextSize(coloredText) })
         }
         return output
     })()
@@ -75,8 +76,16 @@ method text::addColored(drawList, text, pos, font = nil, textSize = 14, strokeWi
     for _, data in textColoredList {
         local r, g, b, _    = assets::explodeARGB(tonumber(data.hex .. "FF", 16))
         local color         = imgui.GetColorU32Vec4(imgui.ImVec4(r / 255, g / 255, b / 255, 1 /* Alpha */))
-        self::addStroke(drawList, data.text, color, pos, font, textSize, strokeWidth)
-        pos.x += data.sizeX + textSize / 2.5
+        self::addStroke(drawList, data.text, color, changeablePos, font, textSize, strokeWidth)
+        
+        if data.text == "\n" {
+            changeablePos.y += data.size.y + textSize / 2.5
+            print("before", changeablePos.x, pos.x)
+            changeablePos.x = pos.x
+            print("after", changeablePos.x, pos.x)
+        } else {
+            changeablePos.x += data.size.x + textSize / 2.5
+        }
     }
     if font { imgui.PopFont(font) }
 }

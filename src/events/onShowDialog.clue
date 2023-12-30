@@ -77,7 +77,7 @@ sampev.onShowDialog = fn(id, style, title, firstButton, secondButton, text) {
                     }
 
                     if user::getOOCNickname() == "Администратор" && user::getAdminLvl() == -1 {
-                        user::setOOCNickname("Technical administrator")
+                        user::setOOCNickname("Technical Admin")
                         user::setAdminLvl(6)
                     }
                 }

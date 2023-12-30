@@ -134,10 +134,7 @@ static __config__ = {
 
         render = {
             size = {
-                carInfo     = $DEFAULT_RENDER_SIZE,
-                gunInfo     = $DEFAULT_RENDER_SIZE,
-                admins      = $DEFAULT_RENDER_SIZE,
-                wallhack    = $DEFAULT_RENDER_SIZE,
+                common = $DEFAULT_RENDER_SIZE
             }
         },
 
