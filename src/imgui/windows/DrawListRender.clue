@@ -26,8 +26,10 @@
 @import "game.sa.Ped"       => ped
 @import "game.Admins"       => admins
 
-@import "Common" => common
-@import "Config" => config
+@import "Icons"         => icons
+@import "Notifications" => notify
+@import "Common"        => common
+@import "Config"        => config
 
 @macro RENDER_CHANGE_CONFIGURATION() {
     (fn {
@@ -49,7 +51,27 @@
 local useWallhack = true
 
 HotKey::new("imgui.windows.DrawListRender->wallhack", { VK_LCONTROL, VK_Z }, "Wallhack")
-      ::registerCallback(fn { useWallhack = !$ })
+::registerCallback(fn {
+    useWallhack = !$
+    notify::send({
+        title   = "Состояние wallhack'a изменено",
+        text    = "Теперь никнеймы игроков " .. ((useWallhack) ? "показаны" : "скрыты") .. ".",
+        icon    = icons.ICON_CHECKMARK
+    })
+})
+
+HotKey::new("imgui.windows.DrawListRender->traccersRemove", { VK_LMENU, VK_Z }, "Удалить трассера")
+::registerCallback(fn {
+    for i = 1, config.root.additions.tracers.maxLines {
+        bulletData[i].enable = false
+    }
+
+    notify::send({
+        title   = "Трассера удалены.",
+        text    = "Трассера успешно удалены!",
+        icon    = icons.ICON_CHECKMARK
+    })
+})
 
 imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
     self.HideCursor = imguiAssets::getCursorStatus()
@@ -130,7 +152,7 @@ imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
 						        local fX, fY    = convert3DCoordsToScreen(t.x, t.y, t.z)
                                 local hitColor  = common::convertHex2ImVec4(config.root.additions.tracers.hitColor)
                                 local missColor = common::convertHex2ImVec4(config.root.additions.tracers.missColor)
-                                local color     = imgui.ColorConvertFloat4ToU32((bullet.type == 0) ? missColor : hitColor)
+                                local color     = imgui.ColorConvertFloat4ToU32((bullet.type == 0 || bullet.type == 3) ? missColor : hitColor)
                                 local dl        = imgui.GetBackgroundDrawList()
 
                                 dl::AddLine(imgui.ImVec2(sX, sY), imgui.ImVec2(fX, fY), color, 1)

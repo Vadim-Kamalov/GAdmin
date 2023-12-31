@@ -80,9 +80,7 @@ method text::addColored(drawList, text, pos, font = nil, textSize = 14, strokeWi
         
         if data.text == "\n" {
             changeablePos.y += data.size.y + textSize / 2.5
-            print("before", changeablePos.x, pos.x)
             changeablePos.x = pos.x
-            print("after", changeablePos.x, pos.x)
         } else {
             changeablePos.x += data.size.x + textSize / 2.5
         }

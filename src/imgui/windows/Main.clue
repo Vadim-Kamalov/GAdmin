@@ -95,7 +95,7 @@ local window = {
             alpha = nil
         },
 
-        combo           = {
+        combo = {
             buffer  = imgui.new.int(),
             array   = nil,
             size    = 0
@@ -235,7 +235,21 @@ local window = {
                 { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.tracers.use) },
                 { "hitColor", "Цвет попадания", WINDOW_WIDGET_COLOR_PICKER, imguiAssets::convertHex2Float3(config.root.additions.tracers.hitColor) },
                 { "missColor", "Цвет промаха", WINDOW_WIDGET_COLOR_PICKER, imguiAssets::convertHex2Float3(config.root.additions.tracers.missColor) },
-                { "maxLines", "Максимальное количество трассеров", WINDOW_WIDGET_SLIDER, 1, 100, imgui.new.int(config.root.additions.tracers.maxLines) }
+                { "maxLines", "Максимальное количество трассеров", WINDOW_WIDGET_CUSTOM, (fn(this) {
+                    imgui.SetNextItemWidth(imgui.GetWindowWidth() - 10)
+                    if imgui.SliderInt("##imgui.windows.Main.Settings.changeTraccersAmount", this[5], 1, 100) {
+                        config.root.additions.tracers.maxLines = this[5][0]
+                        for id = 1, config.root.additions.tracers.maxLines {
+                            bulletData[id] = {
+                                enable  = false,
+                                o       = { x, y, z },
+                                t       = { x, y, z },
+                                time    = 0,
+                                type    = 0
+                            }
+                        }
+                    }
+                }), imgui.new.int(config.root.additions.tracers.maxLines) }
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP }
 
             { "shortCommands", "Короткие команды", {
@@ -627,10 +641,6 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                                     config.root.user.online     = config.def.user.online
                                                     config.root.user.answers    = config.def.user.answers
 
-                                                    imgui.CloseCurrentPopup()
-                                                }
-                                                
-                                                if animations::button("Закрыть##imgui.windows.Main.Popup.resetConfiguration", imgui.ImVec2(imgui.GetWindowWidth() - 10, 30)) {
                                                     imgui.CloseCurrentPopup()
                                                 }
                                                 

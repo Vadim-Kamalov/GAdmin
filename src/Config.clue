@@ -154,14 +154,14 @@ static __config__ = {
                 use             = true,
                 displayType     = 2,
                 allowedCommands = {
-                    { "pk",     COMMAND_REQUEST_TYPE_ANSWER },
-                    { "ck",     COMMAND_REQUEST_TYPE_ANSWER },
-                    { "ban",    COMMAND_REQUEST_TYPE_COMMENTARY },
-                    { "kick",   COMMAND_REQUEST_TYPE_COMMENTARY },
-                    { "mute",   COMMAND_REQUEST_TYPE_COMMENTARY },
-                    { "bmute",  COMMAND_REQUEST_TYPE_COMMENTARY },
-                    { "iban",   COMMAND_REQUEST_TYPE_COMMENTARY },
-                    { "jail",   COMMAND_REQUEST_TYPE_COMMENTARY },
+                    { "pk",     4 },
+                    { "ck",     4 },
+                    { "ban",    3 },
+                    { "kick",   3 },
+                    { "mute",   3 },
+                    { "bmute",  3 },
+                    { "iban",   3 },
+                    { "jail",   3 },
                 }
             },
 

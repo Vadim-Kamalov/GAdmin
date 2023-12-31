@@ -77,11 +77,6 @@ method __style__::beginWindowStyleChangeable(id) {
         //! This check (`??=`) is needed to prevent import spam.
         self.windows[id] ??= import("imgui.StyleChanger")::new(style)
 
-        if id == "imgui.window.Main" {
-            print(id)
-            print(self.windows[id])
-        }
-
         self.windows[id]::update(style)
         self.windows[id]::apply()
     }

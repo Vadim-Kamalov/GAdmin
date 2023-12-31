@@ -195,9 +195,9 @@ method __spectator__::getHandle() {
  */
 method __spectator__::setTo(playerId) {
     if playerId {
-        self.status     = true
+        self.status = true
         if self.id != playerId || !self.time { self.time = os.date("*t") }
-        self.id         = playerId
+        self.id = playerId
 
         if tonumber(self.information.statsId) != self.id
            && os.clock() - self.stats.lastChecked > 1
@@ -208,6 +208,9 @@ method __spectator__::setTo(playerId) {
             self.stats.lastChecked      = os.clock()
             self.afk.time               = 0
 
+            self.information.shotTotal  = "0"
+            self.information.shotHit    = "0"
+            
             if !self.afk.awaiting.message {
                 lua_thread.create(fn {
                     wait($COMMAND_DELAY)

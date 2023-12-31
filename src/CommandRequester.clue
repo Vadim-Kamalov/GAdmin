@@ -111,7 +111,9 @@ method __commandRequester__::setupUserCommandWatcher(command) {
  */
 method __commandRequester__::setupChatWatcher(text, color) {
     if string.find(text, "^{......}%| {......}У Вас нет доступа для использования данной команды%.$") {
-        self::new(user::getId(), self.lastUserCommand)
+        if !string.find(self.lastUserCommand, "^/%S+%s*$") {
+            self::new(user::getId(), self.lastUserCommand)
+        }
     }
 
     if local id, command = string.match(text, "^%[A%] .+%[(%d+)%]: (/.*)") {
@@ -131,9 +133,7 @@ method __commandRequester__::setupChatWatcher(text, color) {
                     self::remove()
                 }
             }
-        }
-
-        if type == COMMAND_REQUEST_TYPE_COMMENTARY {
+        } elseif type == COMMAND_REQUEST_TYPE_COMMENTARY {
             if local from = string.match(text, "^Администратор .+%. Причина:.*// (.+)$") {
                 if local admin = admins::getAdminById(self.current.id.from) {
                     if from == admin.nickname.ooc {
@@ -141,9 +141,7 @@ method __commandRequester__::setupChatWatcher(text, color) {
                     }
                 }
             }
-        } 
-
-        if type == COMMAND_REQUEST_TYPE_ANSWER {
+        } elseif type == COMMAND_REQUEST_TYPE_ANSWER {
             if local to, name = string.match(text, "^%[A%] .+%[%d+%] ответил .+%[(%d+)%]: (%w+) by .+") {
                 if tonumber(to) == tonumber(self.current.id.to) && string.lower(name) == string.lower(self.current.command.splitted.name) {
                     self::remove()
@@ -233,7 +231,7 @@ method __commandRequester__::new(from, command) {
 
     if local this = config.root.additions.commandRequester {
         for _, commandData in this.allowedCommands {
-            if local command = string.match(command, "^/(%S+)") {
+            if local command = string.match($, "^/(%S+)") {
                 if string.lower(commandData[1]) == string.lower(command) {
                     commandType = commandData[2]
                 }
@@ -310,6 +308,13 @@ method __commandRequester__::new(from, command) {
             }
         }
     }
+}
+
+@ifdef __GADMIN_DEBUG__
+{
+sampfuncsRegisterConsoleCommand("debug.newCommandRequest", fn(params) {
+    __commandRequester__::new(tonumber(string.match(params, "^(%d+)")), string.match(params, "^%d+(.*)"))
+})
 }
 
 return __commandRequester__

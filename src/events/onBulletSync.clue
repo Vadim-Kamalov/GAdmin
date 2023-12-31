@@ -18,16 +18,13 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
-@import "game.Spectator" => spectator
-
-@import "Config" => config
-
-@define TARGET_ID_NONE 65535
+@import "game.Spectator"    => spectator
+@import "Config"            => config
 
 sampev.onBulletSync = fn(id, data) {
     if id == spectator.id {
         local information   = spectator::getInformation()
-        local shotHit       = (data.targetId == $TARGET_ID_NONE) ? 0 : 1 
+        local shotHit       = (data.targetType == 0 || data.targetType == 3) ? 0 : 1 
         spectator::setInformation({
             shotTotal   = information.shot.total + 1
             shotHit     = information.shot.hit + shotHit
