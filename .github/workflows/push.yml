@@ -1,0 +1,14 @@
+name: Code checkout
+on:
+  push:
+    paths:
+      - src/**
+jobs:
+  code-checkout:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check for the presence of a compiler, install it if not
+      run: cargo install --list | grep -q clue || cargo install clue
+    - uses: actions/checkout@v2
+    - name: Checkout code
+      run: bash ${{ github.workspace }}/build.sh debug

@@ -310,11 +310,4 @@ method __commandRequester__::new(from, command) {
     }
 }
 
-@ifdef __GADMIN_DEBUG__
-{
-sampfuncsRegisterConsoleCommand("debug.newCommandRequest", fn(params) {
-    __commandRequester__::new(tonumber(string.match(params, "^(%d+)")), string.match(params, "^%d+(.*)"))
-})
-}
-
 return __commandRequester__
