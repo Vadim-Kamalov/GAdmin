@@ -1,6 +1,6 @@
 /**
  * GAdmin - Script simplifying the work of administrators on the Gambit-RP
- * Copyright (C) 2023 The Contributors.
+ * Copyright (C) 2023-2024 The Contributors.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,7 +53,7 @@
 @define SERVER_ADDRESS      "46.174.48.194"
 @define SERVER_MAX_PLAYERS  600
 
-@define COPYRIGHT_YEARS "2023"
+@define COPYRIGHT_YEARS "2023-2024"
 
 @macro IMVEC4_TO_RGB(vector) { string.format("%02X%02X%02X", $vector.x * 255, $vector.y * 255, $vector.z * 255) }
 

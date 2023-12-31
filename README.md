@@ -21,7 +21,7 @@
 
 Помимо библиотек необходимо то, что будет выполнять Lua файл, а конкретно:
 
-- MoonLoader    >= **v.026.5-beta**
+- MoonLoader    == **v.026.5-beta**
 - SAMPFUNCS     >= **v5.4.1-final**
 - CLEO          >= **v4.1.1**
 
@@ -39,7 +39,7 @@ TARGET:
 
 # Лицензия
 
-Copyright (C) 2023 The Contributors\*.
+Copyright (C) 2023-2024 The Contributors\*.
 *Licensed under the GNU General Public License v3 (GPLv3)*.
 
 > [The Contributors\*](https://github.com/Vadim-Kamalov/GAdmin/blob/main/CONTRIBUTORS)

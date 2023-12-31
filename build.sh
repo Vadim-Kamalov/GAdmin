@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # GAdmin - Script simplifying the work of administrators on the Gambit-RP
-# Copyright (C) 2023 The Contributors.
+# Copyright (C) 2023-2024 The Contributors.
 # 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
