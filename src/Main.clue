@@ -305,6 +305,12 @@ global fn main() {
         } 
 
         if spectator.status {
+            local result, _ = sampGetCharHandleBySampPlayerId(spectator.id)
+            
+            if !result && !common::isInputsActive() {
+                sampSendMenuSelectRow(SPECTATOR_MENU_SWITCH)
+            }
+
             if sampIsPlayerPaused(spectator.id) {
                 if os.clock() - spectator.afk.clock >= 1 {
                     spectator.afk.time += 1

@@ -31,6 +31,10 @@ sampev.onShowDialog = fn(id, style, title, firstButton, secondButton, text) {
 
     greport.dialog.state = false
 
+    if config.root.additions.hideIpAddresses.use {
+        text = string.gsub($, "%[%d+%.%d+%.%d+%.%d+%]", "[XXX.XXX.XXX.XXX]")
+    }
+    
     if config.root.additions.autoLogin.use && #config.root.additions.autoLogin.accountPassword >= 3
        && style == DIALOG_STYLE_PASSWORD && string.find(text, "Для продолжения игры, Вам необходимо авторизоваться")
     {
@@ -147,4 +151,6 @@ sampev.onShowDialog = fn(id, style, title, firstButton, secondButton, text) {
 
         return false
     }
+
+    return { id, style, u8::decode(title), u8::decode(firstButton), u8::decode(secondButton), u8::decode(text) }
 }
