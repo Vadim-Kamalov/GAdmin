@@ -71,4 +71,19 @@ method __admins__::getAdminById(id) {
     return nil
 }
 
+/**
+ * Get admin information by his OOC nickname.
+ * 
+ * @param id number
+ * @return table|nil
+ */
+method __admins__::getAdminByOOCNickname(nickname) {
+    for _, admin in self {
+        if admin.nickname.ooc == nickname {
+            return admin
+        }
+    }
+    return nil
+}
+
 return __admins__

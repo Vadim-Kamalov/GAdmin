@@ -19,11 +19,38 @@
  */
 
 @import "Config" => config
+@import "Assets" => assets
 @import "Common" => common
 
 static __style__ = {
-    windows = {}
-    def     = {}
+    windows     = {}
+    def         = {}
+    baseColors  = {
+        { "Text", nil },
+        { "TextDisabled", nil },
+        { "WindowBg", nil },
+        { "ChildBg", nil },
+        { "PopupBg", nil },
+        { "Border", nil },
+        { "BorderShadow", nil },
+        { "FrameBg", nil },
+        { "FrameBgHovered", nil },
+        { "FrameBgActive", nil },
+        { "ScrollbarBg", nil },
+        { "ScrollbarGrab", nil },
+        { "ScrollbarGrabHovered", nil },
+        { "ScrollbarGrabActive", nil },
+        { "Button", nil },
+        { "ButtonHovered", nil },
+        { "ButtonActive", nil },
+        { "Header", nil },
+        { "HeaderHovered", nil },
+        { "HeaderActive", nil },
+        { "Separator", nil },
+        { "SeparatorHovered", nil },
+        { "SeparatorActive", nil },
+        { "TextSelectedBg", nil }
+    }
 }
 
 local enum /* STYLE_TYPE */ {
@@ -103,10 +130,24 @@ method __style__::endWindowStyleChangeable(id) {
  */
 method __style__::setDefaultValue(type, key, value) {
     self.def[key] = value
+
     match type {
         STYLE_TYPE_NUMBER || STYLE_TYPE_IMVEC2 => { imgui.GetStyle()[key] = value }
-        STYLE_TYPE_IMVEC4 => { imgui.GetStyle().Colors[imgui.Col[key]] = value }
+        STYLE_TYPE_IMVEC4 => {
+            for _, property in self.baseColors {
+                if property[1] == key {
+                    property[2] ??= { value.x, value.y, value.z, value.w }
+                    break
+                }
+            }
+
+            imgui.GetStyle().Colors[imgui.Col[key]] = value
+        }
     }
+}
+
+method __style__::getBaseColors() {
+    return assets::copyTable(self.baseColors)
 }
 
 /**
@@ -150,17 +191,10 @@ method __style__::apply() {
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "FrameBg", common::convertHex2ImVec4("424242"))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "FrameBgHovered", common::convertHex2ImVec4("2B2B2B"))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "FrameBgActive", common::convertHex2ImVec4("555554"))
-    self::setDefaultValue(STYLE_TYPE_IMVEC4, "TitleBg", imgui.ImVec4(0.12, 0.12, 0.12, 1.00))
-    self::setDefaultValue(STYLE_TYPE_IMVEC4, "TitleBgActive", imgui.ImVec4(0.12, 0.12, 0.12, 1.00))
-    self::setDefaultValue(STYLE_TYPE_IMVEC4, "TitleBgCollapsed", imgui.ImVec4(0.12, 0.12, 0.12, 1.00))
-    self::setDefaultValue(STYLE_TYPE_IMVEC4, "MenuBarBg", imgui.ImVec4(0.12, 0.12, 0.12, 1.00))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "ScrollbarBg", imgui.ImVec4(0.12, 0.12, 0.12, 1.00))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "ScrollbarGrab", common::convertHex2ImVec4("424242"))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "ScrollbarGrabHovered", common::convertHex2ImVec4("555554"))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "ScrollbarGrabActive", common::convertHex2ImVec4("333333"))
-    self::setDefaultValue(STYLE_TYPE_IMVEC4, "CheckMark", imgui.ImVec4(1.00, 1.00, 1.00, 1.00))
-    self::setDefaultValue(STYLE_TYPE_IMVEC4, "SliderGrab", common::convertHex2ImVec4("222222"))
-    self::setDefaultValue(STYLE_TYPE_IMVEC4, "SliderGrabActive", common::convertHex2ImVec4("222222"))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "Button", common::convertHex2ImVec4("424242"))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "ButtonHovered", common::convertHex2ImVec4("555554"))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "ButtonActive", common::convertHex2ImVec4("333333"))
@@ -170,17 +204,24 @@ method __style__::apply() {
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "Separator", imgui.ImVec4(0.47, 0.47, 0.47, 1.00))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "SeparatorHovered", imgui.ImVec4(0.47, 0.47, 0.47, 1.00))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "SeparatorActive", imgui.ImVec4(0.47, 0.47, 0.47, 1.00))
+    self::setDefaultValue(STYLE_TYPE_IMVEC4, "TextSelectedBg", imgui.ImVec4(1.00, 0.00, 0.00, 0.35))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "Tab", imgui.ImVec4(0.12, 0.12, 0.12, 1.00))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "TabHovered", imgui.ImVec4(0.28, 0.28, 0.28, 1.00))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "TabActive", imgui.ImVec4(0.30, 0.30, 0.30, 1.00))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "TabUnfocused", imgui.ImVec4(0.07, 0.10, 0.15, 0.97))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "TabUnfocusedActive", imgui.ImVec4(0.14, 0.26, 0.42, 1.00))
-    self::setDefaultValue(STYLE_TYPE_IMVEC4, "TextSelectedBg", imgui.ImVec4(1.00, 0.00, 0.00, 0.35))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "DragDropTarget", imgui.ImVec4(1.00, 1.00, 0.00, 0.90))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "NavHighlight", imgui.ImVec4(0.26, 0.59, 0.98, 1.00))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "NavWindowingHighlight", imgui.ImVec4(1.00, 1.00, 1.00, 0.70))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "NavWindowingDimBg", imgui.ImVec4(0.80, 0.80, 0.80, 0.20))
     self::setDefaultValue(STYLE_TYPE_IMVEC4, "ModalWindowDimBg", imgui.ImVec4(0.00, 0.00, 0.00, 0.70))
+    self::setDefaultValue(STYLE_TYPE_IMVEC4, "TitleBg", imgui.ImVec4(0.12, 0.12, 0.12, 1.00))
+    self::setDefaultValue(STYLE_TYPE_IMVEC4, "TitleBgActive", imgui.ImVec4(0.12, 0.12, 0.12, 1.00))
+    self::setDefaultValue(STYLE_TYPE_IMVEC4, "TitleBgCollapsed", imgui.ImVec4(0.12, 0.12, 0.12, 1.00))
+    self::setDefaultValue(STYLE_TYPE_IMVEC4, "MenuBarBg", imgui.ImVec4(0.12, 0.12, 0.12, 1.00))
+    self::setDefaultValue(STYLE_TYPE_IMVEC4, "CheckMark", imgui.ImVec4(1.00, 1.00, 1.00, 1.00))
+    self::setDefaultValue(STYLE_TYPE_IMVEC4, "SliderGrab", common::convertHex2ImVec4("222222"))
+    self::setDefaultValue(STYLE_TYPE_IMVEC4, "SliderGrabActive", common::convertHex2ImVec4("222222"))
 }
 
 return __style__

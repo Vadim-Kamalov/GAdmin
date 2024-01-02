@@ -77,6 +77,16 @@ method common::isInputsActive() {
 }
 
 /**
+ * Send script message in SA:MP chat window.
+ * 
+ * @param message string
+ * @return void
+ */
+method common::sendScriptMessage(message, ...) {
+    sampAddChatMessage(string.format("[GAdmin v%s]:{FFFFFF} %s", $GADMIN_VERSION, string.format(message, ...)), 0xFF800000)
+}
+
+/**
  * Translation of RGB (or RGBA) string color into ImVec4 format.
  *
  * @param hex string    RGB (or RGBA) represented as a string in decimal format.

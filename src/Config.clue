@@ -23,6 +23,12 @@
 
 @import "Common" => common
 
+static enum /* NOTIFICATION_TYPE */ {
+    NOTIFICATION_TYPE_DEFAULT,
+    NOTIFICATION_TYPE_SCRIPT_MESSAGE,
+    NOTIFICATION_TYPE_NONE
+}
+
 static __config__ = {
     initialized = false,    // Module initializing status.
     def         = nil,      // Same as `root`, but with default values.
@@ -40,7 +46,8 @@ static __config__ = {
                 textAlignMode           = 3,
                 showAdminLvl            = true,
                 textColorBasedOnClist   = true,
-                strokeSize              = 1
+                strokeSize              = 1,
+                countForScrollbar       = 10
             },
 
             playersNearby = {
@@ -57,6 +64,11 @@ static __config__ = {
             spectatorInformation = {
                 use     = true,
                 type    = 2
+            },
+
+            notifications = {
+                use         = true,
+                maxItems    = 5
             },
 
             farChat = {
@@ -139,8 +151,15 @@ static __config__ = {
         },
 
         cheats = {
-            airbreak    = { use = false },
-            wallhack    = { use = false }
+            airbreak = {
+                use                 = false,
+                notificationType    = 1
+            },
+
+            wallhack = {
+                use                 = false,
+                notificationType    = 1
+            }
         },
 
         additions = {
@@ -153,6 +172,7 @@ static __config__ = {
             commandRequester = {
                 use             = true,
                 displayType     = 2,
+                secondsToHide   = 5,
                 allowedCommands = {
                     { "pk",     4 },
                     { "ck",     4 },
@@ -176,10 +196,11 @@ static __config__ = {
             },
 
             tracers = {
-                use         = true,
-                maxLines    = 15,
-                hitColor    = "FFC700",
-                missColor   = "FFFFFF"
+                use                     = true,
+                maxLines                = 15,
+                hitColor                = "FFC700",
+                missColor               = "FFFFFF",
+                showOnlyForSpectator    = false
             },
 
             shortCommands = {
@@ -250,10 +271,6 @@ static __config__ = {
                 total = 0,
                 weeks = {}
             },
-        },
-
-        notifications = {
-            maxItems = 5 // 1 .. 5
         },
 
         autoUpdate = {

@@ -80,8 +80,9 @@ windows::new("imgui.windows.SpectatorActions", {
             sampSendChat("/pame " .. tostring(spectator.id))
         }},
 
-        { title = "GG", callback = fn {
-            sampSendChat(string.format("/ans %d %s" , spectator.id, config.root.binder.commands.gg.message))
+        { title = "WARN", callback = fn {
+            sampSetChatInputEnabled(true)
+            sampSetChatInputText(string.format("/warn %d ", spectator.id))
         }},
 
         { title = "SLAP", callback = fn {

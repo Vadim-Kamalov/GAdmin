@@ -65,7 +65,7 @@ local logs = {
         { "^%[A] .+%[%d+] установил слухи: ", -1697828182 },                                    // /pame (gossip)
         { "^%[GBUY] [A-Za-z0-9]%[%d+] создал объвление %[%d+]: ", -1697828182 },                // GBUY advertisement creation
         { "^%.%.%. ", -1697828182 },                                                            // /pame (ped description/car description/gossip/GBUY ad) continuation
-        { "^Администратор .+ .+%.Причина: ", -10270806 },                                       // /ban | /mute | /kick | /bmute | /warn
+        { "^Администратор .+%.Причина: ", -10270806 },                                          // /ban | /mute | /kick | /bmute | /warn
         { "^Администратор .+ установил <Player Kill> персонажу .+%.$", -10270806 },             // /pk
         { "^Администратор .+ установил <Character Kill> персонажу .+%.$", -10270806 },          // /ck
     }}
@@ -119,14 +119,24 @@ sampev.onServerMessage = fn(color, text) {
     if string.find(text, "^%[A%] .*%[%d+%]: %S+") && color == 866792362 && config.root.additions.mention.use {
         local possibleMention = string.match(text, "^%[A%] .*%[%d+]: (%S+)")
 
-        for _, pattern in ({
+        for index, pattern in ({
             "^(%d+),",
             "^@(%d+)",
             "^(%d+)$",
             "^@(%d+)$"
+            "^(.+),",
+            "^@(.+)",
+            "^(.+)$",
+            "^@(.+)$"
         }) {
-            if tonumber(string.match(possibleMention, pattern)) == user::getId() {
-                color = rgb2color(config.root.additions.mention.color)
+            if index <= 4 {
+                if tonumber(string.match(possibleMention, pattern)) == user::getId() {
+                    color = rgb2color(config.root.additions.mention.color)
+                }
+            } else {
+                if admins::getAdminByOOCNickname(string.match(possibleMention, pattern)) {
+                    color = rgb2color(config.root.additions.mention.color)
+                }
             }
         }
     }

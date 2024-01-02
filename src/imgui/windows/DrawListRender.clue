@@ -25,6 +25,7 @@
 @import "game.sa.Vehicle"   => vehicle
 @import "game.sa.Ped"       => ped
 @import "game.Admins"       => admins
+@import "game.User"         => user
 
 @import "Icons"         => icons
 @import "Notifications" => notify
@@ -52,25 +53,35 @@ local useWallhack = true
 
 HotKey::new("imgui.windows.DrawListRender->wallhack", { VK_LCONTROL, VK_Z }, "Wallhack")
 ::registerCallback(fn {
-    useWallhack = !$
-    notify::send({
-        title   = "Состояние wallhack'a изменено",
-        text    = "Теперь никнеймы игроков " .. ((useWallhack) ? "показаны" : "скрыты") .. ".",
-        icon    = icons.ICON_CHECKMARK
-    })
+    if user::getAloginStatus() && config.root.cheats.wallhack.use {
+        useWallhack = !$
+        if local notificationType = config.root.cheats.wallhack.notificationType {
+            if notificationType != NOTIFICATION_TYPE_NONE {
+                notify::send({
+                    title       = "Состояние wallhack'a изменено",
+                    text        = "Теперь никнеймы игроков " .. ((useWallhack) ? "показаны." : "скрыты."),
+                    icon        = icons.ICON_CHECKMARK,
+                    duration    = 2
+                }, (notificationType == NOTIFICATION_TYPE_SCRIPT_MESSAGE) ? "Никнеймы игроков " .. ((useWallhack) ? "показаны." : "скрыты.") : nil)
+            }
+        }
+    }
 })
 
 HotKey::new("imgui.windows.DrawListRender->traccersRemove", { VK_LMENU, VK_Z }, "Удалить трассера")
 ::registerCallback(fn {
-    for i = 1, config.root.additions.tracers.maxLines {
-        bulletData[i].enable = false
-    }
+    if config.root.additions.tracers.use {
+        for i = 1, config.root.additions.tracers.maxLines {
+            bulletData[i].enable = false
+        }
 
-    notify::send({
-        title   = "Трассера удалены.",
-        text    = "Трассера успешно удалены!",
-        icon    = icons.ICON_CHECKMARK
-    })
+        notify::send({
+            title       = "Трассера удалены.",
+            text        = "Трассера успешно удалены!",
+            icon        = icons.ICON_CHECKMARK,
+            duration    = 2
+        })
+    }
 })
 
 imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
@@ -113,7 +124,7 @@ imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
             local clistColorHex             = string.format("%06X", sampGetPlayerColor(id) & 0xFFFFFF)
             local onPlayerRenderText        = ""
 
-            if charCheck {
+            if charCheck && user::getAloginStatus() {
                 if config.root.cheats.wallhack.use && useWallhack {
                     onPlayerRenderText ..= string.format("{%s}{%s[%s] [X: %1.f]}{FFFFFF}{\n}", clistColorHex, sampGetPlayerNickname(id), id, distance)
                 }
@@ -142,7 +153,7 @@ imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
                 }
             }
 
-            if config.root.additions.tracers.use {
+            if config.root.additions.tracers.use && user::getAloginStatus() {
                 for i = 1, config.root.additions.tracers.maxLines {
                     if local bullet = bulletData[i] {
                         if bullet.enable && os.time() <= bullet.time {

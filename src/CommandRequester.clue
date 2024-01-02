@@ -24,7 +24,7 @@
 @import "Config"        => config
 @import "Notifications" => notify
 
-@define COMMAND_REQUEST_SECONDS_DURATION 5
+@define COMMAND_REQUEST_SECONDS_DURATION config.root.additions.commandRequester.secondsToHide
 
 static enum /* COMMAND_REQUEST_TYPE */ {
     COMMAND_REQUEST_TYPE_NONE,          //! Initialize status.   

@@ -20,6 +20,7 @@
 
 @import "Icons"     => icons
 @import "Config"    => config
+@import "Common"    => common
 
 static __notifications__ = {
     active  = true
@@ -57,11 +58,16 @@ method __notifications__::get() {
  * }
  * ```
  * 
- * @param notification table|nil
+ * @param notification          table|nil
+ * @param preferScriptMessage   string|nil If passed string then function will notify using `sampAddChatMessage` function.
  * @return void
  */
-method __notifications__::send(notification = {}) {
-    if #self.root < config.root.notifications.maxItems {
+method __notifications__::send(notification = {}, scriptMessage) {
+    if scriptMessage {
+        return common::sendScriptMessage(scriptMessage)
+    }
+
+    if config.root.windows.notifications.use && #self.root < config.root.windows.notifications.maxItems {
         table.insert(self.root, {
             icon        = notification.icon || icons.ICON_HOME_EMPTY
             iconColor   = notification.iconColor || imgui.ImVec4(1, 1, 1, 1)

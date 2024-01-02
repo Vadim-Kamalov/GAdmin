@@ -40,9 +40,16 @@ windows::new("imgui.windows.AdminList", {
         windowStyle = StyleChanger::new({
             WindowBorderSize    = 0
             WindowBg            = imgui.ImVec4(0, 0, 0, 0)
+            ScrollbarSize       = 5
+            ScrollbarBg         = imgui.ImVec4(0, 0, 0, 0)
         })
     }
 }, fn(self) {
+    self.flags = imgui.WindowFlags.NoMove + imgui.WindowFlags.NoTitleBar
+        + imgui.WindowFlags.NoResize + imgui.WindowFlags.AlwaysAutoResize
+
+    self.size.y = config.root.windows.adminList.countForScrollbar * 20
+
     self.var.windowStyle::apply()
     self::begin(self.id, fn {
         for _, admin in admins {
@@ -54,7 +61,7 @@ windows::new("imgui.windows.AdminList", {
 
                 pos.x = match config.root.windows.adminList.textAlignMode {
                     ALIGN_CENTER    => self.size.x / 2 - imgui.CalcTextSize(text).x / 2,
-                    ALIGN_RIGHT     => self.size.x - imgui.CalcTextSize(text).x - 5,
+                    ALIGN_RIGHT     => self.size.x - imgui.CalcTextSize(text).x - 10,
                     default         => pos.x
                 }
 
@@ -72,8 +79,8 @@ windows::new("imgui.windows.AdminList", {
                 
                 if isHovered {
                     imgui.GetWindowDrawList()::AddLine(
-                        imgui.ImVec2(self.pos.x + pos.x, self.pos.y + pos.y + imgui.CalcTextSize(text).y),
-                        imgui.ImVec2(imgui.GetItemRectMax().x - 2, self.pos.y + pos.y + imgui.CalcTextSize(text).y),
+                        imgui.ImVec2(imgui.GetItemRectMin().x, imgui.GetItemRectMax().y),
+                        imgui.GetItemRectMax(),
                         -1,
                         2
                     )
@@ -103,6 +110,6 @@ windows::new("imgui.windows.AdminList", {
                 }
             imgui.EndGroup()
         }
-    })
+    }, self.flags)
     self.var.windowStyle::reset()
 })

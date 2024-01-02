@@ -39,7 +39,7 @@ window::new("imgui.windows.SpectatorInformation", {
     description = "Информация о игроке в спектаторе"
     type        = MV_ONLY_IN_SPECTATOR
     condition   = fn { return config.root.windows.spectatorInformation.use }
-    size        = fn { return { x = 125 * (config.root.windows.spectatorInformation.type * 2), y = 0 } }
+    size        = fn { return { x = 140 * (config.root.windows.spectatorInformation.type * 2), y = 0 } }
     defaultPos  = { x = 0, y = sizeY / 2.336 }
     initialize  = {
         columnsPadding = StyleChanger::new({
@@ -71,10 +71,8 @@ window::new("imgui.windows.SpectatorInformation", {
         { name = "Пинг",                value = self.information.ping, color = self.pingColor },
         { name = "ID аккаунта",         value = self.information.accountId },
         { name = "Дата регистрации",    value = self.information.regDate },
-        { name = "Деньги на руках",     value = self.information.money },
-        { name = "Здоровье",            value = self.information.health },
-        { name = "Броня",               value = self.information.armor },
-        { name = "Деньги на банке",     value = self.information.bank },
+        { name = "Наличные/банк",       value = self.information.money .. " / " .. self.information.bank },
+        { name = "Здоровье/броня",      value = self.information.health .. " / " .. self.information.armor },
         { name = "Фракция",             value = self.information.fraction },
         { name = "Должность",           value = self.information.rang },
         { name = "Машина(-ы)",          value = self.information.vehicle },
@@ -82,12 +80,15 @@ window::new("imgui.windows.SpectatorInformation", {
         { name = "VIP статус",          value = self.information.vip },
         { name = "Предупреждения",      value = self.information.warnings },
         { name = "Время в афк",         value = self.information.afkTime },
+        { name = "Тек./макс. скорость", value = self.information.moveSpeed.current .. " / " .. self.information.moveSpeed.max, color = self.speedColor },
+        { name = "Выстрелы/попадания",  value = self.information.shot.total .. " / " .. self.information.shot.hit, color = self.shotColor }
+    }
 
-        { name = "Тек. скорость", value = self.information.moveSpeed.current, color = self.speedColor },
-        { name = "Макс. скорость", value = self.information.moveSpeed.max, color = self.speedColor },
-
-        { name = "Выстрелов", value = self.information.shot.total, color = self.shotColor },
-        { name = "Попаданий", value = self.information.shot.hit, color = self.shotColor }
+    self.centerWrappedColumnText = fn(text) {
+        for text with string.gmatch(text, "[^\n]+") {
+            imgui.SetCursorPosX((imgui.GetColumnOffset() + (imgui.GetColumnWidth() / 2)) - imgui.CalcTextSize(text).x / 2)
+            imgui.TextWrapped(text)
+        }
     }
 
     self.addColumns = fn(columnsCount, columns, id) {
@@ -100,17 +101,12 @@ window::new("imgui.windows.SpectatorInformation", {
             item.value  = string.gsub($, "##.*", "")
 
             imgui.PushFont(bold10)
-                item.namePos = imgui.GetCursorPos()
-                imgui.SetCursorPosX((imgui.GetCursorPosX() + (imgui.GetColumnWidth() * (imgui.GetColumnIndex() + 1)) - imgui.CalcTextSize(item.name).x) / 2)
-                imgui.Text(tostring(item.name))
+                self.centerWrappedColumnText(tostring(item.name))
             imgui.PopFont()
             imgui.NextColumn()
             imgui.PushFont(regular9)
                 imgui.PushStyleColor(imgui.Col.Text, item.color)
-                    local posX = (imgui.CalcTextSize(tostring(item.value)).x * 2 > self.size.x) ? imgui.GetCursorPosX()
-                        : (imgui.GetCursorPosX() + (imgui.GetColumnWidth() * (imgui.GetColumnIndex() + 1)) - imgui.CalcTextSize(tostring(item.value)).x) / 2 
-                    imgui.SetCursorPos(imgui.ImVec2(posX, item.namePos.y + imgui.CalcTextSize(tostring(item.value)).y / 6))
-                    imgui.TextWrapped(tostring(item.value))
+                    self.centerWrappedColumnText(tostring(item.value))
                 imgui.PopStyleColor()
             imgui.PopFont()
             imgui.NextColumn()

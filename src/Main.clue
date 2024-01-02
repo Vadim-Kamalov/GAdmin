@@ -136,51 +136,61 @@ local userFullyConnected    = false
 local hotKeyCallbacks = {}
 
 hotKeyCallbacks.airbreak = fn {
-    if config.root.cheats.airbreak.use && user::getAloginStatus() && !common::isCursorActive() {
-        airbreak.status = !$
+    if config.root.cheats.airbreak.use && user::getAloginStatus() {
+        airbreak.status         = !$
+        local notificationTitle = "AirBreak " .. ((airbreak.status) ? "включен." : "выключен.")
+        local notificationText  = ""
 
         if airbreak.status {
-            airbreak.coords = { getCharCoordinates(PLAYER_PED) }
-            notify::send({
-                icon        = icons.ICON_ARROW_UP
-                title       = "AirBreak включен"
-                text        = "Для увеличения/уменьшения скорости используйте Num + / Num - соответстсвенно"
-                duration    = 2
-            })
+            airbreak.coords     = { getCharCoordinates(PLAYER_PED) }
+            notificationText    = "Для увеличения/уменьшения скорости используйте Num + / Num - соответстсвенно"
         } else {
-            notify::send({
-                icon        = icons.ICON_ARROW_UP
-                title       = "AirBreak выключен"
-                text        = "Чтобы опять включить, нажмите эту клавишу повторно"
-                duration    = 2
-            })
+            notificationText = "Чтобы опять включить, нажмите эту клавишу повторно"
+        }
+        
+        if local notificationType = config.root.cheats.airbreak.notificationType {
+            if notificationType != NOTIFICATION_TYPE_NONE {
+                notify::send({
+                    icon        = icons.ICON_ARROW_UP
+                    title       = notificationTitle
+                    text        = notificationText
+                    duration    = 2
+                }, (notificationType == NOTIFICATION_TYPE_SCRIPT_MESSAGE) ? notificationTitle : nil)
+            }
         }
     }
 }
 
-hotKeyCallbacks.switchCursorState = fn {
-    if !common::isInputsActive() {
-        imguiAssets::switchCursorStatus()
+hotKeyCallbacks.spectatorQuit = fn {
+    if spectator.status {
+        sampSendMenuSelectRow(SPECTATOR_MENU_EXIT)
     }
 }
 
+hotKeyCallbacks.switchCursorState = fn {
+    imguiAssets::switchCursorStatus()
+}
+
 hotKeyCallbacks.switchSpectatorState = fn {
-    if spectator.status && !common::isInputsActive() {
+    if spectator.status {
         sampSendMenuSelectRow(SPECTATOR_MENU_SWITCH)
     }
 }
 
 hotKeyCallbacks.nextPlayerInSpectator = fn {
-    if spectator.status && !common::isInputsActive() {
+    if spectator.status {
         sampSendMenuSelectRow(SPECTATOR_MENU_NEXT)
     }
 }
 
 hotKeyCallbacks.previousPlayerInSpectator = fn {
-    if spectator.status && !common::isInputsActive() {
+    if spectator.status {
         sampSendMenuSelectRow(SPECTATOR_MENU_BACK)
     }
 }
+
+HotKey::new("main->spectatorQuit", { VK_I }, "Выйти из /sp")
+      ::registerCallback(hotKeyCallbacks.spectatorQuit)
 
 HotKey::new("main->airbreak", { VK_RSHIFT }, "Аирбрейк")
       ::registerCallback(hotKeyCallbacks.airbreak)

@@ -87,12 +87,18 @@ local window = {
     },
    
     customization = {
-        colorEditors    = nil,
-        copiedId        = nil,
+        editors         = nil,
+        selectedId      = nil,
+        copiedValues    = nil,
         
         colorPicker = {
             clock = nil,
             alpha = nil
+        },
+
+        moonMonet = {
+            toggle = imgui.new.bool(),
+            accent = imgui.new.float[4](0, 0, 0, 1)
         },
 
         combo = {
@@ -139,6 +145,7 @@ local window = {
                 { "textColorBasedOnClist", "Цвет зависит от клиста", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.adminList.textColorBasedOnClist) },
                 { "textAlignMode", "Выравнивание текста", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.windows.adminList.textAlignMode), "Слева", "По центру", "Справа" },
                 { "strokeSize", "Размер обводки", WINDOW_WIDGET_SLIDER, 1, 5, imgui.new.int(config.root.windows.adminList.strokeSize) }
+                { "countForScrollbar", "Количество админов для появления скролла", WINDOW_WIDGET_SLIDER, 1, 100, imgui.new.int(config.root.windows.adminList.countForScrollbar) }
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
 
             { "playersNearby", "Список игроков рядом", {
@@ -197,17 +204,25 @@ local window = {
                 { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.greport.use) },
                 { "preferNotifications", "Использовать оповещения GAdmin", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.greport.preferNotifications) },
                 { "inputCopyButtons", "Кнопки вставляющие текст в поле ввода", WINDOW_WIDGET_CUSTOM, $GREPORT_MAKE_CUSTOM_ELEMENT!() }
+            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
+            
+            { "notifications", "Оповещения", {
+                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.notifications.use) },
+                { "maxItems", "Макс. кол-во оповещений", WINDOW_WIDGET_SLIDER, 1, 5, imgui.new.int(config.root.windows.notifications.maxItems) },
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP }
         }},
 
         { "cheats", "Читы", {
             { "airbreak", "Airbreak", {
                 { "use", "Работает только на /alogin", WINDOW_WIDGET_TYPE_SWITCH, imgui.new.bool(config.root.cheats.airbreak.use) },
-            }},
+                { "notificationType", "Тип оповещения при нажатии на хоткей", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.cheats.airbreak.notificationType), "ImGui оповещение", "Сообщение в чат", "Отсутствует" }
+            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
 
             { "wallhack", "Wallhack", {
-                { "use", "Работает только на /alogin", WINDOW_WIDGET_TYPE_SWITCH, imgui.new.bool(config.root.cheats.wallhack.use) }
-            }}
+                { "use", "Работает только на /alogin", WINDOW_WIDGET_TYPE_SWITCH, imgui.new.bool(config.root.cheats.wallhack.use) },
+                { "notificationType", "Тип оповещения при нажатии на хоткей", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.cheats.wallhack.notificationType), "ImGui оповещение", "Сообщение в чат", "Отсутствует" },
+                { "none", "Размер шрифта", WINDOW_WIDGET_CUSTOM, RENDER_CHANGE_CONFIGURATION }
+            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP }
         }},
 
         { "additions", "Прочее", {
@@ -218,7 +233,8 @@ local window = {
 
             { "commandRequester", "Админские формы", {
                 { "use", "", WINDOW_WIDGET_TYPE_SWITCH, imgui.new.bool(config.root.additions.commandRequester.use) },
-                { "displayType", "Режим отображения полученной формы", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.additions.commandRequester.displayType), "Оповещение", "Полоса состояния снизу экрана" }
+                { "displayType", "Режим отображения полученной формы", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.additions.commandRequester.displayType), "Оповещение", "Полоса состояния снизу экрана" },
+                { "secondsToHide", "Время для закрытия формы", WINDOW_WIDGET_SLIDER, 5, 30, imgui.new.int(config.root.additions.commandRequester.secondsToHide) }
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
 
             { "mention", "Упоминания в /a", {
@@ -233,6 +249,7 @@ local window = {
 
             { "tracers", "Трассера", {
                 { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.tracers.use) },
+                { "showOnlyForSpectator", "Только выстрелы от игрока за которым вы следите", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.tracers.showOnlyForSpectator) },
                 { "hitColor", "Цвет попадания", WINDOW_WIDGET_COLOR_PICKER, imguiAssets::convertHex2Float3(config.root.additions.tracers.hitColor) },
                 { "missColor", "Цвет промаха", WINDOW_WIDGET_COLOR_PICKER, imguiAssets::convertHex2Float3(config.root.additions.tracers.missColor) },
                 { "maxLines", "Максимальное количество трассеров", WINDOW_WIDGET_CUSTOM, (fn(this) {
@@ -274,7 +291,7 @@ local window = {
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
 
             { "gunInfo", "Отображение оружия у игрока", {
-                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.gunInfo.use) },
+                { "use", "Работает только на /alogin", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.gunInfo.use) },
                 { "none", "Размер шрифта", WINDOW_WIDGET_CUSTOM, RENDER_CHANGE_CONFIGURATION }
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
             
@@ -428,7 +445,7 @@ method window.frame::fillChildEx(size, useBorder = true) {
 
 addEventHandler("onWindowMessage", fn(event, wparam) {
     if (event == wm.WM_KEYDOWN || event == wm.WM_SYSKEYDOWN) && !imgui.GetIO().WantTextInput {
-        if wparam == VK_ESCAPE && window.state[0] {
+        if wparam == VK_ESCAPE && window.state[0] && !changingHotKey {
             window.state[0] = false
             consumeWindowMessage(true, false)
             return
@@ -438,7 +455,7 @@ addEventHandler("onWindowMessage", fn(event, wparam) {
 
 style::registerWindow("imgui.windows.Main", "Основное окно")
 HotKey::new("imgui.windows.Main", { VK_X }, "Открыть/закрыть это окно")::registerCallback(fn {
-    if !movableWindows::isChangingWindowsPositions() && !common::isInputsActive() {
+    if !movableWindows::isChangingWindowsPositions() {
         window.state[0] = !$
     }
 })
@@ -799,15 +816,26 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                 } elseif window.menu.selectedFrame == WINDOW_SELECTED_FRAME_KEYBINDS {
                     imgui.SetScrollY(0)
                     imguiAssets::textWithFont("Горячие клавиши", bold14)
-                    for _, hotKey in allHotKeys {
-                        if !string.find(hotKey.id, "^binderIndex%d+$") {
-                            imgui.PushFont(regular12)
-                                hotKey::render(imgui.ImVec2(100, 25))
-                            imgui.PopFont()    
-                            imgui.SameLine()
-                            imguiAssets::textWithFont(hotKey.description, bold10, imgui.GetCursorPos() + imgui.ImVec2(0, 4))
+                    imgui.SetCursorPosY(imgui.GetCursorPos().y + 2)
+                    imgui.BeginGroup()
+                        for index, hotKey in allHotKeys {
+                            if !string.find(hotKey.id, "^binderIndex%d+$") {
+                                imgui.BeginGroup()
+                                    imgui.PushFont(regular12)
+                                        hotKey::render(imgui.ImVec2(100, 25))
+                                    imgui.PopFont()    
+                                    imgui.SameLine()
+                                    imguiAssets::textWithFont(hotKey.description, bold10, imgui.GetCursorPos() + imgui.ImVec2(0, 4))
+                                imgui.EndGroup()
+
+                                imgui.SameLine(330)
+
+                                if index % 2 == 0 {
+                                    imgui.NewLine()
+                                }
+                            }
                         }
-                    }
+                    imgui.EndGroup()
                 } elseif window.menu.selectedFrame == WINDOW_SELECTED_FRAME_PLAYERS_CHECKER {
                     imgui.SetScrollY(0)
                     imgui.BeginGroup()
@@ -909,40 +937,10 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                     imgui.SetScrollY(0)
                     imguiAssets::textWithFont("Кастомизация", bold14)
                    
-                    local childHeight           = imgui.GetWindowHeight() - imgui.GetCursorPos().y - 6
-                    local selectedWindowTitle   = "Window"
-                    
-                    local fn getBaseStyle() {
-                        return {
-                            { "Text", imgui.GetStyle().Colors[imgui.Col.Text] },
-                            { "TextDisabled", imgui.GetStyle().Colors[imgui.Col.TextDisabled] },
-                            { "WindowBg", imgui.GetStyle().Colors[imgui.Col.WindowBg] },
-                            { "ChildBg", imgui.GetStyle().Colors[imgui.Col.ChildBg] },
-                            { "PopupBg", imgui.GetStyle().Colors[imgui.Col.PopupBg] },
-                            { "Border", imgui.GetStyle().Colors[imgui.Col.Border] },
-                            { "BorderShadow", imgui.GetStyle().Colors[imgui.Col.BorderShadow] },
-                            { "FrameBg", imgui.GetStyle().Colors[imgui.Col.FrameBg] },
-                            { "FrameBgHovered", imgui.GetStyle().Colors[imgui.Col.FrameBgHovered] },
-                            { "FrameBgActive", imgui.GetStyle().Colors[imgui.Col.FrameBgActive] },
-                            { "ScrollbarBg", imgui.GetStyle().Colors[imgui.Col.ScrollbarBg] },
-                            { "ScrollbarGrab", imgui.GetStyle().Colors[imgui.Col.ScrollbarGrab] },
-                            { "ScrollbarGrabHovered", imgui.GetStyle().Colors[imgui.Col.ScrollbarGrabHovered] },
-                            { "ScrollbarGrabActive", imgui.GetStyle().Colors[imgui.Col.ScrollbarGrabActive] },
-                            { "Button", imgui.GetStyle().Colors[imgui.Col.Button] },
-                            { "ButtonHovered", imgui.GetStyle().Colors[imgui.Col.ButtonHovered] },
-                            { "ButtonActive", imgui.GetStyle().Colors[imgui.Col.ButtonActive] },
-                            { "Header", imgui.GetStyle().Colors[imgui.Col.Header] },
-                            { "HeaderHovered", imgui.GetStyle().Colors[imgui.Col.HeaderHovered] },
-                            { "HeaderActive", imgui.GetStyle().Colors[imgui.Col.HeaderActive] },
-                            { "Separator", imgui.GetStyle().Colors[imgui.Col.Separator] },
-                            { "SeparatorHovered", imgui.GetStyle().Colors[imgui.Col.SeparatorHovered] },
-                            { "SeparatorActive", imgui.GetStyle().Colors[imgui.Col.SeparatorActive] },
-                            { "TextSelectedBg", imgui.GetStyle().Colors[imgui.Col.TextSelectedBg] }
-                        }
-                    }
-
+                    local childHeight = imgui.GetWindowHeight() - imgui.GetCursorPos().y - 6
                     local placeholders = {
                         //! There's no next elements(they're unused in our GUI):
+                        //!
                         //! TitleBg, TitleBgActive, TitleBgCollapsed, MenuBarBg, CheckMark,
                         //! Tab, TabHovered, TabActive, TabUnfocused, TabUnfocusedActive,
                         //! DragDropTarget, NavHighlight, NavWindowingHighlight,
@@ -984,62 +982,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                         return imgui.new["const char*"][#windowList](windowList)
                     })()
 
-                    window.customization.colorEditors ??= (fn {
-                        local colorEditors = {}
-                        
-                        for _, item in registeredWindows {
-                            local page = {}
-
-                            if local this = config.root.styleChangeableWindows[item.id] {
-                                local baseStyle = getBaseStyle()
-
-                                for _, base in baseStyle {
-                                    for _, style in this {
-                                        if base[1] == style[1] {
-                                            base[2] = style[2]
-                                        }
-                                    }
-                                }
-
-                                page = baseStyle
-                            } else {
-                                page = getBaseStyle()
-                            }
-
-                            for _, item in page {
-                                item[3] = placeholders[item[1]]
-                                item[4] = (fn {
-                                    local vector = item[2]
-                                    local float4 = ffi.new("float[4]")
-
-                                    if string.find(tostring(vector), "ImVec4") {
-                                        float4[0] = vector.x
-                                        float4[1] = vector.y
-                                        float4[2] = vector.z
-                                        float4[3] = vector.w
-                                    } else {
-                                        float4[0] = vector[1]
-                                        float4[1] = vector[2]
-                                        float4[2] = vector[3]
-                                        float4[3] = vector[4]
-                                    }
-
-                                    return float4
-                                })()
-                            }
-
-                            page.moonMonetToggle = imgui.new.bool()
-                            page.moonMonetAccent = imgui.new.float[4](0, 0, 0, 1)
-
-                            table.insert(colorEditors, page)
-                        }
-
-                        return colorEditors
-                    })()
-
-                    local selectedColorEditors = window.customization.colorEditors[window.customization.combo.buffer[0] + 1]
-
-                    local fn getSelectedId() {
+                    window.customization.selectedId = (fn {
                         local id = ""
 
                         for _, registeredWindow in registeredWindows {
@@ -1051,6 +994,50 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                         }
 
                         return id
+                    })()
+
+                    window.customization.editors /* ?? */= (fn {
+                        config.root.styleChangeableWindows[window.customization.selectedId] ??= {}
+                        local editors = {}
+
+                        for _, property in style::getBaseColors() {
+                            local value = imgui.ImVec4(table.unpack(property[2]))
+                            
+                            for _, savedProperty in config.root.styleChangeableWindows[window.customization.selectedId] {
+                                if type(savedProperty[2]) == "table" && property[1] == savedProperty[1] {
+                                    value.x = savedProperty[2][1]
+                                    value.y = savedProperty[2][2]
+                                    value.z = savedProperty[2][3]
+                                    value.w = savedProperty[2][4]
+                                }
+                            }
+
+                            table.insert(editors, {
+                                styleKey    = property[1],
+                                name        = placeholders[property[1]],
+                                id          = "imgui.windows.Main.Customization.ColorEdit[" .. property[1] .. "]",
+                                value       = imgui.new.float[4](value.x, value.y, value.z, value.w)
+                            })
+                        }
+
+                        return editors
+                    })()
+
+                    local fn changeConfigProperties(item) {
+                        local containsProperty = false
+
+                        for _, property in config.root.styleChangeableWindows[window.customization.selectedId] {
+                            if property[1] == item.styleKey {
+                                containsProperty    = true
+                                property[2]         = { item.value[0], item.value[1], item.value[2], item.value[3] }
+                            }
+                        }
+
+                        if !containsProperty {
+                            table.insert(config.root.styleChangeableWindows[window.customization.selectedId], {
+                                item.styleKey, { item.value[0], item.value[1], item.value[2], item.value[3] }
+                            })
+                        }
                     }
 
                     imgui.BeginChild("imgui.windows.Main.Customization.ColorEditors", imgui.ImVec2(380, childHeight), false, self.flags)
@@ -1058,34 +1045,14 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                         imgui.BeginGroup()
                             imguiAssets::textWithFont(ffi.string(window.customization.combo.array[window.customization.combo.buffer[0]]), bold10)
                             imgui.PushFont(regular9)
-                                for _, item in selectedColorEditors {
-                                    if imgui.ColorEdit4(
-                                        "##imgui.windows.Main.Customization.ColorEdit4N" .. window.customization.combo.buffer[0] .. "." .. item[1],
-                                        item[4],
-                                        imgui.ColorEditFlags.NoInputs
-                                    ) {
-                                        local id            = getSelectedId() 
-                                        local containsStyle = false
-
-                                        config.root.styleChangeableWindows[id] ??= {}
-                                        
-                                        for _, style in config.root.styleChangeableWindows[id] {
-                                            if style[1] == item[1] {
-                                                style[2] = { item[4][0], item[4][1], item[4][2], item[4][3] } 
-                                                containsStyle = true
-                                            }
-                                        }
-
-                                        if !containsStyle {
-                                            table.insert(config.root.styleChangeableWindows[id], {
-                                                item[1],
-                                                { item[4][0], item[4][1], item[4][2], item[4][3] }
-                                            })
-                                        }
+                                for _, item in window.customization.editors {
+                                    if imgui.ColorEdit4("##" .. item.id, item.value, imgui.ColorEditFlags.NoInputs) {
+                                        config.root.styleChangeableWindows[window.customization.selectedId] ??= {}
+                                        changeConfigProperties(item)
                                     }
 
                                     imgui.SameLine()
-                                    imgui.Text(item[3])
+                                    imgui.Text(item.name)
                                 }
                             imgui.PopFont()
                         imgui.EndGroup()
@@ -1110,99 +1077,72 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
 
                             imgui.PushFont(bold10)
                                 if animations::button("Скопировать тему", imgui.ImVec2(widthAuto, 30)) {
-                                    window.customization.copied = { id = getSelectedId(), index = window.customization.combo.buffer[0] + 1 } 
+                                    local copiedValues = {}
+
+                                    for _, property in window.customization.editors {
+                                        table.insert(copiedValues, imgui.ImVec4(property.value[0], property.value[1], property.value[2], property.value[3]))
+                                    }
+
+                                    window.customization.copiedValues = copiedValues 
                                 }
 
                                 if animations::button("Вставить тему", imgui.ImVec2(widthAuto, 30)) {
-                                    if local copied = window.customization.copied {
-                                        config.root.styleChangeableWindows[getSelectedId()] = 
-                                            assets::copyTable(window.customization.colorEditors[copied.index])
+                                    if local copiedValues = window.customization.copiedValues {
+                                        for index, value in copiedValues {
+                                            window.customization.editors[index].value[0] = value.x
+                                            window.customization.editors[index].value[1] = value.y
+                                            window.customization.editors[index].value[2] = value.z
+                                            window.customization.editors[index].value[3] = value.w
+                                        }
                                         
-                                        for index, style in selectedColorEditors {
-                                            style[2] = window.customization.colorEditors[copied.index][index][2]
-                                            if type(style[2]) == "table" {
-                                                style[4][0] = style[2][1]
-                                                style[4][1] = style[2][2]
-                                                style[4][2] = style[2][3]
-                                                style[4][3] = style[2][4]
-                                            } else {
-                                                style[4][0] = style[2].x
-                                                style[4][1] = style[2].y
-                                                style[4][2] = style[2].z
-                                                style[4][3] = style[2].w
-                                            }
+                                        for _, item in window.customization.editors {
+                                            changeConfigProperties(item)
                                         }
                                     }
                                 }
-
+                    
                                 animations::hint(
                                     "У вас не скопирована тема",
-                                    fn { return window.customization.copied == nil && imgui.IsItemHovered() },
+                                    fn { return window.customization.copiedValues == nil && imgui.IsItemHovered() },
                                     nil,
                                     common::convertHex2ImVec4("E46876")
                                 )
 
                                 if animations::button("Сбросить тему", imgui.ImVec2(widthAuto, 30)) {
-                                    local baseStyle = getBaseStyle()
-                                    config.root.styleChangeableWindows[getSelectedId()] = nil 
-                                    
-                                    for index, style in window.customization.colorEditors[window.customization.combo.buffer[0] + 1] {
-                                        style[2] = baseStyle[index][2]
-                                        if type(style[2]) == "table" {
-                                            style[4][0] = style[2][1]
-                                            style[4][1] = style[2][2]
-                                            style[4][2] = style[2][3]
-                                            style[4][3] = style[2][4]
-                                        } else {
-                                            style[4][0] = style[2].x
-                                            style[4][1] = style[2].y
-                                            style[4][2] = style[2].z
-                                            style[4][3] = style[2].w
-                                        }
+                                    config.root.styleChangeableWindows[window.customization.selectedId] = nil
+                                    for index, property in style::getBaseColors() {
+                                        window.customization.editors[index].value[0] = property[2][1]
+                                        window.customization.editors[index].value[1] = property[2][2]
+                                        window.customization.editors[index].value[2] = property[2][3]
+                                        window.customization.editors[index].value[3] = property[2][4]
+                                        style.windows[window.customization.selectedId][property[1]] = imgui.ImVec4(table.unpack(property[2]))
                                     }
                                 }
 
                                 if animations::button("Применить для всех окон", imgui.ImVec2(widthAuto, 30)) {
-                                    for pageIndex, page in window.customization.colorEditors {
-                                        if pageIndex == window.customization.combo.buffer[0] + 1 { continue }
-
-                                        for index, style in page {
-                                            local sourceDescription = window.customization.combo.array[index - 1]
-                                            style[2]                = selectedColorEditors[index][2]
-                                            
-                                            if type(style[2]) == "table" {
-                                                style[4][0] = style[2][1]
-                                                style[4][1] = style[2][2]
-                                                style[4][2] = style[2][3]
-                                                style[4][3] = style[2][4]
-                                            } else {
-                                                style[4][0] = style[2].x
-                                                style[4][1] = style[2].y
-                                                style[4][2] = style[2].z
-                                                style[4][3] = style[2].w
-                                            }
-
-                                            for _, window in registeredWindows {
-                                                if window.description == sourceDescription {
-                                                    config.root.styleChangeableWindows[window.id] = 
-                                                        assets::copyTable(config.root.styleChangeableWindows[getSelectedId()])
-                                                }
-                                            }
+                                    for _, win in registeredWindows {
+                                        if win.id != window.customization.selectedId {
+                                            config.root.styleChangeableWindows[win.id] = {}
+                                            for _, source in window.customization.editors {
+                                                table.insert(config.root.styleChangeableWindows[win.id], {
+                                                    source.styleKey, { source.value[0], source.value[1], source.value[2], source.value[3] }
+                                                })
+                                            } 
                                         }
                                     }
                                 }
 
                                 imgui.BeginGroup()
-                                    if animations::toggleButton("Использовать MoonMonet", selectedColorEditors.moonMonetToggle) {
+                                    if animations::toggleButton("Использовать MoonMonet", window.customization.moonMonet.toggle) {
                                         window.customization.colorPicker.clock = os.clock()
                                     }
 
-                                    window.customization.colorPicker.alpha ??= (selectedColorEditors.moonMonetToggle[0]) ? 1.0 : 0.5
+                                    window.customization.colorPicker.alpha ??= (window.customization.moonMonet.toggle[0]) ? 1.0 : 0.5
 
                                     if window.customization.colorPicker.clock {
                                         window.customization.colorPicker.alpha = imguiAssets::bringFloatTo(
                                             $,
-                                            (selectedColorEditors.moonMonetToggle[0]) ? 1.0 : 0.5,
+                                            (window.customization.moonMonet.toggle[0]) ? 1.0 : 0.5,
                                             window.customization.colorPicker.clock,
                                             0.3
                                         )
@@ -1212,7 +1152,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                         "##imgui.windows.Main.Customization.MoonMonetPicker.child",
                                         imgui.ImVec2(widthAuto, 30),
                                         false,
-                                        (window.menu.width > 60 || !selectedColorEditors.moonMonetToggle[0]) ? imgui.WindowFlags.NoInputs : 0
+                                        (window.menu.width > 60 || !window.customization.moonMonet.toggle[0]) ? imgui.WindowFlags.NoInputs : 0
                                     )
                                         local alpha = (window.customization.colorPicker.alpha == 1)
                                             ? 1.0 - window.menu.alpha / 255 / 2 - window.menu.switchBetweenFramesAlpha 
@@ -1222,7 +1162,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                             imgui.SetNextItemWidth(widthAuto)
                                             if imgui.ColorEdit4(
                                                 "##imgui.windows.Main.Customization.MoonMonetPicker",
-                                                selectedColorEditors.moonMonetAccent,
+                                                window.customization.moonMonet.accent,
                                                 imgui.ColorEditFlags.NoSidePreview + imgui.ColorEditFlags.DisplayHex
                                             ) {
                                                 local fn getColorArray() {
@@ -1255,18 +1195,15 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                                 }
 
                                                 local vector = imgui.ImVec4(
-                                                    selectedColorEditors.moonMonetAccent[0],
-                                                    selectedColorEditors.moonMonetAccent[1],
-                                                    selectedColorEditors.moonMonetAccent[2],
-                                                    selectedColorEditors.moonMonetAccent[3]
+                                                    window.customization.moonMonet.accent[0],
+                                                    window.customization.moonMonet.accent[1],
+                                                    window.customization.moonMonet.accent[2],
+                                                    window.customization.moonMonet.accent[3]
                                                 )
 
                                                 local colorU32      = imgui.ColorConvertFloat4ToU32(vector)
                                                 local colors        = moonMonet.buildColors(assets::convertU32ToARGB(colorU32), 1.0, true)
                                                 local colorArray    = getColorArray()
-                                                local colorConfig   = {}
-
-                                                config.root.styleChangeableWindows[getSelectedId()] ??= {}
 
                                                 for _, item in colorArray {
                                                     item[2] = (fn {
@@ -1281,24 +1218,14 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                                 }
 
                                                 for index = 1, #colorArray {
-                                                    config.root.styleChangeableWindows[getSelectedId()][index] = colorArray[index]
+                                                    config.root.styleChangeableWindows[window.customization.selectedId][index] = colorArray[index]
                                                 }
 
-                                                for _, item in colorArray {
-                                                    item[3] = placeholders[item[1]]
-                                                }
-
-                                                for index, value in window.customization.colorEditors[window.customization.combo.buffer[0] + 1] {
-                                                    local vector = colorArray[index][2]
-                                                    value[4][0] = vector[1]
-                                                    value[4][1] = vector[2]
-                                                    value[4][2] = vector[3]
-                                                    value[4][3] = vector[4]
-
-
-                                                    for i = 1, 3 {
-                                                        value[i] = colorArray[index][i]
-                                                    }
+                                                for index, item in colorArray {
+                                                    window.customization.editors[index].value[0] = item[2][1]
+                                                    window.customization.editors[index].value[1] = item[2][2]
+                                                    window.customization.editors[index].value[2] = item[2][3]
+                                                    window.customization.editors[index].value[3] = item[2][4]
                                                 }
                                             }
                                         imgui.PopStyleVar()

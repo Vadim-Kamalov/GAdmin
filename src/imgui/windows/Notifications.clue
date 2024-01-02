@@ -31,7 +31,7 @@
 
 style::registerWindow("imgui.windows.Notifications", "Оповещения")
 
-imgui.OnFrame(fn { return notify.active }, fn(self) {
+imgui.OnFrame(fn { return notify.active && config.root.windows.notifications.use }, fn(self) {
     self.HideCursor = imguiAssets::getCursorStatus()
     self.notifySize = math.min(5, #notify::get())
     self.flags      = imgui.WindowFlags.NoMove + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize
@@ -114,7 +114,7 @@ imgui.OnFrame(fn { return notify.active }, fn(self) {
 
     style::beginWindowStyleChangeable("imgui.windows.Notifications")
     imgui.Begin("imgui.windows.Notifications", nil, self.flags)
-        for i = 1, config.root.notifications.maxItems {
+        for i = 1, config.root.windows.notifications.maxItems {
             if local notification = notify::get()[i] {
                 if os.clock() - notification.clock >= notification.duration {
                     notification.pos = imguiAssets::bringFloatTo(-1, 380, notification.clock + notification.duration, 0.1)

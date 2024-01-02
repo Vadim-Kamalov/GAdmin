@@ -36,6 +36,12 @@ sampev.onBulletSync = fn(id, data) {
             return true
         }
 
+        if config.root.additions.tracers.showOnlyForSpectator {
+            if spectator.status && (id != spectator.id && data.targetId != spectator.id) {
+                return true
+            }
+        }
+
         bulletData.lastId += 1
 
         if bulletData.lastId < 1 || bulletData.lastId > config.root.additions.tracers.maxLines {

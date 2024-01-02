@@ -151,17 +151,19 @@ method HotKey::setupWatcher(event, wparam, lparam) {
                 }
             }
         } else {
-            local key = assets::mapScanCodeToVKey((lparam & 0xFF0000) >> 16)
-            for _, hotKey in allHotKeys {
-                //! Implementing keys handling. Allowed length of registered keys is 2.
-                //! When this(ese) keys is(are) pressed, then we will consume this window message
-                //! and call callback that passed in `hotKeysCallbacks` table.
-                if (#hotKey.keys == 1 && key == hotKey.keys[1]) ||
-                   (#hotKey.keys == 2 && isKeyDown(hotKey.keys[1]) && key == hotKey.keys[2])
-                {
-                    if local item = hotKeysCallbacks[hotKey.id] {
-                        item.callback()
-                        consumeWindowMessage(true, false)
+            if !common::isInputsActive() {
+                local key = assets::mapScanCodeToVKey((lparam & 0xFF0000) >> 16)
+                for _, hotKey in allHotKeys {
+                    //! Implementing keys handling. Allowed length of registered keys is 2.
+                    //! When this(ese) keys is(are) pressed, then we will consume this window message
+                    //! and call callback that passed in `hotKeysCallbacks` table.
+                    if (#hotKey.keys == 1 && key == hotKey.keys[1]) ||
+                       (#hotKey.keys == 2 && isKeyDown(hotKey.keys[1]) && key == hotKey.keys[2])
+                    {
+                        if local item = hotKeysCallbacks[hotKey.id] {
+                            item.callback()
+                            consumeWindowMessage(true, false)
+                        }
                     }
                 }
             }
