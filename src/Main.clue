@@ -306,9 +306,11 @@ global fn main() {
 
         if spectator.status {
             local result, _ = sampGetCharHandleBySampPlayerId(spectator.id)
-            
-            if !result && !common::isInputsActive() {
+
+            while !result && !common::isInputsActive() {
                 sampSendMenuSelectRow(SPECTATOR_MENU_SWITCH)
+                wait(1000)
+                result = sampGetCharHandleBySampPlayerId(spectator.id)
             }
 
             if sampIsPlayerPaused(spectator.id) {
