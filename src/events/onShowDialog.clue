@@ -32,7 +32,7 @@ sampev.onShowDialog = fn(id, style, title, firstButton, secondButton, text) {
     greport.dialog.state = false
 
     if config.root.additions.hideIpAddresses.use {
-        text = string.gsub($, "%[%d+%.%d+%.%d+%.%d+%]", "[XXX.XXX.XXX.XXX]")
+        text = string.gsub($, "%d+%.%d+%.%d+%.%d+", "XXX.XXX.XXX.XXX")
     }
     
     if config.root.additions.autoLogin.use && #config.root.additions.autoLogin.accountPassword >= 3

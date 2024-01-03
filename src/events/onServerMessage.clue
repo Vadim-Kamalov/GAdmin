@@ -28,12 +28,6 @@
 @import "CommandRequester"  => commandRequester
 @import "Config"            => config
 
-static loggedServerMessages = {
-    { "IC чат/действия", {} },
-    { "OOC чат", {} },
-    { "Действия/чат администраторов", {} }
-}
-
 local logs = {
     { "IC чат/действия", {
         "^%w+.*говорит:",
@@ -83,12 +77,12 @@ sampev.onServerMessage = fn(color, text) {
         for _, item in section[2] {
             if type(item) == "table" {
                 if string.find(text, item[1]) && color == item[2] {
-                    table.insert(loggedServerMessages[sectionIndex][2], log)
+                    table.insert(allowedLogs[sectionIndex][2], log)
                     break
                 }
             } else {
                 if string.find(text, item) {
-                    table.insert(loggedServerMessages[sectionIndex][2], log)
+                    table.insert(allowedLogs[sectionIndex][2], log)
                     break
                 }
             }
@@ -134,7 +128,7 @@ sampev.onServerMessage = fn(color, text) {
                     color = rgb2color(config.root.additions.mention.color)
                 }
             } else {
-                if admins::getAdminByOOCNickname(string.match(possibleMention, pattern)) {
+                if admins::getAdminByOOCNickname(string.match(possibleMention, pattern))?.nickname.ooc == user::getOOCNickname() {
                     color = rgb2color(config.root.additions.mention.color)
                 }
             }

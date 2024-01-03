@@ -59,6 +59,13 @@ local enum /* WINDOW_WIDGET */ {
     WINDOW_WIDGET_CONFIGURATION_IN_POPUP
 }
 
+static allowedLogs = {
+    { "IC чат/действия", {} },
+    { "OOC чат", {} },
+    { "Действия/чат администраторов", {} },
+    { "Килл-лист", {} }
+}
+
 local sizeX, sizeY                  = getScreenResolution()
 local RENDER_CHANGE_CONFIGURATION   = $RENDER_CHANGE_CONFIGURATION!()
 
@@ -139,6 +146,43 @@ local window = {
 
     configuration = {
         { "windows", "Окна", {
+            { "autoCompletion", "Авто-заполнение", {
+                { "use", "TAB - вставить\nCTRL + Arrow Up/Down - переключение между элементами", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.autoCompletion.use) },
+                { "strokeSize", "Размер обводки", WINDOW_WIDGET_SLIDER, 1, 5, imgui.new.int(config.root.windows.autoCompletion.strokeSize) },
+            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
+            
+            { "userInformation", "Ваша статистика", {
+                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.userInformation.use) },
+                { "strokeSize", "Размер обводки", WINDOW_WIDGET_SLIDER, 1, 5, imgui.new.int(config.root.windows.userInformation.strokeSize) },
+                { "textAlignMode", "Выравнивание текста", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.windows.userInformation.textAlignMode), "Слева", "По центру", "Справа" }
+            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
+            
+            { "farChat", "Дальний чат", {
+                { "use", "Работает только на /alogin", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.farChat.use) },
+                { "displayTime", "Отображать время", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.farChat.use) },
+                { "strokeSize", "Размер обводки", WINDOW_WIDGET_SLIDER, 1, 5, imgui.new.int(config.root.windows.farChat.strokeSize) },
+                { "delay", "Задержка между повторными сообщениями", WINDOW_WIDGET_SLIDER, 2, 10, imgui.new.int(config.root.windows.farChat.delay) },
+                { "maxLines", "Максимальное кол-во строк", WINDOW_WIDGET_SLIDER, 1, 30, imgui.new.int(config.root.windows.farChat.maxLines) },
+            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
+            
+            { "spectatorActions", "Действия в /sp", {
+                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.spectatorActions.use) }
+            }},
+            
+            { "spectatorInformation", "Информация об игроке", {
+                { "use", "Работает только в режиме наблюдения", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.spectatorInformation.use) },
+                { "type", "Количество столбцов на одной строке", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.windows.spectatorInformation.type), "2", "4" }
+            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
+
+            { "spectatorKeys", "Клавиши игрока в /sp", {
+                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.spectatorKeys.use) }
+            }},
+
+            { "notifications", "Оповещения", {
+                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.notifications.use) },
+                { "maxItems", "Макс. кол-во оповещений", WINDOW_WIDGET_SLIDER, 1, 5, imgui.new.int(config.root.windows.notifications.maxItems) },
+            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
+
             { "adminList", "Список админов", {
                 { "use", "Работает только на /alogin", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.adminList.use) },
                 { "showAdminLvl", "Отображать уровни администраторов", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.adminList.showAdminLvl) },
@@ -158,20 +202,13 @@ local window = {
                 { "strokeSize", "Размер обводки", WINDOW_WIDGET_SLIDER, 1, 5, imgui.new.int(config.root.windows.playersNearby.strokeSize) },
                 { "maxPlayers", "Максимальное кол-во игроков", WINDOW_WIDGET_SLIDER, 1, 30, imgui.new.int(config.root.windows.playersNearby.maxPlayers) }
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
-
-            { "spectatorInformation", "Информация об игроке", {
-                { "use", "Работает только в режиме наблюдения", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.spectatorInformation.use) },
-                { "type", "Количество столбцов на одной строке", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.windows.spectatorInformation.type), "2", "4" }
-            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
-
-            { "farChat", "Дальний чат", {
-                { "use", "Работает только на /alogin", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.farChat.use) },
-                { "displayTime", "Отображать время", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.farChat.use) },
-                { "strokeSize", "Размер обводки", WINDOW_WIDGET_SLIDER, 1, 5, imgui.new.int(config.root.windows.farChat.strokeSize) },
-                { "delay", "Задержка между повторными сообщениями", WINDOW_WIDGET_SLIDER, 2, 10, imgui.new.int(config.root.windows.farChat.delay) },
-                { "maxLines", "Максимальное кол-во строк", WINDOW_WIDGET_SLIDER, 1, 30, imgui.new.int(config.root.windows.farChat.maxLines) },
-            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
-
+            
+            { "greport", "Улучшенный /greport", {
+                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.greport.use) },
+                { "preferNotifications", "Использовать оповещения GAdmin", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.greport.preferNotifications) },
+                { "inputCopyButtons", "Кнопки вставляющие текст в поле ввода", WINDOW_WIDGET_CUSTOM, $GREPORT_MAKE_CUSTOM_ELEMENT!() }
+            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP }
+            
             { "playerChecker", "Чекер игроков", {
                 { "use", "Игроки добавляются через раздел \"Чекер\" в меню", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.playerChecker.use) },
                 { "chatNotice", "Оповещать в чате", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.playerChecker.chatNotice) },
@@ -179,36 +216,6 @@ local window = {
                 { "playerColorBasedOnClist", "Цвет игрока зависит от клиста", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.playerChecker.playerColorBasedOnClist) },
                 { "strokeSize", "Размер обводки", WINDOW_WIDGET_SLIDER, 1, 5, imgui.new.int(config.root.windows.playerChecker.strokeSize) },
                 { "textAlignMode", "Выравнивание текста", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.windows.playerChecker.textAlignMode), "Слева", "По центру", "Справа" },
-            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
-
-            { "autoCompletion", "Авто-заполнение", {
-                { "use", "TAB - вставить\nCTRL + Arrow Up/Down - переключение между элементами", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.autoCompletion.use) },
-                { "strokeSize", "Размер обводки", WINDOW_WIDGET_SLIDER, 1, 5, imgui.new.int(config.root.windows.autoCompletion.strokeSize) },
-            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
-
-            { "userInformation", "Ваша статистика", {
-                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.userInformation.use) },
-                { "strokeSize", "Размер обводки", WINDOW_WIDGET_SLIDER, 1, 5, imgui.new.int(config.root.windows.userInformation.strokeSize) },
-                { "textAlignMode", "Выравнивание текста", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.windows.userInformation.textAlignMode), "Слева", "По центру", "Справа" }
-            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
-
-            { "spectatorKeys", "Клавиши игрока в /sp", {
-                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.spectatorKeys.use) }
-            }},
-
-            { "spectatorActions", "Действия в /sp", {
-                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.spectatorActions.use) }
-            }},
-
-            { "greport", "Улучшенный /greport", {
-                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.greport.use) },
-                { "preferNotifications", "Использовать оповещения GAdmin", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.greport.preferNotifications) },
-                { "inputCopyButtons", "Кнопки вставляющие текст в поле ввода", WINDOW_WIDGET_CUSTOM, $GREPORT_MAKE_CUSTOM_ELEMENT!() }
-            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
-            
-            { "notifications", "Оповещения", {
-                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.notifications.use) },
-                { "maxItems", "Макс. кол-во оповещений", WINDOW_WIDGET_SLIDER, 1, 5, imgui.new.int(config.root.windows.notifications.maxItems) },
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP }
         }},
 
@@ -226,25 +233,69 @@ local window = {
         }},
 
         { "additions", "Прочее", {
-            { "fishEye", "Рыбий глаз", {
-                { "use", "", WINDOW_WIDGET_TYPE_SWITCH, imgui.new.bool(config.root.additions.fishEye.use) },
-                { "fov", "Глубина", WINDOW_WIDGET_SLIDER, 60, 110, imgui.new.int(config.root.additions.fishEye.fov) }
-            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
+            { "autoAdminLogin", "/alogin при спавне", {
+                { "use", "Для автоматического ввода пароля включите и настройте авто-ввод паролей", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.autoAdminLogin.use) }
+            }},
 
+            { "swapLayout", "Авто-исправление команд", {
+                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.swapLayout.use) }
+            }},
+
+            { "autoLogin", "Авто-ввод паролей", {
+                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.autoLogin.use) },
+                { "accountPassword", "Пароль от аккаунта", WINDOW_WIDGET_INPUT, imgui.new.char[48](config.root.additions.autoLogin.accountPassword) },
+                { "aloginPassword", "Пароль от /alogin", WINDOW_WIDGET_INPUT, imgui.new.char[48](config.root.additions.autoLogin.aloginPassword) }
+            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
+            
             { "commandRequester", "Админские формы", {
                 { "use", "", WINDOW_WIDGET_TYPE_SWITCH, imgui.new.bool(config.root.additions.commandRequester.use) },
                 { "displayType", "Режим отображения полученной формы", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.additions.commandRequester.displayType), "Оповещение", "Полоса состояния снизу экрана" },
                 { "secondsToHide", "Время для закрытия формы", WINDOW_WIDGET_SLIDER, 5, 30, imgui.new.int(config.root.additions.commandRequester.secondsToHide) }
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
-
-            { "mention", "Упоминания в /a", {
-                { "use", "", WINDOW_WIDGET_TYPE_SWITCH, imgui.new.bool(config.root.additions.mention.use) },
-                { "color", "Цвет упоминания", WINDOW_WIDGET_COLOR_PICKER, imguiAssets::convertHex2Float3(config.root.additions.mention.color) }
+            
+            { "idInKillList", "Айди в килл листе", {
+                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.idInKillList.use) }
+            }},
+            
+            { "carInfo", "Информация о машине", {
+                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.carInfo.use) },
+                { "none", "Размер шрифта", WINDOW_WIDGET_CUSTOM, RENDER_CHANGE_CONFIGURATION }
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
+            
+            { "shortCommands", "Короткие команды", {
+                { "use", "Настройка применится после перезагрузки скрипта", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.shortCommands.use) }
+            }},
 
             { "zoomSpectatorCamera", "Отдаление камеры в /sp", {
                 { "use", "Отдаление на колесико мыши в спектаторе", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.bool(config.root.additions.zoomSpectatorCamera.use) },
                 { "step", "Шаг", WINDOW_WIDGET_SLIDER, 1, 15, imgui.new.int(config.root.additions.zoomSpectatorCamera.step) }
+            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
+
+            { "displayIdInIc", "Отображение айди в IC", {
+                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.displayIdInIc.use) }
+            }},
+
+            { "showAdmins", "Показывать админов", {
+                { "use", "Показывать администраторов на скине, если он таковым является", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.showAdmins.use) },
+                { "none", "Размер шрифта", WINDOW_WIDGET_CUSTOM, RENDER_CHANGE_CONFIGURATION }
+            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
+
+            { "gunInfo", "Отображение оружия у игрока", {
+                { "use", "Работает только на /alogin", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.gunInfo.use) },
+                { "none", "Размер шрифта", WINDOW_WIDGET_CUSTOM, RENDER_CHANGE_CONFIGURATION }
+            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
+
+            { "hideIpAddresses", "Прятать IP адреса", {
+                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.hideIpAddresses.use) }
+            }},
+            
+            { "hideSpectatorMenu", "Прятать меню в /sp", {
+                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.hideSpectatorMenu.use) }
+            }},
+            
+            { "fishEye", "Рыбий глаз", {
+                { "use", "", WINDOW_WIDGET_TYPE_SWITCH, imgui.new.bool(config.root.additions.fishEye.use) },
+                { "fov", "Глубина", WINDOW_WIDGET_SLIDER, 60, 110, imgui.new.int(config.root.additions.fishEye.fov) }
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
 
             { "tracers", "Трассера", {
@@ -269,58 +320,14 @@ local window = {
                 }), imgui.new.int(config.root.additions.tracers.maxLines) }
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP }
 
-            { "shortCommands", "Короткие команды", {
-                { "use", "Команды добавляются в разделе биндера\nНастройка применится после перезагрузки скрипта", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.shortCommands.use) }
-            }},
-
-            { "swapLayout", "Авто-исправление команд", {
-                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.swapLayout.use) }
-            }},
-
-            { "idInKillList", "Айди в килл листе", {
-                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.idInKillList.use) }
-            }},
-
             { "deathNotifyInChat", "Убийства в чат", {
                 { "use", "Логирует убийства в чат", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.deathNotifyInChat.use) }
             }},
-        
-            { "showAdmins", "Показывать админов", {
-                { "use", "Показывать администраторов на скине, если он таковым является", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.showAdmins.use) },
-                { "none", "Размер шрифта", WINDOW_WIDGET_CUSTOM, RENDER_CHANGE_CONFIGURATION }
+
+            { "mention", "Упоминания в /a", {
+                { "use", "", WINDOW_WIDGET_TYPE_SWITCH, imgui.new.bool(config.root.additions.mention.use) },
+                { "color", "Цвет упоминания", WINDOW_WIDGET_COLOR_PICKER, imguiAssets::convertHex2Float3(config.root.additions.mention.color) }
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
-
-            { "gunInfo", "Отображение оружия у игрока", {
-                { "use", "Работает только на /alogin", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.gunInfo.use) },
-                { "none", "Размер шрифта", WINDOW_WIDGET_CUSTOM, RENDER_CHANGE_CONFIGURATION }
-            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
-            
-            { "displayIdInIc", "Отображение айди в IC", {
-                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.displayIdInIc.use) }
-            }},
-
-            { "autoLogin", "Авто-ввод паролей", {
-                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.autoLogin.use) },
-                { "accountPassword", "Пароль от аккаунта", WINDOW_WIDGET_INPUT, imgui.new.char[48](config.root.additions.autoLogin.accountPassword) },
-                { "aloginPassword", "Пароль от /alogin", WINDOW_WIDGET_INPUT, imgui.new.char[48](config.root.additions.autoLogin.aloginPassword) }
-            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
-
-            { "autoAdminLogin", "/alogin при спавне", {
-                { "use", "Для автоматического ввода пароля включите и настройте авто-ввод паролей", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.autoAdminLogin.use) }
-            }},
-
-            { "carInfo", "Информация о машине", {
-                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.carInfo.use) },
-                { "none", "Размер шрифта", WINDOW_WIDGET_CUSTOM, RENDER_CHANGE_CONFIGURATION }
-            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
-
-            { "hideIpAddresses", "Прятать IP адреса", {
-                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.hideIpAddresses.use) }
-            }},
-            
-            { "hideSpectatorMenu", "Прятать меню в /sp", {
-                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.hideSpectatorMenu.use) }
-            }}
         }},
 
         { "fix", "Исправления", {
@@ -1554,7 +1561,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                             imgui.PushFont(regular12)
                                 imgui.SetCursorPos(imgui.GetCursorPos() + imgui.ImVec2(5, 2))
                                 imgui.BeginGroup()
-                                    for index, section in loggedServerMessages {
+                                    for index, section in allowedLogs {
                                         if animations::clickableUnderlinedText(
                                             section[1] .. "##imgui.windows.Main.logs.LogSelector",
                                             window.logs.selected == index
@@ -1598,7 +1605,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                             )
                                 imgui.SetCursorPos(imgui.ImVec2(6, 6))
                                 imgui.BeginGroup()
-                                    if #loggedServerMessages[window.logs.selected][2] == 0 {
+                                    if #allowedLogs[window.logs.selected][2] == 0 {
                                         local text = "Пока нет никаких логов"
                                         imguiAssets::textWithFont(text, regular12, imgui.ImVec2(
                                             ((imgui.GetWindowWidth() - 12) - imgui.CalcTextSize(text).x) / 2,
@@ -1606,7 +1613,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                         ), imgui.GetStyle().Colors[imgui.Col.TextDisabled])
                                     }
                                     
-                                    for _, message in loggedServerMessages[window.logs.selected][2] {
+                                    for _, message in allowedLogs[window.logs.selected][2] {
                                         local fullText = string.format(
                                             "[%02d:%02d:%02d] %s",
                                             message.time.wHour,

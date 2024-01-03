@@ -18,7 +18,8 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
-@import "Config" => config
+@import "Config"    => config
+@import "Assets"    => assets
 @import "game.User" => user
 
 ffi.cdef(`
@@ -79,20 +80,19 @@ sampev.onPlayerDeathNotification = fn(killerId, killedId, reason) {
             }
         })()
     }
-
+    
+    local message = (killerId == 65535)
+        ? string.format("[A] %s[%s] погиб. Причина - %s.", killedNickname, killedId, reasonKilledBy)
+        : string.format(
+            "[A] %s[%s] убит от рук %s[%s]. Причина - %s.",
+            killedNickname,
+            killedId,
+            killerNickname,
+            killerId,
+            reasonKilledBy            
+        )
+    
     if config.root.additions.deathNotifyInChat.use {
-        local message = (killerId == 65535)
-            ? string.format("[A] %s[%s] погиб. Причина - %s.", killedNickname, killedId, reasonKilledBy)
-            : string.format(
-                "[A] %s[%s] убит от рук %s[%s]. Причина - %s.",
-                killedNickname,
-                killedId,
-                killerNickname,
-                killerId,
-                reasonKilledBy            
-            )
-
-
         sampAddChatMessage(message, 0xAFAFAF)
     }
 
@@ -109,6 +109,12 @@ sampev.onPlayerDeathNotification = fn(killerId, killedId, reason) {
                     kill.killEntry[4].szVictim = ffi.new("char[25]", string.sub(killedNickname .. "[" .. killedId .. "]", 1, 24))
                 }
             })
+        }
+    }
+
+    for _, log in allowedLogs {
+        if log[1] == "Килл-лист" {
+            table.insert(log[2], { time = assets::getLocalTime(), text = message })
         }
     }
 }
