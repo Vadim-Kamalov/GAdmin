@@ -161,10 +161,22 @@ method HotKey::setupWatcher(event, wparam, lparam) {
                        (#hotKey.keys == 2 && isKeyDown(hotKey.keys[1]) && key == hotKey.keys[2])
                     {
                         if local item = hotKeysCallbacks[hotKey.id] {
-                            item.callback()
-                            consumeWindowMessage(true, false)
+                            if !item.keysDown {
+                                item.callback()
+                                item.keysDown = true
+
+                                consumeWindowMessage(true, false)
+                            }
                         }
                     }
+                }
+            }
+        }
+    } elseif event == wm.WM_KEYUP || event == wm.WM_SYSKEYUP {
+        for _, hotKey in allHotKeys {
+            if local item = hotKeysCallbacks[hotKey.id] {
+                if item.keysDown {
+                    item.keysDown = false
                 }
             }
         }
@@ -258,7 +270,8 @@ method HotKey::registerCallback(callback) {
     if !hotKeysCallbacks[self.id] {
         hotKeysCallbacks[self.id] = {
             keys        = self.keys,
-            callback    = callback
+            callback    = callback,
+            keysDown    = false
         }
 
         table.insert(allHotKeys, self)

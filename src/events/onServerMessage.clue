@@ -110,6 +110,10 @@ sampev.onServerMessage = fn(color, text) {
         text = nickname .. "[" .. player::getIdByNickname(nickname) .. "]" .. " говорит:" .. message
     }
 
+    if string.find(text, "^%[A] Жалоба от .+%[%d+]:") && config.root.additions.reportOneColor.use {
+        color = rgb2color(config.root.additions.reportOneColor.color)
+    }
+
     if string.find(text, "^%[A%] .*%[%d+%]: %S+") && color == 866792362 && config.root.additions.mention.use {
         local possibleMention = string.match(text, "^%[A%] .*%[%d+]: (%S+)")
 

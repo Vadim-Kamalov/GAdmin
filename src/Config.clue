@@ -230,6 +230,11 @@ static __config__ = {
                 aloginPassword  = ""
             },
 
+            reportOneColor = {
+                use     = true,
+                color   = "FFFF00"
+            },
+
             hideSpectatorMenu   = { use = true },
             swapLayout          = { use = false },
             idInKillList        = { use = false },
