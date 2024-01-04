@@ -235,6 +235,7 @@ static __config__ = {
                 color   = "FFFF00"
             },
 
+            autoAACommand       = { use = false },
             hideSpectatorMenu   = { use = true },
             swapLayout          = { use = false },
             idInKillList        = { use = false },

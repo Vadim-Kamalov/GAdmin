@@ -19,7 +19,8 @@
  */
 
 @import "Config"            => config
-@import "CommandRequester"  => commandRequester
+@import "game.Spectator"    => spectator
+@import "game.User"         => user
 
 /**
  * Swap language layout from russian to english.
@@ -60,6 +61,11 @@ sampev.onSendChat = fn(message) {
         } else {
             sampSendChat("/" .. ((arguments) ? swappedCommand .. arguments : output))
         }
+        return false
+    }
+    
+    if config.root.additions.autoAACommand.use && user::getAloginStatus() && !spectator.status {
+        sampSendChat("/aa " .. message)
         return false
     }
 }

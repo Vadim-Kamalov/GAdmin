@@ -240,6 +240,10 @@ local window = {
             { "swapLayout", "Авто-исправление команд", {
                 { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.swapLayout.use) }
             }},
+            
+            { "autoAACommand", "Автоматический /aa", {
+                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.autoAACommand.use) }
+            }},
 
             { "autoLogin", "Авто-ввод паролей", {
                 { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.autoLogin.use) },
@@ -263,10 +267,10 @@ local window = {
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
             
             { "shortCommands", "Короткие команды", {
-                { "use", "Настройка применится после перезагрузки скрипта", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.shortCommands.use) }
+                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.shortCommands.use) }
             }},
 
-one            { "reportOneColor", "Один цвет для репорта", {
+            { "reportOneColor", "Один цвет для репорта", {
                 { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.reportOneColor.use) },
                 { "color", "Цвет", WINDOW_WIDGET_COLOR_PICKER, imguiAssets::convertHex2Float3(config.root.additions.reportOneColor.color) }
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
@@ -276,14 +280,14 @@ one            { "reportOneColor", "Один цвет для репорта", {
                 { "step", "Шаг", WINDOW_WIDGET_SLIDER, 1, 15, imgui.new.int(config.root.additions.zoomSpectatorCamera.step) }
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
 
-            { "displayIdInIc", "Отображение айди в IC", {
-                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.displayIdInIc.use) }
-            }},
-
             { "gunInfo", "Отображение оружия у игрока", {
                 { "use", "Работает только на /alogin", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.gunInfo.use) },
                 { "none", "Размер шрифта", WINDOW_WIDGET_CUSTOM, RENDER_CHANGE_CONFIGURATION }
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
+            
+            { "displayIdInIc", "Отображение айди в IC", {
+                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.displayIdInIc.use) }
+            }},
             
             { "showAdmins", "Показывать админов", {
                 { "use", "Показывать администраторов на скине, если он таковым является", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.showAdmins.use) },
@@ -694,7 +698,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                     imgui.EndGroup()
                 } elseif window.menu.selectedFrame == WINDOW_SELECTED_FRAME_SETTINGS {
                     for sectionIndex, section in window.configuration {
-                        if sectionIndex != 1 && sectionIndex != #window.configuration { imgui.NewLine() }
+                        if sectionIndex != 1 { imgui.NewLine() }
                         imguiAssets::textWithFont(section[2], bold14)
 
                         for index, setting in section[3] {

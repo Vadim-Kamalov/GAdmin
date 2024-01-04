@@ -26,11 +26,10 @@ sampev.onSendCommand = fn(command) {
 
     if config.root.additions.shortCommands.use {
         for key, value of config.root.additions.shortCommands.commands {
-            if command == key {
-                command = value .. string.match($, "^/%S+(.*)")
+            if string.lower(string.match(command, "^/(%S+)%s*") || "") == key {
+                sampSendChat(string.format("/" .. value, select(1, string.match(command, "^/%S+(.*)"))))
+                return false
             }
         }
     }
-
-    return { command }
 }

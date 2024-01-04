@@ -267,16 +267,6 @@ global fn main() {
 
     common::makeDirectoryTree({ "GAdmin", "GAdmin/temp", "GAdmin/config" })
 
-    if config.root.additions.shortCommands.use {
-        for key, value of config.root.additions.shortCommands.commands {
-            sampRegisterChatCommand(key, fn(arguments) {
-                if arguments {
-                    sampSendChat("/" .. string.format(value, arguments))
-                }
-            })
-        }
-    }
- 
 @if all(not(def(__GADMIN_DEBUG__)), cmp(AUTOUPDATE_URL != ""))
 {
     autoUpdate::checkUpdates($AUTOUPDATE_URL)
