@@ -339,6 +339,22 @@ method __config__::saveIfChanged() {
                 encodeJson($)
         }
 
+        local fn mergeTables(a, b) {
+            for key, value of b {
+                if type(value) == "table" {
+                    if type(a[key]) == "table" {
+                        mergeTables(a[key], value)
+                    } elseif a[key] == nil {
+                        a[key] = value
+                    }
+                } elseif a[key] == nil {
+                    a[key] = value
+                }
+            }
+        }
+
+        mergeTables(__config__.root, __config__.def)
+
         __config__.initialized = true
     }
 }
