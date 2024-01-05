@@ -1,3 +1,38 @@
-Vadim Kamalov       <> [https://github.com/Vadim-Kamalov]
-Dmitry Lyubimcev    <dzone@danwin1210.de> [https://github.com/defaultzone]
-HeroIAm             <> [https://github.com/HeroIAm]
+    Этот файл соддержит в себе всех, кто внес вклад
+    в разработку GAdmin. Если вы внесли достаточно
+    вклада в разработку и считаете, что вы должны
+    быть в этом файле: создайте пулл реквест на
+    этот файл. Учтите, что имена отсортированы в
+    алфавитном порядке, а также имеет следующие поля:
+        N (name/nickname):  ваше имя и фамилия на латинице (или же ваш псевдоним, т.е никнейм).
+        M (mail):           ваша почта.
+        G (github):         ссылка на ваш GitHub профиль.
+        C (contact):        как можно связаться с вами, т.е
+                            ссылка на ваш профиль вк/дискорд/и.т.д.
+        D (description):    описание: что сделал конкретного для проекта
+    Поля N (name/nickname) и D (description) обязательны. Относитесь серьёзно к заполнению.
+
+    Спасибо!
+
+----------------
+
+N: Vadim Kamalov (LETOVO)
+G: github.com/Vadim-Kamalov
+D: помощь в исправлении ошибок
+
+N: Dmitry Lyubimcev (defaultzone)
+M: dzone@danwin1210.de
+G: github.com/defaultzone
+C: vk.com/altasd
+D: значительный вклад в разработку
+
+N: Petr Frank (HeroIAm)
+G: github.com/HeroIAm
+D: реализовал трассера, аирбрейк, отображение
+D: ID в IC чате
+
+N: Oleg Garsin (2R2R)
+D: тестировщик
+
+N: BigFloppa
+D: тестировщик
