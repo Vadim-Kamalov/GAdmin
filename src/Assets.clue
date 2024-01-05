@@ -350,6 +350,13 @@ method assets::collectScriptInformation() {
         workingDirectory    = getWorkingDirectory(),
         scriptVersion       = $GADMIN_VERSION,
         usedMemory          = collectgarbage("count"),
+        admins              = (fn {
+            local list = {}
+            for _, admin in import("game.Admins") {
+                table.insert(list, admin)
+            }
+            return list
+        })()
 
         config = config
     }, { sort = true, wrap = 40 })

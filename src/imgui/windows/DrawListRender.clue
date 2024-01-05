@@ -130,10 +130,8 @@ imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
                 }
 
                 if config.root.additions.showAdmins.use && distance < 50 {
-                    for _, data in admins {
-                        if id == data.id {
-                            onPlayerRenderText ..= "{FF8585}{" .. data.nickname.ooc .. "}{FFFFFF}{\n}" 
-                        }
+                    if local admin = admins::getAdminById(id) {
+                        onPlayerRenderText ..= "{FF8585}{" .. admin.nickname.ooc .. "}{FFFFFF}{\n}" 
                     }
                 }
 

@@ -118,9 +118,9 @@ method __user__::setAdminLvl(lvl) {
  * @return void
  */
 method __user__::updateTime() {
-    if os.clock() - self.online.clock >= 1 {
+    if os.clock() - self.online.clock >= 1 && self::getAloginStatus() {
         self.online.clock               = os.clock()
-        self.online.session             += (self::getAloginStatus()) ? 1 : 0
+        self.online.session             += 1
         config.root.user.online.total   += 1
         
         if local this = config.root.user.online.weeks {
