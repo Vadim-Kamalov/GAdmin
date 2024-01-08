@@ -96,4 +96,39 @@ method ped::isBehindWall(ped) {
     return !behindWall
 }
 
+/**
+ * Teleport ped to `x, y, z` coordinates.
+ * 
+ * @author FYP
+ * @author we_sux team
+ * @author https://www.blast.hk/threads/15459/
+ *
+ * @param x number
+ * @param y number
+ * @param z number
+ * @return void
+ */
+method ped::teleport(x, y, z) {
+    local fn setEntityCoordinates(entityPtr, x, y, z) {
+        if entityPtr != 0 {
+            local matrixPtr = readMemory(entityPtr + 0x14, 4, false)
+            if matrixPtr != 0 {
+                local posPtr = matrixPtr + 0x30
+                writeMemory(posPtr + 0, 4, representFloatAsInt(x), false)
+                writeMemory(posPtr + 4, 4, representFloatAsInt(y), false)
+                writeMemory(posPtr + 8, 4, representFloatAsInt(z), false)
+            }
+        }
+    }
+
+    if isCharInAnyCar(PLAYER_PED) {
+        setCharCoordinates(PLAYER_PED, x, y, z)
+    }
+
+    if doesCharExist(PLAYER_PED) {
+        local pointer = getCharPointer(PLAYER_PED)
+        setEntityCoordinates(pointer, x, y, z)
+    }
+}
+
 return ped

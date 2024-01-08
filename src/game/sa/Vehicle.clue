@@ -66,4 +66,54 @@ method vehicle::getName(id) {
     }
 }
 
+/**
+ * Get free vehicle seat index.
+ * 
+ * @author FYP
+ * @author we_sux team
+ * @author https://www.blast.hk/threads/15459/
+ *
+ * @param car number
+ * @return number|nil
+ */
+method vehicle::getFreeSeat(car) {
+    if doesCharExist(getDriverOfCar(car)) {
+        local maxPassengers = getMaximumNumberOfPassengers(car)
+        for i = 0, maxPassengers {
+            if isCarPassengerSeatFree(car, i) {
+                return i + 1
+            }
+        }
+        return nil
+    } else {
+        return 0
+    }
+}
+
+/**
+ * Jump into car.
+ * 
+ * @author FYP
+ * @author we_sux team
+ * @author https://www.blast.hk/threads/15459/
+ *
+ * @param car number
+ * @return boolean
+ */
+method vehicle::jumpInto(car) {
+    local seat = self::getFreeSeat(car)
+    
+    if !seat { return false }
+    
+    if seat == 0 {
+        warpCharIntoCar(PLAYER_PED, car)
+    } else {
+        warpCharIntoCarAsPassenger(PLAYER_PED, car, seat - 1)
+    }
+
+    restoreCameraJumpcut()
+    
+    return true
+}
+
 return vehicle

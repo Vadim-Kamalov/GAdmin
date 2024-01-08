@@ -109,6 +109,7 @@ static xml2lua      = require("xml2lua")
 static sampev       = require("samp.events")
 static vkeys        = require("vkeys")
 static moonMonet    = require("MoonMonet")
+static Vector3D     = require("vector3d")
 
 static enum /* DIALOG_STYLE */ {
     DIALOG_STYLE_MSGBOX = 0,

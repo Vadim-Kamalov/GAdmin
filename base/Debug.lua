@@ -30,9 +30,10 @@
 --- SDPX-License-Identifier: GPL-3.0-only
 ---
 
-script_name     "GAdmin"
-script_authors  "https://github.com/Vadim-Kamalov/GAdmin/blob/main/CONTRIBUTORS"
-script_url      "https://github.com/Vadim-Kamalov/GAdmin/"
+script_name         "GAdmin"
+script_authors      "https://github.com/Vadim-Kamalov/GAdmin/blob/main/CONTRIBUTORS"
+script_url          "https://github.com/Vadim-Kamalov/GAdmin/"
+script_properties   "work-in-pause"
 
 local import, modules
 do

@@ -84,6 +84,22 @@ HotKey::new("imgui.windows.DrawListRender->traccersRemove", { VK_LMENU, VK_Z }, 
     }
 })
 
+/**
+ * Show cursor.
+ *
+ * @author FYP
+ * @author we_sux team
+ * @author https://www.blast.hk/threads/15459/
+ *
+ * @param toggle boolean
+ * @return void
+ */
+local fn showCursor(toggle) {
+    if toggle {
+        sampSetCursorMode(CMODE_LOCKCAM)
+    }
+}
+
 imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
     self.HideCursor = imguiAssets::getCursorStatus()
     self.DL         = imgui.GetBackgroundDrawList()
@@ -172,6 +188,95 @@ imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
                 }
             }
         } // for _, player in getAllChars()
+
+        if isKeyJustPressed(VK_MBUTTON) && config.root.cheats.clickwarp.use && user::getAloginStatus() {
+            print("clicked")
+            cursorEnabled = !$
+            imguiAssets::setCursorStatus(false)
+            if cursorEnabled {
+                sampSetCursorMode(3)
+            }
+        }
+
+        /**
+         * Clickwarp implementation. Authors - FYP and we_sux team.
+         * https://www.blast.hk/threads/15459/
+         */
+        if cursorEnabled && config.root.cheats.clickwarp.use && user::getAloginStatus() {
+            local sx, sy = getCursorPos()
+            local sw, sh = getScreenResolution()
+            if sx >= 0 && sy >= 0 && sx < sw && sy < sh {
+                local posX, posY, posZ = convertScreenCoordsToWorld3D(sx, sy, 700.0)
+                local camX, camY, camZ = getActiveCameraCoordinates()
+                local result, colpoint = processLineOfSight(camX, camY, camZ, posX, posY, posZ, true, true, false, true, false, false, false)
+                if result && colpoint.entity != 0 {
+                    local normal    = colpoint.normal
+                    local pos       = Vector3D(colpoint.pos[1], colpoint.pos[2], colpoint.pos[3]) - (Vector3D(normal[1], normal[2], normal[3]) * 0.1)
+                    local zOffset   = 300
+                    
+                    if normal[3] >= 0.5 { zOffset = 1 }
+
+                    local result, colpoint2 = processLineOfSight(
+                        pos.x,
+                        pos.y,
+                        pos.z + zOffset,
+                        pos.x,
+                        pos.y,
+                        pos.z - 0.3,
+                        true,
+                        true,
+                        false,
+                        true,
+                        false,
+                        false,
+                        false
+                    )
+
+                    if result {
+                        pos = Vector3D(colpoint2.pos[1], colpoint2.pos[2], colpoint2.pos[3] + 1)
+
+                        local curX, curY, curZ  = getCharCoordinates(playerPed)
+                        local distance          = getDistanceBetweenCoords3d(curX, curY, curZ, pos.x, pos.y, pos.z)
+                        local text              = string.format("%.2fm", distance)
+                        local color             = imgui.ImVec4(1, 1, 1, 1)
+
+                        sy -= 2
+                        sx -= 2
+
+                        local tpIntoCar = nil
+                        if colpoint.entityType == 2 {
+                            local car       = getVehiclePointerHandle(colpoint.entity)
+                            local carModel  = getCarModel(car)
+                            if doesVehicleExist(car) && (!isCharInAnyCar(PLAYER_PED) || storeCarCharIsInNoSave(PLAYER_PED) != car) {
+                                color   = imgui.ImVec4(1, 1, 1, 0.5) 
+                                text  ..= " | " .. vehicle::getName(carModel) .. "\nУдерживайте ПКМ для телепортации в машину"
+                                if isKeyDown(VK_RBUTTON) {
+                                    tpIntoCar   = car
+                                    color       = imgui.ImVec4(1, 1, 1, 1)
+                                }
+                            }
+                        }
+
+                        imguiText::addStroke(self.DL, text, imgui.ColorConvertFloat4ToU32(color), imgui.ImVec2(sx + 20, sy + 10), regular, 18)
+
+                        if isKeyDown(VK_LBUTTON) {
+                            if tpIntoCar {
+                                if !vehicle::jumpInto(tpIntoCar) {
+                                    ped::teleport(tpIntoCar, pos.x, pos.y, pos.z)
+                                }
+                            } else {
+                                ped::teleport(pos.x, pos.y, pos.z)
+                            }
+                            
+                            cursorEnabled = false
+
+                            sampSetCursorMode(0)
+                            imguiAssets::setCursorStatus(true)
+                        }
+                    }
+                }
+            }
+        }
     } /* if !isGamePaused()*/ else {
         for index, text in ({
             string.format("GAdmin v%s", $GADMIN_VERSION),

@@ -28,7 +28,7 @@ local text = {}
  * @param drawList      ImDrawList
  * @param text          string
  * @param pos           ImVec2
- * @param color         ColorU32Vec4
+ * @param color         number (u32)
  * @param font          ImFont
  * @param textSize      number
  * @param strokeWidth   number
@@ -37,7 +37,6 @@ local text = {}
  */
 method text::addStroke(drawList, text, color, pos, font, textSize, strokeWidth = 1) {
     local blackColor = imgui.GetColorU32Vec4(imgui.ImVec4(0, 0, 0, 1))
-    if font { imgui.PushFont(font) }
     if strokeWidth > 0 {
         drawList::AddTextFontPtr(font, textSize, imgui.ImVec2(pos.x + strokeWidth, pos.y + strokeWidth), blackColor, text)
         drawList::AddTextFontPtr(font, textSize, imgui.ImVec2(pos.x - strokeWidth, pos.y - strokeWidth), blackColor, text)
@@ -45,7 +44,6 @@ method text::addStroke(drawList, text, color, pos, font, textSize, strokeWidth =
         drawList::AddTextFontPtr(font, textSize, imgui.ImVec2(pos.x - strokeWidth, pos.y + strokeWidth), blackColor, text)
     }
     drawList::AddTextFontPtr(font, textSize, pos, color, text)
-    if font { imgui.PopFont(font) }
 }
 
 /**
@@ -72,7 +70,6 @@ method text::addColored(drawList, text, pos, font = nil, textSize = 14, strokeWi
         return output
     })()
 
-    if font { imgui.PushFont(font) }
     for _, data in textColoredList {
         local r, g, b, _    = assets::explodeARGB(tonumber(data.hex .. "FF", 16))
         local color         = imgui.GetColorU32Vec4(imgui.ImVec4(r / 255, g / 255, b / 255, 1 /* Alpha */))
@@ -85,7 +82,6 @@ method text::addColored(drawList, text, pos, font = nil, textSize = 14, strokeWi
             changeablePos.x += data.size.x + textSize / 2.5
         }
     }
-    if font { imgui.PopFont(font) }
 }
 
 return text

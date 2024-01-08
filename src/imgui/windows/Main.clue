@@ -232,7 +232,11 @@ local window = {
                 { "use", "Работает только на /alogin", WINDOW_WIDGET_TYPE_SWITCH, imgui.new.bool(config.root.cheats.wallhack.use) },
                 { "notificationType", "Тип оповещения при нажатии на хоткей", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.cheats.wallhack.notificationType), "ImGui оповещение", "Сообщение в чат", "Отсутствует" },
                 { "none", "Размер шрифта", WINDOW_WIDGET_CUSTOM, RENDER_CHANGE_CONFIGURATION }
-            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP }
+            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
+
+            { "clickwarp", "ClickWarp", {
+                { "use", "Работает только на /alogin", WINDOW_WIDGET_TYPE_SWITCH, imgui.new.bool(config.root.cheats.clickwarp.use) }
+            }}
         }},
 
         { "additions", "Прочее", {
@@ -701,7 +705,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                     imgui.EndGroup()
                 } elseif window.menu.selectedFrame == WINDOW_SELECTED_FRAME_SETTINGS {
                     for sectionIndex, section in window.configuration {
-                        if sectionIndex != 1 { imgui.NewLine() }
+                        if sectionIndex != 1 && sectionIndex != 3 { imgui.NewLine() }
                         imguiAssets::textWithFont(section[2], bold14)
 
                         for index, setting in section[3] {

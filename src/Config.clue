@@ -161,7 +161,9 @@ static __config__ = {
             wallhack = {
                 use                 = false,
                 notificationType    = 1
-            }
+            },
+
+            clickwarp = { use = false }
         },
 
         additions = {
