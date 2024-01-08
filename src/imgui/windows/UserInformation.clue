@@ -27,11 +27,81 @@
 @import "Config" => config
 @import "Assets" => assets
 
+@macro USER_INFORMATION_CUSTOM_WIDGET() {
+    (fn {
+        if animations::button("Добавить новую линию##USER_INFORMATION_CUSTOM_WIDGET", imgui.ImVec2(350, 25)) {
+            table.insert(config.root.windows.userInformation.display, 1, "NewLine")
+        }
+
+        imgui.BeginChild("USER_INFORMATION_CUSTOM_WIDGET", imgui.ImVec2(350, 300), true)
+            local drawList  = imgui.GetWindowDrawList()
+            local itemColor = imgui.ColorConvertFloat4ToU32(imgui.GetStyle().Colors[imgui.Col.FrameBg])
+
+            imgui.SetCursorPos(imgui.ImVec2(6, 6))
+            imgui.BeginGroup()
+                for index, item in config.root.windows.userInformation.display {
+                    local actionButtonPlaceholder = (type(item) == "table") ? ((item[2]) ? "Скрыть" : "Отобразить") : "Удалить"
+
+                    imgui.BeginGroup()
+                        local itemWidth = imgui.GetWindowWidth() - 22
+
+                        drawList::AddRectFilled(
+                            imgui.GetCursorScreenPos(),
+                            imgui.GetCursorScreenPos() + imgui.ImVec2(itemWidth, 25),
+                            itemColor,
+                            imgui.GetStyle().FrameRounding
+                        )
+                        
+                        imgui.BeginGroup()
+                            local baseCursorPos = imgui.GetCursorPos()
+                            local id            = "##USER_INFORMATION_CUSTOM_WIDGET.indexN" .. index
+                            local moveItem      = fn(new) {
+                                table.insert(
+                                    config.root.windows.userInformation.display,
+                                    new,
+                                    table.remove(config.root.windows.userInformation.display, index)
+                                ) 
+                            }
+                            
+                            imgui.SetCursorPos(baseCursorPos + imgui.GetStyle().FramePadding)
+                            imguiAssets::textWithFont(type(item) == "table" ? item[1] : "Новая линия", bold10)
+                            imgui.PushFont(regular12)
+                                imgui.SetCursorPos(imgui.ImVec2(itemWidth - 160, baseCursorPos.y))
+                                imgui.BeginGroup()
+                                    if animations::button("Вверх" .. id, imgui.ImVec2(40, 25)) {
+                                        moveItem(math.max(1, index - 1))
+                                    }
+                                    imgui.SameLine(nil, 2)                
+                                    if animations::button("Вниз" .. id, imgui.ImVec2(40, 25)) {
+                                        moveItem(math.min(index + 1, #config.root.windows.userInformation.display))
+                                    }
+                                imgui.EndGroup()
+                                imgui.SetCursorPos(imgui.ImVec2(itemWidth - 75, baseCursorPos.y))
+                                if animations::button(actionButtonPlaceholder .. id, imgui.ImVec2(80, 25)) {
+                                    if type(item) == "table" {
+                                        item[2] = !$
+                                    } else {
+                                        table.remove(config.root.windows.userInformation.display, index)
+                                    }
+                                }
+                            imgui.PopFont()
+                        imgui.EndGroup()
+
+                        imgui.SameLine()
+
+                        imgui.Dummy(imgui.ImVec2(itemWidth, 25))
+                    imgui.EndGroup()
+                }
+            imgui.EndGroup()
+        imgui.EndChild()
+    })
+}
+
 window::new("imgui.windows.UserInformation", {
     description = "Информация о Вас"
     type        = MV_DEFAULT
     size        = { x = 200, y = 0 }
-    condition   = fn { return config.root.windows.userInformation.use && isSampAvailable() },
+    condition   = fn { return config.root.windows.userInformation.use && isSampAvailable() && user::getAloginStatus() },
     initialize  = {
         style = StyleChanger::new({
             WindowBorderSize    = 0
@@ -40,21 +110,6 @@ window::new("imgui.windows.UserInformation", {
     }
 }, fn(self) {
     local strokeSize = config.root.windows.userInformation.strokeSize
-
-    self.sortArray = fn(originalArray, targetArray) {
-        local sortedArray = {}
-
-        for i = 1, #targetArray {
-            for j = i, #originalArray {
-                if originalArray[j].name == targetArray[i][1] || type(originalArray[j]) == "string" {
-                    table.insert(sortedArray, originalArray[j])
-                    break
-                }
-            }
-        }
-
-        return sortedArray
-    }
 
     self.setNextItemAligned = fn(text) {
         local pos   = imgui.GetCursorPos()
@@ -73,8 +128,8 @@ window::new("imgui.windows.UserInformation", {
             local time          = assets::getLocalTime()
             local online        = user::getTime()
             local answers       = user::getAnswersCount()
-
-            {
+            
+            if config.root.windows.userInformation.showTime {
                 local text = string.format(
                     "%d-%d-%d %02d:%02d:%02d",
                     time.wYear, time.wMonth, time.wDay,
@@ -85,49 +140,43 @@ window::new("imgui.windows.UserInformation", {
                 imguiAssets::addStrokedText(text, strokeSize)
             }
 
-            for _, item in self.sortArray({
-                { name = "ID", value = user::getId() }
-                { name = "IC никнейм", value = user::getNickname() },
-                { name = "OOC никнейм", value = user::getOOCNickname() },
-                { name = "Админ уровень", value = user::getAdminLvl() },
-                { name = "Пинг", value = user::getPing() },
-            
-                "NewLine",
+            for _, item in config.root.windows.userInformation.display {
+                local values = {
+                    ["ID"]              = user::getId(),
+                    ["IC никнейм"]      = user::getNickname(),
+                    ["OOC никнейм"]     = user::getOOCNickname(),
+                    ["Админ уровень"]   = user::getAdminLvl(),
+                    ["Пинг"]            = user::getPing(),
+                    
+                    ["Общий онлайн"] = fn {
+                        local this = online.total
+                        return string.format("%02d:%02d:%02d", this.hour, this.min, this.sec)
+                    },
 
-                { name = "Общий онлайн", value = fn {
-                    local this = online.total
-                    return string.format("%02d:%02d:%02d", this.hour, this.min, this.sec)
-                }},
+                    ["Онлайн за неделю"] = fn {
+                        local this = online.weekTotal
+                        return string.format("%02d:%02d:%02d", this.hour, this.min, this.sec)
+                    },
 
-                { name = "Онлайн за неделю", value = fn {
-                    local this = online.weekTotal
-                    return string.format("%02d:%02d:%02d", this.hour, this.min, this.sec)
-                }},
+                    ["Онлайн за сессию"] = fn {
+                        local this = online.session
+                        return string.format("%02d:%02d:%02d", this.hour, this.min, this.sec)
+                    },
 
-                { name = "Онлайн за сессию", value = fn {
-                    local this = online.session
-                    return string.format("%02d:%02d:%02d", this.hour, this.min, this.sec)
-                }},
+                    ["Ответов всего"]       = answers.total,
+                    ["Ответов за неделю"]   = answers.weekTotal,
+                    ["Ответов за сесcию"]   = answers.session
+                }
 
-                "NewLine",
-
-                { name = "Ответов всего", value = answers.total },
-                { name = "Ответов за неделю", value = answers.weekTotal },
-                { name = "Ответов за сесcию", value = answers.session }
-            }, config.root.windows.userInformation.display) {
                 if item == "NewLine" {
                     imgui.NewLine()
                 } else {
-                    for _, display in config.root.windows.userInformation.display {
-                        // display[1] = string, must equals to item.name.
-                        // display[2] = boolean, display status.
-                        if display[1] == item.name && display[2] {
-                            local name, value = item.name, tostring((type(item.value) == "function") ? item.value() : item.value)
+                    if item[2] && values[item[1]] {
+                        local name, value = item[1], tostring((type(values[item[1]]) == "function") ? values[item[1]]() : values[item[1]])
 
-                            self.setNextItemAligned(name .. ": " .. value)
-                            imguiAssets::addStrokedText("%s: %s", strokeSize, nil, name, value)
-                            imguiAssets::setPreviousItemAbleToCopy(value)
-                        }
+                        self.setNextItemAligned(name .. ": " .. value)
+                        imguiAssets::addStrokedText("%s: %s", strokeSize, nil, name, value)
+                        imguiAssets::setPreviousItemAbleToCopy(value)
                     }
                 }
             }

@@ -35,25 +35,20 @@ method algorithm::swap(tab, indexA, indexB) {
 }
 
 /**
- * Sort table by distance using buble sort. Table example:
+ * Sort table by `key` using bubble sort.
  *
- * ```clue
- *     {
- *         distance = number
- *     }...
- * ```
- *
+ * @param key any
  * @param tab table
  * @return void
  */
-method algorithm::bubbleSortByDistance(tab) {
+method algorithm::bubbleSortByKey(tab, key) {
     local n         = #tab
     local sorted    = false
     
     while !sorted {
         sorted = true
         for i = 1, n - 1 {
-            if tab[i].distance > tab[i + 1].distance {
+            if tab[i][key] > tab[i + 1][key] {
                 self::swap(tab, i, i + 1)
                 sorted = false
             }

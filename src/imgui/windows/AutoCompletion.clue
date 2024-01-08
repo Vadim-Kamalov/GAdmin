@@ -96,6 +96,7 @@ if #config.root.windows.autoCompletion.commands == 0 {
 
 static autoCompletion = {
     position        = 1,
+    clock           = os.clock(),
     commandsLength  = 1,
     condition       = fn {
         return !isGamePaused() && sampIsChatInputActive() && string.sub(sampGetChatInputText(), 1, 2)::find("/[A-Za-z]")

@@ -43,6 +43,7 @@ static __config__ = {
         windows = {
             adminList = {
                 use                     = false,
+                sortByLvl               = false,
                 textAlignMode           = 3,
                 showAdminLvl            = true,
                 textColorBasedOnClist   = true,
@@ -86,7 +87,7 @@ static __config__ = {
             
             playerChecker = { 
                 use                     = false,
-                chatNotice              = true,
+                notificationType        = 1,
                 strokeSize              = 1,
                 textAlignMode           = 3,
                 displayOfflinePlayers   = true,
@@ -104,6 +105,7 @@ static __config__ = {
 
             userInformation = {
                 use             = false,
+                showTime        = true,
                 textAlignMode   = 3,
                 strokeSize      = 1,
                 display         = {

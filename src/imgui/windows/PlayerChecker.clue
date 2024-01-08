@@ -27,7 +27,8 @@
 @import "Assets" => assets
 @import "Common" => common
 
-@import "game.samp.Player" => sampPlayer
+@import "game.User"         => user
+@import "game.samp.Player"  => sampPlayer
 
 local randomPlayers = {}
 
@@ -49,7 +50,7 @@ local fn getPlayers(isMovingWindows) {
 window::new("imgui.windows.PlayerChecker", {
     description = "Чекер игроков"
     type        = MV_DEFAULT
-    condition   = fn { return config.root.windows.playerChecker.use && isSampAvailable() }
+    condition   = fn { return config.root.windows.playerChecker.use && isSampAvailable() && user::getAloginStatus() }
     size        = { x = 0, y = 0 }
     defaultPos  = WIN_DEFAULT_POS_CENTER
     initialize  = {
@@ -126,7 +127,7 @@ window::new("imgui.windows.PlayerChecker", {
             imgui.EndGroup()
 
             if imgui.GetItemRectSize().x >= self.size.x {
-                self.size.x += (imgui.GetItemRectSize().x - self.size.x) + (imgui.GetStyle().WindowPadding.x * 2)
+                self.size.x += (imgui.GetItemRectSize().x - self.size.x) + (imgui.GetStyle().WindowPadding.x * 3 /* not 2, fuck it */)
             }
 
             if imgui.IsItemClicked() {

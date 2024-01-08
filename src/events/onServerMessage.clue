@@ -40,7 +40,9 @@ local logs = {
 
     { "OOC чат", {
         "^%(%( %w+.*%[%d+]: .* %)%)$",                          // /b
-        { "^%(%( PM [отк] %w+.*%[%d+]: .* %)%)$", -3342081 }    // /pm (to/from)
+        { "^%(%( PM [отк] %w+.*%[%d+]: .* %)%)$", -3342081 },   // /pm (to/from)
+        "^%(%( %w+.*%[%d+]: .*%.%.%.$",                         // long /b start
+        "^%.%.%. .*%)%)$", -1                                   // long /b end
     }},
 
     { "Действия/чаты администраторов", {
@@ -63,6 +65,11 @@ local logs = {
         { "^Администратор .+ установил <Player Kill> персонажу .+%.$", -10270806 },             // /pk
         { "^Администратор .+ установил <Character Kill> персонажу .+%.$", -10270806 },          // /ck
     }}
+}
+
+local messageContinuation = {
+    awaiting    = false,
+    color       = nil
 }
 
 sampev.onServerMessage = fn(color, text) {
@@ -105,13 +112,27 @@ sampev.onServerMessage = fn(color, text) {
 
     if string.find(text, "^(%w+.*) говорит:(.*)") && config.root.additions.displayIdInIc.use {
         local nickname, message = string.match(text, "^(%w+.*) говорит:(.*)")
-        
-        nickname = string.gsub(nickname, " ", "_")
-        text = nickname .. "[" .. player::getIdByNickname(nickname) .. "]" .. " говорит:" .. message
+        text = nickname .. "[" .. player::getIdByNickname(string.gsub(nickname, " ", "_")) .. "]" .. " говорит:" .. message
     }
 
-    if string.find(text, "^%[A] Жалоба от .+%[%d+]:") && config.root.additions.reportOneColor.use {
-        color = rgb2color(config.root.additions.reportOneColor.color)
+    if config.root.additions.reportOneColor.use {
+        if string.find(text, "^%[A] Жалоба от .+%[%d+]:") || string.find(text, "^%[A] Репорт от .+%[%d+]:") {
+            if string.find(text, "%.%.%.$") {
+                messageContinuation = {
+                    awaiting    = true,
+                    color       = $
+                }
+            }
+            color = rgb2color(config.root.additions.reportOneColor.color)
+        }
+
+        if string.find(text, "^%.%.%. ") && messageContinuation.awaiting && messageContinuation.color == color {
+            color               = rgb2color(config.root.additions.reportOneColor.color)
+            messageContinuation = {
+                awaiting    = false,
+                color       = nil
+            }
+        }
     }
 
     if string.find(text, "^%[A%] .*%[%d+%]: %S+") && color == 866792362 && config.root.additions.mention.use {
@@ -206,7 +227,10 @@ sampev.onServerMessage = fn(color, text) {
         return false
     }
 
-    if string.find(text, "Вы успешно авторизовались как администратор") || string.find(text, "%|.*Вы уже авторизировались") && color == -1 {
+    if (string.find(text, "Вы успешно авторизовались как администратор")
+        || string.find(text, "Вы уже авторизировались")
+        || string.find(text, "Вы успешно авторизовались как ведущий администратор")) && color == -1
+    {
         lua_thread.create(fn {
             wait($COMMAND_DELAY)
             sampSendChat("/adm")

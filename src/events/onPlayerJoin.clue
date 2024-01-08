@@ -18,33 +18,24 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
-@import "game.Admins"   => admins
 @import "Notifications" => notify
 @import "Icons"         => icons
 @import "Config"        => config
 
-sampev.onPlayerQuit = fn(id) {
-    for index, admin in admins {
-        if admin.id == id {
-            admins::remove(index)
-            break
-        }
-    }
-
-    if config.root.windows.playerChecker.use {
-        local nickname = sampGetPlayerNickname(id)
+sampev.onPlayerJoin = fn(id, color, isNpc, nickname) {
+    if config.root.windows.playerChecker.use && !isNpc {
         for _, player in config.root.windows.playerChecker.players {
             if player.nickname == nickname {
                 if local notificationType = config.root.windows.playerChecker.notificationType {
                     if notificationType != NOTIFICATION_TYPE_NONE {
                         notify::send({
-                            title       = string.gsub(nickname, "_", " ") .. " вышел из игры.",
+                            title       = string.gsub(nickname, "_", " ") .. " зашел в игру.",
                             text        = (config.root.windows.playerChecker.displayOfflinePlayers)
-                                ? "Теперь он отображается отключенным в чекере."
-                                : "Больше он не отображается в чекере.",
+                                ? "Теперь он отображается подключенным в чекере."
+                                : "Теперь он отображается в чекере.",
                             icon        = icons.ICON_PERSON,
                             duration    = 5
-                        }, (notificationType == NOTIFICATION_TYPE_SCRIPT_MESSAGE) ? (string.gsub(nickname, "_", " ") .. " вышел из игры.") : nil)
+                        }, (notificationType == NOTIFICATION_TYPE_SCRIPT_MESSAGE) ? (string.gsub(nickname, "_", " ") .. " зашел в игру.") : nil)
                     }
                 }
 

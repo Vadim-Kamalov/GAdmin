@@ -88,8 +88,8 @@ local fn getAllPlayersNearby(isChangingWindowsPositions) {
         }
     }
 
-    if config.root.windows.playersNearby.sortByDistance && config.root.windows.playersNearby.showDistance {
-        algorithm::bubbleSortByDistance(playersNearby)
+    if config.root.windows.playersNearby.sortByDistance {
+        algorithm::bubbleSortByKey(playersNearby, "distance")
     }
 
     return playersNearby
@@ -98,7 +98,7 @@ local fn getAllPlayersNearby(isChangingWindowsPositions) {
 window::new("imgui.windows.PlayersNearby", {
     description = "Список игроков рядом"
     type        = MV_DEFAULT
-    condition   = fn { return config.root.windows.playersNearby.use }
+    condition   = fn { return config.root.windows.playersNearby.use && user::getAloginStatus() }
     size        = { x = 0, y = 0 }
     defaultPos  = { x = 0, y = sizeY / 2 }
     initialize  = {

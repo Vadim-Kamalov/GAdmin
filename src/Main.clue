@@ -292,7 +292,19 @@ global fn main() {
         if movableWindows.changingWindowsPositions {
             displayHud(movableWindows.viewMode != MV_ONLY_IN_SPECTATOR)
             displayRadar(movableWindows.viewMode != MV_ONLY_IN_SPECTATOR)
-        } 
+        }
+
+        if config.root.windows.autoCompletion.use && isKeyDown(VK_CONTROL) && autoCompletion.condition() {
+            if os.clock() - autoCompletion.clock >= 0.15 {
+                if isKeyDown(VK_UP) {
+                    autoCompletion.clock = os.clock()
+                    autoCompletion.position = ($ == 1) ? autoCompletion.commandsLength : $ - 1
+                } elseif isKeyDown(VK_DOWN) {
+                    autoCompletion.clock = os.clock()
+                    autoCompletion.position = ($ == autoCompletion.commandsLength) ? 1 : $ + 1
+                }
+            }
+        }
 
         if spectator.status {
             local result, _ = sampGetCharHandleBySampPlayerId(spectator.id)
@@ -398,17 +410,13 @@ global fn main() {
 }
 
 $JMP_HOOK /** void(__thiscall*)(void*) */ onRecallUpHook(...) {
-    if config.root.windows.autoCompletion.use && isKeyDown(VK_CONTROL) && autoCompletion.condition() {
-        autoCompletion.position = ($ == 1) ? autoCompletion.commandsLength : $ - 1
-    } else {
+    if !(config.root.windows.autoCompletion.use && isKeyDown(VK_CONTROL) && autoCompletion.condition()) {
         onRecallUpHook(...)
     }
 }
 
 $JMP_HOOK /** void(__thiscall*)(void*) */ onRecallDownHook(...) {
-    if config.root.windows.autoCompletion.use && isKeyDown(VK_CONTROL) && autoCompletion.condition() {
-        autoCompletion.position = ($ == autoCompletion.commandsLength) ? 1 : $ + 1
-    } else {
+    if !(config.root.windows.autoCompletion.use && isKeyDown(VK_CONTROL) && autoCompletion.condition()) {
         onRecallDownHook(...)
     }
 }

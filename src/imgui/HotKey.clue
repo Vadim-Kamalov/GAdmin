@@ -284,10 +284,11 @@ method HotKey::registerCallback(callback) {
  *
  * Render HotKey ImGui frame.
  *
- * @param defaultSize ImVec2
+ * @param defaultSize       ImVec2
+ * @param onChangedCallback function|nil Called when keys successfuly changed. Accepts `self` as argument.
  * @return void
  */
-method HotKey::render(defaultSize = imgui.ImVec2(80, 25)) {
+method HotKey::render(defaultSize = imgui.ImVec2(80, 25), onChangedCallback) {
     if !UI_ANIMATED_HOTKEY {
         global UI_ANIMATED_HOTKEY = {}
     }
@@ -325,6 +326,8 @@ method HotKey::render(defaultSize = imgui.ImVec2(80, 25)) {
                         this.active                     = false
                         changingHotKey                  = this.active
                         hotKeysCallbacks[self.id].keys  = this.keys
+
+                        onChangedCallback?(self)
                     }
                 }
             }

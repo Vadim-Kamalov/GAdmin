@@ -75,4 +75,25 @@ method ped::getClosestHandleTo(to = PLAYER_PED) {
     return closestHandle
 }
 
+/**
+ * Check that `ped` is behind a wall.
+ *
+ * @param ped number
+ * @return boolean
+ */
+method ped::isBehindWall(ped) {
+    local behindWall    = false
+    local result, _     = sampGetPlayerIdByCharHandle(ped)
+
+    if result && isCharOnScreen(ped) {
+        if ped == PLAYER_PED { behindWall = true }
+        
+        local x, y, z       = self::getBodyPartCoordinates(8, ped)
+        local x1, y1, z1    = getActiveCameraCoordinates()
+        behindWall          = isLineOfSightClear(x, y, z, x1, y1, z1, true, false, false, true, false)
+    }
+
+    return !behindWall
+}
+
 return ped

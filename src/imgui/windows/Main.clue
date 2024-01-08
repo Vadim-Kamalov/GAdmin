@@ -152,9 +152,11 @@ local window = {
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
             
             { "userInformation", "Ваша статистика", {
-                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.userInformation.use) },
+                { "use", "Работает только на /alogin", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.userInformation.use) },
+                { "showTime", "Отображать текущее время", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.userInformation.showTime) },
                 { "strokeSize", "Размер обводки", WINDOW_WIDGET_SLIDER, 1, 5, imgui.new.int(config.root.windows.userInformation.strokeSize) },
-                { "textAlignMode", "Выравнивание текста", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.windows.userInformation.textAlignMode), "Слева", "По центру", "Справа" }
+                { "textAlignMode", "Выравнивание текста", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.windows.userInformation.textAlignMode), "Слева", "По центру", "Справа" },
+                { "none", "Отображение элементов", WINDOW_WIDGET_CUSTOM, $USER_INFORMATION_CUSTOM_WIDGET!() }
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
             
             { "farChat", "Дальний чат", {
@@ -186,6 +188,7 @@ local window = {
             { "adminList", "Список админов", {
                 { "use", "Работает только на /alogin", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.adminList.use) },
                 { "showAdminLvl", "Отображать уровни администраторов", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.adminList.showAdminLvl) },
+                { "sortByLvl", "Сортировать по уровням", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.adminList.sortByLvl) },
                 { "textColorBasedOnClist", "Цвет зависит от клиста", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.adminList.textColorBasedOnClist) },
                 { "textAlignMode", "Выравнивание текста", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.windows.adminList.textAlignMode), "Слева", "По центру", "Справа" },
                 { "strokeSize", "Размер обводки", WINDOW_WIDGET_SLIDER, 1, 5, imgui.new.int(config.root.windows.adminList.strokeSize) }
@@ -207,11 +210,11 @@ local window = {
                 { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.greport.use) },
                 { "preferNotifications", "Использовать оповещения GAdmin", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.greport.preferNotifications) },
                 { "inputCopyButtons", "Кнопки вставляющие текст в поле ввода", WINDOW_WIDGET_CUSTOM, $GREPORT_MAKE_CUSTOM_ELEMENT!() }
-            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP }
+            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
             
             { "playerChecker", "Чекер игроков", {
-                { "use", "Игроки добавляются через раздел \"Чекер\" в меню", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.playerChecker.use) },
-                { "chatNotice", "Оповещать в чате", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.playerChecker.chatNotice) },
+                { "use", "Игроки добавляются через раздел \"Чекер\" в меню.\nРаботает только на /alogin", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.playerChecker.use) },
+                { "chatNotice", "Тип оповещения при заходе/выходе игрока", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.windows.playerChecker.notificationType), "ImGui оповещение", "Сообщение в чат", "Отсутствует" },
                 { "displayOfflinePlayers", "Отображать игроков в оффлайне", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.playerChecker.displayOfflinePlayers) },
                 { "playerColorBasedOnClist", "Цвет игрока зависит от клиста", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.playerChecker.playerColorBasedOnClist) },
                 { "strokeSize", "Размер обводки", WINDOW_WIDGET_SLIDER, 1, 5, imgui.new.int(config.root.windows.playerChecker.strokeSize) },
@@ -1126,12 +1129,12 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
 
                                 if animations::button("Сбросить тему", imgui.ImVec2(widthAuto, 30)) {
                                     config.root.styleChangeableWindows[window.customization.selectedId] = nil
+                                    style.windows[window.customization.selectedId]                      = StyleChanger::new({})
                                     for index, property in style::getBaseColors() {
                                         window.customization.editors[index].value[0] = property[2][1]
                                         window.customization.editors[index].value[1] = property[2][2]
                                         window.customization.editors[index].value[2] = property[2][3]
                                         window.customization.editors[index].value[3] = property[2][4]
-                                        style.windows[window.customization.selectedId][property[1]] = imgui.ImVec4(table.unpack(property[2]))
                                     }
                                 }
 
@@ -1428,7 +1431,15 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                             if local index = string.match(hotKey.id, "^binderIndex(%d+)$") {
                                                 if tonumber(index) == window.binder.selectedBind {
                                                     imgui.SetCursorPosY(imgui.GetCursorPos().y + 4)
-                                                    hotKey::render(imgui.ImVec2(123, 26))
+                                                    hotKey::render(imgui.ImVec2(123, 26), fn(self) {
+                                                        hotKeysCallbacks[self.id].callback = fn {
+                                                            binder::sendString(
+                                                                config.root.binds[window.binder.selectedBind].value,
+                                                                nil,
+                                                                config.root.binds[window.binder.selectedBind].delayBetweenMessages
+                                                            )
+                                                        }
+                                                    })
                                                 }
                                             }
                                         }
@@ -1460,7 +1471,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                                     imguiAssets::textWithFont("Переменные биндера", bold14)
                                                     
                                                     imgui.PushFont(regular12)
-                                                        imgui.SetNextItemWidth(260)
+                                                        imgui.SetNextItemWidth(math.max(260, imgui.GetWindowWidth() - 10))
                                                         imgui.InputTextWithHint(
                                                             "##imgui.windows.Main.BinderPopup.inputParameter",
                                                             "Параметр",
@@ -1472,8 +1483,9 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                                     imgui.BeginChild("imgui.windows.Main.BinderPopup.variableList", imgui.ImVec2(imgui.GetWindowWidth() - 10, 300), true)
                                                         imgui.SetCursorPos(imgui.ImVec2(5, 5))
                                                         imgui.BeginGroup()
+                                                            local width = math.max(240, imgui.GetWindowWidth() - 10) 
                                                             imgui.PushFont(bold10)
-                                                                if animations::button("GET_ARGUMENT##imgui.windows.Main.BinderPopup.variable", imgui.ImVec2(240, 25)) {
+                                                                if animations::button("GET_ARGUMENT##imgui.windows.Main.BinderPopup.variable", imgui.ImVec2(width, 25)) {
                                                                     insertVariable("GET_ARGUMENT")
                                                                 }
                                                             imgui.PopFont()
@@ -1485,7 +1497,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
 
                                                             for _, id in binderVariables.order {
                                                                 imgui.PushFont(bold10)
-                                                                    if animations::button(id .. "##imgui.windows.Main.BinderPopup.variable", imgui.ImVec2(240, 25)) {
+                                                                    if animations::button(id .. "##imgui.windows.Main.BinderPopup.variable", imgui.ImVec2(width, 25)) {
                                                                         insertVariable(id)
                                                                     }
                                                                 imgui.PopFont()

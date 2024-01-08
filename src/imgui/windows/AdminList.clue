@@ -25,10 +25,22 @@
 @import "game.Admins"   => admins
 @import "game.User"     => user
 
+@import "Assets"        => assets
 @import "Config"        => config
 @import "Icons"         => icons
 @import "Common"        => common
-@import "Notifications" => notify 
+@import "Notifications" => notify
+@import "Algorithm"     => algorithm
+
+local fn getAdmins() {
+    if config.root.windows.adminList.sortByLvl {
+        local adminList = assets::copyTable(admins)
+        algorithm::bubbleSortByKey(adminList, "lvl")
+        return adminList
+    } else {
+        return admins
+    }
+}
 
 windows::new("imgui.windows.AdminList", {
     description = "Список администраторов в сети"
@@ -52,7 +64,7 @@ windows::new("imgui.windows.AdminList", {
 
     self.var.windowStyle::apply()
     self::begin(self.id, fn {
-        for _, admin in admins {
+        for _, admin in getAdmins() {
             imgui.BeginGroup()
                 local pos   = imgui.GetCursorPos()
                 local text  = (config.root.windows.adminList.showAdminLvl)
@@ -74,7 +86,7 @@ windows::new("imgui.windows.AdminList", {
                 )
 
                 if imgui.GetItemRectSize().x >= self.size.x {
-                    self.size.x += (imgui.GetItemRectSize().x - self.size.x) + (imgui.GetStyle().WindowPadding.x * 2)
+                    self.size.x += (imgui.GetItemRectSize().x - self.size.x) + (imgui.GetStyle().WindowPadding.x * 3)
                 }
                 
                 if isHovered {

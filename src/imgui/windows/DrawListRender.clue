@@ -58,7 +58,7 @@ HotKey::new("imgui.windows.DrawListRender->wallhack", { VK_LCONTROL, VK_Z }, "Wa
         if local notificationType = config.root.cheats.wallhack.notificationType {
             if notificationType != NOTIFICATION_TYPE_NONE {
                 notify::send({
-                    title       = "Состояние wallhack'a изменено",
+                    title       = "Wallhack " .. ((useWallhack) ? "включен." : "выключен."),
                     text        = "Теперь никнеймы игроков " .. ((useWallhack) ? "показаны." : "скрыты."),
                     icon        = icons.ICON_CHECKMARK,
                     duration    = 2
@@ -129,7 +129,7 @@ imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
                     onPlayerRenderText ..= string.format("{%s}{%s[%s] [X: %1.f]}{FFFFFF}{\n}", clistColorHex, sampGetPlayerNickname(id), id, distance)
                 }
 
-                if config.root.additions.showAdmins.use && distance < 50 {
+                if config.root.additions.showAdmins.use && distance < 50 && !ped::isBehindWall(char) {
                     if local admin = admins::getAdminById(id) {
                         onPlayerRenderText ..= "{FF8585}{" .. admin.nickname.ooc .. "}{FFFFFF}{\n}" 
                     }
