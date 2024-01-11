@@ -1,28 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <AutoUpdate version="1.0">
-    <title>Версия 1.0</title>
+    <title>GAdmin v1.0</title>
     <buttons first="Установить" second="Позже"/>
     <body>
-        <header>Lorem ipsum dolor sit amet.</header>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+        <header>GAdmin v1.0</header>
         <newline/>
-        incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-        quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-        <header>Lorem ipsum dolor sit amet.</header>
+        There are no shortcuts to any place worth going.
     </body>
     <links>
-        <link destination="gadmin.lua">
-            path
-        </link>
-        <link destination="lib\gadmin\AutoUpdate.lua">
-            path
-        </link>
+        <link destination="gadmin.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/download/v1.0/GAdmin-Release.lua</link>
     </links>
-    <merge>
-        <json src="config/gadmin.json">
-            {
-                "vadim": "rabotay"
-            }
-        </json>
-    </merge>
 </AutoUpdate>
