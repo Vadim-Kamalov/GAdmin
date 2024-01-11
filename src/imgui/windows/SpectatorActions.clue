@@ -103,9 +103,9 @@ windows::new("imgui.windows.SpectatorActions", {
             sampSetChatInputText(string.format("/kick %d ", spectator.id))
         }},
 
-        { title = "MUTE", callback = fn {
+        { title = "BMUTE", callback = fn {
             sampSetChatInputEnabled(true)
-            sampSetChatInputText(string.format("/mute %d ", spectator.id))
+            sampSetChatInputText(string.format("/bmute %d ", spectator.id))
         }},
 
         { title = "EXIT", callback = fn {

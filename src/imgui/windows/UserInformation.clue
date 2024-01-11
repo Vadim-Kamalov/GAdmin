@@ -182,8 +182,8 @@ window::new("imgui.windows.UserInformation", {
             }
         imgui.EndGroup()
         
-        if imgui.GetItemRectSize().x >= self.size.x {
-            self.size.x += (imgui.GetItemRectSize().x - self.size.x) + (imgui.GetStyle().WindowPadding.x * 2)
+        if imgui.GetItemRectSize().x > self.size.x {
+            self.size.x = imgui.GetItemRectSize().x + 20 
         }
     })
     self.var.style::reset()

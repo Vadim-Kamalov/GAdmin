@@ -63,9 +63,9 @@ sampev.onSendChat = fn(message) {
         }
         return false
     }
-    
+
     if config.root.additions.autoAACommand.use && user::getAloginStatus() && !spectator.status {
-        sampSendChat("/aa " .. message)
+        sampSendChat("/aa " .. u8(message))
         return false
     }
 }

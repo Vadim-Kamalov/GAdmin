@@ -204,8 +204,9 @@ window::new("imgui.windows.PlayersNearby", {
                     }
                 imgui.EndGroup()
 
-                if imgui.GetItemRectSize().x >= self.size.x {
-                    self.size.x += (imgui.GetItemRectSize().x - self.size.x) + (imgui.GetStyle().WindowPadding.x * 2)
+                if imgui.GetItemRectSize().x > self.size.x {
+                    self.size.x = imgui.GetItemRectSize().x + imgui.GetStyle().WindowPadding.x * 2
+                        + config.root.windows.playersNearby.strokeSize
                 }
             }
         }

@@ -214,7 +214,7 @@ local window = {
             
             { "playerChecker", "Чекер игроков", {
                 { "use", "Игроки добавляются через раздел \"Чекер\" в меню.\nРаботает только на /alogin", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.playerChecker.use) },
-                { "chatNotice", "Тип оповещения при заходе/выходе игрока", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.windows.playerChecker.notificationType), "ImGui оповещение", "Сообщение в чат", "Отсутствует" },
+                { "notificationType", "Тип оповещения при заходе/выходе игрока", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.windows.playerChecker.notificationType), "ImGui оповещение", "Сообщение в чат", "Отсутствует" },
                 { "displayOfflinePlayers", "Отображать игроков в оффлайне", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.playerChecker.displayOfflinePlayers) },
                 { "playerColorBasedOnClist", "Цвет игрока зависит от клиста", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.playerChecker.playerColorBasedOnClist) },
                 { "strokeSize", "Размер обводки", WINDOW_WIDGET_SLIDER, 1, 5, imgui.new.int(config.root.windows.playerChecker.strokeSize) },
@@ -672,7 +672,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
 
                                             imgui.PushFont(regular12)
                                                 if animations::button("Сбросить все настройки", imgui.ImVec2(imgui.GetWindowWidth() - 10, 25)) {
-                                                    config.root = config.def
+                                                    config.root = assets::copyTable(config.def)
                                                     imgui.CloseCurrentPopup()
                                                     thisScript()::reload()
                                                 }

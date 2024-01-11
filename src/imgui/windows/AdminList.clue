@@ -85,12 +85,12 @@ windows::new("imgui.windows.AdminList", {
                         common::convertHex2ImVec4($PLAYER_COLOR_TO_HEX!(admin.id)) : nil
                 )
 
-                if imgui.GetItemRectSize().x >= self.size.x {
-                    self.size.x += (imgui.GetItemRectSize().x - self.size.x) + (imgui.GetStyle().WindowPadding.x * 3)
+                if self.size.x < imgui.GetItemRectSize().x {
+                    self.size.x = imgui.GetItemRectSize().x + 20
                 }
-                
+
                 if isHovered {
-                    imgui.GetWindowDrawList()::AddLine(
+                    imgui.GetForegroundDrawList()::AddLine(
                         imgui.ImVec2(imgui.GetItemRectMin().x, imgui.GetItemRectMax().y),
                         imgui.GetItemRectMax(),
                         -1,

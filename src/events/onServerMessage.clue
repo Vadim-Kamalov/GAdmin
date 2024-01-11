@@ -155,8 +155,10 @@ sampev.onServerMessage = fn(color, text) {
                     color = rgb2color(config.root.additions.mention.color)
                 }
             } else {
-                if admins::getAdminByOOCNickname(string.match(possibleMention, pattern))?.nickname.ooc == user::getOOCNickname() {
-                    color = rgb2color(config.root.additions.mention.color)
+                if local admin = admins::getAdminByOOCNickname(string.match(possibleMention, pattern)) {
+                    if string.lower(admin.nickname.ooc) == string.lower(user::getOOCNickname()) {
+                        color = rgb2color(config.root.additions.mention.color)
+                    }
                 }
             }
         }

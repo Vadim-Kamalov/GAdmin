@@ -126,8 +126,8 @@ window::new("imgui.windows.PlayerChecker", {
                 }
             imgui.EndGroup()
 
-            if imgui.GetItemRectSize().x >= self.size.x {
-                self.size.x += (imgui.GetItemRectSize().x - self.size.x) + (imgui.GetStyle().WindowPadding.x * 3 /* not 2, fuck it */)
+            if imgui.GetItemRectSize().x > self.size.x {
+                self.size.x = imgui.GetItemRectSize().x + 20 
             }
 
             if imgui.IsItemClicked() {
