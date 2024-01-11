@@ -240,10 +240,6 @@ global fn main() {
 
     encoding.default = "CP1251"
 
-    sampRegisterChatCommand("rec", fn(delay) {
-        user::reconnect(tonumber(delay))
-    })
-
     binder::initializeBinds()
 
     notify::send({

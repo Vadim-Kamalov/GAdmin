@@ -130,58 +130,60 @@ imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
         } // if config.root.additions.carInfo.use
 
         for _, player in getAllChars() {
-            local _, id                     = sampGetPlayerIdByCharHandle(player)
-            local charResult, char          = sampGetCharHandleBySampPlayerId(id)
-            local x, y, z                   = ped::getBodyPartCoordinates(4, player)
-            local myx, myy, myz             = getCharCoordinates(PLAYER_PED)
-            local screenPosX, screenPosY    = convert3DCoordsToScreen(x, y, z)
-            local charCheck                 = charResult && isCharOnScreen(char) && id != select(2, sampGetPlayerIdByCharHandle(PLAYER_PED))
-            local distance                  = getDistanceBetweenCoords3d(x, y, z, myx, myy, myz)
-            local clistColorHex             = string.format("%06X", sampGetPlayerColor(id) & 0xFFFFFF)
-            local onPlayerRenderText        = ""
+            local result, id = sampGetPlayerIdByCharHandle(player)
+            if result {
+                local charResult, char          = sampGetCharHandleBySampPlayerId(id)
+                local x, y, z                   = ped::getBodyPartCoordinates(4, player)
+                local myx, myy, myz             = getCharCoordinates(PLAYER_PED)
+                local screenPosX, screenPosY    = convert3DCoordsToScreen(x, y, z)
+                local charCheck                 = charResult && isCharOnScreen(char) && id != select(2, sampGetPlayerIdByCharHandle(PLAYER_PED))
+                local distance                  = getDistanceBetweenCoords3d(x, y, z, myx, myy, myz)
+                local clistColorHex             = string.format("%06X", sampGetPlayerColor(id) & 0xFFFFFF)
+                local onPlayerRenderText        = ""
 
-            if charCheck && user::getAloginStatus() {
-                if config.root.cheats.wallhack.use && useWallhack {
-                    onPlayerRenderText ..= string.format("{%s}{%s[%s] [X: %1.f]}{FFFFFF}{\n}", clistColorHex, sampGetPlayerNickname(id), id, distance)
-                }
+                if charCheck && user::getAloginStatus() {
+                    if config.root.cheats.wallhack.use && useWallhack {
+                        onPlayerRenderText ..= string.format("{%s}{%s[%s] [X: %1.f]}{FFFFFF}{\n}", clistColorHex, sampGetPlayerNickname(id), id, distance)
+                    }
 
-                if config.root.additions.showAdmins.use && distance < 50 && !ped::isBehindWall(char) {
-                    if local admin = admins::getAdminById(id) {
-                        onPlayerRenderText ..= "{FF8585}{" .. admin.nickname.ooc .. "}{FFFFFF}{\n}" 
+                    if config.root.additions.showAdmins.use && distance < 50 && !ped::isBehindWall(char) {
+                        if local admin = admins::getAdminById(id) {
+                            onPlayerRenderText ..= "{FF8585}{" .. admin.nickname.ooc .. "}{FFFFFF}{\n}" 
+                        }
+                    }
+
+                    if config.root.additions.gunInfo.use && distance < 50 {
+                        onPlayerRenderText ..= "{FFFFFF}{" .. require("game.weapons").names[getCurrentCharWeapon(player)] .. "}{FFFFFF}{\n}"
+                    }
+                
+                    if #onPlayerRenderText > 0 {
+                        imguiText::addColored(
+                            self.DL,
+                            onPlayerRenderText,
+                            imgui.ImVec2(screenPosX, screenPosY), 
+                            nil, 
+                            config.root.render.size.common, 
+                            1
+                        )
                     }
                 }
 
-                if config.root.additions.gunInfo.use && distance < 50 {
-                    onPlayerRenderText ..= "{FFFFFF}{" .. require("game.weapons").names[getCurrentCharWeapon(player)] .. "}{FFFFFF}{\n}"
-                }
-                
-                if #onPlayerRenderText > 0 {
-                    imguiText::addColored(
-                        self.DL,
-                        onPlayerRenderText,
-                        imgui.ImVec2(screenPosX, screenPosY), 
-                        nil, 
-                        config.root.render.size.common, 
-                        1
-                    )
-                }
-            }
+                if config.root.additions.tracers.use && user::getAloginStatus() {
+                    for i = 1, config.root.additions.tracers.maxLines {
+                        if local bullet = bulletData[i] {
+                            if bullet.enable && os.time() <= bullet.time {
+                                local o, t = bullet.o, bullet.t
+                                if isPointOnScreen(o.x, o.y, o.z) && isPointOnScreen(t.x, t.y, t.z) {
+                                    local sX, sY    = convert3DCoordsToScreen(o.x, o.y, o.z)
+						            local fX, fY    = convert3DCoordsToScreen(t.x, t.y, t.z)
+                                    local hitColor  = common::convertHex2ImVec4(config.root.additions.tracers.hitColor)
+                                    local missColor = common::convertHex2ImVec4(config.root.additions.tracers.missColor)
+                                    local color     = imgui.ColorConvertFloat4ToU32((bullet.type == 0 || bullet.type == 3) ? missColor : hitColor)
+                                    local dl        = imgui.GetBackgroundDrawList()
 
-            if config.root.additions.tracers.use && user::getAloginStatus() {
-                for i = 1, config.root.additions.tracers.maxLines {
-                    if local bullet = bulletData[i] {
-                        if bullet.enable && os.time() <= bullet.time {
-                            local o, t = bullet.o, bullet.t
-                            if isPointOnScreen(o.x, o.y, o.z) && isPointOnScreen(t.x, t.y, t.z) {
-                                local sX, sY    = convert3DCoordsToScreen(o.x, o.y, o.z)
-						        local fX, fY    = convert3DCoordsToScreen(t.x, t.y, t.z)
-                                local hitColor  = common::convertHex2ImVec4(config.root.additions.tracers.hitColor)
-                                local missColor = common::convertHex2ImVec4(config.root.additions.tracers.missColor)
-                                local color     = imgui.ColorConvertFloat4ToU32((bullet.type == 0 || bullet.type == 3) ? missColor : hitColor)
-                                local dl        = imgui.GetBackgroundDrawList()
-
-                                dl::AddLine(imgui.ImVec2(sX, sY), imgui.ImVec2(fX, fY), color, 1)
-                                dl::AddCircleFilled(imgui.ImVec2(fX + 1.5, fY + 1.5), 3, color, 16)
+                                    dl::AddLine(imgui.ImVec2(sX, sY), imgui.ImVec2(fX, fY), color, 1)
+                                    dl::AddCircleFilled(imgui.ImVec2(fX + 1.5, fY + 1.5), 3, color, 16)
+                                }
                             }
                         }
                     }

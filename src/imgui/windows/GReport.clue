@@ -162,7 +162,7 @@ imgui.OnFrame(fn { return greport.window.state && !isGamePaused() && config.root
                     if index % 3 == 0 { imgui.NewLine() }
                 }
             
-                if animations::button("Ответить на репорт", imgui.ImVec2(itemFullWidth, 30), nil, { 0, 0, 0.4 }) {
+                if animations::button("Ответить на репорт", imgui.ImVec2(itemFullWidth, 30), nil, { 0, 0, 0.4 }) || isKeyJustPressed(VK_ENTER) {
                     if #ffi.string(answerInput) == 0 {
                         greport.window.noInputClock = os.clock()
                     } else {

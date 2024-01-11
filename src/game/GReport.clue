@@ -90,10 +90,10 @@ static __greport__ = {
     }
 }
 
-local hotKey = HotKey::new("imgui.window.GReport", { 0xA2, 0x42 }, "Открыть/закрыть /greport")::registerCallback(fn {
+local hotKey = HotKey::new("imgui.window.GReport", { 0xA2, 0x42 }, "Открыть /greport")::registerCallback(fn {
     if local this = __greport__ {
         if this.player.active || (this.player.receivedAt && (os.clock() - this.player.receivedAt <= 15)) {
-            this.window::switch()
+            this.window::open()
         }
     }
 })
@@ -118,7 +118,7 @@ method __greport__.window::open(withDialog = true) {
         self.closeAndOpenAnimation.alpha = 0
         self.state = true
         
-        if !__greport__.dialog.state {
+        if !__greport__.dialog.state && withDialog {
             __greport__.dialog::call()
         }
     } 
@@ -148,6 +148,7 @@ method __greport__.window::close(withDialog = true) {
 method __greport__.window::switch(withDialog = true) {
     if self.state {
         self::close(withDialog)
+        __greport__.dialog.state = false
     } else {
         self::open(withDialog)
     }
@@ -288,8 +289,9 @@ method __greport__.player::answer(answer) {
  * @return void
  */
 method __greport__.player::closeDialogIfPresent() {
-    if self.dialogState {
+    if __greport__.dialog.state {
         sampSendDialogResponse(32500, 1, nil, nil)
+        __greport__.dialog.state = false
     }
 }
 

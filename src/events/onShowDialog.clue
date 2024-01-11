@@ -122,6 +122,7 @@ sampev.onShowDialog = fn(id, style, title, firstButton, secondButton, text) {
 
     if config.root.windows.greport.use && title == "Обработка репорта" {
         text                    = string.gsub($, "{......}", "")
+        local nickname, id = string.match(text, "Игрок %(ID%)%: (.+) %((%d+)%)") 
         greport.player.state    = true
         greport.dialog.state    = true
 
@@ -130,21 +131,34 @@ sampev.onShowDialog = fn(id, style, title, firstButton, secondButton, text) {
         if style == DIALOG_STYLE_INPUT {
             if greport.dialog.awaiting.input[1] {
                 sampSendDialogResponse(id, 1, 0, greport.dialog.awaiting.input[2])
-                greport.dialog.awaiting.inputs = { false, nil }
+                greport.dialog.awaiting.inputs  = { false, nil }
+                greport.dialog.state            = false
             }
         }
 
         if string.find(text, "Дата и время репорта") {
-            greport.player.context = string.match(text, "Описание репорта:\n(.*)\n")
+            local nickname, id = string.match(text, "Игрок %(ID%)%: (.+) %((%d+)%)") 
+
+            greport.player.nickname = nickname
+            greport.player.id       = tonumber(id)
+            greport.player.context  = string.match(text, "Описание репорта:\n(.*)\n")
             greport.window::open(false)
         } elseif string.find(text, "Перейти в режим наблюдения за игроком") {
             if greport.dialog.awaiting.options[1] {
                 sampSendDialogResponse(id, 1, greport.dialog.awaiting.options[2], "")
+
+                match greport.dialog.awaiting.options[2] {
+                    GREPORT_OPTION_ANSWER ||
+                    GREPORT_OPTION_REMOVE ||
+                    GREPORT_OPTION_TO_ADMINISTRATION => { greport.dialog.state = false }
+                }
+
                 greport.dialog.awaiting.options = { false, nil }
             }
         } elseif string.find(text, "Заблокировать на %d+ минут") {
             if greport.awaiting.special[1] {
                 sampSendDialogResponse(id, 1, greport.dialog.awaiting.special[2], "")
+                greport.dialog.state            = false
                 greport.dialog.awaiting.special = { false, nil }
             }
         }

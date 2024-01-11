@@ -59,7 +59,7 @@ sampev.onSendChat = fn(message) {
         if sampIsChatCommandDefined(swappedCommand) {
             sampProcessChatInput("/" .. ((arguments) ? swappedCommand .. arguments : output))
         } else {
-            sampSendChat("/" .. ((arguments) ? swappedCommand .. arguments : output))
+            sampSendChat("/" .. u8(((arguments) ? swappedCommand .. arguments : output)))
         }
         return false
     }

@@ -29,102 +29,65 @@ local sizeX, sizeY = getScreenResolution()
 
 imgui.OnFrame(fn { return autoUpdate.windowState }, fn(self) {
     self.HideCursor = imguiAssets::getCursorStatus()
-    self.flags      = imgui.WindowFlags.NoMove + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar
-    self.style      = StyleChanger::new({
-        WindowPadding   = imgui.ImVec2(0, 0)
-        FrameRounding   = 0
-        ItemSpacing     = imgui.ImVec2(2, 0)
-        ChildBorderSize = 0
-        ChildRounding   = 0
-    })
+    self.flags      = imgui.WindowFlags.NoMove + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoScrollbar
 
     imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2, sizeY / 2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
     imgui.SetNextWindowSize(imgui.ImVec2(720, 350))
 
     local itemSpacing, windowPadding = imgui.GetStyle().ItemSpacing, imgui.GetStyle().WindowPadding
 
-    self.style::apply()
-        imgui.Begin("imgui.windows.AutoUpdate", nil, self.flags)
-            imgui.PushStyleVarFloat(imgui.StyleVar.ChildRounding, imgui.GetStyle().WindowRounding)
-            imgui.PushStyleColor(imgui.Col.ChildBg, imgui.GetStyle().Colors[imgui.Col.Button])
-                imgui.BeginChild("imgui.windows.AutoUpdate.header", imgui.ImVec2(0, 40), true)
-                    imguiAssets::textWithFont(
-                        autoUpdate.imgui.title,
-                        bold10,
-                        imgui.ImVec2(10, 20 - imgui.CalcTextSize(autoUpdate.imgui.title).y / 2)
-                    )
+    imgui.Begin("imgui.windows.AutoUpdate", nil, self.flags)
+        imguiAssets::textWithFont(autoUpdate.imgui.title, bold14, imgui.ImVec2(imgui.GetWindowWidth() / 2 - imgui.CalcTextSize(autoUpdate.imgui.title).x / 2, 10))
 
-                    imguiAssets::textWithFont(
-                        autoUpdate.imgui.version,
-                        bold10,
-                        imgui.ImVec2(
-                            imgui.GetWindowWidth() - imgui.CalcTextSize(autoUpdate.imgui.version).x - 10,
-                            20 - imgui.CalcTextSize(autoUpdate.imgui.version).y / 2
-                        ) 
-                    )
-                imgui.EndChild()
-            imgui.PopStyleVar()
-            imgui.PopStyleColor()
-
-            if local rectMin, rectMax = imgui.GetItemRectMin(), imgui.GetItemRectMax() {
-                imgui.GetWindowDrawList()::AddRectFilled(
-                    imgui.ImVec2(rectMin.x, rectMax.y - 4),
-                    imgui.ImVec2(rectMax.x, rectMax.y),
-                    imgui.ColorConvertFloat4ToU32(imgui.GetStyle().Colors[imgui.Col.ChildBg])
-                )
-            }
-
-            imgui.PushStyleColor(imgui.Col.ChildBg, imgui.GetStyle().Colors[imgui.Col.WindowBg])
-                imgui.SetCursorPos(imgui.ImVec2(5, 45))
-                imgui.BeginChild("imgui.windows.AutoUpdate.child", imgui.ImVec2(0, imgui.GetWindowHeight() - 85 - windowPadding.y), true)
-                    for line with string.gmatch(autoUpdate.imgui.body, "[^\n]+") {
-                        line = string.match($, "^%s*(.*)$")
-                        if string.find(line, "<header>.*</header>") {
-                            imguiAssets::textWithFont(string.match(line, "<header>(.*)</header>"), bold14)
-                        } elseif string.find(line, "<newline.*") {
-                            imgui.NewLine()
-                        } else {
-                            imguiAssets::textWithFont(line, regular14)
-                        }
+        imgui.PushStyleColor(imgui.Col.ChildBg, imgui.GetStyle().Colors[imgui.Col.WindowBg])
+            imgui.BeginChild("imgui.windows.AutoUpdate.child", imgui.ImVec2(0, imgui.GetWindowHeight() - 70 - windowPadding.y), false)
+                for line with string.gmatch(autoUpdate.imgui.body, "[^\n]+") {
+                    line = string.match($, "^%s*(.*)$")
+                    if string.find(line, "<header>.*</header>") {
+                        imguiAssets::textWithFont(string.match(line, "<header>(.*)</header>"), bold14)
+                    } elseif string.find(line, "<newline.*") {
+                        imgui.NewLine()
+                    } else {
+                        imguiAssets::textWithFont(line, regular14)
                     }
-                imgui.EndChild()
-            imgui.PopStyleColor()
+                }
+            imgui.EndChild()
+        imgui.PopStyleColor()
 
-            imgui.SetCursorPosY(imgui.GetWindowHeight() - 40 - windowPadding.y)
-            imgui.PushStyleColor(imgui.Col.ChildBg, imgui.GetStyle().Colors[imgui.Col.Button])
-                imgui.BeginChild("imgui.windows.AutoUpdate.actions", imgui.ImVec2(0, 0), true)
-                    imgui.PushFont(bold10)
-                        if animations::button(autoUpdate.imgui.buttons.first, imgui.ImVec2(imgui.GetWindowWidth() / 3 - 1, 40), 15) {
-                            autoUpdate.response     = AUTOUPDATE_RESPONSE_OK
-                            autoUpdate.windowState  = false
+        imgui.SetCursorPosY(imgui.GetWindowHeight() - 33 - windowPadding.y)
+        imgui.PushStyleColor(imgui.Col.ChildBg, imgui.GetStyle().Colors[imgui.Col.Button])
+            imgui.BeginGroup()
+                imgui.PushFont(regular12)
+                    if animations::button(autoUpdate.imgui.buttons.first, imgui.ImVec2(imgui.GetWindowWidth() / 3, 30), 15) {
+                        autoUpdate.response     = AUTOUPDATE_RESPONSE_OK
+                        autoUpdate.windowState  = false
 
-                            autoUpdate::update()
-                        }
+                        autoUpdate::update()
+                    }
 
-                        animations::hint("Эта версия установится.")
+                    animations::hint("Эта версия установится.")
                     
-                        imgui.SameLine()
+                    imgui.SameLine()
                     
-                        if animations::button(autoUpdate.imgui.buttons.second, imgui.ImVec2(imgui.GetWindowWidth() / 3, 40)) {
-                            config.root.autoUpdate.skipVersionUpdate = autoUpdate.imgui.version
+                    if animations::button(autoUpdate.imgui.buttons.second, imgui.ImVec2(imgui.GetWindowWidth() / 3 - 20, 30)) {
+                        config.root.autoUpdate.skipVersionUpdate = autoUpdate.imgui.version
 
-                            autoUpdate.response     = AUTOUPDATE_RESPONSE_BAD
-                            autoUpdate.windowState  = false
-                        }
+                        autoUpdate.response     = AUTOUPDATE_RESPONSE_BAD
+                        autoUpdate.windowState  = false
+                    }
 
-                        animations::hint("Эта версия пропустится, окно не будет появляться до следующего обновления.")
+                    animations::hint("Эта версия пропустится, окно не будет появляться до следующего обновления.")
 
-                        imgui.SameLine()
+                    imgui.SameLine()
     
-                        if animations::button(autoUpdate.imgui.buttons.third, imgui.ImVec2(imgui.GetWindowWidth() / 3, 40)) {
-                            autoUpdate.response     = AUTOUPDATE_RESPONSE_BAD
-                            autoUpdate.windowState  = false
-                        }
+                    if animations::button(autoUpdate.imgui.buttons.third, imgui.ImVec2(imgui.GetWindowWidth() / 3, 30)) {
+                        autoUpdate.response     = AUTOUPDATE_RESPONSE_BAD
+                        autoUpdate.windowState  = false
+                    }
 
-                        animations::hint("Это окно не будет появляться до следующего запуска скрипта.")
-                    imgui.PopFont()
-                imgui.EndChild()
-            imgui.PopStyleColor()
-        imgui.End()
-    self.style::reset()
+                    animations::hint("Это окно не будет появляться до следующего запуска скрипта.")
+                imgui.PopFont()
+            imgui.EndGroup()
+        imgui.PopStyleColor()
+    imgui.End()
 })

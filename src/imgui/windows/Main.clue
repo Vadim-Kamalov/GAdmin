@@ -635,7 +635,9 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                 animations::hint("Необходимо для создания баг-репортов.\nВ полученном логе ваши пароли будет заменены на \"***\".")
                                 
                                 if animations::button("Применить тему", imgui.ImVec2(widthAuto / 3, 30), 5) {
-                                    if local theme = decodeJson(getClipboardText()) {
+                                    local theme = decodeJson(getClipboardText())
+
+                                    if theme && type(theme) == "table" {
                                         config.root.styleChangeableWindows = theme
                                         thisScript()::reload()
                                     } else {
