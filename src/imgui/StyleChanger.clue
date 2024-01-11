@@ -28,7 +28,7 @@ local StyleChanger = {}; StyleChanger.__index = StyleChanger
  *
  * ```clue
  * StyleChanger::new({
- *     Property = { new = ImVec2|ImVec4|Number, old = ImVec2|ImVec4|Number }
+ *     Property = ImVec2|ImVec4|Number
  * })
  * ```
  *

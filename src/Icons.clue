@@ -227,9 +227,6 @@ local icons = {
     ["ICON_PLUS_CIRCLE"] = "\u{F199}"
 }
 
-/**
- * @todo docs for this
- */
 method icons::init(iconSize = 14.0) {
     local config        = imgui.ImFontConfig()
     local glyphRanges   = imgui.GetIO().Fonts::GetGlyphRangesCyrillic()

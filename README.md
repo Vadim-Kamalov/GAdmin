@@ -24,6 +24,7 @@
 - MoonLoader    == **v.026.5-beta**
 - SAMPFUNCS     >= **v5.4.1-final**
 - CLEO          >= **v4.1.1**
+- SA:MP         == **037-R1** 
 
 ### Компиляция
 
