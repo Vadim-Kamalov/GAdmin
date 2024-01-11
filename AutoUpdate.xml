@@ -8,6 +8,6 @@
         There are no shortcuts to any place worth going.
     </body>
     <links>
-        <link destination="gadmin.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/download/v1.0/GAdmin-Release.lua</link>
+        <link destination="GAdmin-Release.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/download/v1.0/GAdmin-Release.lua</link>
     </links>
 </AutoUpdate>
