@@ -40,7 +40,7 @@
 @import "game.Spectator"    => spectator
 
 @define COMMAND_DELAY   800
-@define GADMIN_VERSION  "1.0"
+@define GADMIN_VERSION  "1.0.1"
 @define AUTOUPDATE_URL  "https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/main/AutoUpdate.xml"
 
 @define SAMP_BASE                       getModuleHandle("samp.dll")

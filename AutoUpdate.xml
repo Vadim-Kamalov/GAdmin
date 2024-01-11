@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<AutoUpdate version="1.0">
-    <title>GAdmin v1.0</title>
+<AutoUpdate version="1.0.1">
+    <title>GAdmin v1.0.1</title>
     <buttons first="Установить" second="Пропустить" third="Позже"/>
     <body>
-        <header>GAdmin v1.0</header>
-        <newline/>
-        There are no shortcuts to any place worth going.
+        <header>GReport</header>
+        - Исправлено окно, -1 айди больше не должны появляться.
+        - Хоткей на открытие/закрытие окна теперь работает только в одну сторону - открытие.
+        - Теперь нажатие на Enter отправляет ответ игроку.
+        <header>Прочие фиксы</header>
+        - Исправлен краш скрипта при применении темы.
+        - Исправлено отображения текста на русском при включенной настройке авто-исправления команд.
+        - Изменен внешний вид окна с автообновлением.
     </body>
     <links>
-        <link destination="GAdmin-Release.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/download/v1.0/GAdmin-Release.lua</link>
+        <link destination="GAdmin-Release.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/download/v1.0.1/GAdmin-Release.lua</link>
     </links>
 </AutoUpdate>
