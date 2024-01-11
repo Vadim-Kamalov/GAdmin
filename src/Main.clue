@@ -268,7 +268,7 @@ global fn main() {
 
     common::makeDirectoryTree({ "GAdmin", "GAdmin/temp", "GAdmin/config" })
 
-@if all(not(def(__GADMIN_DEBUG__)), cmp(AUTOUPDATE_URL != ""))
+@ifndef __GADMIN_DEBUG__
 {
     autoUpdate::checkUpdates($AUTOUPDATE_URL)
 }
