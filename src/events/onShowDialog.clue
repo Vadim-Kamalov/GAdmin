@@ -122,7 +122,6 @@ sampev.onShowDialog = fn(id, style, title, firstButton, secondButton, text) {
 
     if config.root.windows.greport.use && title == "Обработка репорта" {
         text                    = string.gsub($, "{......}", "")
-        local nickname, id = string.match(text, "Игрок %(ID%)%: (.+) %((%d+)%)") 
         greport.player.state    = true
         greport.dialog.state    = true
 
@@ -147,10 +146,8 @@ sampev.onShowDialog = fn(id, style, title, firstButton, secondButton, text) {
             if greport.dialog.awaiting.options[1] {
                 sampSendDialogResponse(id, 1, greport.dialog.awaiting.options[2], "")
 
-                match greport.dialog.awaiting.options[2] {
-                    GREPORT_OPTION_ANSWER ||
-                    GREPORT_OPTION_REMOVE ||
-                    GREPORT_OPTION_TO_ADMINISTRATION => { greport.dialog.state = false }
+                if greport.dialog.awaiting.options[2] == GREPORT_OPTION_TO_ADMINISTRATION {
+                    greport.dialog.state = false
                 }
 
                 greport.dialog.awaiting.options = { false, nil }

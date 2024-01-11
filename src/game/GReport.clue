@@ -148,7 +148,6 @@ method __greport__.window::close(withDialog = true) {
 method __greport__.window::switch(withDialog = true) {
     if self.state {
         self::close(withDialog)
-        __greport__.dialog.state = false
     } else {
         self::open(withDialog)
     }
@@ -291,7 +290,6 @@ method __greport__.player::answer(answer) {
 method __greport__.player::closeDialogIfPresent() {
     if __greport__.dialog.state {
         sampSendDialogResponse(32500, 1, nil, nil)
-        __greport__.dialog.state = false
     }
 }
 
