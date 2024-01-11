@@ -178,9 +178,9 @@ method __commandRequester__::approve() {
     } elseif type == COMMAND_REQUEST_TYPE_ANSWER {
         if local admin = admins::getAdminById(self.current.id.from) {
             lua_thread.create(fn {
-                sampSendChat(string.format("/%s %s", command, args))
-                wait($COMMAND_DELAY)
                 sampSendChat(string.format("/ans %d %s by %s", self.current.id.to, string.upper(command), admin.nickname.ooc))
+                wait($COMMAND_DELAY)
+                sampSendChat(string.format("/%s %s", command, args))
                 
                 self.states.ignoreNextCommands = false
             })

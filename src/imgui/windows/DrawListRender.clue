@@ -190,12 +190,9 @@ imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
         } // for _, player in getAllChars()
 
         if isKeyJustPressed(VK_MBUTTON) && config.root.cheats.clickwarp.use && user::getAloginStatus() {
-            print("clicked")
             cursorEnabled = !$
-            imguiAssets::setCursorStatus(false)
-            if cursorEnabled {
-                sampSetCursorMode(3)
-            }
+            sampSetCursorMode((cursorEnabled) ? 3 : 0)
+            imguiAssets::setCursorStatus(!cursorEnabled)
         }
 
         /**
@@ -276,7 +273,7 @@ imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
                     }
                 }
             }
-        }
+        } // if cursorEnabled && config.root.cheats.clickwarp.use && user::getAloginStatus()
     } /* if !isGamePaused()*/ else {
         for index, text in ({
             string.format("GAdmin v%s", $GADMIN_VERSION),

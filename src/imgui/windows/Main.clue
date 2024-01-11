@@ -228,15 +228,15 @@ local window = {
                 { "notificationType", "Тип оповещения при нажатии на хоткей", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.cheats.airbreak.notificationType), "ImGui оповещение", "Сообщение в чат", "Отсутствует" }
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
 
+            { "clickwarp", "ClickWarp", {
+                { "use", "Работает только на /alogin\nТелепортация - колесико мыши.", WINDOW_WIDGET_TYPE_SWITCH, imgui.new.bool(config.root.cheats.clickwarp.use) }
+            }},
+
             { "wallhack", "Wallhack", {
                 { "use", "Работает только на /alogin", WINDOW_WIDGET_TYPE_SWITCH, imgui.new.bool(config.root.cheats.wallhack.use) },
                 { "notificationType", "Тип оповещения при нажатии на хоткей", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.cheats.wallhack.notificationType), "ImGui оповещение", "Сообщение в чат", "Отсутствует" },
                 { "none", "Размер шрифта", WINDOW_WIDGET_CUSTOM, RENDER_CHANGE_CONFIGURATION }
-            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
-
-            { "clickwarp", "ClickWarp", {
-                { "use", "Работает только на /alogin", WINDOW_WIDGET_TYPE_SWITCH, imgui.new.bool(config.root.cheats.clickwarp.use) }
-            }}
+            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP }
         }},
 
         { "additions", "Прочее", {
