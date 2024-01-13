@@ -29,7 +29,9 @@
 
 style::registerWindow("imgui.windows.GReport", "Окно /greport")
 
-local answerInput = imgui.new.char[65535]()
+local focusKeyboard = false
+
+greport.window.answerInput ??=imgui.new.char[65535]()
 
 addEventHandler("onWindowMessage", fn(event, wparam, lparam) {
     if (event == wm.WM_KEYDOWN || event == wm.WM_SYSKEYDOWN) && !imgui.GetIO().WantTextInput {
@@ -52,6 +54,7 @@ imgui.OnFrame(fn { return greport.window.state && !isGamePaused() && config.root
             if os.clock() - greport.window.closeAndOpenAnimation.clock >= 0.2 {
                 greport.window.recentlyOpened               = false
                 greport.window.closeAndOpenAnimation.clock  = nil
+                focusKeyboard                               = true
             } else {
                 greport.window.closeAndOpenAnimation.alpha = imguiAssets::bringFloatTo($, 1, greport.window.closeAndOpenAnimation.clock, 0.2)
             }
@@ -60,7 +63,7 @@ imgui.OnFrame(fn { return greport.window.state && !isGamePaused() && config.root
                 greport.window.state                        = false
                 greport.window.closeAndOpenAnimation.clock  = nil
 
-                imgui.StrCopy(answerInput, "")
+                imgui.StrCopy(greport.window.answerInput, "")
             } else {
                 greport.window.closeAndOpenAnimation.alpha = imguiAssets::bringFloatTo($, 0, greport.window.closeAndOpenAnimation.clock, 0.2)
             }
@@ -93,16 +96,22 @@ imgui.OnFrame(fn { return greport.window.state && !isGamePaused() && config.root
             imgui.PushFont(regular12)
                 imgui.BeginGroup()
                     imgui.SetNextItemWidth(itemFullWidth)
+
+                    if focusKeyboard {
+                        imgui.SetKeyboardFocusHere()
+                        focusKeyboard = false
+                    }
+
                     imgui.InputTextWithHint(
-                        "##imgui.windows.GReport.answerInput",
+                        "##imgui.windows.GReport.greport.window.answerInput",
                         "Ответ на репорт / причина блокировки репорта / причина удаления репорта",
-                        answerInput,
-                        ffi.sizeof(answerInput)
+                        greport.window.answerInput,
+                        ffi.sizeof(greport.window.answerInput)
                     )
 
                     animations::hint(
                         "Это поле не должно быть пустым.",
-                        fn { return greport.window.noInputClock && (os.clock() - greport.window.noInputClock <= 1) && #ffi.string(answerInput) == 0 },
+                        fn { return greport.window.noInputClock && (os.clock() - greport.window.noInputClock <= 1) && #ffi.string(greport.window.answerInput) == 0 },
                         nil,
                         common::convertHex2ImVec4("E46876")
                     )
@@ -117,10 +126,10 @@ imgui.OnFrame(fn { return greport.window.state && !isGamePaused() && config.root
                 imgui.SameLine()
 
                 if animations::button("Удалить", imgui.ImVec2(itemFullWidth / 3 - imgui.GetStyle().ItemSpacing.x * 2, 25), nil, { 0, 0, 0.4 }) {
-                    if #ffi.string(answerInput) == 0 {
+                    if #ffi.string(greport.window.answerInput) == 0 {
                         greport.window.noInputClock = os.clock()
                     } else {
-                        greport.player::remove(ffi.string(answerInput))
+                        greport.player::remove(ffi.string(greport.window.answerInput))
                     }
                 }
                 
@@ -137,7 +146,7 @@ imgui.OnFrame(fn { return greport.window.state && !isGamePaused() && config.root
                 imgui.SameLine()
 
                 if animations::button("Заблокировать репорт игроку", imgui.ImVec2(itemFullWidth / 3 - imgui.GetStyle().ItemSpacing.x * 2, 25)) {
-                    if #ffi.string(answerInput) == 0 {
+                    if #ffi.string(greport.window.answerInput) == 0 {
                         greport.window.noInputClock = os.clock()
                     } else {
                         imgui.OpenPopup("imgui.windows.GReport.timeSelection")
@@ -155,18 +164,18 @@ imgui.OnFrame(fn { return greport.window.state && !isGamePaused() && config.root
                         "> " .. config.root.windows.greport.inputCopyButtons[index][1] .. "##imgui.windows.GReportIndex" .. index,
                         imgui.ImVec2(itemFullWidth / 3 - ((index == 2 || index == 5) ? imgui.GetStyle().ItemSpacing.x * 2 : 0), 25)
                     ) {
-                        imgui.StrCopy(answerInput, config.root.windows.greport.inputCopyButtons[index][2])
+                        imgui.StrCopy(greport.window.answerInput, config.root.windows.greport.inputCopyButtons[index][2])
                     }
 
                     imgui.SameLine()
                     if index % 3 == 0 { imgui.NewLine() }
                 }
             
-                if animations::button("Ответить на репорт", imgui.ImVec2(itemFullWidth, 30), nil, { 0, 0, 0.4 }) || isKeyJustPressed(VK_ENTER) {
-                    if #ffi.string(answerInput) == 0 {
+                if animations::button("Ответить на репорт", imgui.ImVec2(itemFullWidth, 30), nil, { 0, 0, 0.4 }) {
+                    if #ffi.string(greport.window.answerInput) == 0 {
                         greport.window.noInputClock = os.clock()
                     } else {
-                        greport.player::answer(ffi.string(answerInput))
+                        greport.player::answer(ffi.string(greport.window.answerInput))
                     }
                 }
             imgui.PopFont()    
@@ -180,7 +189,7 @@ imgui.OnFrame(fn { return greport.window.state && !isGamePaused() && config.root
                         time .. "##imgui.windows.GReport.timeSelection",
                         imgui.ImVec2(imgui.GetWindowWidth() / 4 - 6.5, 25)
                     ) {
-                        greport.player::blockReport(time, ffi.string(answerInput))
+                        greport.player::blockReport(time, ffi.string(greport.window.answerInput))
                         imgui.CloseCurrentPopup()
                     }
                     

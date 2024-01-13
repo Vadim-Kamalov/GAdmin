@@ -34,11 +34,11 @@
                     [VK_3] = MV_DEFAULT
                 }
 
-                if keys[wparam] {
+                if keys[$wparam] {
                     __movableWindows__.viewMode = keys[$wparam]
                     sampAddChatMessage("Режим отображения окон переключен: " .. MV_VIEW_DESCRIPTIONS[this.viewMode], -1)
                     consumeWindowMessage(true, false)
-                } elseif wparam == VK_ESCAPE {
+                } elseif $wparam == VK_ESCAPE {
                     this::executeChangingWindowsPositions()
                     consumeWindowMessage(true, false)
                 }

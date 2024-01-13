@@ -38,11 +38,7 @@ script_properties   "work-in-pause"
 local import, modules
 do
     function import(name)
-        if modules[name] == nil then
-            print("Invalid module import: " .. name)
-        else
-            return modules[name]()
-        end
+        return modules[name]()
     end
 end
 

@@ -20,17 +20,81 @@
 
 @import "Config" => config
 
-@import "imgui.HotKey" => HotKey
+@import "imgui.Assets"  => imguiAssets
+@import "imgui.HotKey"  => HotKey
 
-@import "game.Spectator" => spectator
+@import "game.sa.Ped"       => ped
+@import "game.sa.Vehicle"   => vehicle
+@import "game.GReport"      => greport
+@import "game.User"         => user
+@import "game.Spectator"    => spectator
 
 @define MOUSE_WHEEL_VERTICAL_SIDE_UP    0x780000
 @define MOUSE_WHEEL_VERTICAL_SIDE_DOWN  0xFF880000
+
+static receivedKillFocusEvent = false
+
+local justPressed = {
+    mButtonDown = false
+}
 
 global fn onWindowMessage(msg, wparam, lparam) {
     $SETUP_EVENT_MV!(msg, wparam)
 
     HotKey::setupWatcher(msg, wparam, lparam)
+
+    if msg == wm.WM_KILLFOCUS {
+        receivedKillFocusEvent = true
+    } elseif msg == wm.WM_SETFOCUS {
+        receivedKillFocusEvent = false
+    }
+
+    if config.root.cheats.clickwarp.use && user::getAloginStatus() {
+        if msg == wm.WM_MBUTTONDOWN && !justPressed.mButtonDown {
+            clickWarp.enabled        = !$
+            justPressed.mButtonDown = true
+
+            sampSetCursorMode((clickWarp.enabled) ? 3 : 0)
+            imguiAssets::setCursorStatus(!clickWarp.enabled)
+            
+            consumeWindowMessage(true, true)
+        } elseif msg == wm.WM_MBUTTONUP {
+            justPressed.mButtonDown = false
+        } elseif msg == wm.WM_LBUTTONDOWN && clickWarp.enabled && clickWarp.teleportation.pos {
+            local pos = clickWarp.teleportation.pos
+            
+            if local handle = clickWarp.teleportation.tpIntoCar {
+                if !vehicle::jumpInto(handle) {
+                    ped::teleport(handle, pos.x, pos.y, pos.z)
+                }
+            } else {
+                ped::teleport(pos.x, pos.y, pos.z)
+            }
+
+            sampSetCursorMode(0)
+            imguiAssets::setCursorStatus(true)
+
+            clickWarp.enabled       = false
+            clickWarp.teleportation = {
+                tpIntoCar   = nil,
+                pos         = nil
+            }
+
+            // Yes, this won't consume attack.
+            consumeWindowMessage(true, true)
+        }
+    }
+
+    if msg == wm.WM_SYSKEYDOWN || msg == wm.WM_KEYDOWN && !sampIsChatInputActive() && !isSampfuncsConsoleActive() && !sampIsDialogActive() {
+        if greport.window.state && !isGamePaused() && config.root.windows.greport.use && wparam == 13 /* VK_ESCAPE */ {
+            if #ffi.string(greport.window.answerInput) == 0 {
+                greport.window.noInputClock = os.clock()
+            } else {
+                greport.player::answer(ffi.string(greport.window.answerInput))
+                consumeWindowMessage(true, true)
+            }
+        }
+    }
 
     if msg == wm.WM_MOUSEWHEEL {
         if spectator.status && config.root.additions.zoomSpectatorCamera.use {

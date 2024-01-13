@@ -77,6 +77,13 @@ method common::isInputsActive() {
 }
 
 /**
+ * @return boolean Wheather game is paused or not.
+ */
+method common::isGamePaused() {
+    return isGamePaused() || receivedKillFocusEvent /* events.onWindowMessage */
+}
+
+/**
  * Send script message in SA:MP chat window.
  * 
  * @param message string

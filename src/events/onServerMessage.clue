@@ -59,7 +59,8 @@ local logs = {
         { "^%[A] .+%[%d+] установил описание: ", -1697828182 },                                 // /pame (ped description)
         { "^%[A] .+%[%d+] установил описание авто: ", -1697828182 },                            // /pame (car description)
         { "^%[A] .+%[%d+] установил слухи: ", -1697828182 },                                    // /pame (gossip)
-        { "^%[GBUY] [A-Za-z0-9]%[%d+] создал объвление %[%d+]: ", -1697828182 },                // GBUY advertisement creation
+        { "^%[GBUY] .+%[%d+] создал объявление %[%d+]: ", -1697828182 },                        // GBUY advertisement creation
+        { "^%[A] .+%[%d+] установил действие: ", -1697828182 },                                 // /action
         { "^%.%.%. ", -1697828182 },                                                            // /pame (ped description/car description/gossip/GBUY ad) continuation
         { "^Администратор .+%.Причина: ", -10270806 },                                          // /ban | /mute | /kick | /bmute | /warn
         { "^Администратор .+ установил <Player Kill> персонажу .+%.$", -10270806 },             // /pk
@@ -68,6 +69,8 @@ local logs = {
         "^%[A] Репорт от .+%[%d+]:"                                                             // /rep
     }}
 }
+
+local skipNextMessage = false
 
 local messageContinuation = {
     awaiting    = false,
@@ -80,7 +83,7 @@ sampev.onServerMessage = fn(color, text) {
     for sectionIndex, section in logs {
         local log = {
             time = assets::getLocalTime()
-            text = text
+            text = string.gsub(text, "{%x%x%x%x%x%x}", "")
         }
 
         for _, item in section[2] {
@@ -120,20 +123,16 @@ sampev.onServerMessage = fn(color, text) {
     if config.root.additions.reportOneColor.use {
         if string.find(text, "^%[A] Жалоба от .+%[%d+]:") || string.find(text, "^%[A] Репорт от .+%[%d+]:") {
             if string.find(text, "%.%.%.$") {
-                messageContinuation = {
-                    awaiting    = true,
-                    color       = $
-                }
+                messageContinuation.awaiting    = true
+                messageContinuation.color       = color
             }
             color = rgb2color(config.root.additions.reportOneColor.color)
         }
 
         if string.find(text, "^%.%.%. ") && messageContinuation.awaiting && messageContinuation.color == color {
-            color               = rgb2color(config.root.additions.reportOneColor.color)
-            messageContinuation = {
-                awaiting    = false,
-                color       = nil
-            }
+            color                           = rgb2color(config.root.additions.reportOneColor.color)
+            messageContinuation.awaiting    = false
+            messageContinuation.color       = nil
         }
     }
 
@@ -241,7 +240,7 @@ sampev.onServerMessage = fn(color, text) {
         })
     }
 
-    if string.find(text, "^%[A%] " .. user::getOOCNickname() .. "%[%d+%] ответил .*%[%d+%]: .*") {
+    if string.match(text, "^%[A%] (.+)%[%d+%] ответил .*%[%d+%]: .*") == user::getOOCNickname() {
         user::incrementAnswersCount()
     }
 
@@ -249,6 +248,49 @@ sampev.onServerMessage = fn(color, text) {
         if compare(data.pattern, rgb2color(data.colors.old)) {
             color = rgb2color(data.colors.new)
             break
+        }
+    }
+
+    if config.root.additions.disableServerMessages.use {
+        local pureText = string.gsub(text, "{%x%x%x%x%x%x}", "")
+        if string.find(text, "^%.%.%.") && skipNextMessage {
+            skipNextMessage = false
+            return false
+        }
+
+        for key, value of ({
+            anticheat       = { "^Античит" },
+            report          = { "^%[A] Жалоба от .+%[%d+]:", "^%[A] Репорт от .+%[%d+]:" }
+            adminActions    = -1347440726,
+            punishments     = {
+                "^Администратор .+%. Причина:",
+                "^Администратор .+ установил <Player Kill> персонажу .+%.$",
+                "^Администратор .+ установил <Character Kill> персонажу .+%.$"
+            },
+
+            playerActions = {
+                "^%[A] .+%[%d+] нарисовал граффити%. MysqlID: %d+$",
+                "^%[A] .+%[%d+] установил описание: ",
+                "^%[A] .+%[%d+] установил описание авто: ",
+                "^%[GBUY] .*%[%d+] создал объявление %[%d+]: ",
+                "^%[A] .+%[%d+] установил слухи: ",
+                "^%[A] .+%[%d+] установил действие: "
+            }
+        }) {
+            if config.root.additions.disableServerMessages[key] {
+                if type(value) == "number" && color == value {
+                    return false
+                } elseif type(value) == "table" {
+                    for _, patternOrColor in value {
+                        if string.find(text, patternOrColor) {
+                            if string.find(text, "%.%.%.$") {
+                                skipNextMessage = true
+                            }
+                            return false
+                        }
+                    }
+                }
+            }
         }
     }
     

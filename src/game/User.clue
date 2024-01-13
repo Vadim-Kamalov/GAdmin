@@ -24,11 +24,15 @@
 @import "Assets"        => assets
 @import "Notifications" => notify
 @import "Icons"         => icons
+@import "game.Admins"   => admins
 
 static __user__ = {
     alogin          = false,
     weekNumber      = tostring(tonumber(os.date("%W")) + tonumber(os.date("%y"))),
     answersCount    = 0,
+
+    afkTime         = 0,
+    afkTimeClock    = os.clock(),
 
     online = {
         session = 0,
@@ -49,6 +53,16 @@ method __user__::getAloginStatus() {
  */
 method __user__::setAloginStatus(status) {
     self.alogin = status
+
+    if config.root.cheats.wallhack.use && !config.root.cheats.wallhack.imguiStyle {
+        assets::changeWallhackState(self.alogin)
+    }
+    
+    if !status {
+        for index, _ in admins {
+            admins[index] = nil
+        }
+    }
 }
 
 /**
@@ -56,7 +70,7 @@ method __user__::setAloginStatus(status) {
  * @return void
  */
 method __user__::switchAloginStatus() {
-    self.alogin = !$
+    self::setAloginStatus(!self.alogin)
 }
 
 /**
@@ -111,6 +125,23 @@ method __user__::getAdminLvl() {
  */
 method __user__::setAdminLvl(lvl) {
     config.root.user.adminLvl = lvl
+}
+
+/**
+ * Set user's afk time.
+ *
+ * @param time number
+ * @return void
+ */
+method __user__::setAfkTime(time) {
+    self.afkTime = time
+}
+
+/**
+ * @return number User's afk time.
+ */
+method __user__::getAfkTime() {
+    return self.afkTime
 }
 
 /**

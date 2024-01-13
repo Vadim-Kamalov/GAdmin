@@ -21,15 +21,19 @@
 @import "imgui.Assets"          => imguiAssets
 @import "imgui.StyleChanger"    => StyleChanger
 @import "imgui.HotKey"          => HotKey
+@import "imgui.Style"           => style
 
 @import "game.Admins" => admins
 
+@import "Config"            => config
 @import "Common"            => common
 @import "CommandRequester"  => commandRequester
 
 local sizeX, sizeY  = getScreenResolution()
 local hotKey        = HotKey::new("imgui.windows.CommandRequester", { VK_LSHIFT, VK_Z }, "Принять форму")
                             ::registerCallback(commandRequester.hotKeyCallback)
+
+style::registerWindow("imgui.windows.CommandRequester", "Полоса оповещения админской формы")
 
 imgui.OnFrame(fn { return commandRequester.states.frame }, fn(self) {
     self.HideCursor = imguiAssets::getCursorStatus()
@@ -48,8 +52,9 @@ imgui.OnFrame(fn { return commandRequester.states.frame }, fn(self) {
 
     if self.admin {
         self.style::apply()
+        style::beginWindowStyleChangeable("imgui.windows.CommandRequester")
 
-        imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2, sizeY), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
+        imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2, config.root.additions.commandRequester.windowPositionY), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
         imgui.SetNextWindowSize(imgui.ImVec2(sizeX, 70))
 
         imgui.Begin("imgui.windows.CommandRequester", nil, self.flags)
@@ -62,6 +67,7 @@ imgui.OnFrame(fn { return commandRequester.states.frame }, fn(self) {
             imgui.PopFont()
         imgui.End()
 
+        style::endWindowStyleChangeable("imgui.windows.CommandRequester")
         self.style::reset()
     }
 })

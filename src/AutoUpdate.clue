@@ -133,37 +133,51 @@ method __autoUpdate__::checkUpdates(url) {
 
     downloadUrlToFile(url, tempFileDestination, fn(id, status, p1, p2) {
         if status == downloadStatus.STATUS_ENDDOWNLOADDATA {
-            content = xml2lua.loadFile(tempFileDestination)
+@ifdef __GADMIN_DEBUG__
+{
+            $debugSuccessful!("autoUpdate.init", "received downloadStatus.STATUS_ENDDOWNLOADDATA")
+}
+            lua_thread.create(fn {
+                while !doesFileExist(tempFileDestination) {
+                    wait(0)
+                }
 
-            try {
-                local parser = xml2lua.parser(self.handler)
-                parser::parse(content)
+@ifdef __GADMIN_DEBUG__
+{
+                $debugSuccessful!("autoUpdate.init", "while !doesFileExist(tempFileDestination) passed.")
+}
+                try {
+                    content         = xml2lua.loadFile(tempFileDestination)
+                    local parser    = xml2lua.parser(self.handler)
+                
+                    parser::parse(content)
 
-                os.remove(tempFileDestination)
+                    os.remove(tempFileDestination)
 
-                if self.handler.root.AutoUpdate._attr.version != $GADMIN_VERSION 
-                   && config.root.autoUpdate.skipVersionUpdate != self.handler.root.AutoUpdate._attr.version
-                {
-                    self.imgui.body             = string.match(content, "<body>%s*(.*)%s*</body>")
-                    self.imgui.title            = self.handler.root.AutoUpdate.title
-                    self.imgui.version          = self.handler.root.AutoUpdate._attr.version
-                    self.imgui.buttons.first    = self.handler.root.AutoUpdate.buttons._attr.first
-                    self.imgui.buttons.second   = self.handler.root.AutoUpdate.buttons._attr.second
-                    self.imgui.buttons.third    = self.handler.root.AutoUpdate.buttons._attr.third
-                    self.windowState            = true
+                    if self.handler.root.AutoUpdate._attr.version != $GADMIN_VERSION 
+                        && config.root.autoUpdate.skipVersionUpdate != self.handler.root.AutoUpdate._attr.version
+                    {
+                        self.imgui.body             = string.match(content, "<body>%s*(.*)%s*</body>")
+                        self.imgui.title            = self.handler.root.AutoUpdate.title
+                        self.imgui.version          = self.handler.root.AutoUpdate._attr.version
+                        self.imgui.buttons.first    = self.handler.root.AutoUpdate.buttons._attr.first
+                        self.imgui.buttons.second   = self.handler.root.AutoUpdate.buttons._attr.second
+                        self.imgui.buttons.third    = self.handler.root.AutoUpdate.buttons._attr.third
+                        self.windowState            = true
                
 @ifdef __GADMIN_DEBUG__
 { 
-                    $debugSuccessful!("autoUpdate.init", "window is called. awaiting response from user.")
+                        $debugSuccessful!("autoUpdate.init", "window is called. awaiting response from user.")
 }
-                }
-            } catch err {
-                self.response = AUTOUPDATE_RESPONSE_BAD
+                    }
+                } catch err {
+                    self.response = AUTOUPDATE_RESPONSE_BAD
 @ifdef __GADMIN_DEBUG__
 {
-                $debugWarning!("xml2lua.parser(self.handler)", err)
+                    $debugWarning!("xml2lua.parser(self.handler)", err)
 }
-            }
+                }
+            })
         }
     }) 
 }

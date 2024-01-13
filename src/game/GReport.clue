@@ -60,10 +60,13 @@
 }}
 
 static __greport__ = {
+    hotKey = nil,
+
     window = {
         state                   = false,
         recentlyOpened          = false, //! Only `true` for 0.2 seconds when `closeAndOpenAnimation.alpha == 0`.
         noInputClock            = nil,
+        answerInput             = nil,
         closeAndOpenAnimation   = {
             alpha = 0,
             clock = nil
@@ -90,10 +93,10 @@ static __greport__ = {
     }
 }
 
-local hotKey = HotKey::new("imgui.window.GReport", { 0xA2, 0x42 }, "Открыть /greport")::registerCallback(fn {
+__greport__.hotKey ??= HotKey::new("imgui.window.GReport", { 0xA2, 0x42 }, "Открыть/закрыть /greport")::registerCallback(fn {
     if local this = __greport__ {
-        if this.player.active || (this.player.receivedAt && (os.clock() - this.player.receivedAt <= 15)) {
-            this.window::open()
+        if #this.player.context > 0 || (this.player.receivedAt && (os.clock() - this.player.receivedAt <= 15)) {
+            this.window::switch()
         }
     }
 })
@@ -338,7 +341,7 @@ method __greport__::setupChatWatcher(text) {
         if config.root.windows.greport.preferNotifications {
             notify::send({
                 title       = "Пришел репорт от " .. string.gsub(nickname, "_", " "),
-                text        = "У вас есть 15 секунд принять. Введите /grep(ort) или нажмите на " .. tostring(hotKey),
+                text        = "У вас есть 15 секунд принять. Введите /grep(ort) или нажмите на " .. tostring(self.hotKey),
                 icon        = icons.ICON_PERSON
                 duration    = 15,
                 condition   = (fn { return self.player.active })

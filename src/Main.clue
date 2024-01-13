@@ -128,7 +128,7 @@ static spectatorCameraFov   = -1
 static scriptLoadedWithGame = false //! `true` only when called `sampev.onInitGame`.
 static bulletData           = { lastId = 0 }
 
-local airbreak              = { status = false, speed = 1.0, coords = {} }
+local airbreak              = { status = false, coords = {} }
 local fishEyeWeaponLock     = false
 local userFullyConnected    = false
 
@@ -144,7 +144,7 @@ hotKeyCallbacks.airbreak = fn {
 
         if airbreak.status {
             airbreak.coords     = { getCharCoordinates(PLAYER_PED) }
-            notificationText    = "Для увеличения/уменьшения скорости используйте Num + / Num - соответстсвенно"
+            notificationText    = "Чтобы выключить - нажмите эту клавиши повторно."
         } else {
             notificationText = "Чтобы опять включить, нажмите эту клавишу повторно"
         }
@@ -240,6 +240,7 @@ global fn main() {
 
     encoding.default = "CP1251"
 
+    assets::workInBackground(true)
     binder::initializeBinds()
 
     notify::send({
@@ -282,6 +283,32 @@ global fn main() {
 
     loop {
         wait(0)
+
+        if common::isGamePaused() {
+            if os.clock() - user.afkTimeClock >= 1 {
+                user.afkTimeClock = os.clock()
+                user::setAfkTime(user::getAfkTime() + 1)
+            }
+        } else {
+            user::setAfkTime(0)
+        }
+
+        if config.root.additions.autoAlogout.use && user::getAloginStatus() {
+            if user::getAfkTime() == config.root.additions.autoAlogout.alogoutSeconds {
+                user::setAloginStatus(false)
+                sampSendChat("/alogout")
+                assets::messageBox(
+                    "Вы провели в AFK на /alogin " .. user::getAfkTime() .. " секунд. Скрипт покинул дежурство.",
+                    "GAdmin v" .. $GADMIN_VERSION
+                )
+            } elseif user::getAfkTime() == config.root.additions.autoAlogout.warningSeconds {
+                assets::messageBox(string.format(
+                    "Вы провели в AFK на /alogin %d секунд. У вас есть еще %d секунд что-бы зайти, иначе скрипт сам покинет дежурство.",
+                    user::getAfkTime(),
+                    config.root.additions.autoAlogout.alogoutSeconds - config.root.additions.autoAlogout.warningSeconds
+                ), "GAdmin v" .. $GADMIN_VERSION)
+            }
+        }
 
         commandRequester::loop()
         user::updateTime()
@@ -332,6 +359,7 @@ global fn main() {
             local targetCamX, targetCamY    = getActiveCameraPointAt()
             local angle                     = getHeadingFromVector2d(targetCamX - camCoordX, targetCamY - camCoordY)
             local difference                = 1.0
+            local speed                     = config.root.cheats.airbreak.speed
             
             if isCharInAnyCar(PLAYER_PED) {
                 heading     = getCarHeading(storeCarCharIsInNoSave(PLAYER_PED))
@@ -342,8 +370,8 @@ global fn main() {
 
             if !common::isCursorActive() {
                 if isKeyDown(VK_W) {
-                    airbreak.coords[1] += airbreak.speed * math.sin(-math.rad(angle))
-                    airbreak.coords[2] += airbreak.speed * math.cos(-math.rad(angle))
+                    airbreak.coords[1] += speed * math.sin(-math.rad(angle))
+                    airbreak.coords[2] += speed * math.cos(-math.rad(angle))
 
                     if !isCharInAnyCar(playerPed) {
                         setCharHeading(playerPed, angle)
@@ -351,31 +379,25 @@ global fn main() {
                         setCarHeading(storeCarCharIsInNoSave(playerPed), angle)
                     }
                 } elseif isKeyDown(VK_S) {
-                    airbreak.coords[1] -= airbreak.speed * math.sin(-math.rad(heading))
-                    airbreak.coords[2] -= airbreak.speed * math.cos(-math.rad(heading))    
+                    airbreak.coords[1] -= speed * math.sin(-math.rad(heading))
+                    airbreak.coords[2] -= speed * math.cos(-math.rad(heading))    
                 }
 
                 if isKeyDown(VK_A) {
-                    airbreak.coords[1] -= airbreak.speed * math.sin(-math.rad(heading - 90))
-                    airbreak.coords[2] -= airbreak.speed * math.cos(-math.rad(heading - 90))
+                    airbreak.coords[1] -= speed * math.sin(-math.rad(heading - 90))
+                    airbreak.coords[2] -= speed * math.cos(-math.rad(heading - 90))
                 } elseif isKeyDown(VK_D) {
-                    airbreak.coords[1] -= airbreak.speed * math.sin(-math.rad(heading + 90))
-                    airbreak.coords[2] -= airbreak.speed * math.cos(-math.rad(heading + 90))
+                    airbreak.coords[1] -= speed * math.sin(-math.rad(heading + 90))
+                    airbreak.coords[2] -= speed * math.cos(-math.rad(heading + 90))
                 }
 
                 if isKeyDown(VK_SPACE) || isKeyDown(VK_UP) {
-                    airbreak.coords[3] += airbreak.speed / 2.0
+                    airbreak.coords[3] += speed / 2.0
                 }
 
                 if isKeyDown(VK_LSHIFT) || isKeyDown(VK_DOWN) && airbreak.coords[3] > -95.0 {
-                    airbreak.coords[3] -= airbreak.speed / 2.0 
+                    airbreak.coords[3] -= speed / 2.0 
                 } 
-
-                if isKeyDown(VK_ADD) {
-                    airbreak.speed = math.min($ + 0.1, 3.0)
-                } elseif isKeyDown(VK_SUBTRACT) {
-                    airbreak.speed = math.max($ - 0.1, 0.1)
-                }
             }
         }
 

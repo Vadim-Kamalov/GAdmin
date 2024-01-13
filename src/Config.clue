@@ -64,7 +64,25 @@ static __config__ = {
 
             spectatorInformation = {
                 use     = true,
-                type    = 2
+                type    = 2,
+                columns = {
+                    { "Пинг",                   true },
+                    { "ID аккаунта",            true },
+                    { "Дата регистрации",       true },
+                    { "Наличные/банк",          true },
+                    { "Здоровье/броня",         true },
+                    { "Фракция",                true },
+                    { "Должность",              true },
+                    { "Машина(-ы)",             true },
+                    { "Стадия",                 true },
+                    { "VIP статус",             true },
+                    { "Предупреждения",         true },
+                    { "Время в афк",            true },
+                    { "Тек./макс. скорость",    true },
+                    { "Выстрелы/попадания",     true },
+                    { "Двигатель",              true },
+                    { "Двери",                  true },
+                }
             },
 
             notifications = {
@@ -155,11 +173,13 @@ static __config__ = {
         cheats = {
             airbreak = {
                 use                 = false,
-                notificationType    = 1
+                notificationType    = 1,
+                speed               = 1.0
             },
 
             wallhack = {
                 use                 = false,
+                imguiStyle          = false,
                 notificationType    = 1
             },
 
@@ -173,8 +193,18 @@ static __config__ = {
                           // ... plugin (that allows change fov within safe range without any visible artifacts).
             },
 
+            disableServerMessages = {
+                use             = false,
+                anticheat       = false,
+                punishments     = false,
+                report          = false,
+                adminActions    = false,
+                playerActions   = false
+            },
+
             commandRequester = {
                 use             = true,
+                windowPositionY = select(2, getScreenResolution()),
                 displayType     = 2,
                 secondsToHide   = 5,
                 allowedCommands = {
@@ -204,15 +234,16 @@ static __config__ = {
                 maxLines                = 15,
                 hitColor                = "FFC700",
                 missColor               = "FFFFFF",
-                showOnlyForSpectator    = false
+                showOnlyForSpectator    = false,
+                notificationType        = 1
             },
 
             shortCommands = {
                 use         = true,
                 commands    = {
                     vr  = "vrepair %s",
+                    as  = "aspawn %s"
                     vs  = "vspawn %s",
-                    as  = "aspawn %s",
                     ah  = "aheal %s",
                     af  = "afrisk %s",
                     uf  = "unfreeze %s",
@@ -220,6 +251,7 @@ static __config__ = {
                     gh  = "gethere %s",
                     gc  = "getcar %s",
                     gbc = "getbuycar %s",
+                    pt  = "ptop %s"
                     jb  = "ans %s Пишите жалобу на форум, туда со всеми доказательствами",
                     asl = "ans %s Слежу за игроком",
                     ar  = "kick %s AFK on ROAD",
@@ -239,6 +271,17 @@ static __config__ = {
                 color   = "FFFF00"
             },
 
+            autoAlogout = {
+                use             = false,
+                warningSeconds  = 90,
+                alogoutSeconds  = 120
+            },
+            
+            carInfo = { 
+                use             = false,
+                onlyInSpectator = false
+            },
+            
             autoAACommand       = { use = false },
             hideSpectatorMenu   = { use = true },
             swapLayout          = { use = false },
@@ -248,7 +291,6 @@ static __config__ = {
             displayIdInIc       = { use = false },
             gunInfo             = { use = false },
             autoAdminLogin      = { use = false },
-            carInfo             = { use = false },
             hideIpAddresses     = { use = false }
         },
 
@@ -301,6 +343,13 @@ static __config__ = {
                 value       = "/a Взял на слежку ${{ GET_ARGUMENT, 1 }} ID.\n/sp ${{ GET_ARGUMENT, 1 }}",
                 commandName = "asp",
                 title       = "/asp"
+            },
+
+            {
+                keys        = {},
+                value       = "/aspawn ${{ GET_ARGUMENT, 1 }}\n/aheal ${{ GET_ARGUMENT, 1 }}",
+                commandName = "sh",
+                title       = "/sh"
             }
         },
 

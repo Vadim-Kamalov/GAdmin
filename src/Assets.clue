@@ -36,13 +36,16 @@ ffi.cdef("
     typedef void            *PVOID;
     typedef PVOID           HANDLE;
     typedef HANDLE          HKL;
+    typedef HANDLE          HWND;
     typedef unsigned long   DWORD;
     typedef unsigned int    UINT;
+    typedef const char      *LPCSTR;
 
     HKL GetKeyboardLayout(DWORD idThread);
     UINT MapVirtualKeyExA(UINT uCode, UINT uMapType, HKL dwhkl);
-
     void GetLocalTime(PSYSTEMTIME lpSystemTime);
+    int MessageBoxA(HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType);
+    HWND GetDesktopWindow();
 ")
 
 local assets = {}
@@ -360,6 +363,47 @@ method assets::collectScriptInformation() {
 
         config = config
     }, { sort = true, wrap = 40 })
+}
+
+/**
+ * Show windows message box.
+ * 
+ * @param text string
+ * @param title string
+ * @param style number|nil
+ * @return void
+ */
+method assets::messageBox(text, title, style) {
+    local hwnd = ffi.C.GetDesktopWindow()
+    ffi.C.MessageBoxA(hwnd, u8::decode(text), u8::decode(title), (style) ? (style + 0x50000) : 0x50000)
+}
+
+/**
+ * Change wallhack state using default SA:MP render.
+ * 
+ * @param state boolean
+ * @return void
+ */
+method assets::changeWallhackState(state) {
+    local pointer     = sampGetServerSettingsPtr()
+    memory.wallhack ??= {
+        distance    = memory.getfloat(pointer + 39),
+        walls       = memory.getint8(pointer + 47)
+    }
+
+	memory.setfloat(pointer + 39, (state) ? 0x7D0 : memory.wallhack.distance)
+	memory.setint8(pointer + 47, (state) ? 0 : memory.wallhack.walls)
+}
+
+/**
+ * Set script to work in background.
+ *
+ * @param state boolean
+ * @return void
+ */
+method assets::workInBackground(state) {
+    memory.setuint8(0x747FB6, (state) ? 1 : 0)
+	memory.setuint8(0x74805A, (state) ? 1 : 0)
 }
 
 return assets

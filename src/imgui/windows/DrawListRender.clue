@@ -27,6 +27,7 @@
 @import "game.Admins"       => admins
 @import "game.User"         => user
 
+@import "Assets"        => assets
 @import "Icons"         => icons
 @import "Notifications" => notify
 @import "Common"        => common
@@ -49,12 +50,26 @@
     })
 }
 
+static clickWarp = {
+    enabled         = false,
+    teleportation   = {
+        tpIntoCar   = nil,
+        pos         = nil
+    }
+}
+
 local useWallhack = true
+local useTraccers = true
 
 HotKey::new("imgui.windows.DrawListRender->wallhack", { VK_LCONTROL, VK_Z }, "Wallhack")
 ::registerCallback(fn {
     if user::getAloginStatus() && config.root.cheats.wallhack.use {
         useWallhack = !$
+
+        if !config.root.cheats.wallhack.imguiStyle {
+            assets::changeWallhackState(useWallhack)
+        }
+
         if local notificationType = config.root.cheats.wallhack.notificationType {
             if notificationType != NOTIFICATION_TYPE_NONE {
                 notify::send({
@@ -63,6 +78,23 @@ HotKey::new("imgui.windows.DrawListRender->wallhack", { VK_LCONTROL, VK_Z }, "Wa
                     icon        = icons.ICON_CHECKMARK,
                     duration    = 2
                 }, (notificationType == NOTIFICATION_TYPE_SCRIPT_MESSAGE) ? "Никнеймы игроков " .. ((useWallhack) ? "показаны." : "скрыты.") : nil)
+            }
+        }
+    }
+})
+
+HotKey::new("imgui.windows.DrawListRender->tracersSwitch", { VK_LMENU, VK_C }, "Переключить трассера")
+::registerCallback(fn {
+    if config.root.additions.tracers.use && user::getAloginStatus() {
+        useTraccers = !$
+        if local notificationType = config.root.additions.tracers.notificationType {
+            if notificationType != NOTIFICATION_TYPE_NONE {
+                notify::send({
+                    title       = "Трассеры " .. ((useTraccers) ? "включены." : "выключены."),
+                    text        = "Теперь выстрелы от игроков " .. ((useTraccers) ? "показаны." : "скрыты."),
+                    icon        = icons.ICON_CHECKMARK,
+                    duration    = 2
+                }, (notificationType == NOTIFICATION_TYPE_SCRIPT_MESSAGE) ? "Трассера " .. ((useTraccers) ? "показаны." : "скрыты.") : nil)
             }
         }
     }
@@ -107,7 +139,7 @@ imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
     local sizeX, sizeY = getScreenResolution()
     
     if !isGamePaused() {
-        if config.root.additions.carInfo.use {
+        if config.root.additions.carInfo.use && ((config.root.additions.carInfo.onlyInSpectator) ? user::getAloginStatus() : true) {
             for _, car in getAllVehicles() {
                 local x, y, z = getCarCoordinates(car)
                 local myx, myy, myz = getCharCoordinates(PLAYER_PED)
@@ -142,7 +174,7 @@ imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
                 local onPlayerRenderText        = ""
 
                 if charCheck && user::getAloginStatus() {
-                    if config.root.cheats.wallhack.use && useWallhack {
+                    if config.root.cheats.wallhack.use && useWallhack && config.root.cheats.wallhack.imguiStyle {
                         onPlayerRenderText ..= string.format("{%s}{%s[%s] [X: %1.f]}{FFFFFF}{\n}", clistColorHex, sampGetPlayerNickname(id), id, distance)
                     }
 
@@ -168,7 +200,7 @@ imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
                     }
                 }
 
-                if config.root.additions.tracers.use && user::getAloginStatus() {
+                if config.root.additions.tracers.use && user::getAloginStatus() && useTraccers {
                     for i = 1, config.root.additions.tracers.maxLines {
                         if local bullet = bulletData[i] {
                             if bullet.enable && os.time() <= bullet.time {
@@ -191,17 +223,11 @@ imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
             }
         } // for _, player in getAllChars()
 
-        if isKeyJustPressed(VK_MBUTTON) && config.root.cheats.clickwarp.use && user::getAloginStatus() {
-            cursorEnabled = !$
-            sampSetCursorMode((cursorEnabled) ? 3 : 0)
-            imguiAssets::setCursorStatus(!cursorEnabled)
-        }
-
         /**
          * Clickwarp implementation. Authors - FYP and we_sux team.
          * https://www.blast.hk/threads/15459/
          */
-        if cursorEnabled && config.root.cheats.clickwarp.use && user::getAloginStatus() {
+        if clickWarp.enabled && config.root.cheats.clickwarp.use && user::getAloginStatus() {
             local sx, sy = getCursorPos()
             local sw, sh = getScreenResolution()
             if sx >= 0 && sy >= 0 && sx < sw && sy < sh {
@@ -257,25 +283,15 @@ imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
                         }
 
                         imguiText::addStroke(self.DL, text, imgui.ColorConvertFloat4ToU32(color), imgui.ImVec2(sx + 20, sy + 10), regular, 18)
-
-                        if isKeyDown(VK_LBUTTON) {
-                            if tpIntoCar {
-                                if !vehicle::jumpInto(tpIntoCar) {
-                                    ped::teleport(tpIntoCar, pos.x, pos.y, pos.z)
-                                }
-                            } else {
-                                ped::teleport(pos.x, pos.y, pos.z)
-                            }
-                            
-                            cursorEnabled = false
-
-                            sampSetCursorMode(0)
-                            imguiAssets::setCursorStatus(true)
+                        
+                        clickWarp.teleportation = {
+                            tpIntoCar   = tpIntoCar,
+                            pos         = pos
                         }
                     }
                 }
             }
-        } // if cursorEnabled && config.root.cheats.clickwarp.use && user::getAloginStatus()
+        } // if clickWarp.enabled && config.root.cheats.clickwarp.use && user::getAloginStatus()
     } /* if !isGamePaused()*/ else {
         for index, text in ({
             string.format("GAdmin v%s", $GADMIN_VERSION),

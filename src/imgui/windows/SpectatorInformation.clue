@@ -18,6 +18,72 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
+@macro SPECTATOR_INFORMATION_CUSTOM_WIDGET() {
+    (fn {
+        imgui.BeginChild("SPECTATOR_INFORMATION_CUSTOM_WIDGET", imgui.ImVec2(350, 300), true)
+            local drawList  = imgui.GetWindowDrawList()
+            local itemColor = imgui.ColorConvertFloat4ToU32(imgui.GetStyle().Colors[imgui.Col.FrameBg])
+
+            imgui.SetCursorPos(imgui.ImVec2(6, 6))
+            imgui.BeginGroup()
+                for index, item in config.root.windows.spectatorInformation.columns {
+                    local actionButtonPlaceholder = (type(item) == "table") ? ((item[2]) ? "Скрыть" : "Отобразить") : "Удалить"
+
+                    imgui.BeginGroup()
+                        local itemWidth = imgui.GetWindowWidth() - 22
+
+                        drawList::AddRectFilled(
+                            imgui.GetCursorScreenPos(),
+                            imgui.GetCursorScreenPos() + imgui.ImVec2(itemWidth, 25),
+                            itemColor,
+                            imgui.GetStyle().FrameRounding
+                        )
+                        
+                        imgui.BeginGroup()
+                            local baseCursorPos = imgui.GetCursorPos()
+                            local id            = "##SPECTATOR_INFORMATION_CUSTOM_WIDGET.indexN" .. index
+                            local moveItem      = fn(new) {
+                                table.insert(
+                                    config.root.windows.spectatorInformation.columns,
+                                    new,
+                                    table.remove(config.root.windows.spectatorInformation.columns, index)
+                                ) 
+                            }
+                            
+                            imgui.SetCursorPos(baseCursorPos + imgui.GetStyle().FramePadding)
+                            imguiAssets::textWithFont(type(item) == "table" ? item[1] : "Новая линия", bold10)
+                            imgui.PushFont(regular12)
+                                imgui.SetCursorPos(imgui.ImVec2(itemWidth - 160, baseCursorPos.y))
+                                imgui.BeginGroup()
+                                    if animations::button("Вверх" .. id, imgui.ImVec2(40, 25)) {
+                                        moveItem(math.max(1, index - 1))
+                                    }
+                                    imgui.SameLine(nil, 2)                
+                                    if animations::button("Вниз" .. id, imgui.ImVec2(40, 25)) {
+                                        moveItem(math.min(index + 1, #config.root.windows.spectatorInformation.columns))
+                                    }
+                                imgui.EndGroup()
+                                imgui.SetCursorPos(imgui.ImVec2(itemWidth - 75, baseCursorPos.y))
+                                if animations::button(actionButtonPlaceholder .. id, imgui.ImVec2(80, 25)) {
+                                    if type(item) == "table" {
+                                        item[2] = !$
+                                    } else {
+                                        table.remove(config.root.windows.spectatorInformation.columns, index)
+                                    }
+                                }
+                            imgui.PopFont()
+                        imgui.EndGroup()
+
+                        imgui.SameLine()
+
+                        imgui.Dummy(imgui.ImVec2(itemWidth, 25))
+                    imgui.EndGroup()
+                }
+            imgui.EndGroup()
+        imgui.EndChild()
+    })
+}
+
 @import "imgui.Assets"          => imguiAssets
 @import "imgui.Windows"         => window
 @import "imgui.StyleChanger"    => StyleChanger
@@ -68,20 +134,20 @@ window::new("imgui.windows.SpectatorInformation", {
         && common::convertHex2ImVec4("FF8585")
 
     self.columns = {
-        { name = "Пинг",                value = self.information.ping, color = self.pingColor },
-        { name = "ID аккаунта",         value = self.information.accountId },
-        { name = "Дата регистрации",    value = self.information.regDate },
-        { name = "Наличные/банк",       value = self.information.money .. " / " .. self.information.bank },
-        { name = "Здоровье/броня",      value = self.information.health .. " / " .. self.information.armor },
-        { name = "Фракция",             value = self.information.fraction },
-        { name = "Должность",           value = self.information.rang },
-        { name = "Машина(-ы)",          value = self.information.vehicle },
-        { name = "Стадия",              value = self.information.stage },
-        { name = "VIP статус",          value = self.information.vip },
-        { name = "Предупреждения",      value = self.information.warnings },
-        { name = "Время в афк",         value = self.information.afkTime },
-        { name = "Тек./макс. скорость", value = self.information.moveSpeed.current .. " / " .. self.information.moveSpeed.max, color = self.speedColor },
-        { name = "Выстрелы/попадания",  value = self.information.shot.total .. " / " .. self.information.shot.hit, color = self.shotColor }
+        ["Пинг"]                = { value = self.information.ping, color = self.pingColor },
+        ["ID аккаунта"]         = { value = self.information.accountId },
+        ["Дата регистрации"]    = { value = self.information.regDate },
+        ["Наличные/банк"]       = { value = self.information.money .. " / " .. self.information.bank },
+        ["Здоровье/броня"]      = { value = self.information.health .. " / " .. self.information.armor },
+        ["Фракция"]             = { value = self.information.fraction },
+        ["Должность"]           = { value = self.information.rang },
+        ["Машина(-ы)"]          = { value = self.information.vehicle },
+        ["Стадия"]              = { value = self.information.stage },
+        ["VIP статус"]          = { value = self.information.vip },
+        ["Предупреждения"]      = { value = self.information.warnings },
+        ["Время в афк"]         = { value = self.information.afkTime },
+        ["Тек./макс. скорость"] = { value = self.information.moveSpeed.current .. " / " .. self.information.moveSpeed.max, color = self.speedColor },
+        ["Выстрелы/попадания"]  = { value = self.information.shot.total .. " / " .. self.information.shot.hit, color = self.shotColor }
     }
 
     self.centerWrappedColumnText = fn(text) {
@@ -94,25 +160,31 @@ window::new("imgui.windows.SpectatorInformation", {
     self.addColumns = fn(columnsCount, columns, id) {
         columnsCount *= 2
 
+        imgui.Separator()
         imgui.Columns(columnsCount, id, true)
-        for index, item in columns {
-            item.color  = item.color || imgui.GetStyle().Colors[imgui.Col.Text]
-            item.name   = string.gsub($, "##.*", "")
-            item.value  = string.gsub($, "##.*", "")
 
-            imgui.PushFont(bold10)
-                self.centerWrappedColumnText(tostring(item.name))
-            imgui.PopFont()
-            imgui.NextColumn()
-            imgui.PushFont(regular9)
-                imgui.PushStyleColor(imgui.Col.Text, item.color)
-                    self.centerWrappedColumnText(tostring(item.value))
-                imgui.PopStyleColor()
-            imgui.PopFont()
-            imgui.NextColumn()
+        for index, item in config.root.windows.spectatorInformation.columns {
+            if item[2] {
+                local name = string.gsub(item[1], "##.*", "")
+                if local item = columns[item[1]] {
+                    item.color  = item.color || imgui.GetStyle().Colors[imgui.Col.Text]
+                    item.value  = string.gsub($, "##.*", "")
+
+                    imgui.PushFont(bold10)
+                        self.centerWrappedColumnText(tostring(name))
+                    imgui.PopFont()
+                    imgui.NextColumn()
+                    imgui.PushFont(regular9)
+                        imgui.PushStyleColor(imgui.Col.Text, item.color)
+                            self.centerWrappedColumnText(tostring(item.value))
+                        imgui.PopStyleColor()
+                    imgui.PopFont()
+                    imgui.NextColumn()
             
-            if index % (columnsCount / 2) == 0 && index != #columns {
-                imgui.Separator()
+                    if imgui.GetColumnIndex() % (config.root.windows.spectatorInformation.type * 2) == 0 {
+                        imgui.Separator()
+                    }
+                }
             }
         }
     }
@@ -121,7 +193,6 @@ window::new("imgui.windows.SpectatorInformation", {
         text = string.format($, ...)
 
         imgui.Columns(1)
-        imgui.Separator()
         imgui.SetCursorPosX(self.size.x / 2 - imgui.CalcTextSize(text).x / 2)
         imgui.TextColored(color, text)
     }
@@ -148,7 +219,6 @@ window::new("imgui.windows.SpectatorInformation", {
         imgui.EndGroup()
 
         self.var.columnsPadding::apply()
-            imgui.Separator()
             self.addColumns(config.root.windows.spectatorInformation.type, self.columns, self.id .. "_COLUMNS")
 
             local result, handle = spectator::getHandle()
@@ -167,11 +237,9 @@ window::new("imgui.windows.SpectatorInformation", {
 
                     self.addMiddleTextAfterColumns("%s[%d]", nil, carName, carId)
 
-                    imgui.Separator()
-                
                     self.addColumns(config.root.windows.spectatorInformation.type, {
-                        { name = "Двигатель", value = engineStatus, color = engineColor },
-                        { name = "Двери", value = lockStatus, color = lockColor }
+                        ["Двигатель"]  = { value = engineStatus, color = engineColor },
+                        ["Двери"]      = { value = lockStatus, color = lockColor }
                     }, self.id .. "_COLUMNS.CAR")
                 }
             }
