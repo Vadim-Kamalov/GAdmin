@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<AutoUpdate version="1.1">
-    <title>GAdmin v1.1</title>
+<AutoUpdate version="1.1.1">
+    <title>GAdmin v1.1 - v1.1.1</title>
     <buttons first="Установить" second="Пропустить" third="Позже"/>
     <body>
         <header>Новые функции</header>
@@ -30,8 +30,11 @@
         - Исправлено удаление администаторов из памяти скрипта после /alogout'a.
         - Исправлено что можно было скролить заголовок выборов логов в главном окне.
         - Исправлена отправка ответа в /greport'е на Enter.
+        - Исправлено копирование текста в буффер обмена. (v1.1.1)
+        - Исправлена дубликация элементов в окне с вашей статистикой
+        при измении их позиций/отображения. (v1.1.1)
     </body>
     <links>
-        <link destination="GAdmin-Release.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/download/v1.1/GAdmin-Release.lua</link>
+        <link destination="GAdmin-Release.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/download/v1.1.1/GAdmin-Release.lua</link>
     </links>
 </AutoUpdate>
