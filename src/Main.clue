@@ -40,7 +40,7 @@
 @import "game.Spectator"    => spectator
 
 @define COMMAND_DELAY   800
-@define GADMIN_VERSION  "1.0.2"
+@define GADMIN_VERSION  "1.1"
 @define AUTOUPDATE_URL  "https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/main/AutoUpdate.xml"
 
 @define SAMP_BASE                       getModuleHandle("samp.dll")
@@ -265,7 +265,7 @@ global fn main() {
 
     common::makeDirectoryTree({ "GAdmin", "GAdmin/temp", "GAdmin/config" })
 
-@ifndef __GADMIN_DEBUG__
+// @ifndef __GADMIN_DEBUG__
 {
     autoUpdate::checkUpdates($AUTOUPDATE_URL)
 }
