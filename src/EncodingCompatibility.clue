@@ -33,7 +33,6 @@ global fn sampSendDialogResponse(id, button, listItem, input) {
     _sampSendDialogResponse(id, button, listItem, (input) ? u8::decode(input) : "")
 }
 
-global _setClipboardText = setClipboardText
 global fn setClipboardText(text) {
-    _setClipboardText(u8::decode(text))
+    imgui.SetClipboardText(text)
 }

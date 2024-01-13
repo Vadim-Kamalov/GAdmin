@@ -51,8 +51,8 @@ global fn onWindowMessage(msg, wparam, lparam) {
 
     if config.root.cheats.clickwarp.use && user::getAloginStatus() {
         if msg == wm.WM_MBUTTONDOWN && !justPressed.mButtonDown {
-            clickWarp.enabled        = !$
-            justPressed.mButtonDown = true
+            clickWarp.enabled           = !$
+            justPressed.mButtonDown     = true
 
             sampSetCursorMode((clickWarp.enabled) ? 3 : 0)
             imguiAssets::setCursorStatus(!clickWarp.enabled)
