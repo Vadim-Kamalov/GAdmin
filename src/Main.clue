@@ -40,7 +40,7 @@
 @import "game.Spectator"    => spectator
 
 @define COMMAND_DELAY   800
-@define GADMIN_VERSION  "1.1.1"
+@define GADMIN_VERSION  "1.1.2"
 @define AUTOUPDATE_URL  "https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/main/AutoUpdate.xml"
 
 @define SAMP_BASE                       getModuleHandle("samp.dll")
@@ -240,7 +240,6 @@ global fn main() {
 
     encoding.default = "CP1251"
 
-    assets::workInBackground(true)
     binder::initializeBinds()
 
     notify::send({

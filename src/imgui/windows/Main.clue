@@ -722,8 +722,9 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                                 }
 
                                                 if animations::button("Сбросить статистику", imgui.ImVec2(imgui.GetWindowWidth() - 10, 25)) {
-                                                    config.root.user.online     = config.def.user.online
-                                                    config.root.user.answers    = config.def.user.answers
+                                                    config.root.user.online     = assets::copyTable(config.def.user.online)
+                                                    config.root.user.answers    = assets::copyTable(config.def.user.answers)
+                                                    user.online.session         = 0
 
                                                     imgui.CloseCurrentPopup()
                                                 }

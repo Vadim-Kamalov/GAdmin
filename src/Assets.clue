@@ -395,15 +395,4 @@ method assets::changeWallhackState(state) {
 	memory.setint8(pointer + 47, (state) ? 0 : memory.wallhack.walls)
 }
 
-/**
- * Set script to work in background.
- *
- * @param state boolean
- * @return void
- */
-method assets::workInBackground(state) {
-    memory.setuint8(0x747FB6, (state) ? 1 : 0)
-	memory.setuint8(0x74805A, (state) ? 1 : 0)
-}
-
 return assets
