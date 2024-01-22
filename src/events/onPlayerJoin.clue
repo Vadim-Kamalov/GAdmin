@@ -20,6 +20,7 @@
 
 @import "Notifications" => notify
 @import "Icons"         => icons
+@import "Assets"        => assets
 @import "Config"        => config
 
 sampev.onPlayerJoin = fn(id, color, isNpc, nickname) {
@@ -43,4 +44,10 @@ sampev.onPlayerJoin = fn(id, color, isNpc, nickname) {
             }
         }
     }
+
+    local CONNECTION_LOG_INDEX = 5
+    table.insert(allowedLogs[CONNECTION_LOG_INDEX][2], {
+        time = assets::getLocalTime(),
+        text = string.format("%s[%d] подключился к игре.", nickname, id)
+    })
 }

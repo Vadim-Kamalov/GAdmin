@@ -23,6 +23,7 @@
 @import "imgui.StyleChanger"    => StyleChanger
 @import "imgui.HotKey"          => HotKey
 @import "imgui.Style"           => style
+@import "imgui.PlayerNotes"     => playerNotes
 @import "imgui.drawList.Shadow" => shadow
 
 @import "game.binder.Variables" => binderVariables
@@ -46,7 +47,8 @@ local enum /* WINDOW_SELECTED_FRAME */ {
     WINDOW_SELECTED_FRAME_CUSTOMIZATION,
     WINDOW_SELECTED_FRAME_BINDER,
     WINDOW_SELECTED_FRAME_LOGS,
-    WINDOW_SELECTED_FRAME_SERVER_TABLES
+    WINDOW_SELECTED_FRAME_SERVER_TABLES,
+    WINDOW_SELECTED_FRAME_NOTES
 }
 
 local enum /* WINDOW_WIDGET */ {
@@ -64,11 +66,14 @@ static allowedLogs = {
     { "IC чат/действия", {} },
     { "OOC чат", {} },
     { "Действия/чат администраторов", {} },
-    { "Килл-лист", {} }
+    { "Килл-лист", {} },
+    { "Входы/Выходы", {} }
 }
 
 local sizeX, sizeY                  = getScreenResolution()
 local RENDER_CHANGE_CONFIGURATION   = $RENDER_CHANGE_CONFIGURATION!()
+
+static mainWindow = nil
 
 local window = {
     state   = imgui.new.bool(),
@@ -132,12 +137,21 @@ local window = {
     },
 
     logs = {
-        selected    = 1
-        filter      = imgui.ImGuiTextFilter(),
+        selected    = 1,
+        voidQuote   = assets.voidQuotes[math.random(#assets.voidQuotes)],
+        filter      = imgui.ImGuiTextFilter()
     },
 
     serverTables = {
         selected = 0
+    },
+
+    notes = {
+        selected    = 1,
+        voidQuote   = assets.voidQuotes[math.random(#assets.voidQuotes)],
+        title       = imgui.new.char[144](config.root.playerNotes[1]?.title || ""),
+        body        = imgui.new.char[65535](config.root.playerNotes[1]?.body || ""),
+        display     = imgui.new.bool(config.root.playerNotes[1]?.display || false)
     },
 
     popupModal = {
@@ -211,7 +225,10 @@ local window = {
             { "greport", "Улучшенный /greport", {
                 { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.greport.use) },
                 { "preferNotifications", "Использовать оповещения GAdmin", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.greport.preferNotifications) },
-                { "inputCopyButtons", "Кнопки вставляющие текст в поле ввода", WINDOW_WIDGET_CUSTOM, $GREPORT_MAKE_CUSTOM_ELEMENT!() }
+                { "soundNotification", "Звуковое оповещение", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.greport.soundNotification) },
+                { "inputCopyButtons", "Кнопки вставляющие текст в поле ввода", WINDOW_WIDGET_CUSTOM, $GREPORT_MAKE_CUSTOM_ELEMENT!() },
+                { "reminderNotification", "Напоминание при долгом простое с активным репортом", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.greport.reminderNotification) },
+                { "remindSeconds", "Время до напоминания при простое", WINDOW_WIDGET_SLIDER_INT, 10, 600, imgui.new.int(config.root.windows.greport.remindSeconds) }
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
             
             { "playerChecker", "Чекер игроков", {
@@ -276,6 +293,7 @@ local window = {
             
             { "commandRequester", "Админские формы", {
                 { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.commandRequester.use) },
+                { "soundNotification", "Звуковое оповещение", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.commandRequester.soundNotification) },
                 { "displayType", "Режим отображения полученной формы", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.additions.commandRequester.displayType), "Оповещение", "Полоса состояния снизу экрана" },
                 { "windowPositionY", "Позиция полосы по Y", WINDOW_WIDGET_SLIDER_INT, 0, select(2, getScreenResolution()), imgui.new.int(config.root.additions.commandRequester.windowPositionY) },
                 { "secondsToHide", "Время для закрытия формы", WINDOW_WIDGET_SLIDER_INT, 5, 30, imgui.new.int(config.root.additions.commandRequester.secondsToHide) }
@@ -384,7 +402,9 @@ ap = kick <id> AFK public place`, WINDOW_WIDGET_SWITCH, imgui.new.bool(config.ro
 
             { "mention", "Упоминания в /a", {
                 { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.mention.use) },
+                { "soundNotification", "Звуковое оповещение", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.mention.soundNotification) },
                 { "color", "Цвет упоминания", WINDOW_WIDGET_COLOR_PICKER, imguiAssets::convertHex2Float3(config.root.additions.mention.color) }
+                { "notificationType", "Тип оповещения при упоминании", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.additions.mention.notificationType), "ImGui оповещение", "Сообщение в чат", "Отсутствует" }
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
         }},
 
@@ -395,6 +415,8 @@ ap = kick <id> AFK public place`, WINDOW_WIDGET_SWITCH, imgui.new.bool(config.ro
         }}
     }
 }
+
+mainWindow = window
 
 method window.menu::item(label, icon, title, index, duration = {
     0.2,    //! clicked
@@ -522,6 +544,7 @@ style::registerWindow("imgui.windows.Main", "Основное окно")
 HotKey::new("imgui.windows.Main", { VK_X }, "Открыть/закрыть это окно")::registerCallback(fn {
     if !movableWindows::isChangingWindowsPositions() {
         window.state[0] = !$
+        imguiAssets::setCursorStatus(!window.state[0])
     }
 })
 
@@ -530,7 +553,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
     self.flags += (window.menu.width > 60) ? imgui.WindowFlags.NoInputs : 0
     
     imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2, sizeY / 2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
-    imgui.SetNextWindowSize(imgui.ImVec2(700, 400))
+    imgui.SetNextWindowSize(imgui.ImVec2(700, 420))
 
     style::beginWindowStyleChangeable("imgui.windows.Main")
 
@@ -622,7 +645,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                         imgui.EndGroup()
                         
                         imgui.SetCursorPos(imgui.ImVec2(imgui.GetCursorPos().x - 5, imgui.GetCursorPos().y + 15 + imgui.GetStyle().ItemSpacing.x))
-                        imgui.PushTextWrapPos(widthAuto)
+                        imgui.PushTextWrapPos(widthAuto + 50)
                         imgui.BeginGroup()
                             imguiAssets::textWithFont("GAdmin", bold14)
                             imguiAssets::textWithFont(
@@ -632,27 +655,30 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
 с учетом сохранения лицензии и открытости кода.", regular9)
                             imgui.SetCursorPos(imgui.GetCursorPos() + imgui.ImVec2(10, 0))
                             imgui.BeginGroup()
-                                imguiAssets::textWithFont("GAdmin Repository:", bold9)
+                                imguiAssets::textWithFont("GAdmin Repository:", bold10)
                                 imgui.SameLine(nil, 10)
+                                imgui.SetCursorPosY(imgui.GetCursorPos().y + 2)
                                 imguiAssets::textWithFont(thisScript().url, regular9)
                                 imguiAssets::setPreviousItemAbleToCopy(thisScript().url)
-                                imguiAssets::textWithFont("The Contributors:", bold9)
-                                imgui.SameLine(nil, 21)
+                                imguiAssets::textWithFont("The Contributors:", bold10)
+                                imgui.SameLine(nil, 23)
+                                imgui.SetCursorPosY(imgui.GetCursorPos().y + 2)
                                 imguiAssets::textWithFont(thisScript().authors[1], regular9)
                                 imguiAssets::setPreviousItemAbleToCopy(thisScript().authors[1])
                             imgui.EndGroup()
-                            imguiAssets::textWithFont("Copyright (C) " .. $COPYRIGHT_YEARS .. " The Contributors. Licensed under the GNU General Public License v3 (GPLv3).", regular9)
+                            imguiAssets::textWithFont("Copyright (C) " .. $COPYRIGHT_YEARS .. " The Contributors. Licensed under the GNU General Public License v3.", regular9)
                             imgui.PopTextWrapPos()
 
                             imgui.PushStyleVarVec2(imgui.StyleVar.ItemSpacing, imgui.ImVec2(2, 5))
                             imgui.PushFont(regular12)
-                                imgui.SetCursorPos(imgui.GetCursorPos() + imgui.ImVec2(0, 3))
+                                imgui.SetCursorPos(imgui.GetCursorPos() + imgui.ImVec2(0, 10))
                                 imguiAssets::textWithFont("Быстрые действия", bold14)
                                 imgui.SetCursorPos(imgui.GetCursorPos() + imgui.ImVec2(0, 6))
                                 
                                 if animations::button("Изменить позицию окон", imgui.ImVec2(widthAuto / 3, 30), 5) {
-                                    movableWindows::executeChangingWindowsPositions()
                                     window.state[0] = false
+                                    movableWindows::executeChangingWindowsPositions()
+                                    imguiAssets::setCursorStatus(false)
                                 }
                                     
                                 imgui.SameLine()
@@ -916,7 +942,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                             imguiAssets::textWithFont("Введите никнейм игрока", bold10)
                             window.checker.filter::Draw("##imgui.windows.Main.CheckerFilter", widthAuto / 2)
                             imgui.PushStyleVarVec2(imgui.StyleVar.WindowPadding, imgui.ImVec2(6, 6))
-                                imgui.BeginChild("imgui.windows.Main.CheckerFilter.Child", imgui.ImVec2(widthAuto / 2, 150), true, self.flags)
+                                imgui.BeginChild("imgui.windows.Main.CheckerFilter.Child", imgui.ImVec2(widthAuto / 2, 170), true, self.flags)
                                     for playerId = 0, $SERVER_MAX_PLAYERS {
                                         if playerId != user::getId() && sampIsPlayerConnected(playerId) {
                                             local nickname          = sampGetPlayerNickname(playerId)
@@ -973,7 +999,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                     imgui.BeginGroup()
                         imguiAssets::textWithFont("Все игроки", bold10)
                         imgui.PushStyleVarVec2(imgui.StyleVar.WindowPadding, imgui.ImVec2(6, 6))
-                            imgui.BeginChild("imgui.windows.Main.Checker.AllPlayers.Child", imgui.ImVec2(widthAuto / 2 - 5, 330), true, self.flags)
+                            imgui.BeginChild("imgui.windows.Main.Checker.AllPlayers.Child", imgui.ImVec2(widthAuto / 2 - 5, 350), true, self.flags)
                                 for index, player in config.root.windows.playerChecker.players {
                                     local id            = sampPlayer::getIdByNickname(player.nickname)
                                     local prefix        = ((id == -1) ? "[OFFLINE]" : "[ONLINE]") .. " "
@@ -1580,7 +1606,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                         "##imgui.windows.Main.selectedBindBody.valueInput",
                                         window.binder.body.value,
                                         ffi.sizeof(window.binder.body.value),
-                                        imgui.ImVec2(imgui.GetWindowWidth() - 12, 202)
+                                        imgui.ImVec2(imgui.GetWindowWidth() - 12, imgui.GetWindowHeight() - imgui.GetCursorPos().y - 37)
                                     ) {
                                         config.root.binds[window.binder.selectedBind].value = ffi.string(window.binder.body.value)
                                     }
@@ -1642,6 +1668,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                             window.logs.selected == index
                                         ) {
                                             window.logs.selected = index
+                                            window.logs.voidQuote = assets.voidQuotes[math.random(#assets.voidQuotes)]
                                         }
 
                                         imgui.SameLine(nil, 20)
@@ -1681,9 +1708,9 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                 imgui.SetCursorPos(imgui.ImVec2(6, 6))
                                 imgui.BeginGroup()
                                     if #allowedLogs[window.logs.selected][2] == 0 {
-                                        local text = "Пока нет никаких логов"
+                                        local text = window.logs.voidQuote
                                         imguiAssets::textWithFont(text, regular12, imgui.ImVec2(
-                                            ((imgui.GetWindowWidth() - 12) - imgui.CalcTextSize(text).x) / 2,
+                                            ((imgui.GetWindowWidth()) - imgui.CalcTextSize(text).x) / 2,
                                             ((imgui.GetWindowHeight() - imgui.GetCursorPos().y) - imgui.CalcTextSize(text).y) / 2
                                         ), imgui.GetStyle().Colors[imgui.Col.TextDisabled])
                                     }
@@ -1769,16 +1796,77 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                             if window.serverTables.selected == 0 {
                                 imgui.Columns(#serverTables.weaponDamage[1], "imgui.windows.Main.serverTables.weaponDamage", true)
                                 for sectionIndex, section in serverTables.weaponDamage {
-                                    for valueIndex, value in section {
-                                        imgui.SetColumnWidth(valueIndex - 1, ({ 111, 69, 42, 39, 33, 46, 60, 224 })[valueIndex])
-                                        if local value = string.gsub($, "%%", "%%%%") {
-                                            imgui.PushFont((sectionIndex == 1) ? bold10 : regular9)
-                                                imgui.Text(value)
-                                                imgui.NextColumn()
-                                            imgui.PopFont()
+                                    section.alpha ??= 1.0
+
+                                    imgui.BeginGroup()
+                                        for valueIndex, value in section {
+                                            imgui.SetColumnWidth(valueIndex - 1, ({ 111, 69, 42, 39, 33, 46, 60, 224 })[valueIndex])
+                                            if local value = string.gsub($, "%%", "%%%%") {
+                                                imgui.PushFont((sectionIndex == 1) ? bold10 : regular9)
+                                                    imgui.PushStyleVarFloat(imgui.StyleVar.Alpha, section.alpha - window.menu.alpha / 255 / 2 - window.menu.switchBetweenFramesAlpha)
+                                                        imgui.Text(value)
+                                                    imgui.PopStyleVar()
+                                                    imgui.NextColumn()
+                                                imgui.PopFont()
+                                            }
+                                        }
+                                        imgui.Separator()
+                                    imgui.EndGroup()
+
+                                    if sectionIndex != 1 {
+                                        if local posX, posY = getCursorPos() {
+                                            local columnGroupStartX = imgui.GetWindowPos().x + 6 /* padding */
+                                            local columnGroupEndX   = columnGroupStartX + imgui.GetWindowWidth() - 6 /* padding */
+                                            local columnGroupStartY = imgui.GetItemRectMin().y - 4 /* separator spacing */ 
+                                            local columnGroupEndY   = imgui.GetItemRectMax().y
+
+                                            if imgui.IsWindowHovered() && (
+                                                (posX >= columnGroupStartX && posX <= columnGroupEndX) &&
+                                                (posY >= columnGroupStartY && posY <= columnGroupEndY)
+                                            ) {
+                                                section.alpha = 0.5
+
+                                                if imgui.IsMouseClicked(0 /* ImGuiMouseButton_Left */) {
+                                                    local WEAPON_NAME   = 1
+                                                    local CALIBER       = 2
+                                                    local LEGS_DAMAGE   = 3
+                                                    local HANDS_DAMAGE  = 4
+                                                    local GROIN_DAMAGE  = 5
+                                                    local TORSO_DAMAGE  = 6
+                                                    local HEAD_DAMAGE   = 7
+                                                    local EFFECT        = 8
+
+                                                    local text = section[WEAPON_NAME]
+
+                                                    if #section[CALIBER] != 0 {
+                                                        text ..= string.format("(%s)", section[CALIBER])
+                                                    }
+
+                                                    text ..= string.format(
+                                                        ": Ноги и руки = %s, пах = %s, торс = %s, голова = %s",
+                                                        section[LEGS_DAMAGE],
+                                                        section[GROIN_DAMAGE],
+                                                        section[TORSO_DAMAGE],
+                                                        section[HEAD_DAMAGE]
+                                                    )
+
+                                                    if #section[EFFECT] != 0 {
+                                                        local effect = string.gsub(section[EFFECT], "%%", "")
+                                                        text ..= string.format(", эффект = %s", effect)
+                                                    }
+
+                                                    setClipboardText(text)
+                                                    notify::send({
+                                                        title   = "Параметры оружия скопированы",
+                                                        text    = "Параметры " .. section[WEAPON_NAME] .. " скопированы в буффер обмена.",
+                                                        icon    = icons.ICON_KEYBOARD
+                                                    })
+                                                }
+                                            } else {
+                                                section.alpha = 1.0
+                                            }
                                         }
                                     }
-                                    imgui.Separator()
                                 }
                             } else {
                                 local section = serverTables.prices[window.serverTables.selected][2]
@@ -1795,6 +1883,150 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                 }
                                 imgui.NewLine()
                                 imgui.Dummy(imgui.ImVec2(6, 6))
+                            }
+                        imgui.EndGroup()
+                    imgui.EndChild()
+                } elseif window.menu.selectedFrame == WINDOW_SELECTED_FRAME_NOTES {
+                    local childHeight = imgui.GetWindowHeight() - imgui.GetCursorPos().y - 6
+                    
+                    imgui.BeginChild("imgui.windows.Main.noteList", imgui.ImVec2(150, childHeight), true)
+                        imgui.SetCursorPos(imgui.ImVec2(6, 6))
+                        imgui.BeginGroup()
+                            imguiAssets::textWithFont("Заметки", bold14)
+
+                            imgui.SetCursorPosX(0)
+                            imgui.BeginChild(
+                                "imgui.windows.main.noteList.selection",
+                                imgui.ImVec2(imgui.GetWindowWidth(), imgui.GetWindowHeight() - 42 - imgui.GetCursorPos().y),
+                                false
+                            )
+                                imgui.PushFont(regular12)
+                                    imgui.SetCursorPosY(3)
+                                    for index, note in config.root.playerNotes {
+                                        imgui.SetCursorPosX(6)
+                                        
+                                        local size      = imgui.ImVec2(imgui.GetWindowWidth() - 12, 25)
+                                        local title     = note.title
+                                        local titleSize = regular12::CalcTextSizeA(regular12.FontSize, math.huge, 0.0, title)
+                                        local dotsSize  = regular12::CalcTextSizeA(regular12.FontSize, math.huge, 0.0, "...")
+
+                                        local postfix = ((titleSize.x - dotsSize.x) >= (size.x - 50)) ? "..." : "" 
+
+                                        while (titleSize.x - dotsSize.x) >= (size.x - 50) {
+                                            title       = string.sub($, 1, #$ - 1)
+                                            titleSize   = regular12::CalcTextSizeA(regular12.FontSize, math.huge, 0.0, title)
+                                        }
+
+                                        if animations::button(title .. postfix .. "##noteSelectorIndex" .. index, size) {
+                                            if local this = window.notes {
+                                                this.display[0] = note.display
+                                                this.selected   = index
+
+                                                imgui.StrCopy(this.title, note.title)
+                                                imgui.StrCopy(this.body, note.body)
+                                            }
+                                        }
+                                    }
+                                imgui.PopFont()
+                            imgui.EndChild()
+
+                            imgui.PushFont(bold10)
+                                if animations::button("Добавить##imgui.windows.main.notes.add", imgui.ImVec2(imgui.GetWindowWidth() - 12, 30)) {
+                                    playerNotes::new({
+                                        title   = "Заметка " .. #config.root.playerNotes + 1,
+                                        body    = "",
+                                        display = false
+                                    })
+
+                                    if local this = window.notes {
+                                        this.display[0] = false
+                                        this.selected   = #config.root.playerNotes
+
+                                        imgui.StrCopy(this.title, config.root.playerNotes[this.selected].title)
+                                        imgui.StrCopy(this.body, "")
+                                    }
+                                }
+                            imgui.PopFont()
+                        imgui.EndGroup()
+                    imgui.EndChild()
+                    imgui.SameLine()
+                    imgui.BeginChild(
+                        "imgui.windows.main.notes.body",
+                        imgui.ImVec2(widthAuto - 150 /* left-child width */ - imgui.GetStyle().ItemSpacing.x, childHeight),
+                        true
+                    )
+                        imgui.SetCursorPos(imgui.ImVec2(6, 6))
+                        imgui.BeginGroup()
+                            if #config.root.playerNotes >= 1 {
+                                local this      = window.notes
+                                local id        = config.root.playerNotes[this.selected].id
+                                this.display[0] = playerNotes.displayBuffer[id][0]
+
+                                imgui.PushStyleColor(imgui.Col.FrameBg, imgui.ImVec4(0, 0, 0, 0))
+                                imgui.PushStyleVarFloat(imgui.StyleVar.FrameBorderSize, 0)
+                                imgui.PushFont(bold14)
+                                    imgui.SetCursorPosX(1)
+                                    imgui.SetNextItemWidth(imgui.GetWindowWidth() - 12 /* padding * 2 */)
+                                    if imgui.InputText(
+                                        "##imgui.windows.Main.notes.body.title",
+                                        this.title,
+                                        ffi.sizeof(this.title)
+                                    ) {
+                                        config.root.playerNotes[this.selected].title = ffi.string(this.title)
+                                    }
+                                imgui.PopFont()
+                                imgui.PopStyleColor()
+                                imgui.PopStyleVar()
+
+                                imgui.BeginGroup()
+                                    if animations::toggleButton("##imgui.windows.Main.notes.body.display", this.display) {
+                                        config.root.playerNotes[this.selected].display = this.display[0]
+                                        playerNotes.displayBuffer[id][0] = this.display[0]
+                                    }
+
+                                    imgui.SameLine()
+                                    imguiAssets::textWithFont("Отобразить на экране", regular12)
+                                imgui.EndGroup()
+
+                                imgui.PushFont(regular12)
+                                    animations::hint("Ваша заметка будет также как и остальные окна:\nеё можно кастомизировать и изменять ее положение.")
+                                    imgui.Text("Описание заметки")    
+                                    if imgui.InputTextMultiline(
+                                        "##imgui.windows.Main.notes.body.description",
+                                        this.body,
+                                        ffi.sizeof(this.body),
+                                        imgui.ImVec2(
+                                            imgui.GetWindowWidth() - 12 /* padding * 2 */,
+                                            imgui.GetWindowHeight() - imgui.GetCursorPos().y - 12 /* padding * 2 */ - 30 /* button size */
+                                        )
+                                    ) {
+                                        config.root.playerNotes[this.selected].body = ffi.string(this.body)
+                                    }
+                                imgui.PopFont()
+
+                                imgui.PushFont(bold10)
+                                    if animations::button(
+                                        "Удалить##imgui.windows.Main.notes.body.remove",
+                                        imgui.ImVec2(imgui.GetWindowWidth() - 12 /* padding * 2 */, 30)
+                                    ) {
+                                        playerNotes::remove(this.selected)
+                                        if local note = config.root.playerNotes[1] {
+                                            this.display[0] = note.display
+                                            this.selected   = 1
+
+                                            imgui.StrCopy(this.title, note.title)
+                                            imgui.StrCopy(this.body, note.body)
+                                        }
+                                    }
+                                imgui.PopFont()
+                            } else {
+                                local text = window.notes.voidQuote
+                                local size = regular12::CalcTextSizeA(regular12.FontSize, math.huge, 0.0, text)
+
+                                imguiAssets::textWithFont(text, regular12, imgui.ImVec2(
+                                    ((imgui.GetWindowWidth()) - size.x) / 2,
+                                    ((imgui.GetWindowHeight() - size.y) - size.y) / 2
+                                ), imgui.GetStyle().Colors[imgui.Col.TextDisabled])           
                             }
                         imgui.EndGroup()
                     imgui.EndChild()
@@ -1846,6 +2078,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                         window.menu::item("imgui.windows.Main.menu.binder", icons.ICON_CLIPBOARD, "Биндер", 6)
                         window.menu::item("imgui.windows.Main.menu.logs", icons.ICON_BOOK_OPEN, "Логи", 7)
                         window.menu::item("imgui.windows.Main.menu.serverTables", icons.ICON_VERTICAL_BAR_CHART, "Серверные таблицы", 8)
+                        window.menu::item("imgui.windows.Main.menu.notes", icons.ICON_BOOKMARK_FILLED, "Заметки", 9)
                     imgui.EndGroup()
                 imgui.EndChild()
             imgui.PopStyleVar()

@@ -76,6 +76,10 @@ imgui.OnFrame(fn { return greport.window.state && !isGamePaused() && config.root
         greport.window.closeAndOpenAnimation.clock  = os.clock()
     }
 
+    if greport.player.active {
+        greport.player.clock = os.clock()
+    }
+
     imgui.SetNextWindowSize(imgui.ImVec2(600, 300))
     imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2, sizeY / 2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
 

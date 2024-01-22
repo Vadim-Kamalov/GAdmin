@@ -150,10 +150,14 @@ window::new("imgui.windows.SpectatorInformation", {
         ["Выстрелы/попадания"]  = { value = self.information.shot.total .. " / " .. self.information.shot.hit, color = self.shotColor }
     }
 
-    self.centerWrappedColumnText = fn(text) {
+    self.centerWrappedColumnText = fn(text, font) {
         for text with string.gmatch(text, "[^\n]+") {
-            imgui.SetCursorPosX((imgui.GetColumnOffset() + (imgui.GetColumnWidth() / 2)) - imgui.CalcTextSize(text).x / 2)
-            imgui.TextWrapped(text)
+            local size = font::CalcTextSizeA(font.FontSize, math.huge, 0.0, text)
+
+            imgui.SetCursorPosX((imgui.GetColumnOffset() + (imgui.GetColumnWidth() / 2)) - size.x / 2)
+            imgui.PushFont(font)
+                imgui.TextWrapped(text)
+            imgui.PopFont()
         }
     }
 
@@ -170,13 +174,46 @@ window::new("imgui.windows.SpectatorInformation", {
                     item.color  = item.color || imgui.GetStyle().Colors[imgui.Col.Text]
                     item.value  = string.gsub($, "##.*", "")
 
-                    imgui.PushFont(bold10)
-                        self.centerWrappedColumnText(tostring(name))
-                    imgui.PopFont()
+                    self.centerWrappedColumnText(tostring(name), bold10)
                     imgui.NextColumn()
                     imgui.PushFont(regular9)
                         imgui.PushStyleColor(imgui.Col.Text, item.color)
-                            self.centerWrappedColumnText(tostring(item.value))
+                            if name != "Машина(-ы)" {
+                                self.centerWrappedColumnText(tostring(item.value), regular9)
+                            } else {
+                                imgui.SetCursorPosX((imgui.GetColumnOffset() + (imgui.GetColumnWidth() / 2)) - imgui.CalcTextSize(item.value).x / 2)
+                                imgui.BeginGroup()
+                                    local _, count  = string.gsub(item.value, "%d+", "")
+                                    local index     = 1
+
+                                    for carId with string.gmatch(item.value, "%d+") {
+                                        imgui.Text(carId)
+
+                                        if imgui.IsItemHovered() {
+                                            imgui.GetWindowDrawList()::AddLine(
+                                                imgui.ImVec2(imgui.GetItemRectMin().x, imgui.GetItemRectMax().y),
+                                                imgui.GetItemRectMax(),
+                                                -1,
+                                                2
+                                            )
+                                        }
+
+                                        if imgui.IsItemClicked() {
+                                            sampSetChatInputEnabled(true)
+                                            sampSetChatInputText(string.format("/getbuycar %d ", carId))
+                                        }
+                                        
+                                        if count != index {
+                                            imgui.SameLine(nil, 0)
+                                            imgui.Text(",")
+                                        }
+
+                                        imgui.SameLine(nil, 0)
+
+                                        index += 1
+                                    }
+                                imgui.EndGroup()
+                            }
                         imgui.PopStyleColor()
                     imgui.PopFont()
                     imgui.NextColumn()

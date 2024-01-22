@@ -27,6 +27,8 @@
 @import "Assets"            => assets
 @import "CommandRequester"  => commandRequester
 @import "Config"            => config
+@import "Notifications"     => notify
+@import "Icons"             => icons
 
 local logs = {
     { "IC чат/действия", {
@@ -137,7 +139,8 @@ sampev.onServerMessage = fn(color, text) {
     }
 
     if string.find(text, "^%[A%] .*%[%d+%]: %S+") && color == 866792362 && config.root.additions.mention.use {
-        local possibleMention = string.match(text, "^%[A%] .*%[%d+]: (%S+)")
+        local mentionStarter, possibleMention   = string.match(text, "^%[A%] (.*)%[%d+]: (%S+)")
+        local replacedColor                     = false
 
         for index, pattern in ({
             "^(%d+),",
@@ -151,14 +154,39 @@ sampev.onServerMessage = fn(color, text) {
         }) {
             if index <= 4 {
                 if tonumber(string.match(possibleMention, pattern)) == user::getId() {
-                    color = rgb2color(config.root.additions.mention.color)
+                    color           = rgb2color(config.root.additions.mention.color)
+                    replacedColor   = true
                 }
             } else {
                 if local admin = admins::getAdminByOOCNickname(string.match(possibleMention, pattern)) {
                     if string.lower(admin.nickname.ooc) == string.lower(user::getOOCNickname()) {
-                        color = rgb2color(config.root.additions.mention.color)
+                        color           = rgb2color(config.root.additions.mention.color)
+                        replacedColor   = true
+                    }
+                } elseif possibleMention == "all" {
+                    color = rgb2color(config.root.additions.mention.color)
+                    if mentionStarter != user::getOOCNickname() {
+                        replacedColor = true
                     }
                 }
+            }
+
+            if replacedColor {
+                if config.root.additions.mention.soundNotification {
+                    addOneOffSound(0, 0, 0, 1137)
+                }
+
+                if local notificationType = config.root.additions.mention.notificationType {
+                    if notificationType != NOTIFICATION_TYPE_NONE {
+                        notify::send({
+                            title   = "Вас упомянули в /a чате",
+                            text    = "Вас упомянул " .. mentionStarter .. ". Сообщение выделено в чате.",
+                            icon    = icons.ICON_PEOPLE
+                        }, (notificationType == NOTIFICATION_TYPE_SCRIPT_MESSAGE) ? mentionStarter .. " вас упомянул в /a чате." : nil)
+                    }
+                }
+
+                break
             }
         }
     }

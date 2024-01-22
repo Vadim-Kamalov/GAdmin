@@ -107,6 +107,8 @@ method windows::begin(
  * @param render function           Render function that accepts `self` as argument.
  */
 method windows::new(id, configuration, render) {
+    local self = setmetatable({}, self)
+    
     self.description    = configuration.description || "No description provided"
     self.condition      = configuration.condition || (fn { return true })
     self.type           = configuration.type || MV_DEFAULT
@@ -133,7 +135,7 @@ method windows::new(id, configuration, render) {
 
     imgui.OnFrame(fn { return movableWindows::setupThisWindowCondition(self.type) && self.condition() }, fn(window) {
         window.HideCursor = imguiAssets::getCursorStatus()
-    
+
         self.isChangingWindowsPositions = movableWindows::isChangingWindowsPositions()
         self.size = (type(configuration.size) == "function") ? configuration.size() : (configuration.size || ({ x = 0, y = 0 }))
 

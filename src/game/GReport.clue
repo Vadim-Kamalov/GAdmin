@@ -85,6 +85,7 @@ static __greport__ = {
 
     player = {
         receivedAt  = nil,
+        clock       = nil,
         time        = nil,
         active      = false,
         nickname    = "",
@@ -111,6 +112,35 @@ static enum /* GREPORT_OPTION */ {
 }
 
 /**
+ * Setup GReport main loop. Only for use in while-true loop!
+ * @return void
+ */
+method __greport__::loop() {
+    if self.player.clock && config.root.windows.greport.reminderNotification && !self.window.state {
+        if os.clock() - self.player.clock >= config.root.windows.greport.remindSeconds {
+            self.player.clock = os.clock()
+            notify::send({
+                title       = "Напоминание про /greport",
+                text        = "Прошло " .. config.root.windows.greport.remindSeconds .. " с момента последнего открытия /greport.",
+                duration    = 10,
+                condition   = fn { return self.window.state },
+                buttons     = {
+                    first = {
+                        name = "Открыть",
+                        call = fn { self.window::switch() }
+                    },
+
+                    second = {
+                        name = "Закрыть",
+                        call = fn(close) { close() }
+                    }
+                }
+            })
+        }
+    }
+}
+
+/**
  * Open window and dialog if `withDialog` parameter is equals to `true`.
  * 
  * @param withDialog boolean (default = true)
@@ -121,8 +151,10 @@ method __greport__.window::open(withDialog = true) {
         self.closeAndOpenAnimation.alpha = 0
         self.state = true
         
-        if !__greport__.dialog.state && withDialog {
-            __greport__.dialog::call()
+        if local this = __greport__ {
+            if !this.dialog.state && withDialog {
+                this.dialog::call()
+            }
         }
     } 
 }
@@ -316,6 +348,7 @@ method __greport__.player::moveReportToAdministration() {
 method __greport__.player::reset() {
     self.receivedAt = nil
     self.time       = nil
+    self.clock      = nil
     self.active     = false
     self.nickname   = ""
     self.id         = -1
@@ -344,8 +377,12 @@ method __greport__::setupChatWatcher(text) {
                 text        = "У вас есть 15 секунд принять. Введите /grep(ort) или нажмите на " .. tostring(self.hotKey),
                 icon        = icons.ICON_PERSON
                 duration    = 15,
-                condition   = (fn { return self.player.active })
+                condition   = fn { return self.window.state }
             })
+        }
+
+        if config.root.windows.greport.soundNotification {
+            addOneOffSound(0, 0, 0, 1137)
         }
     }
 

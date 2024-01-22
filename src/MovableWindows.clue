@@ -36,7 +36,7 @@
 
                 if keys[$wparam] {
                     __movableWindows__.viewMode = keys[$wparam]
-                    sampAddChatMessage("Режим отображения окон переключен: " .. MV_VIEW_DESCRIPTIONS[this.viewMode], -1)
+                    common::sendScriptMessage("Режим отображения окон переключен: %s", MV_VIEW_DESCRIPTIONS[this.viewMode])
                     consumeWindowMessage(true, false)
                 } elseif $wparam == VK_ESCAPE {
                     this::executeChangingWindowsPositions()
@@ -89,11 +89,11 @@ method __movableWindows__::executeChangingWindowsPositions() {
     imguiAssets::switchCursorStatus()
 
     if self.changingWindowsPositions {
-        sampAddChatMessage("Используйте клавиши на клавиатуре [1-3] чтобы переключаться между режимами:", -1)
+        common::sendScriptMessage("Используйте клавиши на клавиатуре [1-3] чтобы переключаться между режимами:")
         for _, viewModeDescription in MV_VIEW_DESCRIPTIONS {
-            sampAddChatMessage(string.rep(" ", 4) .. viewModeDescription, -1)
+            common::sendScriptMessage("%s%s", string.rep(" ", 4), viewModeDescription)
         }
-        sampAddChatMessage("Чтобы выйти из режима редактирования, нажмите ESC.", -1)
+        common::sendScriptMessage("Чтобы выйти из режима редактирования, нажмите ESC.")
     }
 }
 

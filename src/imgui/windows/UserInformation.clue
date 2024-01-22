@@ -134,6 +134,18 @@ window::new("imgui.windows.UserInformation", {
         imgui.SetCursorPosX(align)
     }
 
+    for startIndex, startItem in config.root.windows.userInformation.display {
+        if startItem != "NewLine" {
+            for endIndex, endItem in config.root.windows.userInformation.display {
+                if endItem != "NewLine" {
+                    if startItem[1] == endItem[1] && startIndex != endIndex {
+                        table.remove(config.root.windows.userInformation.display, endIndex)
+                    }
+                }
+            }
+        }
+    }
+
     self.var.style::apply()
     self::begin(self.id, fn {
         imgui.BeginGroup()

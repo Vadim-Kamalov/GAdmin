@@ -112,18 +112,18 @@ windows::new("imgui.windows.SpectatorActions", {
             sampSendMenuSelectRow(SPECTATOR_MENU_EXIT)
         }},
 
-        { title = "PK", callback = fn {
-            sampSendChat("/pk " .. tostring(spectator.id))
+        { title = "ASPAWN", callback = fn {
+            sampSendChat("/aspawn " .. tostring(spectator.id))
         }},
 
-        { title = "JAIL", callback = fn {
+        { title = "GETBUYCAR", callback = fn {
             sampSetChatInputEnabled(true)
-            sampSetChatInputText(string.format("/jail %d ", spectator.id))
+            sampSetChatInputText(string.format("/getbuycar %d ", spectator.id))
         }},
         
-        { title = "CK", callback = fn {
+        { title = "PK", callback = fn {
             sampSetChatInputEnabled(true)
-            sampSetChatInputText(string.format("/ck %d ", spectator.id))
+            sampSetChatInputText(string.format("/pk %d ", spectator.id))
         }}
     }
 

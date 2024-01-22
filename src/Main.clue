@@ -31,10 +31,12 @@
 @import "Assets"            => assets
 @import "MovableWindows"    => movableWindows
 
-@import "imgui.Style"   => style
-@import "imgui.HotKey"  => HotKey
-@import "imgui.Assets"  => imguiAssets
+@import "imgui.Style"       => style
+@import "imgui.PlayerNotes" => playerNotes
+@import "imgui.HotKey"      => HotKey
+@import "imgui.Assets"      => imguiAssets
 
+@import "game.GReport"      => greport
 @import "game.Binder"       => binder
 @import "game.User"         => user
 @import "game.Spectator"    => spectator
@@ -240,8 +242,8 @@ global fn main() {
 
     encoding.default = "CP1251"
 
+    playerNotes::initializeNotes()
     binder::initializeBinds()
-
     notify::send({
         title   = "GAdmin успешно запущен!",
         text    = "GAdmin версии " .. $GADMIN_VERSION .. " успешно инициализирован.",
@@ -310,6 +312,7 @@ global fn main() {
         }
 
         commandRequester::loop()
+        greport::loop()
         user::updateTime()
 
         if movableWindows.changingWindowsPositions {

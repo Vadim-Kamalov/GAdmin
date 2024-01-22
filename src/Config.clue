@@ -148,9 +148,12 @@ static __config__ = {
             },
 
             greport = {
-                use                 = true,
-                preferNotifications = true,
-                inputCopyButtons    = {
+                use                     = true,
+                soundNotification       = true,
+                preferNotifications     = true,
+                reminderNotification    = true,
+                remindSeconds           = 120,
+                inputCopyButtons        = {
                     { "Приятной игры!",         "Приятной игры!" },
                     { "Передал",                "Передал." },
                     { "Нет тех. причины",       "Не чиним/лечим/телепортируем/спавним без технической причины." },
@@ -203,13 +206,15 @@ static __config__ = {
             },
 
             commandRequester = {
-                use             = true,
-                windowPositionY = select(2, getScreenResolution()),
-                displayType     = 2,
-                secondsToHide   = 5,
-                allowedCommands = {
+                use                 = true,
+                windowPositionY     = select(2, getScreenResolution()),
+                displayType         = 2,
+                secondsToHide       = 5,
+                soundNotification   = true,
+                allowedCommands     = {
                     { "pk",     4 },
                     { "ck",     4 },
+                    { "warn",   3 },
                     { "ban",    3 },
                     { "kick",   3 },
                     { "mute",   3 },
@@ -220,8 +225,10 @@ static __config__ = {
             },
 
             mention = {
-                use     = true,
-                color   = "4A86B6"
+                use                 = true,
+                soundNotification   = true,
+                notificationType    = 1, 
+                color               = "4A86B6"
             },
 
             zoomSpectatorCamera = {
@@ -348,14 +355,15 @@ static __config__ = {
             {
                 keys        = {},
                 value       = "/aspawn ${{ GET_ARGUMENT, 1 }}\n/aheal ${{ GET_ARGUMENT, 1 }}",
-                commandName = "sh",
-                title       = "/sh"
+                commandName = "sph",
+                title       = "/aspawn + /aheal"
             }
         },
 
         styleChangeableWindows  = {},
         hotKeys                 = {},
-        movableWindows          = {}
+        movableWindows          = {},
+        playerNotes             = {}
     }
 }
 

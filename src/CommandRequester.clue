@@ -304,6 +304,10 @@ method __commandRequester__::new(from, command) {
                             }
                         })
                     }
+
+                    if config.root.additions.commandRequester.soundNotification {
+                        addOneOffSound(0, 0, 0, 1137)
+                    }
                 }
             }
         }

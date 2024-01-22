@@ -19,6 +19,7 @@
  */
 
 @import "Config" => config
+@import "Common" => common
 
 @import "imgui.Assets"  => imguiAssets
 @import "imgui.HotKey"  => HotKey
@@ -96,7 +97,7 @@ global fn onWindowMessage(msg, wparam, lparam) {
         }
     }
 
-    if msg == wm.WM_MOUSEWHEEL {
+    if msg == wm.WM_MOUSEWHEEL && !greport.window.state && !mainWindow.state[0] {
         if spectator.status && config.root.additions.zoomSpectatorCamera.use {
             local step = config.root.additions.zoomSpectatorCamera.step
 

@@ -131,7 +131,7 @@ method __imguiAssets__::bringVec4To(from, to, startTime, duration) {
  * @vararg any
  * @return boolean, boolean (imgui.IsItemClicked() and imgui.IsItemHovered())
  */
-method __imguiAssets__::addStrokedText(text, strokeWidth = 0, color = imgui.ImVec4(1, 1, 1, 1), ...) {
+method __imguiAssets__::addStrokedText(text, strokeWidth = 0, color = imgui.GetStyle().Colors[imgui.Col.Text], ...) {
     local text  = string.format($, ...)
     local pos   = imgui.GetCursorPos()
 

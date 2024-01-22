@@ -21,8 +21,11 @@
 @import "Notifications" => notify
 @import "Icons"         => icons
 @import "Config"        => config
+@import "Assets"        => assets
 
 sampev.onSetPlayerName = fn(id, nickname, success) {
+    local sourceNickname = sampGetPlayerNickname(id)
+
     /**
      * Yes, code for check player join here is same as code in `events.onPlayerJoin`.
      */
@@ -46,4 +49,10 @@ sampev.onSetPlayerName = fn(id, nickname, success) {
             }
         }
     }
+    
+    local CONNECTION_LOG_INDEX = 5
+    table.insert(allowedLogs[CONNECTION_LOG_INDEX][2], {
+        time = assets::getLocalTime(),
+        text = string.format("%s[%d] сменил никнейм на %s.", sourceNickname, id, nickname)
+    })
 }

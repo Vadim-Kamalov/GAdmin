@@ -47,11 +47,11 @@ method __notifications__::get() {
  *     condition    = Function|nil
  *     buttons      = Table|nil: {
  *         first    = {
- *             text = String
+ *             name = String
  *             call = Function|nil
  *         }
  *         second   = {
- *             text = String
+ *             name = String
  *             call = Function|nil
  *         }
  *     }

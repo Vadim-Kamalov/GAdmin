@@ -22,8 +22,11 @@
 @import "Notifications" => notify
 @import "Icons"         => icons
 @import "Config"        => config
+@import "Assets"        => assets
 
 sampev.onPlayerQuit = fn(id) {
+    local nickname = sampGetPlayerNickname(id)
+    
     for index, admin in admins {
         if admin.id == id {
             admins::remove(index)
@@ -32,7 +35,6 @@ sampev.onPlayerQuit = fn(id) {
     }
 
     if config.root.windows.playerChecker.use {
-        local nickname = sampGetPlayerNickname(id)
         for _, player in config.root.windows.playerChecker.players {
             if player.nickname == nickname {
                 if local notificationType = config.root.windows.playerChecker.notificationType {
@@ -52,4 +54,10 @@ sampev.onPlayerQuit = fn(id) {
             }
         }
     }
+    
+    local CONNECTION_LOG_INDEX = 5
+    table.insert(allowedLogs[CONNECTION_LOG_INDEX][2], {
+        time = assets::getLocalTime(),
+        text = string.format("%s[%d] вышел из игры.", nickname, id)
+    })
 }
