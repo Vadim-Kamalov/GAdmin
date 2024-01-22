@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<AutoUpdate version="1.1.3">
-    <title>GAdmin v1.1.3</title>
+<AutoUpdate version="1.1.4">
+    <title>GAdmin v1.1.3 - v1.1.4</title>
     <buttons first="Установить" second="Пропустить" third="Позже"/>
     <body>
         <header>Новые функции</header>
@@ -22,13 +22,16 @@
         |   CK    => PK
         - Теперь можно нажать на айди машины в окне с информацией о игроке, за которым
         вы следите: при нажатии вставится "/getbuycar [id]" в поле ввода чата.
+        - Теперь информация о скрипте записывается в отдельный файл, а самой собираемой
+        информации стало больше. (v1.1.4)
         <newline/>
         <header>Исправления</header>
         - Исправлена дубликация элементов в окне с вашей статистикой.
         - Исправлено, что админские-формы не реагировали на "/warn".
         - Исправлено выравнивание текста в окне с информацией об игроке, за которым вы следите.
+        - Исправлено скрытие айпи-адрессов у некоторых сообщений. (v1.1.4)
     </body>
     <links>
-        <link destination="GAdmin-Release.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/download/v1.1.3/GAdmin-Release.lua</link>
+        <link destination="GAdmin-Release.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/download/v1.1.4/GAdmin-Release.lua</link>
     </links>
 </AutoUpdate>
