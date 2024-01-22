@@ -353,30 +353,125 @@ method assets::copyTable(object, seen) {
  * Collect all information about this script. User password`s will replaced by `"***"` in `config.root`.
  * @return string JSON
  */
-method assets::collectScriptInformation() {
-    local config                                = self::copyTable(import("Config").root)
+assets.collectScriptInformation = fn {
+    local config                                = assets::copyTable(import("Config").root)
     config.additions.autoLogin.accountPassword  = "***"
     config.additions.autoLogin.aloginPassword   = "***"
 
-    return neatJSON({
-        time = {
-            clock   = os.clock(),
-            date    = os.date()
-        },
+    local user              = __user__
+    local greport           = __greport__
+    local spectator         = __spectator__
+    local imguiAssets       = __imguiAssets__
+    local movableWindows    = __movableWindows__
+    local admins            = __admins__
+    local common            = import("Common")
 
-        workingDirectory    = getWorkingDirectory(),
-        scriptVersion       = $GADMIN_VERSION,
-        usedMemory          = collectgarbage("count"),
-        admins              = (fn {
-            local list = {}
-            for _, admin in import("game.Admins") {
-                table.insert(list, admin)
-            }
-            return list
-        })()
+    local config        = neatJSON($, { lua = true })
+    local windowsList   = (fn {
+        local indent    = string.rep(" ", 8)
+        local list      = ""
 
-        config = config
-    }, { sort = true, wrap = 40 })
+        for index, window in registeredWindows {
+            list ..= string.format(
+                "%s[%d] %s (%s)%s",
+                (list == "") ? "" : indent,
+                index,
+                window.id,
+                window.description,
+                (index == #registeredWindows) ? "" : "\n"
+            )
+        }
+
+        return list
+    })()
+
+    return string.format(`
+Date:   %s
+Clock:  %d
+
+System information:
+    OS:             %s
+    Architecture:   %s
+    Resolution:     %d x %d
+    Wine prefix:    %s
+
+Script information:
+    Version:        %s
+    Memory:         %d
+    Package.cpath:  %s
+    Package.path:   %s
+
+User information:
+    OOC nickname:   %s
+    IC nickname:    %s
+    ID:             %d
+    Alogin status:  %s
+    Ping:           %d
+    Admin LVL:      %d
+
+Spectator information:
+    Status:         %s
+    ID:             %d
+    Nickname:       %s
+    TextDraw ID:    %s
+
+GReport information:
+    Window state: %s
+    Dialog:
+        ID:     %d
+        State:  %s
+    Player:
+        Active:     %s
+        Nickname:   %s
+        ID:         %d
+        Context:    %s
+
+ImGui information:
+    Cursor Status:  %s
+    Moving windows: %s
+    Registered windows:
+        %s
+
+Logs:
+    MoonLoader:
+%s
+    SAMPFUNCS:
+%s
+    CLEO:
+%s
+
+Configuration: %s
+    `, os.date(), os.clock(),
+
+        //! System information
+        jit.os, jit.arch, select(1, getScreenResolution()), select(2, getScreenResolution()), os.getenv("WINEPREFIX"),
+
+        //! Script information
+        $GADMIN_VERSION, collectgarbage("count"), package.cpath, package.path,
+
+        //! User information
+        user::getOOCNickname(), user::getNickname(), user::getId(), user::getAloginStatus(),
+        user::getPing(), user::getAdminLvl(),
+
+        //! Spectator information
+        spectator.status, spectator.id, spectator.nickname, spectator.textDrawId,
+
+        //! GReport information
+        greport.window.state, greport.dialog.id, greport.dialog.state,
+        greport.player.active, greport.player.nickname, greport.player.id,
+        greport.player.context,
+
+        //! ImGui information
+        imguiAssets::getCursorStatus(), movableWindows::isChangingWindowsPositions(), windowsList,
+
+        //! Logs
+        common::readFileContent(getWorkingDirectory() .. "\\moonloader.log"),
+        common::readFileContent(getGameDirectory() .. "\\SAMPFUNCS\\SAMPFUNCS.log"),
+        common::readFileContent(getGameDirectory() .. "\\cleo.log"),
+
+        //! Configuration
+        config
+    )
 }
 
 /**

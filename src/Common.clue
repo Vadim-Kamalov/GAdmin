@@ -29,10 +29,14 @@ local common = {}
  * @return string       File contents.
  */
 method common::readFileContent(source) {
-    local handle    = io.open(source, "r")
-    local content   = handle::read("*all")
-    handle::close()
-    return content
+    if doesFileExist(source) {
+        local handle    = io.open(source, "r")
+        local content   = handle::read("*all")
+        handle::close()
+        return content
+    } else {
+        return source .. " doesn't exist!"
+    }
 }
 
 /** 

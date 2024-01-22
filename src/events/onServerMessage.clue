@@ -192,7 +192,7 @@ sampev.onServerMessage = fn(color, text) {
     }
 
     if config.root.additions.hideIpAddresses.use {
-        text = string.gsub($, "%[%d+%.%d+%.%d+%.%d+%]", "[XXX.XXX.XXX.XXX]")
+        text = string.gsub($, "%d+%.%d+%.%d+%.%d+", "XXX.XXX.XXX.XXX")
     }
 
     if string.find(text, "^%[A%] .*%[%d+%] авторизовался как администратор %d+ уровня%.$") {

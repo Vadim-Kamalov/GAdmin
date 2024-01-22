@@ -692,10 +692,16 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                 imgui.SameLine()                
 
                                 if animations::button("Собрать информацию о скрипте", imgui.ImVec2(widthAuto / 3, 30), 10) {
-                                    setClipboardText(assets::collectScriptInformation())
+                                    local filePath = string.format(
+                                        "%s\\GAdmin\\logs\\CollectInformation (%s).log",
+                                        getWorkingDirectory(),
+                                        os.date()
+                                    )
+
+                                    common::writeInFile(filePath, assets::collectScriptInformation())
                                     notify::send({
-                                        title   = "Информация собрана",
-                                        text    = "Информация скопирована в буфер обмена.",
+                                        title   = "Информация собрана в файл по пути ...",
+                                        text    = filePath,
                                         icon    = icons.ICON_CHECKMARK
                                     })
                                 }
@@ -1094,7 +1100,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                         return id
                     })()
 
-                    window.customization.editors /* ?? */= (fn {
+                    window.customization.editors = (fn {
                         config.root.styleChangeableWindows[window.customization.selectedId] ??= {}
                         local editors = {}
 

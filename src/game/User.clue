@@ -22,8 +22,6 @@
 
 @import "Config"        => config
 @import "Assets"        => assets
-@import "Notifications" => notify
-@import "Icons"         => icons
 @import "game.Admins"   => admins
 
 static __user__ = {
@@ -235,26 +233,6 @@ method __user__::getAnswersCount() {
             return total
         })()
     }
-}
-
-/**
- * Reconnect to the server.
- *
- * @param delay number (in milliseconds, default = 5000)
- * @return void
- */
-method __user__::reconnect(delay = 5000) {
-    notify::send({
-        title   = "Переподключение через " .. math.floor(delay / 1000) .. " секунд",
-        text    = "Переподключение на сервер произойдет через " .. math.floor(delay / 1000) .. " секунд!",
-        icon    = icons.ICON_BELL
-    })
-
-    sampDisconnectWithReason(quit)
-    lua_thread.create(fn {
-        wait(delay)
-        sampSetGameState(1)
-    })
 }
 
 return __user__

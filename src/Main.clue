@@ -242,6 +242,9 @@ global fn main() {
 
     encoding.default = "CP1251"
 
+    print(package.cpath)
+    print(package.path)
+
     playerNotes::initializeNotes()
     binder::initializeBinds()
     notify::send({
@@ -264,7 +267,7 @@ global fn main() {
         thisScript()::unload()
     }
 
-    common::makeDirectoryTree({ "GAdmin", "GAdmin/temp", "GAdmin/config" })
+    common::makeDirectoryTree({ "GAdmin", "GAdmin/temp", "GAdmin/config", "GAdmin/logs" })
 
 @ifndef __GADMIN_DEBUG__
 {
