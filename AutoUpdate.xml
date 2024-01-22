@@ -29,6 +29,6 @@
         - Исправлено выравнивание текста в окне с информацией об игроке, за которым вы следите.
     </body>
     <links>
-        <link destination="GAdmin-Release.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/download/v1.2/GAdmin-Release.lua</link>
+        <link destination="GAdmin-Release.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/download/v1.1.3/GAdmin-Release.lua</link>
     </links>
 </AutoUpdate>
