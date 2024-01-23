@@ -37,6 +37,7 @@
         - Исправлено неккоректное отображение админского уровня. (v1.1.5)
         - Исправлена вставка айди машины в окне с быстрыми действиями в режиме
         наблюдения: если айди машины один - то ставится он, если нет - то ничего. (v1.1.6)
+        - Убрана команда /makeleader из админских форм. (v1.1.6)
     </body>
     <links>
         <link destination="GAdmin-Release.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/download/v1.1.6/GAdmin-Release.lua</link>

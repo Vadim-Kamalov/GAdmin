@@ -220,7 +220,6 @@ static __config__ = {
                     { "setint",     4 },
                     { "dpame",      4 },
                     { "leave",      4 },
-                    { "makeleader", 4 },
                     { "unwarn",     4 },
                     { "aheal",      4 },
                     { "warn",       3 },
