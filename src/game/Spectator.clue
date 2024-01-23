@@ -18,7 +18,8 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
-@import "game.sa.Ped" => ped
+@import "game.sa.Ped"   => ped
+@import "game.User"     => user
 
 global enum /* SPECTATOR_MENU */ {
     SPECTATOR_MENU_NEXT = 0,
@@ -88,6 +89,16 @@ static __spectator__ = {
     textDrawId  = nil
     information = {}
 }
+
+/**
+ * Callback to handle all errors due using methods in this module
+ * when user is recently called /alogout.
+ */
+user::addOnAloginCallback("game.Spectator", fn(state) {
+    if !state {
+        __spectator__::exit()
+    }
+})
 
 /**
  * @return table User information in spectator.

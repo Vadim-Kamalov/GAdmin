@@ -242,15 +242,21 @@ global fn main() {
 
     encoding.default = "CP1251"
 
-    print(package.cpath)
-    print(package.path)
-
     playerNotes::initializeNotes()
     binder::initializeBinds()
     notify::send({
         title   = "GAdmin успешно запущен!",
         text    = "GAdmin версии " .. $GADMIN_VERSION .. " успешно инициализирован.",
         icon    = icons.ICON_STAR
+    })
+
+    /**
+     * Callback to handle all alogouts (reconnect, etc.) when AirBreak is active.
+     */
+    user::addOnAloginCallback("Main->AirBreak", fn(state) {
+        if !state && airbreak.status {
+            airbreak.status = false
+        }
     })
 
     for id = 1, config.root.additions.tracers.maxLines {

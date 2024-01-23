@@ -28,6 +28,8 @@ static __user__ = {
     alogin          = false,
     weekNumber      = tostring(tonumber(os.date("%W")) + tonumber(os.date("%y"))),
     answersCount    = 0,
+    
+    aloginCallbacks = {},
 
     afkTime         = 0,
     afkTimeClock    = os.clock(),
@@ -55,12 +57,28 @@ method __user__::setAloginStatus(status) {
     if config.root.cheats.wallhack.use && !config.root.cheats.wallhack.imguiStyle {
         assets::changeWallhackState(self.alogin)
     }
+
+    for _, callback of self.aloginCallbacks {
+        callback(self.alogin)
+    }
     
     if !status {
         for index, _ in admins {
             admins[index] = nil
         }
     }
+}
+
+/**
+ * Add callback that will called when user typed /alogin or /alogout.
+ * Callback is a function with one parameter: alogin state.
+ *
+ * @param id string
+ * @param callback function
+ * @return void
+ */
+method __user__::addOnAloginCallback(id, callback) {
+    self.aloginCallbacks[id] = callback
 }
 
 /**
