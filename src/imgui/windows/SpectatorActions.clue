@@ -117,8 +117,14 @@ windows::new("imgui.windows.SpectatorActions", {
         }},
 
         { title = "GETBUYCAR", callback = fn {
+            local carId = ""
+
+            if local singleCarId = string.match(self.specInfo.vehicle, "^(%d+)$") {
+                carId = singleCarId
+            }
+
             sampSetChatInputEnabled(true)
-            sampSetChatInputText(string.format("/getbuycar %d ", spectator.id))
+            sampSetChatInputText(string.format("/getbuycar %s ", carId))
         }},
         
         { title = "PK", callback = fn {
