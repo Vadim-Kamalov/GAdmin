@@ -148,7 +148,7 @@ sampev.onShowDialog = fn(id, style, title, firstButton, secondButton, text) {
                 greport.dialog.awaiting.options = { false, nil }
             }
         } elseif string.find(text, "Заблокировать на %d+ минут") {
-            if greport.awaiting.special[1] {
+            if greport.dialog.awaiting.special[1] {
                 sampSendDialogResponse(id, 1, greport.dialog.awaiting.special[2], "")
                 greport.dialog.state            = false
                 greport.dialog.awaiting.special = { false, nil }

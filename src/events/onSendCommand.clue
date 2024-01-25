@@ -22,6 +22,8 @@
 @import "Config"            => config
 
 sampev.onSendCommand = fn(command) {
+    local command = u8($)
+
     commandRequester::setupUserCommandWatcher(command)
 
     if config.root.additions.shortCommands.use {

@@ -293,12 +293,12 @@ method __commandRequester__::new(from, command) {
                             condition   = (fn { return !self.states.frame }),
                             buttons     = {
                                 first = {
-                                    text = "Закрыть",
+                                    name = "Закрыть",
                                     call = (fn { self::remove() })
                                 },
 
                                 second = {
-                                    text = "Принять",
+                                    name = "Принять",
                                     call = (fn { self::approve() })
                                 }
                             }

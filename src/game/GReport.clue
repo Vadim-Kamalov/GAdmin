@@ -293,7 +293,7 @@ method __greport__.player::blockReport(time, reason) {
     if local listItem = allowed[time] {
         if local this = __greport__ {
             this.dialog::callOptionAt(GREPORT_OPTION_BLOCK)
-            this.dialog.special = { true, listItem }
+            this.dialog.awaiting.special = { true, listItem }
             this.dialog::setInputValue(reason)
             this.dialog.state = false
             this.window::close(false)
