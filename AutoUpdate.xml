@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<AutoUpdate version="1.1.7">
-    <title>GAdmin v1.1.7</title>
+<AutoUpdate version="1.1.8">
+    <title>GAdmin v1.1.7 - v.1.1.8</title>
     <buttons first="Установить" second="Пропустить" third="Позже"/>
     <body>
         <header>Исправления</header>
@@ -10,8 +10,9 @@
         оповещения GAdmin.
         - Исправлен краш скрипта при попытке заблокировать репорт игроку в "/greport"
         - Исправлено пропадание русских символов в админских формах.
+        - Исправлен сбор информации о скрипте: изменен формат названия файла. (v1.1.8)
     </body>
     <links>
-        <link destination="GAdmin-Release.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/download/v1.1.7/GAdmin-Release.lua</link>
+        <link destination="GAdmin-Release.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/download/v1.1.8/GAdmin-Release.lua</link>
     </links>
 </AutoUpdate>
