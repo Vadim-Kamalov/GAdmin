@@ -695,7 +695,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                     local filePath = string.format(
                                         "%s\\GAdmin\\logs\\CollectInformation (%s).log",
                                         getWorkingDirectory(),
-                                        os.date()
+                                        os.date("%Y%m%d-%H-%M-%S")
                                     )
 
                                     common::writeInFile(filePath, assets::collectScriptInformation())

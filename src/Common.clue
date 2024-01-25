@@ -47,11 +47,11 @@ method common::readFileContent(source) {
  * @return void
  */
 method common::writeInFile(source, str) {
-    try {
-        local handle = io.open(source, "w")
+    local handle, err = io.open(source, "w")
+    if !err {
         handle::write(str)
         handle::close()
-    } catch err {
+    } else {
         $debugWarning!("common::writeInFile", "catch error when trying to write some data in " .. source .. " file")
         $debugWarning!("common::writeInFile", "error: " .. err)
         self::sendScriptMessage("Произошла ошибка при записи в файл. Для подробной информации смотрите консоль SAMPFUNCS.")
