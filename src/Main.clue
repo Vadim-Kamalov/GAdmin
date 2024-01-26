@@ -41,9 +41,10 @@
 @import "game.User"         => user
 @import "game.Spectator"    => spectator
 
-@define COMMAND_DELAY   800
-@define GADMIN_VERSION  "1.1.8"
-@define AUTOUPDATE_URL  "https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/main/AutoUpdate.xml"
+@define COMMAND_DELAY       800
+@define GADMIN_VERSION      "1.1.8"
+@define AUTOUPDATE_URL      "https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/main/AutoUpdate.xml"
+@define CONTRIBUTORS_URL    "https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/main/CONTRIBUTORS"
 
 @define SAMP_BASE                       getModuleHandle("samp.dll")
 @define RECALL_UP_ADDR                  $SAMP_BASE + 0x65990
@@ -125,10 +126,11 @@ static enum /* DIALOG_STYLE */ {
 require("moonloader")
 math.randomseed(os.time())
 
-static u8                   = encoding.UTF8
-static spectatorCameraFov   = -1
-static scriptLoadedWithGame = false //! `true` only when called `sampev.onInitGame`.
-static bulletData           = { lastId = 0 }
+static u8                       = encoding.UTF8
+static spectatorCameraFov       = -1
+static scriptLoadedWithGame     = false //! `true` only when called `sampev.onInitGame`.
+static bulletData               = { lastId = 0 }
+static contributorsFileSource   = nil
 
 local airbreak              = { status = false, coords = {} }
 local fishEyeWeaponLock     = false
@@ -290,6 +292,27 @@ global fn main() {
     $debugSuccessful!("system", "CInput::RecallDown hook installed. Base address: 0x" .. bit.tohex($RECALL_DOWN_ADDR))
     $debugSuccessful!("system", "GAdmin " .. $GADMIN_VERSION .." compelety loaded!")
 }
+
+    /**
+     * Get file content of `CONTRIBUTORS` file and write it in `contributorsFileSource` variable.
+     * Used to change color of contributors.
+     */
+    downloadUrlToFile($CONTRIBUTORS_URL, getWorkingDirectory() .. "\\GAdmin\\temp\\CONTRIBUTORS.txt", fn(_, status, _, _) {
+        local downloadStatus    = require("moonloader").download_status
+        local filePath          = getWorkingDirectory() .. "\\GAdmin\\temp\\CONTRIBUTORS.txt"
+
+        if status == downloadStatus.STATUS_ENDDOWNLOADDATA {
+            lua_thread.create(fn {
+                while !doesFileExist(filePath) {
+                    wait(0)
+                }
+
+                contributorsFileSource = common::readFileContent(filePath)
+                
+                os.remove(filePath)
+            })
+        }
+    })
 
     loop {
         wait(0)

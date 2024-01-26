@@ -128,7 +128,7 @@ method __commandRequester__::setupChatWatcher(text, color) {
     } else {
         local command, type = self.current.command.name, self.current.command.type
         if type == COMMAND_REQUEST_TYPE_NO_COMMENTARY {
-            if local command = string.match(text, "^%[%A%] .*%[%d+]: Форма \"(.+)\" принята!$") {
+            if local command = string.match(text, "^%[%A%] .*%[%d+]: %d, форма \"/(.+)\" принята!$") {
                 if command == (self.current.command.name .. " " .. self.current.command.args) {
                     self::remove()
                 }
@@ -160,12 +160,12 @@ method __commandRequester__::approve() {
     local type          = self.current.command.type
 
     self.states.ignoreNextCommands = true
-    
+
     if type == COMMAND_REQUEST_TYPE_NO_COMMENTARY {
         lua_thread.create(fn {
-            sampSendChat(string.format("/%s %s", command, args))
+            sampSendChat(string.format("/a %d, форма \"/%s %s\" принята!", self.current.id.from, command, args))
             wait($COMMAND_DELAY)
-            sampSendChat(string.format("/a Форма \"%s %s\" принята!", command, args))
+            sampSendChat(string.format("/%s %s", command, args))
             
             self.states.ignoreNextCommands = false
         })
@@ -244,7 +244,7 @@ method __commandRequester__::new(from, command) {
 
         if local name, idOrMessage, args = string.match(command, "^/(%S+)%s*(%S*)(.*)") {
             if local id = tonumber(idOrMessage) {
-                if sampIsPlayerConnected(id) {
+                if sampIsPlayerConnected(id) || id == user::getId() {
                     self.current = {
                         clock = os.clock(),
                         

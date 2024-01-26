@@ -221,6 +221,23 @@ method __spectator__::setTo(playerId) {
 
             self.information.shotTotal  = "0"
             self.information.shotHit    = "0"
+
+            self.keys = {
+                [PLATFORM_PC] = {
+                    [SYNC_KEYS_PLAYER]      = {}
+                    [SYNC_KEYS_VEHICLE]     = {}
+                },
+        
+                [PLATFORM_ANDROID] = {
+                    [SYNC_KEYS_PLAYER]      = {}
+                    [SYNC_KEYS_VEHICLE]     = {}
+                    [SYNC_KEYS_JOY_STICK]   = {
+                        new     = { x = 0, y = 0 }
+                        old     = { x = 0, y = 0 }
+                        clock   = os.clock()
+                    }
+                }
+            }
             
             if !self.afk.awaiting.message {
                 lua_thread.create(fn {

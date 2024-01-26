@@ -10,7 +10,13 @@
         C (contact):        как можно связаться с вами, т.е
                             ссылка на ваш профиль вк/дискорд/и.т.д.
         D (description):    описание: что сделал конкретного для проекта
+        CLR (color):        цвет вашего ника в /a чате.
     Поля N (name/nickname) и D (description) обязательны. Относитесь серьёзно к заполнению.
+
+    Отныне с v1.2 контрибьюторы имеют право на цветной ник в /a чате на сервере.
+    Это сделано для поощрения и мотивации других для вклада в разработку.
+    Каждый кто записан в этом файле может заполнить поле CLR, в формате `CLR: RRGGBB=nickname`, пример:
+        CLR: FF0000=defaultzone
 
     Спасибо!
 
@@ -25,6 +31,7 @@ M: dzone@danwin1210.de
 G: github.com/defaultzone
 C: vk.com/altasd
 D: значительный вклад в разработку
+CLR: 27AA33=defaultzone
 
 N: Petr Frank (HeroIAm)
 G: github.com/HeroIAm
@@ -33,6 +40,13 @@ D: ID в IC чате
 
 N: Oleg Garsin (2R2R)
 D: тестировщик
+CLR: FFFFFF=2R2R
 
 N: BigFloppa
 D: тестировщик
+CLR: B8860B=BigFloppa
+
+N: squeryy
+C: tg - squeryy, vk - cerus_id
+D: поиск багов, предложение обновлений
+CLR: FF8C00=squeryy

@@ -29,13 +29,16 @@ local common = {}
  * @return string       File contents.
  */
 method common::readFileContent(source) {
-    if doesFileExist(source) {
-        local handle    = io.open(source, "r")
-        local content   = handle::read("*all")
+    local handle, err = io.open(source, "r")
+    if !err {
+        local content = handle::read("*all")
         handle::close()
         return content
     } else {
-        return source .. " doesn't exist!"
+        $debugWarning!("common::readFileContent", "catch error when trying to read some data from " .. source .. " file")
+        $debugWarning!("common::readFileContent", "error: " .. err)
+        self::sendScriptMessage("Произошла ошибка при чтении файла. Для подробной информации смотрите консоль SAMPFUNCS.")
+        return ""
     }
 }
 
@@ -70,6 +73,20 @@ method common::makeDirectoryTree(tree) {
             createDirectory(getWorkingDirectory() .. "\\" .. directory)
         }
     }
+}
+
+/**
+ * Convert `str` to lower case. Works on russian and english symbols.
+ *
+ * @param str string
+ * @return string
+ */
+method common::toLowerCase(str) {
+    str = string.gsub(u8::decode($), "([A-Z\192-\223Ё])", fn(c) {
+        return string.char(string.byte(c) + ((c == 'ё') ? 16 : 32))
+    })
+    
+    return u8(str)
 }
 
 /**

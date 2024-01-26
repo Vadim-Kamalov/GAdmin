@@ -220,6 +220,7 @@ static __config__ = {
                     { "setint",     4 },
                     { "dpame",      4 },
                     { "leave",      4 },
+                    { "makemic",    4 },
                     { "unwarn",     4 },
                     { "aheal",      4 },
                     { "warn",       3 },
@@ -229,6 +230,8 @@ static __config__ = {
                     { "bmute",      3 },
                     { "iban",       3 },
                     { "jail",       3 },
+                    { "vspawn",     2 },
+                    { "vfuel",      2 }
                 }
             },
 

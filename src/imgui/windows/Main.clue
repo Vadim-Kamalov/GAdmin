@@ -25,6 +25,7 @@
 @import "imgui.Style"           => style
 @import "imgui.PlayerNotes"     => playerNotes
 @import "imgui.drawList.Shadow" => shadow
+@import "imgui.InputTextFilter" => InputTextFilter
 
 @import "game.binder.Variables" => binderVariables
 @import "game.Binder"           => binder
@@ -94,7 +95,7 @@ local window = {
     },
 
     checker = {
-        filter          = imgui.ImGuiTextFilter(),
+        filter          = InputTextFilter::new(),
         playerNote      = imgui.new.char[65535](),
         selectedPlayer  = -1 
     },
@@ -139,7 +140,7 @@ local window = {
     logs = {
         selected    = 1,
         voidQuote   = assets.voidQuotes[math.random(#assets.voidQuotes)],
-        filter      = imgui.ImGuiTextFilter()
+        filter      = InputTextFilter::new()
     },
 
     serverTables = {
@@ -304,7 +305,7 @@ local window = {
             }},
             
             { "carInfo", "Информация о машине", {
-                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.carInfo.use) },
+                { "use", "Работает только на /alogin", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.carInfo.use) },
                 { "onlyInSpectator", "Отображать только в /sp", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.carInfo.onlyInSpectator) },
                 { "none", "Размер шрифта", WINDOW_WIDGET_CUSTOM, RENDER_CHANGE_CONFIGURATION },
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
@@ -946,7 +947,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                         imguiAssets::textWithFont("Чекер игроков", bold14)
                         imgui.PushFont(regular9)
                             imguiAssets::textWithFont("Введите никнейм игрока", bold10)
-                            window.checker.filter::Draw("##imgui.windows.Main.CheckerFilter", widthAuto / 2)
+                            window.checker.filter::draw("##imgui.windows.Main.CheckerFilter", "Никнейм", widthAuto / 2)
                             imgui.PushStyleVarVec2(imgui.StyleVar.WindowPadding, imgui.ImVec2(6, 6))
                                 imgui.BeginChild("imgui.windows.Main.CheckerFilter.Child", imgui.ImVec2(widthAuto / 2, 170), true, self.flags)
                                     for playerId = 0, $SERVER_MAX_PLAYERS {
@@ -961,10 +962,9 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                                 }
                                             }
 
-                                            if window.checker.filter::PassFilter(string.format("[%d] %s", playerId, nickname)) && !playerInChecker {
+                                            if window.checker.filter::passFilter(string.format("[%d] %s", playerId, nickname)) && !playerInChecker {
                                                 if imgui.Selectable(string.format("[%d] %s", playerId, nickname)) {
-                                                    imgui.StrCopy(window.checker.filter.InputBuf, nickname)
-                                                    window.checker.filter::Build()
+                                                    window.checker.filter::setBufferText(nickname)
                                                 }
                                             }
                                         }
@@ -986,7 +986,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                         imgui.PushFont(bold10)
                             if animations::button("Добавить", imgui.ImVec2(widthAuto / 2, 30)) {
                                 local commentary    = (ffi.string(window.checker.playerNote) == "") ? nil : ffi.string(window.checker.playerNote)
-                                local nickname      = ffi.string(window.checker.filter.InputBuf)
+                                local nickname      = ffi.string(window.checker.filter.buffer)
                         
                                 if nickname != "" {
                                     table.insert(config.root.windows.playerChecker.players, {
@@ -995,8 +995,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                     })
 
                                     imgui.StrCopy(window.checker.playerNote, "")
-                                    imgui.StrCopy(window.checker.filter.InputBuf, "")
-                                    window.checker.filter::Build()
+                                    window.checker.filter::clear()
                                 }
                             }
                         imgui.PopFont()
@@ -1695,14 +1694,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                         imgui.BeginGroup()
                             imgui.SetNextItemWidth(imgui.GetWindowWidth() - 12)
                             imgui.PushFont(regular12)
-                                if imgui.InputTextWithHint(
-                                    "##imgui.windows.logs.LogFilter",
-                                    "Поиск",
-                                    window.logs.filter.InputBuf,
-                                    ffi.sizeof(window.logs.filter.InputBuf)
-                                ) {
-                                    window.logs.filter::Build()
-                                }
+                                window.logs.filter::draw("##imgui.windows.logs.LogFilter", nil, imgui.GetWindowWidth() - 12)
                             imgui.PopFont()
                             
                             imgui.BeginChild(
@@ -1730,7 +1722,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                             message.text
                                         ) 
 
-                                        if window.logs.filter::PassFilter(fullText) {
+                                        if window.logs.filter::passFilter(fullText) {
                                             imgui.BeginGroup()
                                                 imguiAssets::textWithFont(string.format(
                                                     "[%02d:%02d:%02d]",

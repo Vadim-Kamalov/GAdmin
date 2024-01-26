@@ -143,7 +143,7 @@ imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
             for _, car in getAllVehicles() {
                 local x, y, z = getCarCoordinates(car)
                 local myx, myy, myz = getCharCoordinates(PLAYER_PED)
-                if doesVehicleExist(car) && isCarOnScreen(car) && getDistanceBetweenCoords3d(x, y, z, myx, myy, myz) < 50 {
+                if doesVehicleExist(car) && isCarOnScreen(car) && getDistanceBetweenCoords3d(x, y, z, myx, myy, myz) < 50 && user::getAloginStatus() {
                     local engine    = (isCarEngineOn(car)) ? "{8DFF85}{ON}" : "{FF8585}{OFF}"
                     local door      = (getCarDoorLockStatus(car) == 0) ? "{8DFF85}{OPEN}" : "{FF8585}{LOCK}"
                     local hp        = getCarHealth(car)

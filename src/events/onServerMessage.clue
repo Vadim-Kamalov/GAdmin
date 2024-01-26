@@ -158,8 +158,8 @@ sampev.onServerMessage = fn(color, text) {
                     replacedColor   = true
                 }
             } else {
-                if local admin = admins::getAdminByOOCNickname(string.match(possibleMention, pattern)) {
-                    if string.lower(admin.nickname.ooc) == string.lower(user::getOOCNickname()) {
+                if local nickname = string.match(possibleMention, pattern) {
+                    if string.lower(nickname) == string.lower(user::getOOCNickname()) {
                         color           = rgb2color(config.root.additions.mention.color)
                         replacedColor   = true
                     }
@@ -317,6 +317,18 @@ sampev.onServerMessage = fn(color, text) {
                             return false
                         }
                     }
+                }
+            }
+        }
+    }
+
+    if local it = contributorsFileSource {
+        if string.find(text, "^%[A%] .*%[%d+%]") && color == 866792362 {
+            for line with string.gmatch(it, "[^\r\n]+") {
+                if local color, nickname = string.match(line, "^CLR: (%x+)=(.+)") {
+                    local find      = string.format("(%s)", nickname)
+                    local replace   = "{" .. color .. "}%1{33AA33}" 
+                    text            = string.gsub($, find, replace)
                 }
             }
         }
