@@ -54,7 +54,7 @@ imgui.OnFrame(fn { return commandRequester.states.frame }, fn(self) {
         self.style::apply()
         style::beginWindowStyleChangeable("imgui.windows.CommandRequester")
 
-        imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2, config.root.additions.commandRequester.windowPositionY), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
+        imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2, config.root.additions.commandRequester.windowPositionY - 36), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
         imgui.SetNextWindowSize(imgui.ImVec2(sizeX, 36))
 
         imgui.Begin("imgui.windows.CommandRequester", nil, self.flags)
