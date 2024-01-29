@@ -92,7 +92,7 @@ static __config__ = {
                 displayId               = true,
                 playerColorBasedOnClist = true,
                 strokeSize              = 1,
-                textAlignMode           = 3,
+                textAlignMode           = 1,
                 maxItems                = 5
             },
 

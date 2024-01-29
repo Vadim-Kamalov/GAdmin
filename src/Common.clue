@@ -37,7 +37,6 @@ method common::readFileContent(source) {
     } else {
         $debugWarning!("common::readFileContent", "catch error when trying to read some data from " .. source .. " file")
         $debugWarning!("common::readFileContent", "error: " .. err)
-        self::sendScriptMessage("Произошла ошибка при чтении файла. Для подробной информации смотрите консоль SAMPFUNCS.")
         return ""
     }
 }
