@@ -26,6 +26,12 @@
 
 static checkedAdminList = false
 
+user::addOnAloginCallback("resetCheckedAdminListVar", fn(state) {
+    if !state {
+        checkedAdminList = false
+    }
+})
+
 sampev.onShowDialog = fn(id, style, title, firstButton, secondButton, text) {
     title, firstButton, secondButton, text = u8($1), u8($2), u8($3), u8($4)
 

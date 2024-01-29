@@ -87,6 +87,7 @@
 @import "imgui.Assets"          => imguiAssets
 @import "imgui.Windows"         => window
 @import "imgui.StyleChanger"    => StyleChanger
+@import "imgui.Animations"      => animations
 
 @import "game.Spectator"    => spectator
 @import "game.sa.Vehicle"   => vehicle
@@ -99,7 +100,8 @@ static enum /* SPECTATOR_INFORMATION_TYPE */ {
     SPECTATOR_INFORMATION_TYPE_DOUBLE
 }
 
-local sizeX, sizeY = getScreenResolution()
+local sizeX, sizeY  = getScreenResolution()
+local hintClock     = nil
 
 window::new("imgui.windows.SpectatorInformation", {
     description = "Информация о игроке в спектаторе"
@@ -116,6 +118,8 @@ window::new("imgui.windows.SpectatorInformation", {
     }
 }, fn(self) {
     self.information = spectator::getInformation()
+
+    hintClock ??= os.clock()
     
     local result, handle = spectator::getHandle()
     if result {
@@ -181,38 +185,50 @@ window::new("imgui.windows.SpectatorInformation", {
                             if name != "Машина(-ы)" {
                                 self.centerWrappedColumnText(tostring(item.value), regular9)
                             } else {
+                                local _, count  = string.gsub(item.value, "%d+", "")
+                                local index     = 1
+                                
                                 imgui.SetCursorPosX((imgui.GetColumnOffset() + (imgui.GetColumnWidth() / 2)) - imgui.CalcTextSize(item.value).x / 2)
-                                imgui.BeginGroup()
-                                    local _, count  = string.gsub(item.value, "%d+", "")
-                                    local index     = 1
+                                
+                                if count == 0 { imgui.Text("Нет") } else {
+                                    imgui.BeginGroup()
+                                        for carId with string.gmatch(item.value, "%d+") {
+                                            imgui.Text(carId)
 
-                                    for carId with string.gmatch(item.value, "%d+") {
-                                        imgui.Text(carId)
+                                            if imgui.IsItemHovered() {
+                                                imgui.GetWindowDrawList()::AddLine(
+                                                    imgui.ImVec2(imgui.GetItemRectMin().x, imgui.GetItemRectMax().y),
+                                                    imgui.GetItemRectMax(),
+                                                    -1,
+                                                    2
+                                                )
+                                            }
 
-                                        if imgui.IsItemHovered() {
-                                            imgui.GetWindowDrawList()::AddLine(
-                                                imgui.ImVec2(imgui.GetItemRectMin().x, imgui.GetItemRectMax().y),
-                                                imgui.GetItemRectMax(),
-                                                -1,
-                                                2
-                                            )
-                                        }
-
-                                        if imgui.IsItemClicked() {
-                                            sampSetChatInputEnabled(true)
-                                            sampSetChatInputText(string.format("/getbuycar %d ", carId))
-                                        }
+                                            if imgui.IsItemClicked() {
+                                                sampSendChat(string.format("/getbuycar %d", carId))
+                                            }
                                         
-                                        if count != index {
+                                            if count != index {
+                                                imgui.SameLine(nil, 0)
+                                                imgui.Text(",")
+                                            }
+
                                             imgui.SameLine(nil, 0)
-                                            imgui.Text(",")
+
+                                            index += 1
                                         }
+                                    imgui.EndGroup()
 
-                                        imgui.SameLine(nil, 0)
-
-                                        index += 1
+                                    if !config.root.windows.spectatorInformation.showedHintFirstTime {
+                                        if os.clock() - hintClock >= 7 || imgui.IsItemHovered() {
+                                            config.root.windows.spectatorInformation.showedHintFirstTime = true
+                                        }
                                     }
-                                imgui.EndGroup()
+
+                                    animations::hint("Нажмите на любой из ID, для его телепортации", fn {
+                                        return !config.root.windows.spectatorInformation.showedHintFirstTime 
+                                    })
+                                }
                             }
                         imgui.PopStyleColor()
                     imgui.PopFont()

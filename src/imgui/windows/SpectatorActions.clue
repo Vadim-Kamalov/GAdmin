@@ -62,31 +62,38 @@ windows::new("imgui.windows.SpectatorActions", {
         { title = "ANS", callback = fn {
             sampSetChatInputEnabled(true)
             sampSetChatInputText("/ans " .. tostring(spectator.id) .. " ")
+            imguiAssets::setCursorStatus(true)
         }},
 
         { title = "AHEAL", callback = fn {
             sampSendChat("/aheal " .. tostring(spectator.id))
+            imguiAssets::setCursorStatus(true)
         }},
 
         { title = "STATS", callback = fn {
             sampSendMenuSelectRow(SPECTATOR_MENU_STATS)
+            imguiAssets::setCursorStatus(true)
         }},
 
         { title = "AFRISK", callback = fn {
             sampSendMenuSelectRow(SPECTATOR_MENU_FRISK)
+            imguiAssets::setCursorStatus(true)
         }},
 
         { title = "PAME", callback = fn {
             sampSendChat("/pame " .. tostring(spectator.id))
+            imguiAssets::setCursorStatus(true)
         }},
 
         { title = "WARN", callback = fn {
             sampSetChatInputEnabled(true)
             sampSetChatInputText(string.format("/warn %d ", spectator.id))
+            imguiAssets::setCursorStatus(true)
         }},
 
         { title = "SLAP", callback = fn {
             sampSendChat("/slap " .. tostring(spectator.id))
+            imguiAssets::setCursorStatus(true)
         }},
 
         { title = "SWITCH", callback = fn {
@@ -96,24 +103,29 @@ windows::new("imgui.windows.SpectatorActions", {
         { title = "BAN", callback = fn {
             sampSetChatInputEnabled(true)
             sampSetChatInputText(string.format("/ban %d ", spectator.id))
+            imguiAssets::setCursorStatus(true)
         }},
 
         { title = "KICK", callback = fn {
             sampSetChatInputEnabled(true)
             sampSetChatInputText(string.format("/kick %d ", spectator.id))
+            imguiAssets::setCursorStatus(true)
         }},
 
         { title = "BMUTE", callback = fn {
             sampSetChatInputEnabled(true)
             sampSetChatInputText(string.format("/bmute %d ", spectator.id))
+            imguiAssets::setCursorStatus(true)
         }},
 
         { title = "EXIT", callback = fn {
             sampSendMenuSelectRow(SPECTATOR_MENU_EXIT)
+            imguiAssets::setCursorStatus(true)
         }},
 
         { title = "ASPAWN", callback = fn {
             sampSendChat("/aspawn " .. tostring(spectator.id))
+            imguiAssets::setCursorStatus(true)
         }},
 
         { title = "GETBUYCAR", callback = fn {
@@ -125,11 +137,13 @@ windows::new("imgui.windows.SpectatorActions", {
 
             sampSetChatInputEnabled(true)
             sampSetChatInputText(string.format("/getbuycar %s ", carId))
+            imguiAssets::setCursorStatus(true)
         }},
         
         { title = "PK", callback = fn {
             sampSetChatInputEnabled(true)
             sampSetChatInputText(string.format("/pk %d ", spectator.id))
+            imguiAssets::setCursorStatus(true)
         }}
     }
 

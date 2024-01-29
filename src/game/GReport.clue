@@ -94,7 +94,7 @@ static __greport__ = {
     }
 }
 
-__greport__.hotKey ??= HotKey::new("imgui.window.GReport", { 0xA2, 0x42 }, "Открыть/закрыть /greport")::registerCallback(fn {
+__greport__.hotKey ??= HotKey::new("imgui.window.GReport", { 0xA2, 0x31 }, "Открыть/закрыть /greport")::registerCallback(fn {
     if local this = __greport__ {
         if #this.player.context > 0 || (this.player.receivedAt && (os.clock() - this.player.receivedAt <= 15)) {
             this.window::switch()

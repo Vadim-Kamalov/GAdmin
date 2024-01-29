@@ -164,13 +164,13 @@ local window = {
         { "windows", "Окна", {
             { "autoCompletion", "Авто-заполнение", {
                 { "use", "TAB - вставить\nCTRL + Arrow Up/Down - переключение между элементами", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.autoCompletion.use) },
-                { "strokeSize", "Размер обводки", WINDOW_WIDGET_SLIDER_INT, 1, 5, imgui.new.int(config.root.windows.autoCompletion.strokeSize) },
+                { "strokeSize", "Размер обводки", WINDOW_WIDGET_SLIDER_INT, 0, 5, imgui.new.int(config.root.windows.autoCompletion.strokeSize) },
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
             
             { "userInformation", "Ваша статистика", {
                 { "use", "Работает только на /alogin", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.userInformation.use) },
                 { "showTime", "Отображать текущее время", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.userInformation.showTime) },
-                { "strokeSize", "Размер обводки", WINDOW_WIDGET_SLIDER_INT, 1, 5, imgui.new.int(config.root.windows.userInformation.strokeSize) },
+                { "strokeSize", "Размер обводки", WINDOW_WIDGET_SLIDER_INT, 0, 5, imgui.new.int(config.root.windows.userInformation.strokeSize) },
                 { "textAlignMode", "Выравнивание текста", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.windows.userInformation.textAlignMode), "Слева", "По центру", "Справа" },
                 { "none", "Отображение элементов", WINDOW_WIDGET_CUSTOM, $USER_INFORMATION_CUSTOM_WIDGET!() }
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
@@ -178,7 +178,7 @@ local window = {
             { "farChat", "Дальний чат", {
                 { "use", "Работает только на /alogin", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.farChat.use) },
                 { "displayTime", "Отображать время", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.farChat.use) },
-                { "strokeSize", "Размер обводки", WINDOW_WIDGET_SLIDER_INT, 1, 5, imgui.new.int(config.root.windows.farChat.strokeSize) },
+                { "strokeSize", "Размер обводки", WINDOW_WIDGET_SLIDER_INT, 0, 5, imgui.new.int(config.root.windows.farChat.strokeSize) },
                 { "delay", "Задержка между повторными сообщениями", WINDOW_WIDGET_SLIDER_INT, 2, 10, imgui.new.int(config.root.windows.farChat.delay) },
                 { "maxLines", "Максимальное кол-во строк", WINDOW_WIDGET_SLIDER_INT, 1, 30, imgui.new.int(config.root.windows.farChat.maxLines) },
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
@@ -197,6 +197,16 @@ local window = {
                 { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.spectatorKeys.use) }
             }},
 
+            { "killList", "Килл-лист", {
+                { "use", "Работает только на /alogin", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.killList.use) },
+                { "displayTime", "Отображать время", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.killList.displayTime) },
+                { "displayId", "Отображать ID игроков", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.killList.displayId) },
+                { "playerColorBasedOnClist", "Цвет игроков зависит от их клиста", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.killList.playerColorBasedOnClist) },
+                { "strokeSize", "Размер обводки", WINDOW_WIDGET_SLIDER_INT, 0, 5, imgui.new.int(config.root.windows.killList.strokeSize) },
+                { "textAlignMode", "Выравнивание текста", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.windows.killList.textAlignMode), "Слева", "По центру", "Справа" },
+                { "maxItems", "Макс. кол-во элементов", WINDOW_WIDGET_SLIDER_INT, 1, 100, imgui.new.int(config.root.windows.killList.maxItems) },
+            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
+
             { "notifications", "Оповещения", {
                 { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.notifications.use) },
                 { "maxItems", "Макс. кол-во оповещений", WINDOW_WIDGET_SLIDER_INT, 1, 5, imgui.new.int(config.root.windows.notifications.maxItems) },
@@ -208,7 +218,7 @@ local window = {
                 { "sortByLvl", "Сортировать по уровням", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.adminList.sortByLvl) },
                 { "textColorBasedOnClist", "Цвет зависит от клиста", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.adminList.textColorBasedOnClist) },
                 { "textAlignMode", "Выравнивание текста", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.windows.adminList.textAlignMode), "Слева", "По центру", "Справа" },
-                { "strokeSize", "Размер обводки", WINDOW_WIDGET_SLIDER_INT, 1, 5, imgui.new.int(config.root.windows.adminList.strokeSize) }
+                { "strokeSize", "Размер обводки", WINDOW_WIDGET_SLIDER_INT, 0, 5, imgui.new.int(config.root.windows.adminList.strokeSize) }
                 { "countForScrollbar", "Количество админов для появления скролла", WINDOW_WIDGET_SLIDER_INT, 1, 100, imgui.new.int(config.root.windows.adminList.countForScrollbar) }
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
 
@@ -219,7 +229,7 @@ local window = {
                 { "sortByDistance", "Сортировать по дистанции", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.playersNearby.sortByDistance) },
                 { "playerColorBasedOnClist", "Цвет зависит от клиста", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.playersNearby.playerColorBasedOnClist) },
                 { "textAlignMode", "Выравнивание текста", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.windows.playersNearby.textAlignMode), "Слева", "По центру", "Справа" },
-                { "strokeSize", "Размер обводки", WINDOW_WIDGET_SLIDER_INT, 1, 5, imgui.new.int(config.root.windows.playersNearby.strokeSize) },
+                { "strokeSize", "Размер обводки", WINDOW_WIDGET_SLIDER_INT, 0, 5, imgui.new.int(config.root.windows.playersNearby.strokeSize) },
                 { "maxPlayers", "Максимальное кол-во игроков", WINDOW_WIDGET_SLIDER_INT, 1, 30, imgui.new.int(config.root.windows.playersNearby.maxPlayers) }
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
             
@@ -237,7 +247,7 @@ local window = {
                 { "notificationType", "Тип оповещения при заходе/выходе игрока", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.windows.playerChecker.notificationType), "ImGui оповещение", "Сообщение в чат", "Отсутствует" },
                 { "displayOfflinePlayers", "Отображать игроков в оффлайне", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.playerChecker.displayOfflinePlayers) },
                 { "playerColorBasedOnClist", "Цвет игрока зависит от клиста", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.playerChecker.playerColorBasedOnClist) },
-                { "strokeSize", "Размер обводки", WINDOW_WIDGET_SLIDER_INT, 1, 5, imgui.new.int(config.root.windows.playerChecker.strokeSize) },
+                { "strokeSize", "Размер обводки", WINDOW_WIDGET_SLIDER_INT, 0, 5, imgui.new.int(config.root.windows.playerChecker.strokeSize) },
                 { "textAlignMode", "Выравнивание текста", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.windows.playerChecker.textAlignMode), "Слева", "По центру", "Справа" },
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP }
         }},
@@ -256,6 +266,7 @@ local window = {
             { "wallhack", "Wallhack", {
                 { "use", "Работает только на /alogin", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.cheats.wallhack.use), fn {
                     if !config.root.cheats.wallhack.imguiStyle {
+                        print(config.root.cheats.wallhack.use, user::getAloginStatus(), config.root.cheats.wallhack.use)
                         assets::changeWallhackState(config.root.cheats.wallhack.use && user::getAloginStatus())
                     }
                 }},
@@ -783,7 +794,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                     imgui.EndGroup()
                 } elseif window.menu.selectedFrame == WINDOW_SELECTED_FRAME_SETTINGS {
                     for sectionIndex, section in window.configuration {
-                        if sectionIndex == 2 { imgui.NewLine() }
+                        // if sectionIndex == 2 { imgui.NewLine() }
                         imguiAssets::textWithFont(section[2], bold14)
 
                         for index, setting in section[3] {

@@ -49,7 +49,6 @@ static enum /* SYNC_KEYS */ {
 static __spectator__ = {
     id          = -1
     nickname    = ""
-    handle      = -1
     time        = nil
 
     afk = {

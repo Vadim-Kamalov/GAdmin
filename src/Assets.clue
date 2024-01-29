@@ -494,14 +494,9 @@ method assets::messageBox(text, title, style) {
  * @return void
  */
 method assets::changeWallhackState(state) {
-    local pointer     = sampGetServerSettingsPtr()
-    memory.wallhack ??= {
-        distance    = memory.getfloat(pointer + 39),
-        walls       = memory.getint8(pointer + 47)
-    }
-
-	memory.setfloat(pointer + 39, (state) ? 0x7D0 : memory.wallhack.distance)
-	memory.setint8(pointer + 47, (state) ? 0 : memory.wallhack.walls)
+    local pointer = sampGetServerSettingsPtr()
+	memory.setfloat(pointer + 39, (state) ? 0x7D0 : 0x3C)
+	memory.setint8(pointer + 47, (state) ? 0 : 1)
 }
 
 return assets

@@ -27,14 +27,17 @@
 @import "game.GReport"              => greport
 @import "game.Spectator"            => spectator
 @import "game.User"                 => user 
+@import "game.sa.Vehicle"           => vehicle
 
-@import "Config" => config
-@import "Common" => common
+@import "Algorithm" => algorithm
+@import "Config"    => config
+@import "Common"    => common
 
 static enum /** @enum COMMAND_ARGUMENT */ {
     COMMAND_ARGUMENT_PLAYER_ID,
     COMMAND_ARGUMENT_PLAYER_NICKNAME,
     COMMAND_ARGUMENT_VEHID,
+    COMMAND_ARGUMENT_CVEHID,
     COMMAND_ARGUMENT_HEALTH,
     COMMAND_ARGUMENT_ANY,
     COMMAND_ARGUMENT_REASON
@@ -173,10 +176,10 @@ local commands = {
     { "/sethp", "Установить HP-уровень игроку", COMMAND_ARGUMENT_PLAYER_ID, COMMAND_ARGUMENT_HEALTH },
     { "/setworld", "Установить игроку виртуальный мир", COMMAND_ARGUMENT_PLAYER_ID },
     { "/setint", "Установить игроку интерьер мира", COMMAND_ARGUMENT_PLAYER_ID },
-    { "/getcar", "Телепортировать к себе транспорт" },
-    { "/vrepair", "Восстановить HP-уровень транспорта до максимума" },
+    { "/getcar", "Телепортировать к себе транспорт", COMMAND_ARGUMENT_CVEHID },
+    { "/vrepair", "Восстановить HP-уровень транспорта до максимума", COMMAND_ARGUMENT_CVEHID },
     { "/getbuycar", "Телепортировать к себе личный транспорт", COMMAND_ARGUMENT_VEHID },
-    { "/vspawn", "Заспавнить автомобиль" },
+    { "/vspawn", "Заспавнить автомобиль", COMMAND_ARGUMENT_CVEHID },
     { "/adaction", "Удалить /action" },
     { "/dbuy", "Удалить GBUY обьявление" }, 
     { "/dpame", "Удалить описание игрока", COMMAND_ARGUMENT_VEHID },
@@ -191,13 +194,13 @@ local commands = {
     { "/jail", "Посадить игрока в ДеМорган", COMMAND_ARGUMENT_PLAYER_ID, COMMAND_ARGUMENT_ANY, COMMAND_ARGUMENT_REASON },
     { "/unjail", "Вытащить игрока из ДеМоргана", COMMAND_ARGUMENT_PLAYER_ID },
     { "/warn", "Выдать игроку игровое предупреждение", COMMAND_ARGUMENT_PLAYER_ID, COMMAND_ARGUMENT_REASON },
-    { "/makemic", "Выдать игроку системный микрофон" },
+    { "/makemic", "Выдать игроку системный микрофон", COMMAND_ARGUMENT_PLAYER_ID },
     { "/leave", "Уволить игрока из фракции" },
     { "/house", "Телепортироваться к дому по номеру" },
     { "/biz", "Телепортироваться к бизнесу по номеру" },
-    { "/vfuel", "Установить уровень топлива транспорту" },
+    { "/vfuel", "Установить уровень топлива транспорту", COMMAND_ARGUMENT_CVEHID },
     { "/vspawnr", "Заспавнить весь транспорт в радиусе" },
-    { "/adm_vehid", "Посмотреть принадлежность транспорта игроку" },
+    { "/adm_vehid", "Посмотреть принадлежность транспорта игроку", COMMAND_ARGUMENT_CVEHID },
     { "/ck", "Выдать Character Kill игроку", COMMAND_ARGUMENT_PLAYER_ID },
     { "/unck", "Снять Character Kill игроку", COMMAND_ARGUMENT_PLAYER_NICKNAME },
     { "/pk", "Выдать Player Kill игроку", COMMAND_ARGUMENT_PLAYER_ID },
@@ -239,14 +242,15 @@ imgui.OnFrame(fn { return autoCompletion.condition() && config.root.windows.auto
 
                             match command[index] /** COMMAND_ARGUMENT */ {
                                 COMMAND_ARGUMENT_PLAYER_ID => {
-                                    for itemIndex, id in ({ spectator.id, greport.player.id }) {
+                                    for itemIndex, id in ({ spectator.id, greport.player.id, user::getId() }) {
                                         if id != -1 {
                                             if local nickname = sampGetPlayerNickname(id) {
                                                 table.insert(suggestedList, {
-                                                    suggested   = textBeforeArgument .. ' ' .. tostring(id),
+                                                    suggested   = textBeforeArgument .. ' ' .. id .. ' ',
                                                     description = nickname .. " (" .. ({
                                                         "игрок за которым вы следите",
-                                                        "игрок за которым у вас закреплен GReport"
+                                                        "игрок за которым у вас закреплен GReport",
+                                                        "ваш айди"
                                                     })[itemIndex] .. ")"
                                                 })
                                             }
@@ -258,7 +262,7 @@ imgui.OnFrame(fn { return autoCompletion.condition() && config.root.windows.auto
                                             if id != user::getId() && sampIsPlayerConnected(id) && (id == tonumber(argument) || string.find(id, argument, 1, true)) {
                                                 local nickname = sampGetPlayerNickname(id)
                                                 table.insert(suggestedList, {
-                                                    suggested   = textBeforeArgument .. ' ' .. tostring(id),
+                                                    suggested   = textBeforeArgument .. ' ' .. id .. ' ',
                                                     description = nickname
                                                 })
                                             }
@@ -270,7 +274,7 @@ imgui.OnFrame(fn { return autoCompletion.condition() && config.root.windows.auto
                                     for itemIndex, nickname in ({ spectator.nickname, greport.player.nickname }) {
                                         if #nickname > 0 {
                                             table.insert(suggestedList, {
-                                                suggested   = textBeforeArgument .. ' ' .. nickname,
+                                                suggested   = textBeforeArgument .. ' ' .. nickname .. ' ',
                                                 description = ({
                                                     "Никнейм игрока за которым вы следите",
                                                     "Никнейм игрока за которым у вас закреплен GReport"
@@ -285,7 +289,7 @@ imgui.OnFrame(fn { return autoCompletion.condition() && config.root.windows.auto
                                                 local nickname = sampGetPlayerNickname(id)
                                                 if string.find(common::toLowerCase(nickname), common::toLowerCase(argument), 1, true) {
                                                     table.insert(suggestedList, {
-                                                        suggested   = textBeforeArgument .. ' ' .. nickname,
+                                                        suggested   = textBeforeArgument .. ' ' .. nickname .. ' ',
                                                         description = "Предложенный никнейм игрока"
                                                     })
                                                 }
@@ -298,7 +302,7 @@ imgui.OnFrame(fn { return autoCompletion.condition() && config.root.windows.auto
                                     for _, health in ({ 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 }) {
                                         if string.find(tostring(health), argument, 1, true) {
                                             table.insert(suggestedList, {
-                                                suggested   = textBeforeArgument .. ' ' .. health,
+                                                suggested   = textBeforeArgument .. ' ' .. health .. ' ',
                                                 description = "Предложенный уровень здоровья"
                                             })
                                         }
@@ -306,34 +310,110 @@ imgui.OnFrame(fn { return autoCompletion.condition() && config.root.windows.auto
                                 }
 
                                 COMMAND_ARGUMENT_REASON => {
-                                    for _, reason in ({
-                                        "Cheat",
-                                        "DM",
-                                        "Оффтоп",
-                                        "Неролевое поведение",
-                                        "AFK on ROAD",
-                                        "AFK without ESC",
-                                        "AFK public place",
+                                    for _, commandList in ({
+                                        { "iban", "ban", "warn", "jail", {
+                                            "Cheat",
+                                            "DM",
+                                            "NonRP drive",
+                                            "Неролевое поведение"
+                                        }},
+
+                                        { "mute", "bmute", {
+                                            "Оффтоп"
+                                        }},
+
+                                        { "kick", {
+                                            "AFK on ROAD",
+                                            "AFK without ESC",
+                                            "AFK public place",
+                                        }}
                                     }) {
-                                        if string.find(common::toLowerCase(reason), common::toLowerCase(argument), 1, true) {
-                                            table.insert(suggestedList, {
-                                                suggested   = textBeforeArgument .. ' ' .. reason,
-                                                description = "Предложенное наказание"
-                                            })
+                                        for _, commandName in commandList {
+                                            if type(commandName) == "string" && ('/' .. commandName) == command[1] {
+                                                for _, reason in commandList[#commandList] {
+                                                    if string.find(common::toLowerCase(reason), common::toLowerCase(argument), 1, true) {
+                                                        table.insert(suggestedList, {
+                                                            suggested   = textBeforeArgument .. ' ' .. reason .. ' ',
+                                                            description = "Предложенное наказание"
+                                                        })
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
                                 
-                                COMMAND_ARGUMENT_VEHID => {
-                                    if spectator.status {
-                                        for vehId with string.gmatch(spectator::getInformation().vehicle, "%d+") {
-                                            if (#argument == 0) ? true : string.find(vehId, argument, 1, true) {
+                                COMMAND_ARGUMENT_VEHID if spectator.status => {
+                                    for vehId with string.gmatch(spectator::getInformation().vehicle, "%d+") {
+                                        if (#argument == 0) ? true : string.find(vehId, argument, 1, true) {
+                                            table.insert(suggestedList, {
+                                                suggested   = textBeforeArgument .. ' ' .. vehId .. ' ',
+                                                description = "Предложенная машина игрока за которым вы следите"
+                                            })
+                                        }
+                                    }
+                                }
+
+                                COMMAND_ARGUMENT_CVEHID => {
+                                    local fn insertSuggestionByPlayerVehicle(handle, description) {
+                                        if local car = storeCarCharIsInNoSave(handle) {
+                                            local result, vehId = sampGetVehicleIdByCarHandle(car)
+                                            if result {
+                                                local carId     = getCarModel(car)
+                                                local carName   = vehicle::getName(carId)
+
                                                 table.insert(suggestedList, {
-                                                    suggested   = textBeforeArgument .. ' ' .. vehId,
-                                                    description = "Предложенная машина игрока за которым вы следите"
+                                                    suggested   = textBeforeArgument .. ' ' .. vehId .. ' ',
+                                                    description = carName .. " (" .. description .. ")"
                                                 })
                                             }
                                         }
+                                    }
+
+                                    insertSuggestionByPlayerVehicle(PLAYER_PED, "машина в которой вы сидите")
+                                   
+                                    if spectator.status {
+                                        local result, handle = spectator::getHandle()
+                                        if result {
+                                            insertSuggestionByPlayerVehicle(handle, "машина игрока за которым вы следите")
+                                        }
+                                    }
+
+                                    local streamVehicles = {}
+
+                                    for _, car in getAllVehicles() {
+                                        local result, vehId = sampGetVehicleIdByCarHandle(car)
+                                        if result {
+                                            local carId     = getCarModel(car)
+                                            local carName   = vehicle::getName(carId)
+                                            local handle    = PLAYER_PED
+
+                                            if spectator.status {
+                                                local result, spectatorHandle = spectator::getHandle()
+                                                if result {
+                                                    handle = spectatorHandle
+                                                }
+                                            }
+                                            
+                                            local dAX, dAY, dAZ = getCharCoordinates(handle)
+                                            local dBX, dBY, dBZ = getCarCoordinates(car)
+
+                                            local distance = getDistanceBetweenCoords3d(dAX, dAY, dAZ, dBX, dBY, dBZ)
+
+                                            if distance != 0.0 { //! Skip spectator vehicle, since it already inserted.
+                                                table.insert(streamVehicles, {
+                                                    suggested   = textBeforeArgument .. ' ' .. vehId .. ' ',
+                                                    description = string.format("%s[X: %1.f] (машина рядом)", carName, distance),
+                                                    distance    = distance
+                                                })
+                                            }
+                                        }
+                                    }
+
+                                    algorithm::bubbleSortByKey(streamVehicles, "distance")
+
+                                    for _, item in streamVehicles {
+                                        table.insert(suggestedList, item)
                                     }
                                 }
                             }
@@ -344,7 +424,7 @@ imgui.OnFrame(fn { return autoCompletion.condition() && config.root.windows.auto
                 }
             } elseif string.find("/" .. command[1], inputText, 1, true) {
                 table.insert(suggestedList, {
-                    suggested   = command[1],
+                    suggested   = command[1] .. ' ',
                     description = command[2]
                 })
             }
@@ -388,7 +468,7 @@ imgui.OnFrame(fn { return autoCompletion.condition() && config.root.windows.auto
                     imgui.BeginGroup()
                         imgui.PushFont(bold10)
                             imguiAssets::addStrokedText(complete.suggested, config.root.windows.autoCompletion.strokeSize)
-                            imgui.SameLine(nil, 5)
+                            imgui.SameLine(nil, (#string.match(complete.suggested, "(%s*)$") > 0) ? 2 : 5)
                             imgui.SetCursorPosY(imgui.GetCursorPos().y + 1.5)    
                             imgui.PushFont(regular10)
                                 imguiAssets::addStrokedText(complete.description, config.root.windows.autoCompletion.strokeSize)
@@ -396,7 +476,7 @@ imgui.OnFrame(fn { return autoCompletion.condition() && config.root.windows.auto
                         imgui.PopFont()
                     imgui.EndGroup()
                 
-                    if autoCompletion.position == pos {
+                    if autoCompletion.position == pos && !(imgui.IsWindowHovered() || imgui.IsMouseDown(0)) {
                         if (itemCursorPos.y - imgui.GetScrollY()) >= imgui.GetWindowHeight() {
                             imgui.SetScrollY(itemCursorPos.y)
                         } elseif itemCursorPos.y <= imgui.GetScrollY() {

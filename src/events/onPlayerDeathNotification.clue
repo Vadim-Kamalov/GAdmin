@@ -20,6 +20,7 @@
 
 @import "Config"    => config
 @import "Assets"    => assets
+@import "Common"    => common
 @import "game.User" => user
 
 ffi.cdef(`
@@ -117,4 +118,44 @@ sampev.onPlayerDeathNotification = fn(killerId, killedId, reason) {
             table.insert(log[2], { time = assets::getLocalTime(), text = message })
         }
     }
+
+    table.insert(killListWindow.kills, {
+        id = {
+            killer = killerId,
+            killed = killedId
+        },
+
+        nickname = {
+            killer = killerNickname,
+            killed = killedNickname
+        },
+
+        color = {
+            killer = (killerId == -1)
+                ? imgui.GetStyle().Colors[imgui.Col.Text]
+                : common::convertHex2ImVec4($PLAYER_COLOR_TO_HEX!(killerId)),
+
+            killed = (killedId == -1)
+                ? imgui.GetStyle().Colors[imgui.Col.Text]
+                : common::convertHex2ImVec4($PLAYER_COLOR_TO_HEX!(killedId))
+        },
+
+        reason  = reason,
+        time    = assets::getLocalTime(),
+        weapon  = match reason {
+            DIE_SPECIAL_REASON_CAR          => "Vehicle",
+            DIE_SPECIAL_REASON_HELI         => "Helicopter",
+            DIE_SPECIAL_REASON_EXPLOSION    => "Explosion",
+            DIE_SPECIAL_REASON_DROWNED      => "Drowned",
+            DIE_SPECIAL_REASON_SUICIDE      => "Suicide",
+
+            default => (fn {
+                if (reason >= 0 && reason <= 18) || (reason >= 22 || reason <= 46) {
+                    return require("game.weapons").get_name(reason)
+                } else {
+                    return "Unknown"
+                }
+            })()
+        }
+    })
 }

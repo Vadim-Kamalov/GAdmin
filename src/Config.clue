@@ -63,9 +63,10 @@ static __config__ = {
             },
 
             spectatorInformation = {
-                use     = true,
-                type    = 2,
-                columns = {
+                use                 = true,
+                type                = 2,
+                showedHintFirstTime = false,
+                columns             = {
                     { "Пинг",                   true },
                     { "ID аккаунта",            true },
                     { "Дата регистрации",       true },
@@ -83,6 +84,16 @@ static __config__ = {
                     { "Двигатель",              true },
                     { "Двери",                  true },
                 }
+            },
+            
+            killList = {
+                use                     = true,
+                displayTime             = true,
+                displayId               = true,
+                playerColorBasedOnClist = true,
+                strokeSize              = 1,
+                textAlignMode           = 3,
+                maxItems                = 5
             },
 
             notifications = {

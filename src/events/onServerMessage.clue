@@ -72,7 +72,8 @@ local logs = {
     }}
 }
 
-local skipNextMessage = false
+local skipNextMessage       = false
+local adminListCheckClock   = os.clock() - $COMMAND_DELAY
 
 local messageContinuation = {
     awaiting    = false,
@@ -262,10 +263,12 @@ sampev.onServerMessage = fn(color, text) {
         || string.find(text, "Вы уже авторизировались")
         || string.find(text, "Вы успешно авторизовались как ведущий администратор")) && color == -1
     {
-        lua_thread.create(fn {
-            wait($COMMAND_DELAY)
-            sampSendChat("/adm")
-        })
+        if os.clock() - adminListCheckClock >= $COMMAND_DELAY {
+            lua_thread.create(fn {
+                wait($COMMAND_DELAY)
+                sampSendChat("/adm")
+            })
+        }
     }
 
     if string.match(text, "^%[A%] (.+)%[%d+%] ответил .*%[%d+%]: .*") == user::getOOCNickname() {
@@ -287,7 +290,7 @@ sampev.onServerMessage = fn(color, text) {
         }
 
         for key, value of ({
-            anticheat       = { "^Античит" },
+            anticheat       = { "^Античит", "^%[BOT DETECTOR]" },
             report          = { "^%[A] Жалоба от .+%[%d+]:", "^%[A] Репорт от .+%[%d+]:" }
             adminActions    = -1347440726,
             punishments     = {
