@@ -352,6 +352,10 @@ global fn main() {
             displayHud(movableWindows.viewMode != MV_ONLY_IN_SPECTATOR)
             displayRadar(movableWindows.viewMode != MV_ONLY_IN_SPECTATOR)
         }
+        
+        if config.root.windows.killList.hideDefaultKillList && config.root.windows.killList.use {
+            memory.write(sampGetKillInfoPtr() /* int iEnabled */, 0x0, 0x4 /* sizeof(int) */)
+        }
 
         if config.root.windows.autoCompletion.use && isKeyDown(VK_CONTROL) && autoCompletion.condition() {
             if os.clock() - autoCompletion.clock >= 0.15 {

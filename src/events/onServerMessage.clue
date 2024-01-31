@@ -268,6 +268,10 @@ sampev.onServerMessage = fn(color, text) {
                 wait($COMMAND_DELAY)
                 sampSendChat("/adm")
             })
+        
+            if config.root.additions.autoAlogout.use {
+                assets::workInBackground(true)
+            }
         }
     }
 
@@ -325,13 +329,15 @@ sampev.onServerMessage = fn(color, text) {
         }
     }
 
-    if local it = contributorsFileSource {
-        if string.find(text, "^%[A%] .*%[%d+%]") && color == 866792362 {
-            for line with string.gmatch(it, "[^\r\n]+") {
-                if local color, nickname = string.match(line, "^CLR: (%x+)=(.+)") {
-                    local find      = string.format("(%s)", nickname)
-                    local replace   = "{" .. color .. "}%1{33AA33}" 
-                    text            = string.gsub($, find, replace)
+    if config.root.additions.changeNicknameColors.use {
+        if local it = contributorsFileSource {
+            if string.find(text, "^%[A%] .*%[%d+%]") && color == 866792362 {
+                for line with string.gmatch(it, "[^\r\n]+") {
+                    if local color, nickname = string.match(line, "^CLR: (%x+)=(.+)") {
+                        local find      = string.format("(%s)", nickname)
+                        local replace   = "{" .. color .. "}%1{33AA33}" 
+                        text            = string.gsub($, find, replace)
+                    }
                 }
             }
         }

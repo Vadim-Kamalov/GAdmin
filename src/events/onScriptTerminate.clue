@@ -26,5 +26,6 @@ global fn onScriptTerminate(scr, quitGame) {
     if scr == script.this {
         config::saveIfChanged()
         hook::unref()
+        assets::workInBackground(false)
     }
 }

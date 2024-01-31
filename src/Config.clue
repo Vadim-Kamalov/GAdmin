@@ -87,8 +87,9 @@ static __config__ = {
             },
             
             killList = {
-                use                     = true,
+                use                     = false,
                 displayTime             = true,
+                hideDefaultKillList     = true,
                 displayId               = true,
                 playerColorBasedOnClist = true,
                 strokeSize              = 1,
@@ -311,16 +312,17 @@ static __config__ = {
                 onlyInSpectator = false
             },
             
-            autoAACommand       = { use = false },
-            hideSpectatorMenu   = { use = true },
-            swapLayout          = { use = false },
-            idInKillList        = { use = false },
-            deathNotifyInChat   = { use = false },
-            showAdmins          = { use = true },
-            displayIdInIc       = { use = false },
-            gunInfo             = { use = false },
-            autoAdminLogin      = { use = false },
-            hideIpAddresses     = { use = false }
+            autoAACommand           = { use = false },
+            hideSpectatorMenu       = { use = true },
+            swapLayout              = { use = false },
+            idInKillList            = { use = false },
+            deathNotifyInChat       = { use = false },
+            showAdmins              = { use = true },
+            displayIdInIc           = { use = false },
+            gunInfo                 = { use = false },
+            autoAdminLogin          = { use = false },
+            hideIpAddresses         = { use = false },
+            changeNicknameColors    = { use = true }
         },
 
         fix = {

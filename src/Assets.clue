@@ -499,4 +499,23 @@ method assets::changeWallhackState(state) {
 	memory.setint8(pointer + 47, (state) ? 0 : 1)
 }
 
+/**
+ * Set work in background for this script.
+ * @param state boolean
+ * @return void
+ */
+method assets::workInBackground(state) {
+    if state {
+        memory.setuint8(7634870, 1, false)
+        memory.setuint8(7635034, 1, false)
+        memory.fill(7623723, 144, 8, false)
+        memory.fill(5499528, 144, 6, false)
+    } else {
+        memory.setuint8(7634870, 0, false)
+        memory.setuint8(7635034, 0, false)
+        memory.hex2bin("0F 84 7B 01 00 00", 7623723, 8)
+        memory.hex2bin("50 51 FF 15 00 83 85 00", 5499528, 6)
+    }
+}
+
 return assets

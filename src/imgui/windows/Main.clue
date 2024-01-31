@@ -201,6 +201,7 @@ local window = {
                 { "use", "Работает только на /alogin", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.killList.use) },
                 { "displayTime", "Отображать время", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.killList.displayTime) },
                 { "displayId", "Отображать ID игроков", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.killList.displayId) },
+                { "hideDefaultKillList", "Скрывать килл-лист игры", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.killList.hideDefaultKillList) },
                 { "playerColorBasedOnClist", "Цвет игроков зависит от их клиста", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.killList.playerColorBasedOnClist) },
                 { "strokeSize", "Размер обводки", WINDOW_WIDGET_SLIDER_INT, 0, 5, imgui.new.int(config.root.windows.killList.strokeSize) },
                 { "textAlignMode", "Выравнивание текста", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.windows.killList.textAlignMode), "Слева", "По центру", "Справа" },
@@ -266,7 +267,6 @@ local window = {
             { "wallhack", "Wallhack", {
                 { "use", "Работает только на /alogin", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.cheats.wallhack.use), fn {
                     if !config.root.cheats.wallhack.imguiStyle {
-                        print(config.root.cheats.wallhack.use, user::getAloginStatus(), config.root.cheats.wallhack.use)
                         assets::changeWallhackState(config.root.cheats.wallhack.use && user::getAloginStatus())
                     }
                 }},
@@ -292,7 +292,11 @@ local window = {
             }},
 
             { "autoAlogout", "/alogout по времени", {
-                { "use", "/alogout введется если вы простояли в афк больше разрешенного.", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.autoAlogout.use) },
+                { "use", "/alogout введется если вы простояли в афк больше разрешенного.", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.autoAlogout.use), fn {
+                    if !config.root.additions.autoAlogout.use {
+                        assets::workInBackground(false)
+                    }
+                }},
                 { "warningSeconds", "Секунд до предупреждения", WINDOW_WIDGET_SLIDER_INT, 10, 600, imgui.new.int(config.root.additions.autoAlogout.warningSeconds) },
                 { "alogoutSeconds", "Секунд до /alogout", WINDOW_WIDGET_SLIDER_INT, 10, 600, imgui.new.int(config.root.additions.autoAlogout.alogoutSeconds) }
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
@@ -418,6 +422,10 @@ ap = kick <id> AFK public place`, WINDOW_WIDGET_SWITCH, imgui.new.bool(config.ro
                 { "color", "Цвет упоминания", WINDOW_WIDGET_COLOR_PICKER, imguiAssets::convertHex2Float3(config.root.additions.mention.color) }
                 { "notificationType", "Тип оповещения при упоминании", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.additions.mention.notificationType), "ImGui оповещение", "Сообщение в чат", "Отсутствует" }
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
+
+            { "changeNicknameColors", "Разные цвета никнеймов /a", {
+                { "use", "Изменение цвета никнейма для тех кто внес вклад в разработку\nИзменяется исключительно в /a чате", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.changeNicknameColors.use) }
+            }},
         }},
 
         { "fix", "Исправления", {
@@ -794,7 +802,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                     imgui.EndGroup()
                 } elseif window.menu.selectedFrame == WINDOW_SELECTED_FRAME_SETTINGS {
                     for sectionIndex, section in window.configuration {
-                        // if sectionIndex == 2 { imgui.NewLine() }
+                        if sectionIndex == 4 { imgui.NewLine() }
                         imguiAssets::textWithFont(section[2], bold14)
 
                         for index, setting in section[3] {
