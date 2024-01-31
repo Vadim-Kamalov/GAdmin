@@ -19,6 +19,6 @@
         не айди игрока. (v1.2.2)
     </body>
     <links>
-        <link destination="GAdmin-Release.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/download/v1.2.1/GAdmin-Release.lua</link>
+        <link destination="GAdmin-Release.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/download/v1.2.2/GAdmin-Release.lua</link>
     </links>
 </AutoUpdate>
