@@ -112,7 +112,11 @@ method __commandRequester__::setupUserCommandWatcher(command) {
 method __commandRequester__::setupChatWatcher(text, color) {
     if string.find(text, "^{......}%| {......}У Вас нет доступа для использования данной команды%.$") {
         if !string.find(self.lastUserCommand, "^/%S+%s*$") {
-            self::new(user::getId(), self.lastUserCommand)
+            lua_thread.create(fn {
+                wait($COMMAND_DELAY)
+                sampSendChat("/a " .. self.lastUserCommand)
+                self::new(user::getId(), self.lastUserCommand)
+            })
         }
     }
 
@@ -243,9 +247,12 @@ method __commandRequester__::new(from, command) {
         self.states.requester = true
 
         if local name, idOrMessage, args = string.match(command, "^/(%S+)%s*(%S*)(.*)") {
+            local passed = false
+
             if local id = tonumber(idOrMessage) {
                 if sampIsPlayerConnected(id) || id == user::getId() {
-                    self.current = {
+                    passed          = true
+                    self.current    = {
                         clock = os.clock(),
                         
                         id = {
@@ -262,7 +269,9 @@ method __commandRequester__::new(from, command) {
                         }
                     } 
                 }
-            } else {
+            }
+
+            if !passed {
                 self.current = {
                     clock = os.clock(),
 
@@ -281,33 +290,30 @@ method __commandRequester__::new(from, command) {
                 }
             }
 
-            if from == user::getId() {
-                sampSendChat("/a " .. command)
-            } else {
-                if !self.states.frame {
-                    self.states.frame = true
-                    if config.root.additions.commandRequester.displayType == COMMAND_REQUEST_DISPLAY_NOTIFICATION {
-                        notify::send({
-                            title       = "Пришла форма",
-                            text        = command,
-                            condition   = (fn { return !self.states.frame }),
-                            buttons     = {
-                                first = {
-                                    name = "Закрыть",
-                                    call = (fn { self::remove() })
-                                },
+            if from != user::getId() && !self.states.frame {
+                self.states.frame = true
 
-                                second = {
-                                    name = "Принять",
-                                    call = (fn { self::approve() })
-                                }
+                if config.root.additions.commandRequester.displayType == COMMAND_REQUEST_DISPLAY_NOTIFICATION {
+                    notify::send({
+                        title       = "Пришла форма",
+                        text        = command,
+                        condition   = (fn { return !self.states.frame }),
+                        buttons     = {
+                            first = {
+                                name = "Закрыть",
+                                call = (fn { self::remove() })
+                            },
+
+                            second = {
+                                name = "Принять",
+                                call = (fn { self::approve() })
                             }
-                        })
-                    }
+                        }
+                    })
+                }
 
-                    if config.root.additions.commandRequester.soundNotification {
-                        addOneOffSound(0, 0, 0, 1137)
-                    }
+                if config.root.additions.commandRequester.soundNotification {
+                    addOneOffSound(0, 0, 0, 1137)
                 }
             }
         }
