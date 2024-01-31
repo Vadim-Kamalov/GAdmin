@@ -46,8 +46,6 @@ imgui.OnFrame(fn { return commandRequester.states.frame }, fn(self) {
         WindowPadding       = imgui.ImVec2(sizeX / 10, 10)
     })
 
-    print(config.root.additions.commandRequester.windowPositionY)
-
     self.admin      = admins::getAdminById(commandRequester.current.id.from)
     self.command    = "/" .. commandRequester.current.command.splitted.name .. " " .. commandRequester.current.command.splitted.args
     self.timer      = string.format("Это окно исчезнет через %.1f секунд", 5 - (os.clock() - commandRequester.current.clock))
