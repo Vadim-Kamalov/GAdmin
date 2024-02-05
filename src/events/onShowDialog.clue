@@ -40,6 +40,15 @@ sampev.onShowDialog = fn(id, style, title, firstButton, secondButton, text) {
     if config.root.additions.hideIpAddresses.use {
         text = string.gsub($, "%d+%.%d+%.%d+%.%d+", "XXX.XXX.XXX.XXX")
     }
+
+    if user::getOOCNickname() != "Администратор"
+       && user::getOOCNickname() != "Technical Admin"
+       && string.find(title, "Авторизация")
+       && string.find(text, "Введите логин:")
+    {
+        sampSendDialogResponse(id, 1, 0, user::getOOCNickname())
+        return false
+    }
     
     if config.root.additions.autoLogin.use && #config.root.additions.autoLogin.accountPassword >= 3
        && style == DIALOG_STYLE_PASSWORD && string.find(text, "Для продолжения игры, Вам необходимо авторизоваться")

@@ -111,11 +111,10 @@ method __commandRequester__::setupUserCommandWatcher(command) {
  */
 method __commandRequester__::setupChatWatcher(text, color) {
     if string.find(text, "^{......}%| {......}У Вас нет доступа для использования данной команды%.$") {
-        if !string.find(self.lastUserCommand, "^/%S+%s*$") {
+        if !string.find(self.lastUserCommand, "^/%S+%s*$") && self::new(user::getId(), self.lastUserCommand) {
             lua_thread.create(fn {
                 wait($COMMAND_DELAY)
                 sampSendChat("/a " .. self.lastUserCommand)
-                self::new(user::getId(), self.lastUserCommand)
             })
         }
     }
@@ -132,8 +131,8 @@ method __commandRequester__::setupChatWatcher(text, color) {
     } else {
         local command, type = self.current.command.name, self.current.command.type
         if type == COMMAND_REQUEST_TYPE_NO_COMMENTARY {
-            if local command = string.match(text, "^%[%A%] .*%[%d+]: %d, форма \"/(.+)\" принята!$") {
-                if command == (self.current.command.name .. " " .. self.current.command.args) {
+            if local id = string.match(text, "^%[%A%] .*%[%d+]: (%d), +$") {
+                if tonumber(id) == self.current.id.from {
                     self::remove()
                 }
             }
@@ -167,7 +166,7 @@ method __commandRequester__::approve() {
 
     if type == COMMAND_REQUEST_TYPE_NO_COMMENTARY {
         lua_thread.create(fn {
-            sampSendChat(string.format("/a %d, форма \"/%s %s\" принята!", self.current.id.from, command, args))
+            sampSendChat(string.format("/a %d, +", self.current.id.from))
             wait($COMMAND_DELAY)
             sampSendChat(string.format("/%s %s", command, args))
             
@@ -226,7 +225,7 @@ method __commandRequester__::remove() {
  *
  * @param from number       Player/User ID that send this command.
  * @param command string    Full command with arguments.
- * @return void
+ * @return boolean          Wheather `command` is in `config.root.additions.commandRequester.allowedCommands`.
  */
 method __commandRequester__::new(from, command) {
     if isGamePaused() || !config.root.additions.commandRequester.use { return }
@@ -317,7 +316,11 @@ method __commandRequester__::new(from, command) {
                 }
             }
         }
+
+        return true
     }
+
+    return false
 }
 
 return __commandRequester__

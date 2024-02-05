@@ -356,16 +356,18 @@ imgui.OnFrame(fn { return autoCompletion.condition() && config.root.windows.auto
 
                                 COMMAND_ARGUMENT_CVEHID => {
                                     local fn insertSuggestionByPlayerVehicle(handle, description) {
-                                        if local car = storeCarCharIsInNoSave(handle) {
-                                            local result, vehId = sampGetVehicleIdByCarHandle(car)
-                                            if result {
-                                                local carId     = getCarModel(car)
-                                                local carName   = vehicle::getName(carId)
+                                        if isCharInAnyCar(handle) {
+                                            if local car = storeCarCharIsInNoSave(handle) {
+                                                local result, vehId = sampGetVehicleIdByCarHandle(car)
+                                                if result {
+                                                    local carId     = getCarModel(car)
+                                                    local carName   = vehicle::getName(carId)
 
-                                                table.insert(suggestedList, {
-                                                    suggested   = textBeforeArgument .. ' ' .. vehId .. ' ',
-                                                    description = carName .. " (" .. description .. ")"
-                                                })
+                                                    table.insert(suggestedList, {
+                                                        suggested   = textBeforeArgument .. ' ' .. vehId .. ' ',
+                                                        description = carName .. " (" .. description .. ")"
+                                                    })
+                                                }
                                             }
                                         }
                                     }

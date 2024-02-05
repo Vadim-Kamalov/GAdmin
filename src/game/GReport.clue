@@ -386,7 +386,7 @@ method __greport__::setupChatWatcher(text) {
         }
     }
 
-    if string.find(text, "^%| Обработка репорта завершена%. Игрок был отсоединён от сервера%.$") && self.player.active {
+    if string.find(text, "^%| Обработка репорта завершена%.") && self.player.active {
         self.window::close()
 
         if !self.window.state {

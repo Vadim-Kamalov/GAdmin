@@ -295,7 +295,8 @@ sampev.onServerMessage = fn(color, text) {
 
         for key, value of ({
             anticheat       = { "^Античит", "^%[BOT DETECTOR]" },
-            report          = { "^%[A] Жалоба от .+%[%d+]:", "^%[A] Репорт от .+%[%d+]:" }
+            complaints      = { "^%[A] Жалоба от .+%[%d+]:" },
+            questions       = { "^%[A] Репорт от .+%[%d+]:" },
             adminActions    = -1347440726,
             punishments     = {
                 "^Администратор .+%. Причина:",
@@ -310,6 +311,8 @@ sampev.onServerMessage = fn(color, text) {
                 "^%[GBUY] .*%[%d+] создал объявление %[%d+]: ",
                 "^%[A] .+%[%d+] установил слухи: ",
                 "^%[A] .+%[%d+] установил действие: "
+                "^%[A] .+%[%d+] перевёл деньги через банк .+%[%d+] %- %$%d+$",
+                "^%[A] .+%[%d+] передал деньги .+%[%d+] %- %$%d+$"
             }
         }) {
             if config.root.additions.disableServerMessages[key] {

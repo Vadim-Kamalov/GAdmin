@@ -18,7 +18,7 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
-@define CONFIG_PATH         getWorkingDirectory() .. "\\" .. "GAdmin/config/Main.json"
+@define CONFIG_PATH         getWorkingDirectory() .. "/GAdmin/config/Main.json"
 @define DEFAULT_RENDER_SIZE 14
 
 @import "Common" => common
@@ -212,7 +212,8 @@ static __config__ = {
                 use             = false,
                 anticheat       = false,
                 punishments     = false,
-                report          = false,
+                complaints      = false,
+                questions       = false,
                 adminActions    = false,
                 playerActions   = false
             },

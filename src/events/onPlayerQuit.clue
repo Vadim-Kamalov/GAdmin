@@ -18,11 +18,13 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
-@import "game.Admins"   => admins
-@import "Notifications" => notify
-@import "Icons"         => icons
-@import "Config"        => config
-@import "Assets"        => assets
+@import "game.Admins"       => admins
+@import "game.GReport"      => greport
+@import "game.Spectator"    => spectator
+@import "Notifications"     => notify
+@import "Icons"             => icons
+@import "Config"            => config
+@import "Assets"            => assets
 
 sampev.onPlayerQuit = fn(id) {
     local nickname = sampGetPlayerNickname(id)
@@ -60,4 +62,9 @@ sampev.onPlayerQuit = fn(id) {
         time = assets::getLocalTime(),
         text = string.format("%s[%d] вышел из игры.", nickname, id)
     })
+
+    match id {
+        greport.player.id   => { greport.player::reset() }
+        spectator.id        => { spectator::exit() }
+    }
 }

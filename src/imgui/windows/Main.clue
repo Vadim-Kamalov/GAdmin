@@ -379,7 +379,8 @@ ap = kick <id> AFK public place`, WINDOW_WIDGET_SWITCH, imgui.new.bool(config.ro
                 { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.disableServerMessages.use) },
                 { "anticheat", "Сообщения античита", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.disableServerMessages.anticheat) },
                 { "punishments", "Наказания от администраторов", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.disableServerMessages.punishments) },
-                { "report", "Репорт", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.disableServerMessages.report) },
+                { "complaints", "Жалобы", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.disableServerMessages.complaints) },
+                { "questions", "Вопросы", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.disableServerMessages.questions) },
                 { "adminActions", "Действия администраторов", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.disableServerMessages.adminActions) },
                 { "playerActions", "Действия игроков (/pame, GBUY, /caract, граффити)", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.disableServerMessages.playerActions) }
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },

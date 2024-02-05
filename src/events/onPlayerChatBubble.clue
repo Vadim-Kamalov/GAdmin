@@ -22,7 +22,7 @@
 
 sampev.onPlayerChatBubble = fn(playerId, color, distance, duration, message) {
     if config.root.windows.farChat.use {
-        if !string.find(message, "^%*") && color == -413892353 {
+        if color == -413892353 {
             return { playerId, color, distance, duration, message }
         } 
 
