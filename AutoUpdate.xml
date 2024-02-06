@@ -1,19 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<AutoUpdate version="1.2.3">
-    <title>GAdmin v1.2.3</title>
+<AutoUpdate version="1.2.4">
+    <title>GAdmin v1.2.4</title>
     <buttons first="Установить" second="Пропустить" third="Позже"/>
     <body>
+        <header>Новые функции</header>
+        - Добавлен поиск ценам в серверных таблицах в основном окне.
+        <newline/>
         <header>Исправления</header>
-        - Исправлен краш скрипта при автозаполнении аргументов определенных команд.
-        - Исправлен спам ранее введеными коммандами в /a чате в определенных случаях.
-        - Скрытие сообщений репорта теперь разделено на скрытие:
-        |   - жалоб (3+ уровень);
-        |   - вопросов (5+ уровень).
-        - Действия игроков больше не добавляются в окно дальнего чата.
-        - Теперь передачи денег скрываются при включенном скрытии действий игроков.
-        - В окно с вводом логина от аккаунта теперь будет вставляться ваш актуальный OOC никнейм.
+        - Исправлено что несколько точек в сообщении вызывало авто-исправление.
+        - Исправлено что при выборе другого персонажа скрипт не засчитывал alogout.
     </body>
     <links>
-        <link destination="GAdmin-Release.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/download/v1.2.3/GAdmin-Release.lua</link>
+        <link destination="GAdmin-Release.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/download/v1.2.4/GAdmin-Release.lua</link>
     </links>
 </AutoUpdate>
