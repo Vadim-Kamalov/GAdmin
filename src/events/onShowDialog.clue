@@ -41,6 +41,10 @@ sampev.onShowDialog = fn(id, style, title, firstButton, secondButton, text) {
         text = string.gsub($, "%d+%.%d+%.%d+%.%d+", "XXX.XXX.XXX.XXX")
     }
 
+    if title == "Выбор персонажа" {
+        user::setAloginStatus(false)
+    }
+
     if user::getOOCNickname() != "Администратор"
        && user::getOOCNickname() != "Technical Admin"
        && string.find(title, "Авторизация")

@@ -144,7 +144,8 @@ local window = {
     },
 
     serverTables = {
-        selected = 0
+        selected    = 0,
+        filter      = InputTextFilter::new()
     },
 
     notes = {
@@ -1789,6 +1790,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                 for index, section in serverTables.prices {
                                     if animations::clickableUnderlinedText(section[1] .. "##serverTable", window.serverTables.selected == index) {
                                         window.serverTables.selected = index
+                                        window.serverTables.filter::clear()
                                     }
 
                                     imgui.SameLine(nil, 20)
@@ -1888,19 +1890,75 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                 }
                             } else {
                                 local section = serverTables.prices[window.serverTables.selected][2]
-                                for index = 1, #section, 2 {
-                                    imgui.BeginGroup()
-                                        imguiAssets::textWithFont(section[index], bold10)
-                                        imgui.SameLine()
-                                        imgui.SetCursorPosY(imgui.GetCursorPos().y + 2)
-                                        imguiAssets::textWithFont(section[index + 1], regular9)
-                                    imgui.EndGroup()
-                                    imguiAssets::setPreviousItemAbleToCopy(string.format("%s = %s", section[index], section[index + 1]))
-                                    imgui.SameLine(((index + 1) % 8) * 83)
-                                    if (index + 1) % 8 == 0 { imgui.NewLine() }
+
+                                imgui.PushFont(regular12)
+                                    window.serverTables.filter::draw("##imgui.windows.serverTables.filter", nil, imgui.GetWindowWidth() - 12)
+                                imgui.PopFont()
+
+                                local fn centerAlign(font, text) {
+                                    imgui.SetCursorPosX(
+                                        (imgui.GetColumnOffset() + (imgui.GetColumnWidth() / 2)) -
+                                        font::CalcTextSizeA(font.FontSize, math.huge, 0.0, text).x / 2
+                                    )
                                 }
-                                imgui.NewLine()
-                                imgui.Dummy(imgui.ImVec2(6, 6))
+
+                                local index = 1
+
+                                imgui.BeginChild("imgui.windows.serverTables.tablesScroll", imgui.ImVec2(
+                                    imgui.GetWindowWidth() - 12,
+                                    0
+                                ), false, self.flags)
+                                    while #section >= index {
+                                        local columnsCount  = (section[index + 2] && section[index + 3]) ? 4 : 2
+                                        local iteratorPeek  = (section[index + 2] && section[index + 3]) ? 2 : 1
+
+                                        imgui.Columns(columnsCount)
+
+                                        for step = 1, iteratorPeek {
+                                            local leftItemIndex     = index + (step * 2) - 2
+                                            local rightItemIndex    = leftItemIndex + 1
+                                            local alpha             = 1.00
+
+                                            if !window.serverTables.filter::passFilter(string.format(
+                                                "%s %s",
+                                                section[leftItemIndex],
+                                                section[rightItemIndex]
+                                            )) {
+                                                alpha = 0.5
+                                            } elseif #ffi.string(window.serverTables.filter.buffer) > 0 {
+                                                if imgui.GetCursorPos().y >= imgui.GetWindowHeight() || imgui.GetCursorPos().y <= imgui.GetScrollY() {
+                                                    imgui.SetScrollY(imgui.GetCursorPos().y)
+                                                }
+                                            }
+
+                                            imgui.PushStyleVarFloat(imgui.StyleVar.Alpha, alpha)
+                                                imgui.BeginGroup()
+                                                    centerAlign(bold10, section[leftItemIndex])
+                                                    imgui.BeginGroup()
+                                                        imguiAssets::textWithFont(section[leftItemIndex], bold10)
+                                                        imgui.NextColumn()
+                                                    imgui.EndGroup()    
+                                            
+                                                    imgui.SameLine()
+                                        
+                                                    centerAlign(regular10, section[rightItemIndex])
+                                                    imgui.BeginGroup()
+                                                        imguiAssets::textWithFont(section[rightItemIndex], regular10)
+                                                        imgui.NextColumn()
+                                                    imgui.EndGroup()    
+                                                imgui.EndGroup()
+                                            imgui.PopStyleVar()
+
+                                            if step == 1 && iteratorPeek == 2 {
+                                                imgui.SameLine()
+                                            }
+                                        }
+
+                                        index += iteratorPeek * 2
+
+                                        imgui.Separator()
+                                    }
+                                imgui.EndChild()
                             }
                         imgui.EndGroup()
                     imgui.EndChild()

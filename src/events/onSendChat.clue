@@ -53,7 +53,7 @@ local fn swapLayout(text) {
 }
 
 sampev.onSendChat = fn(message) {
-    local possibleDot, command, arguments = string.match(message, "^(.)(%S*)(.*)")
+    local possibleDot, command, arguments = string.match(message, "^(%.+)(%S*)(.*)")
     if possibleDot == "." && config.root.additions.swapLayout.use {
         local swappedCommand = swapLayout(command)
         if sampIsChatCommandDefined(swappedCommand) {
