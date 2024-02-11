@@ -18,9 +18,9 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
-@import "Config"    => config
-@import "Hook"      => hook
-@import "Assets"    => assets
+@import "Config" => config
+@import "Hook"   => hook
+@import "Assets" => assets
 
 global fn onScriptTerminate(scr, quitGame) {
     if scr == script.this {

@@ -242,15 +242,15 @@ imgui.OnFrame(fn { return autoCompletion.condition() && config.root.windows.auto
 
                             match command[index] /** COMMAND_ARGUMENT */ {
                                 COMMAND_ARGUMENT_PLAYER_ID => {
-                                    for itemIndex, id in ({ spectator.id, greport.player.id, user::getId() }) {
+                                    for itemIndex, id in ({ user::getId(), spectator.id, greport.player.id }) {
                                         if id != -1 {
                                             if local nickname = sampGetPlayerNickname(id) {
                                                 table.insert(suggestedList, {
                                                     suggested   = textBeforeArgument .. ' ' .. id .. ' ',
                                                     description = nickname .. " (" .. ({
+                                                        "ваш айди",
                                                         "игрок за которым вы следите",
-                                                        "игрок за которым у вас закреплен GReport",
-                                                        "ваш айди"
+                                                        "игрок за которым у вас закреплен GReport"
                                                     })[itemIndex] .. ")"
                                                 })
                                             }

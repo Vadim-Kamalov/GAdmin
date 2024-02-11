@@ -164,6 +164,9 @@ method animations::button(
         size = imgui.ImVec2(textSize.x + (padding.x * 2), textSize.y + (padding.y * 2))
     }
 
+    local pos   = imgui.GetCursorPos()
+    local dl    = imgui.GetWindowDrawList()
+
     if this.size {
         this.hovered.color = match this.hovered.state {
             true => imguiAssets::bringVec4To($, colors.hovered, this.hovered.clock, duration[3]),
@@ -175,18 +178,15 @@ method animations::button(
             ), this.hovered.clock, duration[3])
         }
 
-        imgui.GetWindowDrawList()::AddRect(
+        dl::AddRectFilled(
             p - imgui.ImVec2(1, 1),
-            imgui.ImVec2(p.x + this.size.x - 1, p.y + this.size.y - 1),
+            imgui.ImVec2(p.x + size.x + 1, p.y + size.y + 1),
             imgui.ColorConvertFloat4ToU32(this.hovered.color),
             rounding,
             onHoveredFlags
         )
     }
-
-    local pos   = imgui.GetCursorPos()
-    local dl    = imgui.GetWindowDrawList()
-
+    
     dl::AddRectFilled(p, p + size, imgui.ColorConvertFloat4ToU32(colors.def), rounding, onHoveredFlags)
     dl::PushClipRect(p + imgui.ImVec2(1, 1), p + size - imgui.ImVec2(1, 1))
 

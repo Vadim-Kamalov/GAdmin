@@ -174,9 +174,31 @@ static __config__ = {
                     { "Следите за новостями",   "Следите за новостями." }
                 }
             },
+            
+            spectatorActions = {
+                use         = true,
+                windowSizeY = 100,
+                buttons     = {
+                    { "*Вы тут?*", "/ans ${{ SPECTATOR_ID }} Вы тут? Ответ в /b или /pm ${{ USER_ID }}", true },
+                    { "ANS", "^/ans ${{ SPECTATOR_ID }} ", true },
+                    { "AHEAL", "/aheal ${{ SPECTATOR_ID }}", true },
+                    { "STATS", 3, true },
+                    { "AFRISK", 5, true },
+                    { "PAME", "/pame ${{ SPECTATOR_ID }}", true },
+                    { "WARN", "^/warn ${{ SPECTATOR_ID }} ", true },
+                    { "SLAP", "/slap ${{ SPECTATOR_ID }}", true },
+                    { "SWITCH", 1, true },
+                    { "GETBUYCAR", "^/getbuycar ", true },
+                    { "BAN", "^/ban ${{ SPECTATOR_ID }} ", true },
+                    { "KICK", "^/kick ${{ SPECTATOR_ID }} ", true },
+                    { "BMUTE", "^/bmute ${{ SPECTATOR_ID }} ", true },
+                    { "EXIT", 6, true },
+                    { "ASPAWN", "/aspawn ${{ SPECTATOR_ID }}", true }
+                    { "PK", "/pk ${{ SPECTATOR_ID }}", true }
+                }
+            },
 
-            spectatorKeys       = { use = true },
-            spectatorActions    = { use = true }
+            spectatorKeys = { use = true },
         },
 
         render = {

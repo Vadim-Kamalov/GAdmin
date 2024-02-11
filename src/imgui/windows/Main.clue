@@ -185,8 +185,10 @@ local window = {
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
             
             { "spectatorActions", "Действия в /sp", {
-                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.spectatorActions.use) }
-            }},
+                { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.spectatorActions.use) },
+                { "windowSizeY", "Высота окна", WINDOW_WIDGET_SLIDER_INT, 50, 500, imgui.new.int(config.root.windows.spectatorActions.windowSizeY) },
+                { "buttons", "Кнопки", WINDOW_WIDGET_CUSTOM, $SPECTATOR_ACTIONS_CUSTOM_WIDGET!() }
+            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
             
             { "spectatorInformation", "Информация об игроке", {
                 { "use", "Работает только в режиме наблюдения", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.spectatorInformation.use) },
@@ -697,7 +699,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                 imguiAssets::textWithFont("Быстрые действия", bold14)
                                 imgui.SetCursorPos(imgui.GetCursorPos() + imgui.ImVec2(0, 6))
                                 
-                                if animations::button("Изменить позицию окон", imgui.ImVec2(widthAuto / 3, 30), 5) {
+                                if animations::button("Изменить позицию окон", imgui.ImVec2(math.floor(widthAuto / 3), 30), 5) {
                                     window.state[0] = false
                                     movableWindows::executeChangingWindowsPositions()
                                     imguiAssets::setCursorStatus(false)
@@ -705,7 +707,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                     
                                 imgui.SameLine()
                     
-                                if animations::button((user::getAloginStatus()) ? "/alogout" : "/alogin", imgui.ImVec2(widthAuto / 3 - 6, 30), 0)
+                                if animations::button((user::getAloginStatus()) ? "/alogout" : "/alogin", imgui.ImVec2(math.floor(widthAuto / 3) - 2, 30), 0)
                                    && window.menu.width <= 60
                                 {
                                     sampSendChat((user::getAloginStatus()) ? "/alogout" : "/alogin")
@@ -713,7 +715,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
 
                                 imgui.SameLine()                
 
-                                if animations::button("Собрать информацию о скрипте", imgui.ImVec2(widthAuto / 3, 30), 10) {
+                                if animations::button("Собрать информацию о скрипте", imgui.ImVec2(math.floor(widthAuto / 3), 30), 10) {
                                     local filePath = string.format(
                                         "%s\\GAdmin\\logs\\CollectInformation (%s).log",
                                         getWorkingDirectory(),
@@ -730,7 +732,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
 
                                 animations::hint("Необходимо для создания баг-репортов.\nВ полученном логе ваши пароли будет заменены на \"***\".")
                                 
-                                if animations::button("Применить тему", imgui.ImVec2(widthAuto / 3, 30), 5) {
+                                if animations::button("Применить тему", imgui.ImVec2(math.floor(widthAuto / 3), 30), 5) {
                                     local theme = decodeJson(getClipboardText())
 
                                     if theme && type(theme) == "table" {
@@ -749,7 +751,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
 
                                 imgui.SameLine()
 
-                                if animations::button("Экспортировать тему", imgui.ImVec2(widthAuto / 3 - 6, 30), 0) {
+                                if animations::button("Экспортировать тему", imgui.ImVec2(math.floor(widthAuto / 3) - 2, 30), 0) {
                                     setClipboardText(neatJSON(config.root.styleChangeableWindows, { sort = true, wrap = 40 }))
                                     notify::send({
                                         title   = "Успешно!",
@@ -760,7 +762,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
 
                                 imgui.SameLine()
 
-                                if animations::button("Сброс настроек", imgui.ImVec2(widthAuto / 3, 30), 10) {
+                                if animations::button("Сброс настроек", imgui.ImVec2(math.floor(widthAuto / 3), 30), 10) {
                                     window.popupModal.body = fn {
                                         imgui.SetCursorPos(imgui.ImVec2(5, 5))
                                         imgui.BeginGroup()
@@ -1029,7 +1031,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                 for index, player in config.root.windows.playerChecker.players {
                                     local id            = sampPlayer::getIdByNickname(player.nickname)
                                     local prefix        = ((id == nil) ? "[OFFLINE]" : "[ONLINE]") .. " "
-                                    local prefixColor   = common::convertHex2ImVec4((id == -1) ? "FF8585" : "8DFF85") 
+                                    local prefixColor   = common::convertHex2ImVec4((id == nil) ? "FF8585" : "8DFF85") 
 
                                     imgui.PushFont(regular9)
                                         imgui.BeginGroup()

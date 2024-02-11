@@ -27,7 +27,7 @@
             imgui.SetCursorPos(imgui.ImVec2(6, 6))
             imgui.BeginGroup()
                 for index, item in config.root.windows.spectatorInformation.columns {
-                    local actionButtonPlaceholder = (type(item) == "table") ? ((item[2]) ? "Скрыть" : "Отобразить") : "Удалить"
+                    local actionButtonPlaceholder = (item[2]) ? "Скрыть" : "Отобразить"
 
                     imgui.BeginGroup()
                         local itemWidth = imgui.GetWindowWidth() - 22
@@ -155,12 +155,22 @@ window::new("imgui.windows.SpectatorInformation", {
     }
 
     self.centerWrappedColumnText = fn(text, font) {
-        for text with string.gmatch(text, "[^\n]+") {
-            local size = font::CalcTextSizeA(font.FontSize, math.huge, 0.0, text)
+        local text         = string.match(text, "^%s*(.+)%s*$")
+        local originalText = text
+        local size         = font::CalcTextSizeA(font.FontSize, math.huge, 0.0, text)
 
+        if size.x >= imgui.GetColumnWidth() {
+            while size.x >= imgui.GetColumnWidth() {
+                text = string.match($, "(.-)%S+%s*$")
+                size = font::CalcTextSizeA(font.FontSize, math.huge, 0.0, text)
+            }
+
+            self.centerWrappedColumnText(text, font)
+            self.centerWrappedColumnText(string.sub(originalText, #text), font)
+        } else {
             imgui.SetCursorPosX((imgui.GetColumnOffset() + (imgui.GetColumnWidth() / 2)) - size.x / 2)
             imgui.PushFont(font)
-                imgui.TextWrapped(text)
+                imgui.Text(text)
             imgui.PopFont()
         }
     }
