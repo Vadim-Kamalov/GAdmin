@@ -42,7 +42,7 @@
 @import "game.Spectator"    => spectator
 
 @define COMMAND_DELAY       800
-@define GADMIN_VERSION      "1.2.4"
+@define GADMIN_VERSION      "1.2.5"
 @define AUTOUPDATE_URL      "https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/main/AutoUpdate.xml"
 @define CONTRIBUTORS_URL    "https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/main/CONTRIBUTORS"
 
