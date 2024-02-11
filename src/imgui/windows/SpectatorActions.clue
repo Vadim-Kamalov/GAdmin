@@ -252,7 +252,7 @@ windows::new("imgui.windows.SpectatorActions", {
                         local pos = imgui.GetCursorPos()
                         local id  = string.format("##%s.%s", self.id, id)
 
-                        if animations::button(id, cornerButtonSize, rounding) {
+                        if animations::button(id, cornerButtonSize, rounding) && !self.isChangingWindowsPositions {
                             sampSendMenuSelectRow(action)
                         }
 
@@ -278,7 +278,7 @@ windows::new("imgui.windows.SpectatorActions", {
                                 imgui.SetCursorPosY(self.size.y - height - 5)
                             }
 
-                            if animations::button(label, imgui.ImVec2(itemWidth, height)) {
+                            if animations::button(label, imgui.ImVec2(itemWidth, height)) && !self.isChangingWindowsPositions {
                                 if type(item[2]) == "number" {
                                     sampSendMenuSelectRow(item[2])
                                 } elseif type(item[2]) == "string" {
