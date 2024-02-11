@@ -20,6 +20,12 @@
 
 local player = {}
 
+/**
+ * Get player id by his nickname.
+ * 
+ * @param nickname string
+ * @return number|nil
+ */
 method player::getIdByNickname(nickname) {
     local _, myid = sampGetPlayerIdByCharHandle(PLAYER_PED)
     if nickname == sampGetPlayerNickname(myid) { return myid }
