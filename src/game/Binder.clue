@@ -39,12 +39,13 @@ local binder = {}
  *
  * @see game.binder.Variables
  *
+ * @param command               string Need this parameter to avoid unhandled exception of `0C8F` opcode. 
  * @param input                 string
  * @param arguments             table|nil   (default = {})
  * @param delayBetweenMessages  number|nil  (default = $COMMAND_DELAY)
  * @return void
  */
-method binder::sendString(input, arguments = {}, delayBetweenMessages = $COMMAND_DELAY) {
+method binder::sendString(command, input, arguments = {}, delayBetweenMessages = $COMMAND_DELAY) {
     input = string.gsub($, "%${{(.-)}}", fn(params) {
         if local variable, params = string.match(params, "^%s*([A-Z_]+)(.*)") {
             local parameter = nil
@@ -76,10 +77,20 @@ method binder::sendString(input, arguments = {}, delayBetweenMessages = $COMMAND
 
     lua_thread.create(fn {
         for line with string.gmatch(input, "[^\n]+") {
-            if sampIsChatCommandDefined(string.match(line, "^/(.+)[ $]") || "-1") {
-                sampProcessChatInput(line)
+            if string.find(line, "^%^") {
+                lua_thread.create(fn {
+                    wait(100)
+                    sampSetChatInputEnabled(true)
+                    sampSetChatInputText(string.sub(line, 2))
+                })
             } else {
-                sampSendChat(line)
+                local chatCommand = string.match(line, "^/(.+)[ $]")
+
+                if chatCommand && (chatCommand != command && sampIsChatCommandDefined(chatCommand)) {
+                    sampProcessChatInput(line)
+                } else {
+                    sampSendChat(line)
+                }
             }
             
             wait(delayBetweenMessages)
@@ -113,12 +124,12 @@ method binder::newBind(title, value, delayBetweenMessages, commandName) {
                 table.insert(arguments, argument)
             }
 
-            self::sendString(value, arguments, delayBetweenMessages)
+            self::sendString(commandName, value, arguments, delayBetweenMessages)
         })
     }
 
     HotKey::new("binderIndex" .. #config.root.binds, {})::registerCallback(fn {
-        self::sendString(value, nil, delayBetweenMessages)
+        self::sendString(commandName, value, nil, delayBetweenMessages)
     })
 }
 
@@ -136,12 +147,12 @@ method binder::initializeBinds() {
                     table.insert(arguments, argument)
                 }
 
-                self::sendString(bind.value, arguments, bind.delay)
+                self::sendString(bind.commandName, bind.value, arguments, bind.delay)
             })
         }
 
         HotKey::new("binderIndex" .. index, bind.keys)::registerCallback(fn {
-            self::sendString(bind.value, nil, bind.delay)
+            self::sendString(bind.commandName, bind.value, nil, bind.delay)
         })
     }
 }

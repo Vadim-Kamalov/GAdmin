@@ -46,7 +46,7 @@ window::new("imgui.windows.SpectatorKeys", {
 }, fn(self) {
     self.var.style::apply()
     self::begin(self.id, fn {
-        local result, ped = sampGetCharHandleBySampPlayerId(spectator.id)
+        local result, ped = spectator::getHandle()
         if self.isChangingWindowsPositions { result, ped = true, PLAYER_PED }
 
         if result {

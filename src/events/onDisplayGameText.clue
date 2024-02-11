@@ -22,7 +22,6 @@
 
 sampev.onDisplayGameText = fn(style, time, text) {
     if text == "~b~Some kind of bug" {
-        sampSendMenuSelectRow(SPECTATOR_MENU_EXIT)
         spectator::exit()
     } elseif text == "~b~Spectate Exit" {
         spectator::exit()

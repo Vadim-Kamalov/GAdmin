@@ -179,9 +179,10 @@ method __spectator__::platformToString() {
  */
 method __spectator__::getActiveTime() {
     if self.time {
-        local time      = os.date("*t")
-        local minutes   = math.floor((time.min - self.time.min + 60) % 60)
-        local seconds   = math.floor((time.sec - self.time.sec) % 60)
+        local time    = os.date("*t")
+        local diff    = os.difftime(os.time(time), os.time(self.time))
+        local minutes = math.floor(diff / 60)
+        local seconds = diff % 60
         return string.format("%02d:%02d", minutes, seconds)
     } else {
         return "00:00"
@@ -190,10 +191,14 @@ method __spectator__::getActiveTime() {
 
 /**
  * Get handle of spectating player.
- * @return boolean, number
+ * @return boolean, number|nil
  */
 method __spectator__::getHandle() {
-    return sampGetCharHandleBySampPlayerId(self.id)
+    if self.id != -1 && sampIsPlayerConnected(self.id) && self.status {
+        return sampGetCharHandleBySampPlayerId(self.id)
+    }
+
+    return false, nil
 }
 
 /**

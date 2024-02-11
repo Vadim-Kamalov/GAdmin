@@ -128,6 +128,7 @@ math.randomseed(os.time())
 
 static u8                       = encoding.UTF8
 static spectatorCameraFov       = -1
+static baseNameTagsDistance     = 60
 static scriptLoadedWithGame     = false //! `true` only when called `sampev.onInitGame`.
 static bulletData               = { lastId = 0 }
 static contributorsFileSource   = nil
@@ -243,7 +244,8 @@ imgui.OnInitialize(fn {
 global fn main() {
     while !isSampAvailable() { wait(0) }
 
-    encoding.default = "CP1251"
+    encoding.default        = "CP1251"
+    baseNameTagsDistance    = memory.getfloat(sampGetServerSettingsPtr() + 39)
 
     playerNotes::initializeNotes()
     binder::initializeBinds()

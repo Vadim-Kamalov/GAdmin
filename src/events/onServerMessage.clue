@@ -118,9 +118,11 @@ sampev.onServerMessage = fn(color, text) {
         return rgb && bit.tobit(tonumber(string.format("%s%02X", rgb, color & 0xFF), 16))
     }
 
-    if string.find(text, "^(%w+.*) говорит:(.*)") && config.root.additions.displayIdInIc.use {
-        local nickname, message = string.match(text, "^(%w+.*) говорит:(.*)")
-        text = nickname .. "[" .. player::getIdByNickname(string.gsub(nickname, " ", "_")) .. "]" .. " говорит:" .. message
+    if string.find(text, "^%w+.* ") && config.root.additions.displayIdInIc.use {
+        local nickname, other = string.match(text, "^([%w ]+) (.*)")
+        if local id = player::getIdByNickname(string.gsub(nickname, " ", "_")) {
+            text = string.format("%s[%d] %s", nickname, id, other)
+        }
     }
 
     if config.root.additions.reportOneColor.use {
@@ -311,8 +313,7 @@ sampev.onServerMessage = fn(color, text) {
                 "^%[GBUY] .*%[%d+] создал объявление %[%d+]: ",
                 "^%[A] .+%[%d+] установил слухи: ",
                 "^%[A] .+%[%d+] установил действие: "
-                "^%[A] .+%[%d+] перевёл деньги через банк .+%[%d+] %- %$%d+$",
-                "^%[A] .+%[%d+] передал деньги .+%[%d+] %- %$%d+$"
+                "^%[A] .+%[%d+] перевёл деньги "
             }
         }) {
             if config.root.additions.disableServerMessages[key] {

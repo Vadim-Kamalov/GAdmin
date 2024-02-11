@@ -77,7 +77,7 @@ window::new("imgui.windows.PlayerChecker", {
     self::begin(self.id, fn {
         for index, player in getPlayers(self.isChangingWindowsPositions) {
             local id                = sampPlayer::getIdByNickname(player.nickname)
-            local playerConnected   = id != -1
+            local playerConnected   = id != nil
             local strokeSize        = config.root.windows.playerChecker.strokeSize
 
             local textColor = imgui.GetStyle().Colors[imgui.Col.Text]

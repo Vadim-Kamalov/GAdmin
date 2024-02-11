@@ -211,24 +211,13 @@ method assets::mergeTables(first, second) {
  * @return table
  */
 method assets::explodeDate(timestamp) {
-    local seconds   = timestamp % 60
-    timestamp       = (timestamp - seconds) / 60
-    local minutes   = timestamp % 60
-    timestamp       = (timestamp - minutes) / 60
-    local hours     = timestamp % 24
-    timestamp       = (timestamp - hours) / 24
-    local days      = timestamp % 31 + 1
-    timestamp       = (timestamp - days + 1) / 31
-    local months    = timestamp % 12 + 1
-    local years     = (timestamp - months + 1) / 12 + 1970
-
     return {
-        sec     = seconds,
-        min     = minutes,
-        hour    = hours,
-        day     = days,
-        month   = months,
-        year    = years
+        sec     = timestamp % 60,
+        min     = math.floor(timestamp / 60) % 60,
+        hour    = math.floor(timestamp / 3600) % 24,
+        day     = math.floor(timestamp / 86400) % 30,
+        month   = math.floor(timestamp / 2592000) % 12,
+        year    = math.floor(timestamp / 31536000)
     } 
 }
 
@@ -495,7 +484,7 @@ method assets::messageBox(text, title, style) {
  */
 method assets::changeWallhackState(state) {
     local pointer = sampGetServerSettingsPtr()
-	memory.setfloat(pointer + 39, (state) ? 0x7D0 : 0x3C)
+	memory.setfloat(pointer + 39, (state) ? 0x7D0 : baseNameTagsDistance)
 	memory.setint8(pointer + 47, (state) ? 0 : 1)
 }
 

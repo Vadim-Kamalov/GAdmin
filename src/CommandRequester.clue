@@ -17,9 +17,9 @@
  *
  * SDPX-License-Identifier: GPL-3.0-only
  */
-
-@import "game.User"     => user
-@import "game.Admins"   => admins
+ 
+@import "game.User"   => user
+@import "game.Admins" => admins
 
 @import "Config"        => config
 @import "Notifications" => notify
@@ -28,7 +28,7 @@
 
 static enum /* COMMAND_REQUEST_TYPE */ {
     COMMAND_REQUEST_TYPE_NONE,          //! Initialize status.   
-    COMMAND_REQUEST_TYPE_NO_COMMENTARY, //! /$command [$args...] && /ans $id.to форма "$command $args" принята!
+    COMMAND_REQUEST_TYPE_NO_COMMENTARY, //! /$command [$args...] && /a $id.from, +
     COMMAND_REQUEST_TYPE_COMMENTARY,    //! /$command [$args...] // $nickname.from
     COMMAND_REQUEST_TYPE_ANSWER         //! /$command [$args...] && /ans $id.to $command by $id.from
 }
@@ -228,7 +228,7 @@ method __commandRequester__::remove() {
  * @return boolean          Wheather `command` is in `config.root.additions.commandRequester.allowedCommands`.
  */
 method __commandRequester__::new(from, command) {
-    if isGamePaused() || !config.root.additions.commandRequester.use { return }
+    if isGamePaused() || !config.root.additions.commandRequester.use { return false }
 
     local commandType = COMMAND_REQUEST_TYPE_NONE
 

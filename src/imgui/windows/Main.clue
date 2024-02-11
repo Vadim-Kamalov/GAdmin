@@ -1028,7 +1028,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                             imgui.BeginChild("imgui.windows.Main.Checker.AllPlayers.Child", imgui.ImVec2(widthAuto / 2 - 5, 350), true, self.flags)
                                 for index, player in config.root.windows.playerChecker.players {
                                     local id            = sampPlayer::getIdByNickname(player.nickname)
-                                    local prefix        = ((id == -1) ? "[OFFLINE]" : "[ONLINE]") .. " "
+                                    local prefix        = ((id == nil) ? "[OFFLINE]" : "[ONLINE]") .. " "
                                     local prefixColor   = common::convertHex2ImVec4((id == -1) ? "FF8585" : "8DFF85") 
 
                                     imgui.PushFont(regular9)
@@ -1470,6 +1470,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                                 }
 
                                                 binder::sendString(
+                                                    newCommand,
                                                     config.root.binds[window.binder.selectedBind].value,
                                                     arguments,
                                                     config.root.binds[window.binder.selectedBind].delayBetweenMessages
@@ -1539,6 +1540,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                                     hotKey::render(imgui.ImVec2(123, 26), fn(self) {
                                                         hotKeysCallbacks[self.id].callback = fn {
                                                             binder::sendString(
+                                                                config.root.binds[window.binder.selectedBind].commandName,
                                                                 config.root.binds[window.binder.selectedBind].value,
                                                                 nil,
                                                                 config.root.binds[window.binder.selectedBind].delayBetweenMessages
@@ -1553,6 +1555,16 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                 
                                 imgui.PushFont(regular12)
                                     imguiAssets::textWithFont("Текст", bold10)
+                                    imgui.SameLine(nil, 106)
+                                    imgui.BeginGroup()
+                                        imgui.PushStyleColor(imgui.Col.Text, imgui.GetStyle().Colors[imgui.Col.TextDisabled])
+                                            local pos = imgui.GetCursorPos()
+                                            imguiAssets::textWithFont("знак ^ в начале линии", bold10)
+                                            imgui.SameLine()
+                                            imgui.SetCursorPosY(pos.y + 1)
+                                            imguiAssets::textWithFont("вставит строку в поле ввода игры", regular10)
+                                        imgui.PopStyleColor()
+                                    imgui.EndGroup()
                                     imgui.PushFont(bold10)
                                         if animations::button("Вставить переменную##imgui.windows.Main.selectedBindBody", imgui.ImVec2(imgui.GetWindowWidth() - 12, 25)) {
                                             window.popupModal.body = fn {

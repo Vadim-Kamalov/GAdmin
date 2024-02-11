@@ -101,7 +101,9 @@ method HotKey::getDownKeys(limit = 2) {
     local keys = {}
    
     for _, key of vkeys {
-        if #keys != limit && key != VK_LBUTTON && key != VK_RBUTTON && key != VK_MBUTTON {
+        if #keys != limit && key != VK_LBUTTON && key != VK_RBUTTON
+            && key != VK_MBUTTON && key != VK_LWIN && KEY != VK_RWIN
+        {
             if isKeyDown(key) && (
                 key == VK_MENU || key == VK_CONTROL || key == VK_SHIFT || key == VK_LMENU ||
                 key == VK_RMENU || key == VK_RCONTROL || key == VK_LCONTROL || key == VK_LSHIFT ||
@@ -132,27 +134,27 @@ method HotKey::getDownKeys(limit = 2) {
  * @return void
  */
 method HotKey::setupWatcher(event, wparam, lparam) {
+    if event == wm.WM_KILLFOCUS && changingHotKey {
+        self::stopChangingKeys()
+    }
+
     if event == wm.WM_KEYDOWN || event == wm.WM_SYSKEYDOWN {
         //! Consuming window message when changing any `HotKey` keys.
         //! When pressed `VK_ESCAPE`, we will stop changing keys and reset to default keys.
         if changingHotKey {
             consumeWindowMessage(true, false)
             if wparam == VK_ESCAPE {
-                for id, item of UI_ANIMATED_HOTKEY {
-                    if item.active {
-                        for _, hotKey in allHotKeys {
-                            if id == hotKey.id {
-                                hotKey::changeKeysTo(hotKey.keys)
-                                item.active     = false
-                                changingHotKey  = item.active
-                            }
-                        }
-                    }
-                }
+                self::stopChangingKeys()
             }
         } else {
             if !common::isInputsActive() {
-                local key = assets::mapScanCodeToVKey((lparam & 0xFF0000) >> 16)
+                local key = match wparam {
+                    VK_CONTROL ||
+                    VK_MENU    ||
+                    VK_SHIFT    => assets::mapScanCodeToVKey((lparam & 0xFF0000) >> 16),
+                    default     => wparam
+                }
+
                 for _, hotKey in allHotKeys {
                     //! Implementing keys handling. Allowed length of registered keys is 2.
                     //! When this(ese) keys is(are) pressed, then we will consume this window message
@@ -165,7 +167,7 @@ method HotKey::setupWatcher(event, wparam, lparam) {
                                 item.callback()
                                 item.keysDown = true
 
-                                consumeWindowMessage(true, false)
+                                consumeWindowMessage(true, true)
                             }
                         }
                     }
@@ -177,6 +179,24 @@ method HotKey::setupWatcher(event, wparam, lparam) {
             if local item = hotKeysCallbacks[hotKey.id] {
                 if item.keysDown {
                     item.keysDown = false
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Stop changing HotKey and reset keys to default.
+ * @return void
+ */
+method HotKey::stopChangingKeys() {
+    for id, item of UI_ANIMATED_HOTKEY {
+        if item.active {
+            for _, hotKey in allHotKeys {
+                if id == hotKey.id {
+                    hotKey::changeKeysTo(hotKey.keys)
+                    item.active     = false
+                    changingHotKey  = item.active
                 }
             }
         }

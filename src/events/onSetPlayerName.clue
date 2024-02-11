@@ -35,7 +35,7 @@ sampev.onSetPlayerName = fn(id, nickname, success) {
                 if local notificationType = config.root.windows.playerChecker.notificationType {
                     if notificationType != NOTIFICATION_TYPE_NONE {
                         notify::send({
-                            title       = string.gsub(nickname, "_", " ") .. " зашел в игру.",
+                            title       = nickname .. " зашел в игру.",
                             text        = (config.root.windows.playerChecker.displayOfflinePlayers)
                                 ? "Теперь он отображается подключенным в чекере."
                                 : "Теперь он отображается в чекере.",
