@@ -22,6 +22,7 @@
 @define DEFAULT_RENDER_SIZE 14
 
 @import "Common" => common
+@import "Assets" => assets
 
 static enum /* NOTIFICATION_TYPE */ {
     NOTIFICATION_TYPE_DEFAULT,
@@ -419,7 +420,7 @@ static __config__ = {
  * @return void
  */
 method __config__::save() {
-    common::writeInFile($CONFIG_PATH, neatJSON(self.root), { sort = true, wrap = 40 } )
+    common::writeInFile($CONFIG_PATH, neatJSON(self.root, { sort = true, wrap = 40 }))
 }
 
 /**
@@ -433,38 +434,59 @@ method __config__::saveIfChanged() {
     }
 }
 
-{
-    if !__config__.initialized {
-        __config__.def = __config__.root
+/**
+ * Initialize configuration and make self.root, self.def available.
+ * @return void 
+ */
+method __config__::initialize() {
+    self.def = self.root
 
-        common::makeDirectoryTree({ "GAdmin", "GAdmin/temp", "GAdmin/config" })
-        if !doesFileExist($CONFIG_PATH) {
-            common::writeInFile($CONFIG_PATH, neatJSON(__config__.root, { sort = true, wrap = 40 }))
-            __config__.jsonStrings.file = __config__.root
+    if !doesFileExist($CONFIG_PATH) {
+        self.jsonStrings.file = self.root
+        self::save()
+    } else {
+        local settings = decodeJson(common::readFileContent($CONFIG_PATH))
+        if settings && type(settings) == "table" {
+            self.root             = settings
+            self.jsonStrings.file = encodeJson(self.root)
         } else {
-            __config__.root, __config__.jsonStrings.file =
-                decodeJson(common::readFileContent($CONFIG_PATH)),
-                encodeJson($)
-        }
+            local scriptInformationPath = string.format(
+                "%s\\GAdmin\\logs\\CollectInformation (%s).log",
+                getWorkingDirectory(),
+                os.date("%Y%m%d-%H-%M-%S")
+            )
 
-        local fn mergeTables(a, b) {
-            for key, value of b {
-                if type(value) == "table" {
-                    if type(a[key]) == "table" {
-                        mergeTables(a[key], value)
-                    } elseif a[key] == nil {
-                        a[key] = value
-                    }
+            self.root             = self.def
+            self.jsonStrings.file = encodeJson(self.root)
+
+            $debugError!("config::initialize", "something went wrong with configuration. Configuration will be reset.")
+            $debugError!("config::initialize", "saved script information in " .. scriptInformationPath)
+
+            common::writeInFile(scriptInformationPath, assets::collectScriptInformation())
+            common::writeInFile($CONFIG_PATH, neatJSON(self.def, { sort = true, wrap = 40 }))
+            common::sendScriptMessage("Something went wrong with the settings file.")
+            common::sendScriptMessage("The settings will be reset and information about the script will be written to the next file:")
+            common::sendScriptMessage(scriptInformationPath)
+
+            return
+        }
+    }
+
+    local fn mergeTables(a, b) {
+        for key, value of b {
+            if type(value) == "table" {
+                if type(a[key]) == "table" {
+                    mergeTables(a[key], value)
                 } elseif a[key] == nil {
                     a[key] = value
                 }
+            } elseif a[key] == nil {
+                a[key] = value
             }
         }
-
-        mergeTables(__config__.root, __config__.def)
-
-        __config__.initialized = true
     }
+
+    mergeTables(self.root, self.def)
 }
 
 return __config__

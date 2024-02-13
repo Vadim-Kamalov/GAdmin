@@ -42,7 +42,7 @@
 @import "game.Spectator"    => spectator
 
 @define COMMAND_DELAY       800
-@define GADMIN_VERSION      "1.2.5"
+@define GADMIN_VERSION      "1.2.6"
 @define AUTOUPDATE_URL      "https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/main/AutoUpdate.xml"
 @define CONTRIBUTORS_URL    "https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/main/CONTRIBUTORS"
 
@@ -137,82 +137,6 @@ local airbreak              = { status = false, coords = {} }
 local fishEyeWeaponLock     = false
 local userFullyConnected    = false
 
-//! Initializing hot keys that used in this module.
-
-local hotKeyCallbacks = {}
-
-hotKeyCallbacks.airbreak = fn {
-    if config.root.cheats.airbreak.use && user::getAloginStatus() {
-        airbreak.status         = !$
-        local notificationTitle = "AirBreak " .. ((airbreak.status) ? "включен." : "выключен.")
-        local notificationText  = ""
-
-        if airbreak.status {
-            airbreak.coords     = { getCharCoordinates(PLAYER_PED) }
-            notificationText    = "Чтобы выключить - нажмите эту клавиши повторно."
-        } else {
-            notificationText = "Чтобы опять включить, нажмите эту клавишу повторно"
-        }
-        
-        if local notificationType = config.root.cheats.airbreak.notificationType {
-            if notificationType != NOTIFICATION_TYPE_NONE {
-                notify::send({
-                    icon        = icons.ICON_ARROW_UP
-                    title       = notificationTitle
-                    text        = notificationText
-                    duration    = 2
-                }, (notificationType == NOTIFICATION_TYPE_SCRIPT_MESSAGE) ? notificationTitle : nil)
-            }
-        }
-    }
-}
-
-hotKeyCallbacks.spectatorQuit = fn {
-    if spectator.status {
-        sampSendMenuSelectRow(SPECTATOR_MENU_EXIT)
-    }
-}
-
-hotKeyCallbacks.switchCursorState = fn {
-    imguiAssets::switchCursorStatus()
-}
-
-hotKeyCallbacks.switchSpectatorState = fn {
-    if spectator.status {
-        sampSendMenuSelectRow(SPECTATOR_MENU_SWITCH)
-    }
-}
-
-hotKeyCallbacks.nextPlayerInSpectator = fn {
-    if spectator.status {
-        sampSendMenuSelectRow(SPECTATOR_MENU_NEXT)
-    }
-}
-
-hotKeyCallbacks.previousPlayerInSpectator = fn {
-    if spectator.status {
-        sampSendMenuSelectRow(SPECTATOR_MENU_BACK)
-    }
-}
-
-HotKey::new("main->spectatorQuit", { VK_I }, "Выйти из /sp")
-      ::registerCallback(hotKeyCallbacks.spectatorQuit)
-
-HotKey::new("main->airbreak", { VK_RSHIFT }, "Аирбрейк")
-      ::registerCallback(hotKeyCallbacks.airbreak)
-
-HotKey::new("main->switchCursorState", { VK_B }, "Переключить курсор")
-      ::registerCallback(hotKeyCallbacks.switchCursorState)
-
-HotKey::new("main->switchSpectatorState", { VK_U }, "Переключить режим наблюдения")
-      ::registerCallback(hotKeyCallbacks.switchSpectatorState)
-
-HotKey::new("main->nextPlayerInSpectator", { VK_RIGHT }, "Следующий игрок в /sp")
-      ::registerCallback(hotKeyCallbacks.nextPlayerInSpectator)
-
-HotKey::new("main->previousPlayerInSpectator", { VK_LEFT }, "Предыдущий игрок в /sp")
-      ::registerCallback(hotKeyCallbacks.previousPlayerInSpectator)
-
 static enum /* ALIGN_TYPE */ {
     ALIGN_LEFT,
     ALIGN_CENTER,
@@ -244,8 +168,87 @@ imgui.OnInitialize(fn {
 global fn main() {
     while !isSampAvailable() { wait(0) }
 
+    config::initialize()
+
     encoding.default        = "CP1251"
     baseNameTagsDistance    = memory.getfloat(sampGetServerSettingsPtr() + 39)
+
+    /** 
+     * Initializing hot keys that used in this module.
+    */
+    local hotKeyCallbacks = {}
+
+    hotKeyCallbacks.airbreak = fn {
+        if config.root.cheats.airbreak.use && user::getAloginStatus() {
+            airbreak.status         = !$
+            local notificationTitle = "AirBreak " .. ((airbreak.status) ? "включен." : "выключен.")
+            local notificationText  = ""
+
+            if airbreak.status {
+                airbreak.coords     = { getCharCoordinates(PLAYER_PED) }
+                notificationText    = "Чтобы выключить - нажмите эту клавиши повторно."
+            } else {
+                notificationText = "Чтобы опять включить, нажмите эту клавишу повторно"
+            }
+        
+            if local notificationType = config.root.cheats.airbreak.notificationType {
+                if notificationType != NOTIFICATION_TYPE_NONE {
+                    notify::send({
+                        icon        = icons.ICON_ARROW_UP
+                        title       = notificationTitle
+                        text        = notificationText
+                        duration    = 2
+                    }, (notificationType == NOTIFICATION_TYPE_SCRIPT_MESSAGE) ? notificationTitle : nil)
+                }
+            }
+        }
+    }
+
+    hotKeyCallbacks.spectatorQuit = fn {
+        if spectator.status {
+            sampSendMenuSelectRow(SPECTATOR_MENU_EXIT)
+        }
+    }
+
+    hotKeyCallbacks.switchCursorState = fn {
+        imguiAssets::switchCursorStatus()
+    }
+
+    hotKeyCallbacks.switchSpectatorState = fn {
+        if spectator.status {
+            sampSendMenuSelectRow(SPECTATOR_MENU_SWITCH)
+        }
+    }
+
+    hotKeyCallbacks.nextPlayerInSpectator = fn {
+        if spectator.status {
+            sampSendMenuSelectRow(SPECTATOR_MENU_NEXT)
+        }
+    }
+
+    hotKeyCallbacks.previousPlayerInSpectator = fn {
+        if spectator.status {
+            sampSendMenuSelectRow(SPECTATOR_MENU_BACK)
+        }
+    }
+
+    HotKey::new("main->spectatorQuit", { VK_I }, "Выйти из /sp")
+        ::registerCallback(hotKeyCallbacks.spectatorQuit)
+
+    HotKey::new("main->airbreak", { VK_RSHIFT }, "Аирбрейк")
+        ::registerCallback(hotKeyCallbacks.airbreak)
+
+    HotKey::new("main->switchCursorState", { VK_B }, "Переключить курсор")
+        ::registerCallback(hotKeyCallbacks.switchCursorState)
+
+    HotKey::new("main->switchSpectatorState", { VK_U }, "Переключить режим наблюдения")
+        ::registerCallback(hotKeyCallbacks.switchSpectatorState)
+
+    HotKey::new("main->nextPlayerInSpectator", { VK_RIGHT }, "Следующий игрок в /sp")
+        ::registerCallback(hotKeyCallbacks.nextPlayerInSpectator)
+
+    HotKey::new("main->previousPlayerInSpectator", { VK_LEFT }, "Предыдущий игрок в /sp")
+        ::registerCallback(hotKeyCallbacks.previousPlayerInSpectator)
 
     playerNotes::initializeNotes()
     binder::initializeBinds()

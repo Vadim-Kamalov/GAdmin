@@ -212,13 +212,10 @@ method assets::mergeTables(first, second) {
  */
 method assets::explodeDate(timestamp) {
     return {
-        sec     = timestamp % 60,
-        min     = math.floor(timestamp / 60) % 60,
-        hour    = math.floor(timestamp / 3600) % 24,
-        day     = math.floor(timestamp / 86400) % 30,
-        month   = math.floor(timestamp / 2592000) % 12,
-        year    = math.floor(timestamp / 31536000)
-    } 
+        sec  = timestamp % 60,
+        min  = math.floor(timestamp / 60) % 60,
+        hour = math.floor(timestamp / 3600)
+    }
 }
 
 /**
