@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<AutoUpdate version="1.2.6">
-    <title>GAdmin v1.2.6</title>
+<AutoUpdate version="1.2.7">
+    <title>GAdmin v1.2.6 - v.1.2.7</title>
     <buttons first="Установить" second="Пропустить" third="Позже"/>
     <body>
         <header>Исправления</header>
         - Исправлено что время в онлайне считалось только в лимитах 24 часов.
         - Теперь настройки будут сбрасываться если что-то произошло не так с файлом настроек.
+        - Исправлено что настройки не читались должным образом. (v1.2.7)
     </body>
     <links>
-        <link destination="GAdmin-Release.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/download/v1.2.6/GAdmin-Release.lua</link>
+        <link destination="GAdmin-Release.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/download/v1.2.7/GAdmin-Release.lua</link>
     </links>
 </AutoUpdate>
