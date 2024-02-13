@@ -335,7 +335,7 @@ static __config__ = {
                 use             = false,
                 onlyInSpectator = false
             },
-            
+                        
             autoAACommand           = { use = false },
             hideSpectatorMenu       = { use = true },
             swapLayout              = { use = false },
@@ -462,11 +462,14 @@ method __config__::initialize() {
             $debugError!("config::initialize", "something went wrong with configuration. Configuration will be reset.")
             $debugError!("config::initialize", "saved script information in " .. scriptInformationPath)
 
-            common::writeInFile(scriptInformationPath, assets::collectScriptInformation())
             common::writeInFile($CONFIG_PATH, neatJSON(self.def, { sort = true, wrap = 40 }))
-            common::sendScriptMessage("Something went wrong with the settings file.")
-            common::sendScriptMessage("The settings will be reset and information about the script will be written to the next file:")
-            common::sendScriptMessage(scriptInformationPath)
+            lua_thread.create(fn {
+                while !isSampAvailable() { wait(0) }
+                common::writeInFile(scriptInformationPath, assets::collectScriptInformation())
+                common::sendScriptMessage("Something went wrong with the settings file.")
+                common::sendScriptMessage("The settings will be reset and information about the script will be written to the next file:")
+                common::sendScriptMessage(scriptInformationPath)
+            })
 
             return
         }

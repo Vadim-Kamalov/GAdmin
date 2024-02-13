@@ -123,6 +123,7 @@ static enum /* DIALOG_STYLE */ {
     DIALOG_STYLE_TABLIST_HEADERS
 }
 
+config::initialize()
 require("moonloader")
 math.randomseed(os.time())
 
@@ -167,8 +168,6 @@ imgui.OnInitialize(fn {
 
 global fn main() {
     while !isSampAvailable() { wait(0) }
-
-    config::initialize()
 
     encoding.default        = "CP1251"
     baseNameTagsDistance    = memory.getfloat(sampGetServerSettingsPtr() + 39)
