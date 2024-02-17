@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<AutoUpdate version="1.3.1">
-    <title>GAdmin v1.3.1</title>
+<AutoUpdate version="1.3.2">
+    <title>GAdmin v1.3.2</title>
     <buttons first="Установить" second="Пропустить" third="Позже"/>
     <body>
         <header>Изменения/исправления функции отображения ID в IC чате</header>
@@ -8,6 +8,6 @@
         <ul>Теперь отображение айди работает <b>только</b> для IC чата и <code>/me</code> действий.</ul>
     </body>
     <links>
-        <link destination="GAdmin-Release.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/download/v1.3.1/GAdmin-Release.lua</link>
+        <link destination="GAdmin-Release.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/download/v1.3.2/GAdmin-Release.lua</link>
     </links>
 </AutoUpdate>
