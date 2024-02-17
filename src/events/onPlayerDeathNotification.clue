@@ -94,7 +94,7 @@ sampev.onPlayerDeathNotification = fn(killerId, killedId, reason) {
         )
     
     if config.root.additions.deathNotifyInChat.use {
-        sampAddChatMessage(message, 0xAFAFAF)
+        sampAddChatMessage(message, tonumber(config.root.additions.deathNotifyInChat.color, 16))
     }
 
     if config.root.additions.idInKillList.use {

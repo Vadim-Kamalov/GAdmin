@@ -32,7 +32,7 @@ imgui.OnFrame(fn { return autoUpdate.windowState }, fn(self) {
     self.flags      = imgui.WindowFlags.NoMove + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoScrollbar
 
     imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2, sizeY / 2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
-    imgui.SetNextWindowSize(imgui.ImVec2(720, 350))
+    imgui.SetNextWindowSize(imgui.ImVec2(720, 400))
 
     local itemSpacing, windowPadding = imgui.GetStyle().ItemSpacing, imgui.GetStyle().WindowPadding
 
@@ -41,16 +41,7 @@ imgui.OnFrame(fn { return autoUpdate.windowState }, fn(self) {
 
         imgui.PushStyleColor(imgui.Col.ChildBg, imgui.GetStyle().Colors[imgui.Col.WindowBg])
             imgui.BeginChild("imgui.windows.AutoUpdate.child", imgui.ImVec2(0, imgui.GetWindowHeight() - 70 - windowPadding.y), false)
-                for line with string.gmatch(autoUpdate.imgui.body, "[^\n]+") {
-                    line = string.match($, "^%s*(.*)$")
-                    if string.find(line, "<header>.*</header>") {
-                        imguiAssets::textWithFont(string.match(line, "<header>(.*)</header>"), bold14)
-                    } elseif string.find(line, "<newline.*") {
-                        imgui.NewLine()
-                    } else {
-                        imguiAssets::textWithFont(line, regular14)
-                    }
-                }
+                autoUpdate::renderXMLGroup(autoUpdate.imgui.body)
             imgui.EndChild()
         imgui.PopStyleColor()
 

@@ -20,26 +20,26 @@
 
 @version 3.4.4
 
-@import "Hook"              => hook
-@import "Icons"             => icons
-@import "Common"            => common
-@import "Config"            => config
-@import "Notifications"     => notify
-@import "CompressedData"    => compressed
-@import "CommandRequester"  => commandRequester
-@import "AutoUpdate"        => autoUpdate
-@import "Assets"            => assets
-@import "MovableWindows"    => movableWindows
+@import "Hook"             => hook
+@import "Icons"            => icons
+@import "Common"           => common
+@import "Notifications"    => notify
+@import "CompressedData"   => compressed
+@import "CommandRequester" => commandRequester
+@import "AutoUpdate"       => autoUpdate
+@import "Config"           => config
+@import "Assets"           => assets
+@import "MovableWindows"   => movableWindows
 
 @import "imgui.Style"       => style
 @import "imgui.PlayerNotes" => playerNotes
 @import "imgui.HotKey"      => HotKey
 @import "imgui.Assets"      => imguiAssets
 
-@import "game.GReport"      => greport
-@import "game.Binder"       => binder
-@import "game.User"         => user
-@import "game.Spectator"    => spectator
+@import "game.GReport"   => greport
+@import "game.Binder"    => binder
+@import "game.User"      => user
+@import "game.Spectator" => spectator
 
 @define COMMAND_DELAY       800
 @define GADMIN_VERSION      "1.2.7"
@@ -123,7 +123,6 @@ static enum /* DIALOG_STYLE */ {
     DIALOG_STYLE_TABLIST_HEADERS
 }
 
-config::initialize()
 require("moonloader")
 math.randomseed(os.time())
 

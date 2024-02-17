@@ -75,7 +75,8 @@ method __notifications__::send(notification = {}, scriptMessage) {
             text        = notification.text || "Description"
             duration    = notification.duration || 5
             clock       = os.clock()
-            pos         = 0
+            alpha       = 1.0
+            pos         = (config.root.windows.notifications.align == ALIGN_CENTER) ? 149 : 0
             buttons     = notification.buttons
             condition   = notification.condition
         })

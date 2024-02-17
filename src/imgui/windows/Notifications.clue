@@ -33,6 +33,7 @@ style::registerWindow("imgui.windows.Notifications", "Оповещения")
 
 imgui.OnFrame(fn { return notify.active && config.root.windows.notifications.use }, fn(self) {
     self.HideCursor = imguiAssets::getCursorStatus()
+    self.align      = config.root.windows.notifications.align 
     self.notifySize = math.min(5, #notify::get())
     self.flags      = imgui.WindowFlags.NoMove + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize
         + imgui.WindowFlags.NoScrollbar + imgui.WindowFlags.NoScrollWithMouse + imgui.WindowFlags.NoBringToFrontOnFocus
@@ -55,7 +56,7 @@ imgui.OnFrame(fn { return notify.active && config.root.windows.notifications.use
                 imgui.ImVec2(pos.x + 5, pos.y + 5),
                 imgui.ImVec2(size.x - 10, size.y - 10),
                 24.0,
-                100,
+                math.floor(math.floor(imgui.GetStyle().Alpha * 255) / 255) * 100,
                 2
             )
             
@@ -108,33 +109,96 @@ imgui.OnFrame(fn { return notify.active && config.root.windows.notifications.use
 
     local sizeX, sizeY = getScreenResolution()
 
+    self.animation = ({
+        [ALIGN_LEFT] = {
+            posX     = 0,
+            show     = { from = -150, to = 15 },
+            hide     = { from = 15, to = -150 },
+            removeOn = -150
+        },
+
+        [ALIGN_CENTER] = {},
+        [ALIGN_RIGHT]  = {
+            posX     = sizeX - 360,
+            show     = { from = 380, to = 0 },
+            hide     = { from = -1, to = 380 },
+            removeOn = 380
+        }
+    })[self.align]
+
     self.style::apply()
-    imgui.SetNextWindowPos(imgui.ImVec2(sizeX - 360, sizeY - 80 * self.notifySize))
-    imgui.SetNextWindowSize(imgui.ImVec2(860, 80 * self.notifySize))
+    imgui.SetNextWindowPos(imgui.ImVec2((self.align == ALIGN_CENTER) ? sizeX / 2 - 172 : self.animation.posX, sizeY - 80 * self.notifySize))
+    imgui.SetNextWindowSize(imgui.ImVec2((self.align == ALIGN_CENTER) ? 344 : 860, 80 * self.notifySize))
 
     style::beginWindowStyleChangeable("imgui.windows.Notifications")
     imgui.Begin("imgui.windows.Notifications", nil, self.flags)
         for i = 1, config.root.windows.notifications.maxItems {
             if local notification = notify::get()[i] {
-                if os.clock() - notification.clock >= notification.duration {
-                    notification.pos = imguiAssets::bringFloatTo(-1, 380, notification.clock + notification.duration, 0.1)
-                } elseif notification.pos < 380 {
-                    notification.pos = imguiAssets::bringFloatTo(380, 0, notification.clock, 0.2)
-                }
+                if self.align != ALIGN_CENTER {
+                    if os.clock() - notification.clock >= notification.duration {
+                        notification.pos = imguiAssets::bringFloatTo(
+                            self.animation.hide.from,
+                            self.animation.hide.to,
+                            notification.clock + notification.duration,
+                            0.1
+                        )
+                    } elseif notification.pos < math.abs(self.animation.removeOn) {
+                        notification.pos = imguiAssets::bringFloatTo(
+                            self.animation.show.from,
+                            self.animation.show.to,
+                            notification.clock,
+                            0.2
+                        )
+                    }
 
-                if notification.pos == 380 {
-                    notify::remove(i)
+                    if notification.pos == self.animation.removeOn {
+                        notify::remove(i)
+                    }
+
+                    imgui.SetCursorPosX(notification.pos)
+                } else {
+                    if os.clock() - notification.clock >= notification.duration {
+                        if #notify.root == i {
+                            notification.pos = imguiAssets::bringFloatTo(
+                                0,
+                                150,
+                                notification.clock + notification.duration,
+                                0.1
+                            )
+                        } else {
+                            notification.alpha = imguiAssets::bringFloatTo(
+                                1.0,
+                                0.0,
+                                notification.clock + notification.duration,
+                                0.1
+                            )
+                        }
+                    } elseif notification.pos > 0 {
+                        notification.pos = imguiAssets::bringFloatTo(
+                            149,
+                            0,
+                            notification.clock,
+                            0.2
+                        )
+                    }
+
+                    if notification.pos == 150 || notification.alpha == 0.0 {
+                        notify::remove(i)
+                    }
+
+                    imgui.SetCursorPosY(notification.pos + imgui.GetCursorPos().y)
                 }
 
                 if notification.condition?() {
                     notification.clock      = os.clock() - notification.duration
                     notification.condition  = nil
                 }
-
-                imgui.SetCursorPosX(notification.pos)
-                self.notification(notification, fn {
-                    notification.clock = os.clock() - notification.duration
-                })
+                
+                imgui.PushStyleVarFloat(imgui.StyleVar.Alpha, notification.alpha)
+                    self.notification(notification, fn {
+                        notification.clock = os.clock() - notification.duration
+                    })
+                imgui.PopStyleVar()
             }
         }
     imgui.End()

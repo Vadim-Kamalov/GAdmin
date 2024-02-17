@@ -18,9 +18,10 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
-@import "imgui.Windows"         => windows
-@import "imgui.Assets"          => imguiAssets
-@import "imgui.StyleChanger"    => StyleChanger
+@import "imgui.Windows"      => windows
+@import "imgui.Assets"       => imguiAssets
+@import "imgui.StyleChanger" => StyleChanger
+@import "imgui.Animations"   => animations
 
 @import "game.User" => user
 
@@ -36,13 +37,36 @@ windows::new("imgui.windows.KillList", {
     size        = { x = 0, y = 0 }
     condition   = fn { return config.root.windows.killList.use && user::getAloginStatus() }
     initialize  = {
+        selected = {},
+        popup    = StyleChanger::new({
+            PopupBg         = "22222200"
+            PopupBorderSize = 0
+            FrameRounding   = 8
+            FrameBorderSize = 0
+            ItemSpacing     = imgui.ImVec2(0, 0)
+            WindowPadding   = imgui.ImVec2(2, 2)
+        }),
+
         style = StyleChanger::new({
             WindowBorderSize    = 0
             WindowBg            = imgui.ImVec4(0, 0, 0, 0)
         })
     }
 }, fn(self) {
-    self.strokeSize = config.root.windows.killList.strokeSize
+    self.strokeSize     = config.root.windows.killList.strokeSize
+    self.allowOpenPopup = fn(player, color) {
+        if imgui.IsItemHovered() {
+            imgui.GetWindowDrawList()::AddLine(
+                imgui.ImVec2(imgui.GetItemRectMin().x, imgui.GetItemRectMax().y),
+                imgui.GetItemRectMax(),
+                imgui.ColorConvertFloat4ToU32(color),
+                2
+            )
+        }; if imgui.IsItemClicked() && sampIsPlayerConnected(player.id) {
+            self.var.selected = player
+            imgui.OpenPopup(self.id .. ".popup")
+        }
+    }
 
     self.var.style::apply()
     self::begin(self.id, fn {
@@ -121,13 +145,12 @@ windows::new("imgui.windows.KillList", {
 
                         imgui.BeginGroup()
                             imguiAssets::addStrokedText(text.left.nickname, self.strokeSize, text.left.color)
-                            imguiAssets::setPreviousItemAbleToCopy(text.left.nickname)
                             if config.root.windows.killList.displayId && text.left.id != -1 {
                                 imgui.SameLine(nil, 0)
                                 imguiAssets::addStrokedText("[%d]", self.strokeSize, text.left.color, text.left.id)
-                                imguiAssets::setPreviousItemAbleToCopy(text.left.id)
                             }
                         imgui.EndGroup()
+                        self.allowOpenPopup(text.left, text.left.color)
                     imgui.PopFont()
 
                     imgui.SameLine(nil, 5)
@@ -145,13 +168,12 @@ windows::new("imgui.windows.KillList", {
 
                             imgui.BeginGroup()
                                 imguiAssets::addStrokedText(text.right.nickname, self.strokeSize, text.right.color)
-                                imguiAssets::setPreviousItemAbleToCopy(text.right.nickname)
                                 if config.root.windows.killList.displayId && text.right.id != -1 {
                                     imgui.SameLine(nil, 0)
                                     imguiAssets::addStrokedText("[%d]", self.strokeSize, text.right.color, text.right.id)
-                                    imguiAssets::setPreviousItemAbleToCopy(text.right.id)
                                 }
                             imgui.EndGroup()
+                            self.allowOpenPopup(text.right, text.right.color)
                         imgui.PopFont()
                     }
                 imgui.EndGroup()
@@ -161,6 +183,23 @@ windows::new("imgui.windows.KillList", {
                 }
             }
         }
+
+        self.var.popup::apply()
+        if imgui.BeginPopup(self.id .. ".popup", self.flags) {
+            imgui.PushFont(regular9)
+                for index, command in ({ "sp", "pame", "stats" }) {
+                    print(command, (index == 1) ? 3 : ((index == 3) ? 12 : 0))
+                    if animations::button(
+                        string.format("/%s %d##%s", command, self.var.selected.id, self.id),
+                        imgui.ImVec2(100, 25),
+                        (index == 1) ? 3 : ((index == 3) ? 12 : 0)
+                    ) {
+                        sampSendChat(string.format("/%s %d", command, self.var.selected.id))
+                    }
+                }
+            imgui.PopFont()
+        }
+        self.var.popup::reset()
     })
     self.var.style::reset()
 })

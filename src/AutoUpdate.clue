@@ -182,4 +182,152 @@ method __autoUpdate__::checkUpdates(url) {
     }) 
 }
 
+/**
+ * Render XML elements that listed below:
+ *  <quote> ... </quote>, <ul> ... </ul>, <code> ... </code>,
+ *  <b> ... </b>, <link> ... </link>, <header> ... </header>, <br/>, <newline/>0
+ *
+ * Notice that `<br/>` (break line) is only available in `quote`, `ul`,
+ * `code`, `b`, `link` and `header` elements.
+ *
+ * `<newline/>` is purposed to use **only** outside of this elements: in `body` section.
+ *
+ * @param text string
+ * @return void
+ */
+method __autoUpdate__::renderXMLGroup(text) {
+    local fn renderLine(line, type) {
+        local index  = 1
+        local parsed = {}
+        local buffer = ""
+
+        while #line >= index {
+            local char = string.sub(line, index, index)
+            if char == "<" {
+                if #buffer > 0 {
+                    table.insert(parsed, { tag = "plain-text", body = buffer })
+                    buffer = ""
+                }
+
+                if local element, tag, body = string.match(string.sub(line, index), "^(<(%w+)>(.*)</%2>)") {
+                    table.insert(parsed, { tag = tag, body = body })
+                    index += #element
+                } elseif local element, tag = string.match(string.sub(line, index), "^(<(%w+)/>)") {
+                    table.insert(parsed, { tag = tag, body = "none" })
+                    index += #element - 1
+                }
+            } else {
+                buffer ..= char      
+            }
+            index += 1
+        }
+
+        if #buffer > 0 {
+            table.insert(parsed, { tag = "plain-text", body = buffer })
+        }
+
+        imgui.PushTextWrapPos(imgui.GetWindowWidth())
+        imgui.BeginGroup()
+            for index, item in parsed {
+                item.body = string.match($, "^%s*(.-)%s*$")
+
+                match item.tag {
+                    "b" => {
+                        imgui.PushFont((type == "header") ? bold14 : bold12)
+                            imgui.Text(item.body)
+                        imgui.PopFont()
+                    }
+
+                    "plain-text" => {
+                        imgui.Text(item.body)
+                    }
+
+                    "code" => {
+                        if imgui.GetCursorPos().x == 0 {
+                            imgui.SetCursorPos(imgui.GetCursorPos() + imgui.ImVec2(2, 2))
+                        }
+
+                        imgui.BeginGroup()
+                            local pos     = imgui.GetCursorScreenPos()
+                            local size    = imgui.CalcTextSize(item.body)
+                            local padding = imgui.ImVec2(2, 2)
+
+                            imgui.GetWindowDrawList()::AddRectFilled(
+                                pos - padding,
+                                pos + size + padding,
+                                imgui.ColorConvertFloat4ToU32(imgui.GetStyle().Colors[imgui.Col.FrameBg]),
+                                imgui.GetStyle().FrameRounding
+                            )
+
+                            imgui.Text(item.body)
+                        imgui.EndGroup()
+                    }
+
+                    "link" => {
+                        imgui.Text(item.body)
+                        imguiAssets::setPreviousItemAbleToCopy(item.body)
+                    }
+
+                    "br" => {
+                        imgui.NewLine()
+                    }
+                }
+
+                if #parsed >= 2 && index != #parsed && item.tag != "br" {
+                    imgui.SameLine(nil, 5)
+                }
+            }
+        imgui.EndGroup()
+        imgui.PopTextWrapPos()
+    }
+
+    for line with string.gmatch(text, "[^\n\r]+") {
+        line = string.match(line, "^%s*(.*)")
+        if local tag, body = string.match(line, "^<(%w+)>(.*)</%1>$") {
+            match tag {
+                "header" => {
+                    imgui.PushFont(bold14)
+                        renderLine(body, tag)
+                    imgui.PopFont()
+                }
+
+                "ul" /* unordered list */ => {
+                    imgui.PushFont(regular12)
+                        local pos = imgui.GetCursorPos()
+                        imgui.Bullet()
+                        imgui.SetCursorPosY(pos.y - 1)
+                        renderLine(body, tag)
+                    imgui.PopFont()
+                }
+
+                "quote" => {
+                    imgui.BeginGroup()
+                        local cursor       = imgui.GetCursorPos()
+                        local screenCursor = imgui.GetCursorScreenPos()
+
+                        imgui.SetCursorPos(imgui.ImVec2(cursor.x + 10, cursor.y))
+                        imgui.PushStyleColor(imgui.Col.Text, imgui.GetStyle().Colors[imgui.Col.TextDisabled])
+                            imgui.PushFont(regular12)
+                                renderLine(body, tag)
+                            imgui.PopFont()
+                        imgui.PopStyleColor()
+
+                        imgui.GetWindowDrawList()::AddRectFilled(
+                            screenCursor,
+                            imgui.ImVec2(screenCursor.x + 3, imgui.GetItemRectMax().y),
+                            imgui.ColorConvertFloat4ToU32(imgui.GetStyle().Colors[imgui.Col.TextDisabled])
+                        )
+                    imgui.EndGroup()
+                }
+            }
+        } elseif string.find(line, "^<newline.+") {
+            imgui.NewLine()
+        } else {
+            imgui.PushFont(regular12)
+                renderLine(line)
+            imgui.PopFont()
+        }
+    }
+}
+
 return __autoUpdate__

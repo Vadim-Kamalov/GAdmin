@@ -18,17 +18,18 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
-@import "game.Admins"       => admins
-@import "game.User"         => user
-@import "game.Spectator"    => spectator
-@import "game.samp.Player"  => player
-@import "game.GReport"      => greport
+@import "game.Admins"      => admins
+@import "game.User"        => user
+@import "game.Spectator"   => spectator
+@import "game.samp.Player" => player
+@import "game.GReport"     => greport
 
-@import "Assets"            => assets
-@import "CommandRequester"  => commandRequester
-@import "Config"            => config
-@import "Notifications"     => notify
-@import "Icons"             => icons
+@import "Common"           => common
+@import "Assets"           => assets
+@import "CommandRequester" => commandRequester
+@import "Config"           => config
+@import "Notifications"    => notify
+@import "Icons"            => icons
 
 local logs = {
     { "IC чат/действия", {
@@ -139,6 +140,13 @@ sampev.onServerMessage = fn(color, text) {
             messageContinuation.awaiting    = false
             messageContinuation.color       = nil
         }
+    }
+
+    if text == "Вы были отсоединены от сервера за неправильный пароль администрирования." &&
+       config.root.additions.autoLogin.use && #config.root.additions.autoLogin.aloginPassword >= 3
+    {
+        config.root.additions.autoLogin.aloginPassword = ""
+        common::sendScriptMessage("Вы ввели неверный пароль в настройках для авто-ввода. Пароль был сброшен.")
     }
 
     if string.find(text, "^%[A%] .*%[%d+%]: %S+") && color == 866792362 && config.root.additions.mention.use {

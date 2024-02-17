@@ -131,7 +131,7 @@ method __commandRequester__::setupChatWatcher(text, color) {
     } else {
         local command, type = self.current.command.name, self.current.command.type
         if type == COMMAND_REQUEST_TYPE_NO_COMMENTARY {
-            if local id = string.match(text, "^%[%A%] .*%[%d+]: (%d), +$") {
+            if local id = string.match(text, "^%[%A%] .*%[%d+]: (%d+), %+$") {
                 if tonumber(id) == self.current.id.from {
                     self::remove()
                 }
@@ -231,12 +231,13 @@ method __commandRequester__::new(from, command) {
     if isGamePaused() || !config.root.additions.commandRequester.use { return false }
 
     local commandType = COMMAND_REQUEST_TYPE_NONE
+    local commandLvl  = 0
 
     if local this = config.root.additions.commandRequester {
         for _, commandData in this.allowedCommands {
             if local command = string.match($, "^/(%S+)") {
                 if string.lower(commandData[1]) == string.lower(command) {
-                    commandType = commandData[2]
+                    commandType, commandLvl = commandData[2], commandData[3]
                 }
             }
         }
@@ -289,7 +290,8 @@ method __commandRequester__::new(from, command) {
                 }
             }
 
-            if from != user::getId() && !self.states.frame {
+            print(user::getAdminLvl(), commandLvl, user::getAdminLvl() >= commandLvl)
+            if from != user::getId() && !self.states.frame && user::getAdminLvl() >= commandLvl {
                 self.states.frame = true
 
                 if config.root.additions.commandRequester.displayType == COMMAND_REQUEST_DISPLAY_NOTIFICATION {

@@ -27,7 +27,7 @@ local shadow = {}
  * @param from ImVec2
  * @param to ImVec2
  * @param size number
- * @param opacity number (0 .. 100)
+ * @param opacity number (0 .. 255)
  * @param rate number
  * @return void
  */

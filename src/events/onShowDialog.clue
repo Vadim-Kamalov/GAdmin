@@ -18,11 +18,13 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
-@import "game.User"         => user
-@import "game.Admins"       => admins
-@import "game.Spectator"    => spectator
-@import "game.GReport"      => greport
-@import "Config"            => config
+@import "game.User"      => user
+@import "game.Admins"    => admins
+@import "game.Spectator" => spectator
+@import "game.GReport"   => greport
+
+@import "Config" => config
+@import "Common" => common
 
 static checkedAdminList = false
 
@@ -57,8 +59,13 @@ sampev.onShowDialog = fn(id, style, title, firstButton, secondButton, text) {
     if config.root.additions.autoLogin.use && #config.root.additions.autoLogin.accountPassword >= 3
        && style == DIALOG_STYLE_PASSWORD && string.find(text, "Для продолжения игры, Вам необходимо авторизоваться")
     {
-        sampSendDialogResponse(id, 1, 0, config.root.additions.autoLogin.accountPassword)
-        return false
+        if string.find(text, "Попытка входа:") {
+            config.root.additions.autoLogin.accountPassword = ""
+            common::sendScriptMessage("Вы ввели неверный пароль в настройках для авто-ввода. Пароль был сброшен.")
+        } else {
+            sampSendDialogResponse(id, 1, 0, config.root.additions.autoLogin.accountPassword)
+            return false
+        }
     }
 
     if style == DIALOG_STYLE_PASSWORD && firstButton == "Далее" && secondButton == "Отмена"

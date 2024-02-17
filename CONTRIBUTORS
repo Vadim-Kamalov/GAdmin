@@ -31,16 +31,16 @@ M: dzone@danwin1210.de
 G: github.com/defaultzone
 C: vk.com/altasd
 D: значительный вклад в разработку
-CLR: ACC1DC=defaultzone
+CLR: 2F9D2F=defaultzone
 
 N: Petr Frank (HeroIAm)
 G: github.com/HeroIAm
 D: реализовал трассера, аирбрейк, отображение
 D: ID в IC чате
 
-N: Oleg Garsin (2R2R)
+N: Oleg Garsin (olegator/2R2R)
 D: тестировщик
-CLR: FFFFFF=2R2R
+CLR: FFFFFF=olegator
 
 N: BigFloppa
 D: тестировщик

@@ -214,6 +214,7 @@ local window = {
             { "notifications", "Оповещения", {
                 { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.notifications.use) },
                 { "maxItems", "Макс. кол-во оповещений", WINDOW_WIDGET_SLIDER_INT, 1, 5, imgui.new.int(config.root.windows.notifications.maxItems) },
+                { "align", "Позиция оповещений", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.windows.notifications.align), "Слева", "По центру", "Справа" }
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
 
             { "adminList", "Список админов", {
@@ -417,8 +418,9 @@ ap = kick <id> AFK public place`, WINDOW_WIDGET_SWITCH, imgui.new.bool(config.ro
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP }
 
             { "deathNotifyInChat", "Убийства в чат", {
-                { "use", "Логирует убийства в чат", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.deathNotifyInChat.use) }
-            }},
+                { "use", "Логирует убийства в чат", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.deathNotifyInChat.use) },
+                { "color", "Цвет", WINDOW_WIDGET_COLOR_PICKER, imguiAssets::convertHex2Float3(config.root.additions.deathNotifyInChat.color) }
+            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
 
             { "mention", "Упоминания в /a", {
                 { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.mention.use) },
@@ -558,6 +560,7 @@ addEventHandler("onWindowMessage", fn(event, wparam) {
     if (event == wm.WM_KEYDOWN || event == wm.WM_SYSKEYDOWN) && !imgui.GetIO().WantTextInput {
         if wparam == VK_ESCAPE && window.state[0] && !changingHotKey {
             window.state[0] = false
+            imguiAssets::setCursorStatus(!window.state[0])
             consumeWindowMessage(true, false)
             return
         }

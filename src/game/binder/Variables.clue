@@ -87,6 +87,18 @@ $NEW_VARIABLE!("GREPORT_ACTIVE_TIME", "Активное время (МИН:CЕК
     return greport.player::getActiveTime()
 }))
 
+$NEW_VARIABLE!("SPECTATOR_VEHICLE_ID", "ID машины (из /dl) игрока за которым вы следите", (fn {
+    if spectator.status {
+        local result, handle = spectator::getHandle()
+        if isCharInAnyCar(handle) && result {
+            if local car = storeCarCharIsInNoSave(handle) {
+                local result, vehId = sampGetVehicleIdByCarHandle(car)
+                return (result) ? vehId : nil
+            }
+        }
+    }
+}))
+
 $SPECTATOR_INFORMATION_HELPER!("PLATFORM", platform, "Платформа")
 $SPECTATOR_INFORMATION_HELPER!("ARMOR", armor, "Броня")
 $SPECTATOR_INFORMATION_HELPER!("PING", ping, "Пинг")

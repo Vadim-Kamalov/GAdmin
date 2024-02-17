@@ -99,8 +99,9 @@ static __config__ = {
             },
 
             notifications = {
-                use         = true,
-                maxItems    = 5
+                use      = true,
+                maxItems = 5,
+                align    = 3
             },
 
             farChat = {
@@ -113,7 +114,7 @@ static __config__ = {
 
                 // In cases when message can repeated (for example, /phone message can spam),
                 // use this option. Delay in seconds.
-                delay       = 2
+                delay = 2
             },
             
             playerChecker = { 
@@ -130,8 +131,7 @@ static __config__ = {
 
             autoCompletion = {
                 use         = true,
-                strokeSize  = 1,
-                commands    = { /** { name = string, description = string }... */},
+                strokeSize  = 1
             },
 
             userInformation = {
@@ -248,26 +248,26 @@ static __config__ = {
                 secondsToHide       = 5,
                 soundNotification   = true,
                 allowedCommands     = {
-                    { "pk",         4 },
-                    { "ck",         4 },
-                    { "slap",       4 },
-                    { "unfreeze",   4 },
-                    { "setworld",   4 },
-                    { "setint",     4 },
-                    { "dpame",      4 },
-                    { "leave",      4 },
-                    { "makemic",    4 },
-                    { "unwarn",     4 },
-                    { "aheal",      4 },
-                    { "warn",       3 },
-                    { "ban",        3 },
-                    { "kick",       3 },
-                    { "mute",       3 },
-                    { "bmute",      3 },
-                    { "iban",       3 },
-                    { "jail",       3 },
-                    { "vspawn",     2 },
-                    { "vfuel",      2 }
+                    { "pk",         4, 2 },
+                    { "ck",         4, 3 },
+                    { "slap",       4, 2 },
+                    { "unfreeze",   4, 2 },
+                    { "setworld",   4, 2 },
+                    { "setint",     4, 2 },
+                    { "dpame",      4, 2 },
+                    { "leave",      4, 3 },
+                    { "makemic",    4, 3 },
+                    { "unwarn",     4, 5 },
+                    { "aheal",      4, 3 },
+                    { "warn",       3, 2 },
+                    { "ban",        3, 3 },
+                    { "kick",       3, 2 },
+                    { "mute",       3, 2 },
+                    { "bmute",      3, 2 },
+                    { "iban",       3, 4 },
+                    { "jail",       3, 4 },
+                    { "vspawn",     2, 3 },
+                    { "vfuel",      2, 3 }
                 }
             },
 
@@ -335,12 +335,16 @@ static __config__ = {
                 use             = false,
                 onlyInSpectator = false
             },
+
+            deathNotifyInChat = {
+                use   = false,
+                color = "AFAFAF"
+            },
                         
             autoAACommand           = { use = false },
             hideSpectatorMenu       = { use = true },
             swapLayout              = { use = false },
             idInKillList            = { use = false },
-            deathNotifyInChat       = { use = false },
             showAdmins              = { use = true },
             displayIdInIc           = { use = false },
             gunInfo                 = { use = false },
@@ -441,6 +445,8 @@ method __config__::saveIfChanged() {
 method __config__::initialize() {
     self.def = self.root
 
+    common::makeDirectoryTree({ "GAdmin", "GAdmin/temp", "GAdmin/config", "GAdmin/logs" })
+
     if !doesFileExist($CONFIG_PATH) {
         self.jsonStrings.file = self.root
         self::save()
@@ -490,6 +496,13 @@ method __config__::initialize() {
     }
 
     mergeTables(self.root, self.def)
+}
+
+if local this = __config__ {
+    if !this.initialized {
+        this::initialize()
+        this.initialized = true
+    }
 }
 
 return __config__
