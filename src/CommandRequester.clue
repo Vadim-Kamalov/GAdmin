@@ -290,7 +290,6 @@ method __commandRequester__::new(from, command) {
                 }
             }
 
-            print(user::getAdminLvl(), commandLvl, user::getAdminLvl() >= commandLvl)
             if from != user::getId() && !self.states.frame && user::getAdminLvl() >= commandLvl {
                 self.states.frame = true
 

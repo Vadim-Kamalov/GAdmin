@@ -188,7 +188,6 @@ windows::new("imgui.windows.KillList", {
         if imgui.BeginPopup(self.id .. ".popup", self.flags) {
             imgui.PushFont(regular9)
                 for index, command in ({ "sp", "pame", "stats" }) {
-                    print(command, (index == 1) ? 3 : ((index == 3) ? 12 : 0))
                     if animations::button(
                         string.format("/%s %d##%s", command, self.var.selected.id, self.id),
                         imgui.ImVec2(100, 25),

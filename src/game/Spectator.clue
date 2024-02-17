@@ -103,10 +103,11 @@ user::addOnAloginCallback("game.Spectator", fn(state) {
  * @return table User information in spectator.
  */
 method __spectator__::getInformation() {
+    local result, _ = self::getHandle()
     return {
         platform    = self.platform || "N/A"
-        armor       = (self.id != -1) ? sampGetPlayerArmor(self.id) : 0
-        ping        = (self.id != -1) ? sampGetPlayerPing(self.id) : 0
+        armor       = (result) ? sampGetPlayerArmor(self.id) : 0
+        ping        = (result) ? sampGetPlayerPing(self.id) : 0
         weapon      = ped::getPlayerWeaponNameById(self.id) || "N/A"
         accountId   = self.information.accountId || "N/A"
         health      = self.information.health || "N/A"
