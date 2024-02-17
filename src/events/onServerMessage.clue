@@ -119,10 +119,13 @@ sampev.onServerMessage = fn(color, text) {
         return rgb && bit.tobit(tonumber(string.format("%s%02X", rgb, color & 0xFF), 16))
     }
 
-    if string.find(text, "^%w+.* ") && config.root.additions.displayIdInIc.use {
-        local nickname, other = string.match(text, "^([%w ]+) (.*)")
-        if local id = player::getIdByNickname(string.gsub(nickname, " ", "_")) {
-            text = string.format("%s[%d] %s", nickname, id, other)
+    if ((string.find(text, "^%w+.* ") && color == -413892353) || string.find(text, "^%w+.* говорит:"))
+       && config.root.additions.displayIdInIc.use
+    {
+        if local nickname, other = string.match(text, "^([%w ]+) (.*)") {
+            if local id = player::getIdByNickname(string.gsub(nickname, " ", "_")) {
+                text = string.format("%s[%d] %s", nickname, id, other)
+            }
         }
     }
 
