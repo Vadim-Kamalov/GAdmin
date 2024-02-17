@@ -43,7 +43,7 @@
 
 @define COMMAND_DELAY       800
 @define GADMIN_VERSION      "1.3.2"
-@define AUTOUPDATE_URL      "https://gist.githubusercontent.com/defaultzone/bb1a15ee87bb408f6bf1bd08385988c7/raw/cfdb7e360ef6813c4294068ddc879c3f15c9f536/AutoUpdate.xml"
+@define AUTOUPDATE_URL      "https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/main/AutoUpdate.xml"
 @define CONTRIBUTORS_URL    "https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/main/CONTRIBUTORS"
 
 @define SAMP_BASE                       getModuleHandle("samp.dll")
