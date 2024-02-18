@@ -110,7 +110,7 @@ method __commandRequester__::setupUserCommandWatcher(command) {
  * @return void
  */
 method __commandRequester__::setupChatWatcher(text, color) {
-    if string.find(text, "^{......}%| {......}У Вас нет доступа для использования данной команды%.$") {
+    if string.find(text, "^%| У Вас нет доступа для использования данной команды%.$") {
         if !string.find(self.lastUserCommand, "^/%S+%s*$") && self::new(user::getId(), self.lastUserCommand) {
             lua_thread.create(fn {
                 wait($COMMAND_DELAY)
@@ -131,7 +131,7 @@ method __commandRequester__::setupChatWatcher(text, color) {
     } else {
         local command, type = self.current.command.name, self.current.command.type
         if type == COMMAND_REQUEST_TYPE_NO_COMMENTARY {
-            if local id = string.match(text, "^%[%A%] .*%[%d+]: (%d+), %+$") {
+            if local id = string.match(text, "^%[A] .+%[%d+]: (%d+), %+$") {
                 if tonumber(id) == self.current.id.from {
                     self::remove()
                 }

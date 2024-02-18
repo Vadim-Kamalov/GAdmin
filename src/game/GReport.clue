@@ -362,8 +362,6 @@ method __greport__.player::reset() {
  * @return void
  */
 method __greport__::setupChatWatcher(text) {
-    local text = string.gsub($, "{%x%x%x%x%x%x}", "")
-    
     if !config.root.windows.greport.use { return }
    
     if local nickname, id = string.match(text, "^%| На вас был назначен репорт от игрока (.+)%[(%d+)]%.") {

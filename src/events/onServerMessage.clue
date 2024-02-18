@@ -64,7 +64,6 @@ local logs = {
         { "^%[A] .+%[%d+] установил слухи: ", -1697828182 },                                    // /pame (gossip)
         { "^%[GBUY] .+%[%d+] создал объявление %[%d+]: ", -1697828182 },                        // GBUY advertisement creation
         { "^%[A] .+%[%d+] установил действие: ", -1697828182 },                                 // /action
-        { "^%.%.%. ", -1697828182 },                                                            // /pame (ped description/car description/gossip/GBUY ad) continuation
         { "^Администратор .+%.Причина: ", -10270806 },                                          // /ban | /mute | /kick | /bmute | /warn
         { "^Администратор .+ установил <Player Kill> персонажу .+%.$", -10270806 },             // /pk
         { "^Администратор .+ установил <Character Kill> персонажу .+%.$", -10270806 },          // /ck
@@ -73,8 +72,12 @@ local logs = {
     }}
 }
 
-local skipNextMessage       = false
-local adminListCheckClock   = os.clock() - $COMMAND_DELAY
+local skipNextMessage     = false
+local adminListCheckClock = os.clock() - $COMMAND_DELAY
+
+local unwrapStarted  = false
+local unwrapFinished = false
+local unwrappedText  = ""
 
 local messageContinuation = {
     awaiting    = false,
@@ -82,22 +85,62 @@ local messageContinuation = {
 }
 
 sampev.onServerMessage = fn(color, text) {
-    local text = u8($)
+    local text     = u8($)
+    local pureText = string.gsub(text, "{%x%x%x%x%x%x}", "")
+
+    if local otherA = string.match(pureText, "^%.%.%. (.+)") {
+        if local otherB, dots = string.match(pureText, "^%.%.%. (.+ )(%.+)$") {
+            if #dots == 2 || #dots == 3 {
+                unwrappedText ..= otherB
+            }
+        } else {
+            unwrapStarted   = false
+            unwrapFinished  = true
+            unwrappedText ..= otherA
+        }
+    } elseif unwrapStarted {
+        unwrapStarted  = false
+        unwrapFinished = false
+        unwrappedText  = ""
+    }
+
+    if local dots = string.match(pureText, "(%.+)$") {
+        if #dots == 2 || #dots == 3 && !unwrapStarted {
+            unwrappedText = string.sub(pureText, 1, #pureText - #dots)
+            unwrapStarted = true
+        }
+    }
+
+    // If previous string(s) was(were) wrapped then this variable will store
+    // unwrapped string. Otherwise it will store `text` argument. In both cases
+    // tags `{RRGGBB}` in string will be removed. 
+    //
+    //! Don't return anything after using this variable (string.find, string.match)!
+    local safeText = pureText
+
+    if unwrapFinished && !unwrapStarted {
+        safeText       = unwrappedText
+        unwrapStarted  = false
+        unwrapFinished = false
+        unwrappedText  = ""
+    } elseif unwrapStarted {
+        safeText = ""
+    }
 
     for sectionIndex, section in logs {
         local log = {
             time = assets::getLocalTime()
-            text = string.gsub(text, "{%x%x%x%x%x%x}", "")
+            text = safeText
         }
 
         for _, item in section[2] {
             if type(item) == "table" {
-                if string.find(text, item[1]) && color == item[2] {
+                if string.find(safeText, item[1]) && color == item[2] {
                     table.insert(allowedLogs[sectionIndex][2], log)
                     break
                 }
             } else {
-                if string.find(text, item) {
+                if string.find(safeText, item) {
                     table.insert(allowedLogs[sectionIndex][2], log)
                     break
                 }
@@ -105,8 +148,8 @@ sampev.onServerMessage = fn(color, text) {
         }
     }
 
-    commandRequester::setupChatWatcher(text, color)
-    greport::setupChatWatcher(text)
+    commandRequester::setupChatWatcher(safeText, color)
+    greport::setupChatWatcher(safeText)
 
     local fn compare(pattern, clr) {
         return (pattern && color) ? string.find(text, pattern) && color == clr :
@@ -131,17 +174,19 @@ sampev.onServerMessage = fn(color, text) {
 
     if config.root.additions.reportOneColor.use {
         if string.find(text, "^%[A] Жалоба от .+%[%d+]:") || string.find(text, "^%[A] Репорт от .+%[%d+]:") {
-            if string.find(text, "%.%.%.$") {
-                messageContinuation.awaiting    = true
-                messageContinuation.color       = color
+            if local dots = string.match(text, "(%.+)$") {
+                if #dots == 2 || #dots == 3 {
+                    messageContinuation.awaiting = true
+                    messageContinuation.color    = color
+                }
             }
             color = rgb2color(config.root.additions.reportOneColor.color)
         }
 
         if string.find(text, "^%.%.%. ") && messageContinuation.awaiting && messageContinuation.color == color {
-            color                           = rgb2color(config.root.additions.reportOneColor.color)
-            messageContinuation.awaiting    = false
-            messageContinuation.color       = nil
+            color                        = rgb2color(config.root.additions.reportOneColor.color)
+            messageContinuation.awaiting = false
+            messageContinuation.color    = nil
         }
     }
 
@@ -209,13 +254,13 @@ sampev.onServerMessage = fn(color, text) {
         text = string.gsub($, "%d+%.%d+%.%d+%.%d+", "XXX.XXX.XXX.XXX")
     }
 
-    if string.find(text, "^%[A%] .*%[%d+%] авторизовался как администратор %d+ уровня%.$") {
+    if string.find(safeText, "^%[A%] .*%[%d+%] авторизовался как администратор %d+ уровня%.$") {
 @ifdef __GADMIN_DEBUG__
 {
         $debugInformation!("onServerMessage", "found connected administrator")
 }
 
-        local oocNickname, adminId, adminLvl = string.match(text, "^%[A%] (.*)%[(%d+)%] авторизовался как администратор (%d+) уровня%.$")
+        local oocNickname, adminId, adminLvl = string.match(safeText, "^%[A%] (.*)%[(%d+)%] авторизовался как администратор (%d+) уровня%.$")
         local connectionPassed = true
 
         for _, data in admins {
@@ -241,8 +286,8 @@ sampev.onServerMessage = fn(color, text) {
                 }
             })
         }
-    } elseif string.find(text, "^%[A%] .*%[%d+%] вышел как администратор%.$") {
-        local adminId = tonumber(string.match(text, "^%[A%] .*%[(%d+)%] вышел как администратор%.$"))
+    } elseif string.find(safeText, "^%[A%] .*%[%d+%] вышел как администратор%.$") {
+        local adminId = tonumber(string.match(safeText, "^%[A%] .*%[(%d+)%] вышел как администратор%.$"))
     
         if adminId == user::getId() {
             user::setAloginStatus(false)
@@ -288,7 +333,7 @@ sampev.onServerMessage = fn(color, text) {
         }
     }
 
-    if string.match(text, "^%[A%] (.+)%[%d+%] ответил .*%[%d+%]: .*") == user::getOOCNickname() {
+    if string.match(safeText, "^%[A%] (.+)%[%d+%] ответил .*%[%d+%]: .*") == user::getOOCNickname() {
         user::incrementAnswersCount()
     }
 
@@ -300,10 +345,15 @@ sampev.onServerMessage = fn(color, text) {
     }
 
     if config.root.additions.disableServerMessages.use {
-        local pureText = string.gsub(text, "{%x%x%x%x%x%x}", "")
-        if string.find(text, "^%.%.%.") && skipNextMessage {
-            skipNextMessage = false
-            return false
+        if skipNextMessage {
+            if local dots = string.match(text, " (%.+)$") {
+                if #dots == 2 || #dots == 3 {
+                    return false
+                }
+            } else {
+                skipNextMessage = false
+                return false
+            }
         }
 
         for key, value of ({
@@ -323,8 +373,9 @@ sampev.onServerMessage = fn(color, text) {
                 "^%[A] .+%[%d+] установил описание авто: ",
                 "^%[GBUY] .*%[%d+] создал объявление %[%d+]: ",
                 "^%[A] .+%[%d+] установил слухи: ",
-                "^%[A] .+%[%d+] установил действие: "
-                "^%[A] .+%[%d+] перевёл деньги "
+                "^%[A] .+%[%d+] установил действие: ",
+                "^%[A] .+%[%d+] перевёл деньги ",
+                "^%[A] .+%[%d+] передал деньги"
             }
         }) {
             if config.root.additions.disableServerMessages[key] {
@@ -333,9 +384,12 @@ sampev.onServerMessage = fn(color, text) {
                 } elseif type(value) == "table" {
                     for _, patternOrColor in value {
                         if string.find(text, patternOrColor) {
-                            if string.find(text, "%.%.%.$") {
-                                skipNextMessage = true
+                            if local dots = string.match(text, " (%.+)$") {
+                                if #dots == 2 || #dots == 3 {
+                                    skipNextMessage = true
+                                }
                             }
+
                             return false
                         }
                     }
