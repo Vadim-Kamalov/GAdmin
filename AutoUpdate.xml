@@ -1,13 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<AutoUpdate version="1.3.2">
-    <title>GAdmin v1.3.2</title>
+<AutoUpdate version="1.3.3">
+    <title>GAdmin v1.3.3</title>
     <buttons first="Установить" second="Пропустить" third="Позже"/>
     <body>
-        <header>Изменения/исправления функции отображения ID в IC чате</header>
-        <ul>Исправлен вылет скрипта при получении определенных сообщений.</ul>
-        <ul>Теперь отображение айди работает <b>только</b> для IC чата и <code>/me</code> действий.</ul>
+        <header>Исправления</header>
+        <ul>Исправлено скрытие админ форм формата <code>id, +</code>.</ul>
+        <ul>Исправлено что не менялся цвет репорта если он перенесен с двумя точками в конце.</ul>
+        <ul>Исправлено что скрипт не засчитывал авторизацию какого-либо администратора если сообщение с его авторизацией было перенесено.</ul>
+        <ul>Исправлено что отображались перенесенные сообщения при включенной настройке <code>Скрытие системных сообщений</code>.</ul>
+        <ul>Исправлено что не скрывались сообщения о переводе денег<br/> при включенной настройке <code>Скрытие системных сообщений</code>.</ul>
+        <ul>Исправлено что не отправлялись оповещения о получении <code>/greport</code> если<br/> сообщение о назначении репорта было перенесено.</ul>
     </body>
     <links>
-        <link destination="GAdmin-Release.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/download/v1.3.2/GAdmin-Release.lua</link>
+        <link destination="GAdmin-Release.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/download/v1.3.3/GAdmin-Release.lua</link>
     </links>
 </AutoUpdate>
