@@ -50,3 +50,14 @@ N: squeryy
 C: tg - squeryy, vk - cerus_id
 D: поиск багов, предложение обновлений
 CLR: FF8C00=squeryy
+
+N: SonOfF0Re3t
+G: https://github.com/shproter
+C: https://vk.com/yashprot
+D: придумывал некоторые мелкие фишки, скидывал баги, недоработки
+CLR: FF1493=SonOfF0Re3t
+
+N: shesh
+C: vk.com/shesh69, tg: ilyashesh
+D: тестировщик
+CLR: bd379b=shesh
