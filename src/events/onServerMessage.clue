@@ -80,13 +80,20 @@ local unwrapFinished = false
 local unwrappedText  = ""
 
 local messageContinuation = {
-    awaiting    = false,
-    color       = nil
+    awaiting = false,
+    color    = nil,
+    new      = nil
 }
 
 sampev.onServerMessage = fn(color, text) {
     local text     = u8($)
     local pureText = string.gsub(text, "{%x%x%x%x%x%x}", "")
+
+    if string.find(text, "^%.%.%. ") && messageContinuation.awaiting && messageContinuation.color == color {
+        color                        = rgb2color(messageContinuation.new)
+        messageContinuation.awaiting = false
+        messageContinuation.color    = nil
+    }
 
     if local otherA = string.match(pureText, "^%.%.%. (.+)") {
         if local otherB, dots = string.match(pureText, "^%.%.%. (.+ )(%.+)$") {
@@ -178,15 +185,10 @@ sampev.onServerMessage = fn(color, text) {
                 if #dots == 2 || #dots == 3 {
                     messageContinuation.awaiting = true
                     messageContinuation.color    = color
+                    messageContinuation.new      = config.root.additions.reportOneColor.color
                 }
             }
             color = rgb2color(config.root.additions.reportOneColor.color)
-        }
-
-        if string.find(text, "^%.%.%. ") && messageContinuation.awaiting && messageContinuation.color == color {
-            color                        = rgb2color(config.root.additions.reportOneColor.color)
-            messageContinuation.awaiting = false
-            messageContinuation.color    = nil
         }
     }
 
@@ -233,6 +235,14 @@ sampev.onServerMessage = fn(color, text) {
             if replacedColor {
                 if config.root.additions.mention.soundNotification {
                     addOneOffSound(0, 0, 0, 1137)
+                }
+
+                if local dots = string.match(text, "(%.+)$") {
+                    if #dots == 2 || #dots == 3 {
+                        messageContinuation.awaiting = true
+                        messageContinuation.color    = color
+                        messageContinuation.new      = config.root.additions.mention.color
+                    }
                 }
 
                 if local notificationType = config.root.additions.mention.notificationType {

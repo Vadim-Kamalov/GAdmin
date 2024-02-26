@@ -163,6 +163,7 @@ method __commandRequester__::approve() {
     local type          = self.current.command.type
 
     self.states.ignoreNextCommands = true
+    self.lastUserCommand           = ""
 
     if type == COMMAND_REQUEST_TYPE_NO_COMMENTARY {
         lua_thread.create(fn {
@@ -198,9 +199,10 @@ method __commandRequester__::approve() {
  * @return void
  */
 method __commandRequester__::remove() {
-    self.states.requester           = false
-    self.states.frame               = false
-    self.current                    = {
+    self.lastUserCommand  = ""
+    self.states.requester = false
+    self.states.frame     = false
+    self.current          = {
         clock = os.clock(),
 
         id = {

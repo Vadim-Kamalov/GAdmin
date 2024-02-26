@@ -17,7 +17,7 @@
  *
  * SDPX-License-Identifier: GPL-3.0-only
  */
-
+ 
 @macro SPECTATOR_INFORMATION_CUSTOM_WIDGET() {
     (fn {
         imgui.BeginChild("SPECTATOR_INFORMATION_CUSTOM_WIDGET", imgui.ImVec2(350, 300), true)
@@ -89,8 +89,9 @@
 @import "imgui.StyleChanger"    => StyleChanger
 @import "imgui.Animations"      => animations
 
-@import "game.Spectator"    => spectator
-@import "game.sa.Vehicle"   => vehicle
+@import "game.Admins"     => admins
+@import "game.Spectator"  => spectator
+@import "game.sa.Vehicle" => vehicle
 
 @import "Common" => common
 @import "Config" => config
@@ -260,6 +261,9 @@ window::new("imgui.windows.SpectatorInformation", {
         imgui.TextColored(color, text)
     }
 
+    self.admin         = admins::getAdminById(spectator.id)
+    self.nicknameColor = (self.admin) ? common::convertHex2ImVec4("FF8585") : nil
+
     self::begin(self.id, fn {
         imgui.BeginGroup(/* Title */)
             imguiAssets::textWithFont(spectator::getActiveTime(), bold10)
@@ -268,12 +272,12 @@ window::new("imgui.windows.SpectatorInformation", {
             imgui.SetCursorPosX((self.size.x - imgui.CalcTextSize(string.format("%s[%d]", spectator.nickname, spectator.id)).x) / 2)
             imgui.BeginGroup()
                 imgui.PushStyleVarVec2(imgui.StyleVar.ItemSpacing, imgui.ImVec2(0, 0))
-                    imguiAssets::textWithFont(string.gsub(spectator.nickname, "_", " "), bold10)
+                    imguiAssets::textWithFont(string.gsub(spectator.nickname, "_", " "), bold10, nil, self.nicknameColor)
                     imguiAssets::setPreviousItemAbleToCopy(spectator.nickname, "Никнейм скопирован.", string.format("Успешно скопирован никнейм: %s", spectator.nickname))
 
                     imgui.SameLine()
 
-                    imguiAssets::textWithFont(string.format("[%d]", spectator.id), bold10)
+                    imguiAssets::textWithFont(string.format("[%d]", spectator.id), bold10, nil, self.nicknameColor)
                     imguiAssets::setPreviousItemAbleToCopy(spectator.id, "Айди скопирован.", string.format("Успешно скопирован айди: %d", spectator.id))
                 imgui.PopStyleVar()
             imgui.EndGroup()
