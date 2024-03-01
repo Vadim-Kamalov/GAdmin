@@ -112,9 +112,12 @@ method __commandRequester__::setupUserCommandWatcher(command) {
 method __commandRequester__::setupChatWatcher(text, color) {
     if string.find(text, "^%| У Вас нет доступа для использования данной команды%.$") {
         if !string.find(self.lastUserCommand, "^/%S+%s*$") && self::new(user::getId(), self.lastUserCommand) {
+            local command              = self.lastUserCommand
+                  self.lastUserCommand = ""
+
             lua_thread.create(fn {
                 wait($COMMAND_DELAY)
-                sampSendChat("/a " .. self.lastUserCommand)
+                sampSendChat("/a " .. command)
             })
         }
     }
