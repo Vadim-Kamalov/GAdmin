@@ -267,8 +267,9 @@ static __config__ = {
                     { "bmute",      3, 2 },
                     { "iban",       3, 4 },
                     { "jail",       3, 4 },
-                    { "vspawn",     2, 3 },
-                    { "vfuel",      2, 3 }
+                    { "vspawn",     2, 2 },
+                    { "vfuel",      2, 3 },
+                    { "cflip",      2, 2 }
                 }
             },
 
