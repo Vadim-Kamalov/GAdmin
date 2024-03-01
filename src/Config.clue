@@ -31,8 +31,9 @@ static enum /* NOTIFICATION_TYPE */ {
 }
 
 static __config__ = {
-    initialized = false,    // Module initializing status.
-    def         = nil,      // Same as `root`, but with default values.
+    initialized = false,      // Module initializing status.
+    def         = nil,        // Same as `root`, but with default values.
+    clock       = os.clock(), // Need for saving settings each 10 minutes.
 
     // We need this to save config if it was changed (compare JSON file with self.root).
     jsonStrings = {

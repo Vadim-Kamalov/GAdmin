@@ -51,5 +51,13 @@ sampev.onPlayerSync = fn(id, data) {
 
             spectator::setupJoyStickWatcher(data.leftRightKeys, data.upDownKeys)
         }
+
+        if spectator.cameraSwitchState == CAMERA_SWITCH_STATE_VEHICLE {
+            sampSendMenuSelectRow(SPECTATOR_MENU_SWITCH)
+        }
+        
+        print("before", spectator.cameraSwitchState)
+        spectator.cameraSwitchState = CAMERA_SWITCH_STATE_PLAYER
+        print("after", spectator.cameraSwitchState)
     }
 }

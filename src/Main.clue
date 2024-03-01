@@ -330,6 +330,10 @@ global fn main() {
             user::setAfkTime(0)
         }
 
+        if os.clock() - config.clock >= 600 /* 10m */ {
+            config::saveIfChanged()
+        }
+
         if config.root.additions.autoAlogout.use && user::getAloginStatus() {
             if user::getAfkTime() == config.root.additions.autoAlogout.alogoutSeconds {
                 user::setAloginStatus(false)

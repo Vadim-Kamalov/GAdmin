@@ -443,7 +443,7 @@ imgui.OnFrame(fn { return autoCompletion.condition() && config.root.windows.auto
     })
 
     autoCompletion.commandsLength = #self.suggestedList
-    if autoCompletion.commandsLength < autoCompletion.position {
+    if autoCompletion.commandsLength < autoCompletion.position || autoCompletion.commandsLength <= 0 {
         autoCompletion.position = 1
     }
 

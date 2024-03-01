@@ -21,7 +21,7 @@
 @import "game.sa.Ped"   => ped
 @import "game.User"     => user
 
-global enum /* SPECTATOR_MENU */ {
+global enum /** @enum SPECTATOR_MENU */ {
     SPECTATOR_MENU_NEXT = 0,
     SPECTATOR_MENU_SWITCH,
     SPECTATOR_MENU_BACK,
@@ -31,13 +31,19 @@ global enum /* SPECTATOR_MENU */ {
     SPECTATOR_MENU_EXIT
 }
 
-static enum /* PLATFORM */ {
+static enum /** @enum PLATFORM */ {
     PLATFORM_AWAITING_OR_NONE = 0,
     PLATFORM_PC,
     PLATFORM_ANDROID,
 }
 
-static enum /* SYNC_KEYS */ {
+static enum /** @enum CAMERA_SWITCH_STATE */ {
+    CAMERA_SWITCH_STATE_NONE,
+    CAMERA_SWITCH_STATE_PLAYER,
+    CAMERA_SWITCH_STATE_VEHICLE
+}
+
+static enum /** @enum SYNC_KEYS */ {
     SYNC_KEYS_PLAYER,
     SYNC_KEYS_VEHICLE,
 
@@ -58,7 +64,7 @@ static __spectator__ = {
         awaiting = {
             message = false
         }
-    },
+    }
 
     keys = {
         [PLATFORM_PC] = {
@@ -77,12 +83,13 @@ static __spectator__ = {
         }
     }
 
-    platform    = PLATFORM_AWAITING_OR_NONE
-    status      = false
+    cameraSwitchState = CAMERA_SWITCH_STATE_NONE
+    platform          = PLATFORM_AWAITING_OR_NONE
+    status            = false
 
     stats = {
         lastChecked = os.clock()
-        checking = false
+        checking    = false
     }
 
     textDrawId  = nil
@@ -205,14 +212,18 @@ method __spectator__::getHandle() {
 /**
  * Go in to spectator to a specific player.
  *
- * @param playerId number   The player id that user should spectate to.
- * @param useDelay boolean  Use delay after sending message. By default it's false, delay taken from $COMMAND_DELAY const variable.
+ * @param playerId number|nil The player id that user should spectate to.
+ * @param useDelay boolean    Use delay after sending message. By default it's false, delay taken from $COMMAND_DELAY const variable.
  * @return void
  */
 method __spectator__::setTo(playerId) {
     if playerId {
         self.status = true
-        if self.id != playerId || !self.time { self.time = os.date("*t") }
+
+        if self.id != playerId || !self.time {
+            self.time = os.date("*t")
+        }
+        
         self.id = playerId
 
         if tonumber(self.information.statsId) != self.id
@@ -227,6 +238,8 @@ method __spectator__::setTo(playerId) {
             self.information.shotTotal  = "0"
             self.information.shotHit    = "0"
 
+            self.cameraSwitchState = CAMERA_SWITCH_STATE_NONE
+            
             self.keys = {
                 [PLATFORM_PC] = {
                     [SYNC_KEYS_PLAYER]      = {}

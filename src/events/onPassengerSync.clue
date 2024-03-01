@@ -44,5 +44,13 @@ sampev.onPassengerSync = fn(id, data) {
                 spectator::setKeyStatus(SYNC_KEYS_VEHICLE, table.unpack(arguments))
             }
         }
+
+        if spectator.cameraSwitchState == CAMERA_SWITCH_STATE_PLAYER {
+            sampSendMenuSelectRow(SPECTATOR_MENU_SWITCH)
+        }
+        
+        print("before", spectator.cameraSwitchState)
+        spectator.cameraSwitchState = CAMERA_SWITCH_STATE_VEHICLE
+        print("after", spectator.cameraSwitchState)
     }
 }

@@ -135,9 +135,11 @@ sampev.onShowDialog = fn(id, style, title, firstButton, secondButton, text) {
             warnings    = (string.find(text, "Предупреждения:.*%d+")) ? string.match(text, "Предупреждения:.*(%d+)") : "0"
             stage       = "0"
         })
+        
+        spectator.stats.checking = false
 
         sampSendDialogResponse(id, 0, 0, "")
-        spectator.stats.checking = false
+        
         return false
     }
 
