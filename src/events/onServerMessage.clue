@@ -88,6 +88,10 @@ local messageContinuation = {
 sampev.onServerMessage = fn(color, text) {
     local text     = u8($)
     local pureText = string.gsub(text, "{%x%x%x%x%x%x}", "")
+    
+    local fn rgb2color(rgb) {
+        return rgb && bit.tobit(tonumber(string.format("%s%02X", rgb, color & 0xFF), 16))
+    }
 
     if string.find(text, "^%.%.%. ") && messageContinuation.awaiting && messageContinuation.color == color {
         color                        = rgb2color(messageContinuation.new)
@@ -163,10 +167,6 @@ sampev.onServerMessage = fn(color, text) {
                (pattern) ? string.find(text, pattern) :
                (color) ? color == clr :
                false
-    }
-
-    local fn rgb2color(rgb) {
-        return rgb && bit.tobit(tonumber(string.format("%s%02X", rgb, color & 0xFF), 16))
     }
 
     if ((string.find(text, "^%w+.* ") && color == -413892353) || string.find(text, "^%w+.* говорит:"))
