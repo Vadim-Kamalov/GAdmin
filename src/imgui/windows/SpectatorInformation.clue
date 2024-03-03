@@ -261,8 +261,11 @@ window::new("imgui.windows.SpectatorInformation", {
         imgui.TextColored(color, text)
     }
 
-    self.admin         = admins::getAdminById(spectator.id)
-    self.nicknameColor = (self.admin) ? common::convertHex2ImVec4("FF8585") : nil
+    self.nicknameColor = nil
+
+    if admins::getAdminById(spectator.id) {
+        self.nicknameColor = common::convertHex2ImVec4("FF8585")
+    }
 
     self::begin(self.id, fn {
         imgui.BeginGroup(/* Title */)
@@ -272,7 +275,7 @@ window::new("imgui.windows.SpectatorInformation", {
             imgui.SetCursorPosX((self.size.x - imgui.CalcTextSize(string.format("%s[%d]", spectator.nickname, spectator.id)).x) / 2)
             imgui.BeginGroup()
                 imgui.PushStyleVarVec2(imgui.StyleVar.ItemSpacing, imgui.ImVec2(0, 0))
-                    imguiAssets::textWithFont(string.gsub(spectator.nickname, "_", " "), bold10, nil, self.nicknameColor)
+                    imguiAssets::textWithFont(string.gsub(spectator.nickname || "", "_", " "), bold10, nil, self.nicknameColor)
                     imguiAssets::setPreviousItemAbleToCopy(spectator.nickname, "Никнейм скопирован.", string.format("Успешно скопирован никнейм: %s", spectator.nickname))
 
                     imgui.SameLine()
