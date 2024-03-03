@@ -49,8 +49,6 @@ sampev.onPassengerSync = fn(id, data) {
             sampSendMenuSelectRow(SPECTATOR_MENU_SWITCH)
         }
         
-        print("before", spectator.cameraSwitchState)
         spectator.cameraSwitchState = CAMERA_SWITCH_STATE_VEHICLE
-        print("after", spectator.cameraSwitchState)
     }
 }

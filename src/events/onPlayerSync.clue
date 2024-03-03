@@ -56,8 +56,6 @@ sampev.onPlayerSync = fn(id, data) {
             sampSendMenuSelectRow(SPECTATOR_MENU_SWITCH)
         }
         
-        print("before", spectator.cameraSwitchState)
         spectator.cameraSwitchState = CAMERA_SWITCH_STATE_PLAYER
-        print("after", spectator.cameraSwitchState)
     }
 }

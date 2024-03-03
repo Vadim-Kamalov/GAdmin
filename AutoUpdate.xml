@@ -1,21 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<AutoUpdate version="1.3.4">
-    <title>GAdmin v1.3.4</title>
+<AutoUpdate version="1.3.5">
+    <title>GAdmin v1.3.5</title>
     <buttons first="Установить" second="Пропустить" third="Позже"/>
     <body>
-        <header>Новые функции</header>
-        <ul>Теперь никнейм игрока будет выделен если он администратор в окне с информацией об игроке за которым вы следите.</ul>
-        <ul>Добавлено автосохранение настроек каждые 10 минут на случай вылета игры.</ul>
-        <ul>Теперь позиция камера в режиме наблюдении обновится если игрок за которым вы следите вышел/зашел в машину.</ul>
-        <ul>Добавлена комманда <code>/cflip</code> для админских форм.</ul>
-        <ul>Добавлен аргумент для авто-заполнения команде <code>/dvehid</code></ul>
         <header>Исправления</header>
-        <ul>Исправлено что нельзя было вставить команду предложенную авто-заполнением в определенных случаях.</ul>
-        <ul>Исправлено случайное отправление ранее введеной комманды при полученной админской формы в определенных случаях.</ul>
-        <ul>Исправлено что цвет перенесенного сообщения не изменялся при упоминании в /a чате.</ul>
-        <ul>Изменен необходимый уровень для принятия админ-формы <code>/vspawn</code> с 3 на 2.</ul>
+        <ul>Исправлено проседание FPS при долгом нахождении в режиме наблюдения.</ul>
     </body>
     <links>
-        <link destination="GAdmin-Release.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/download/v1.3.4/GAdmin-Release.lua</link>
+        <link destination="GAdmin-Release.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/download/v1.3.5/GAdmin-Release.lua</link>
     </links>
 </AutoUpdate>
