@@ -332,6 +332,7 @@ global fn main() {
 
         if os.clock() - config.clock >= 600 /* 10m */ {
             config::saveIfChanged()
+            config.clock = os.clock()
         }
 
         if config.root.additions.autoAlogout.use && user::getAloginStatus() {

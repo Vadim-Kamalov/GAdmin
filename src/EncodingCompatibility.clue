@@ -33,6 +33,11 @@ global fn sampSendDialogResponse(id, button, listItem, input) {
     _sampSendDialogResponse(id, button, listItem, (input) ? u8::decode(input) : "")
 }
 
+global _sampSetChatInputText = sampSetChatInputText
+global fn sampSetChatInputText(text) {
+    _sampSetChatInputText(u8::decode(text))
+}
+
 global fn setClipboardText(text) {
     imgui.SetClipboardText(text)
 }
