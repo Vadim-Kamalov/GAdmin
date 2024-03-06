@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<AutoUpdate version="1.3.6">
-    <title>GAdmin v1.3.6</title>
+<AutoUpdate version="1.3.7">
+    <title>GAdmin v1.3.7</title>
     <buttons first="Установить" second="Пропустить" third="Позже"/>
     <body>
         <header>Исправления</header>
-        <ul>Исправлен вылет скрипта в режиме наблюдения при определенных случаях.</ul>
+        <ul>Исправлено проседание FPS после 10 минут нахождения в игре.</ul>
+        <ul>Исправлена вставка кириллицы в поле ввода чата.</ul>
     </body>
     <links>
-        <link destination="GAdmin-Release.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/download/v1.3.6/GAdmin-Release.lua</link>
+        <link destination="GAdmin-Release.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/download/v1.3.7/GAdmin-Release.lua</link>
     </links>
 </AutoUpdate>
