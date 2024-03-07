@@ -238,11 +238,24 @@ method __commandRequester__::new(from, command) {
     local commandType = COMMAND_REQUEST_TYPE_NONE
     local commandLvl  = 0
 
+    for shortCommand, pattern of config.root.additions.shortCommands.commands {
+        if local pureCommand, arguments = string.match(command, "^/(%S+)(.*)") {
+            if string.lower(pureCommand) == string.lower(shortCommand) {
+                if local replacement = string.match(pattern, "^(%w+) %%s$") {
+                    command = '/' .. replacement .. arguments
+                }
+
+                break
+            }
+        }
+    }
+
     if local this = config.root.additions.commandRequester {
         for _, commandData in this.allowedCommands {
             if local command = string.match($, "^/(%S+)") {
                 if string.lower(commandData[1]) == string.lower(command) {
                     commandType, commandLvl = commandData[2], commandData[3]
+                    break
                 }
             }
         }

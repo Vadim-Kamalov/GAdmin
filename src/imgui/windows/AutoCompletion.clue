@@ -29,6 +29,7 @@
 @import "game.User"                 => user 
 @import "game.sa.Vehicle"           => vehicle
 
+@import "Assets"    => assets
 @import "Algorithm" => algorithm
 @import "Config"    => config
 @import "Common"    => common
@@ -214,7 +215,7 @@ static autoCompletion = {
     clock           = os.clock(),
     commandsLength  = 1,
     condition       = fn {
-        return !isGamePaused() && sampIsChatInputActive() && string.sub(sampGetChatInputText(), 1, 2)::find("/[A-Za-z]")
+        return !isGamePaused() && sampIsChatInputActive() && string.sub(sampGetChatInputText(), 1, 2)::find("[%./][A-Za-zA-Яа-я]")
                && #sampGetChatInputText() >= 2
     }
 }
@@ -227,6 +228,13 @@ imgui.OnFrame(fn { return autoCompletion.condition() && config.root.windows.auto
     self.suggestedList = (fn {
         local suggestedList = {}
         local inputText     = sampGetChatInputText()
+       
+        local possibleDot, command, arguments = string.match(inputText, "^(%.+)(%S*)(.*)")
+        if possibleDot == '.' {
+            local swappedCommand = assets::swapLayout(u8::decode(command))
+                  inputText      = '/' .. swappedCommand .. arguments
+        }
+        
         for _, command in commands {
             if string.find(inputText, "^" .. command[1] .. " ") { //! Working with command arguments.
                 local index = 3

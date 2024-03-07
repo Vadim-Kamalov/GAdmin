@@ -38,6 +38,11 @@ global fn sampSetChatInputText(text) {
     _sampSetChatInputText(u8::decode(text))
 }
 
+global _sampGetChatInputText = sampGetChatInputText
+global fn sampGetChatInputText() {
+    return u8(_sampGetChatInputText())
+}
+
 global fn setClipboardText(text) {
     imgui.SetClipboardText(text)
 }

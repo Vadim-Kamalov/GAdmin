@@ -59,6 +59,7 @@ static clickWarp = {
 }
 
 local useWallhack = true
+local useCarInfo  = true
 local useTraccers = true
 
 HotKey::new("imgui.windows.DrawListRender->wallhack", { VK_LCONTROL, VK_Z }, "Wallhack")
@@ -116,6 +117,23 @@ HotKey::new("imgui.windows.DrawListRender->traccersRemove", { VK_LMENU, VK_Z }, 
     }
 })
 
+HotKey::new("imgui.windows.DrawListRender->switchCarInfoRender", { VK_LCONTROL, VK_C }, "Информация о машинах")
+::registerCallback(fn {
+    if config.root.additions.carInfo.use && user::getAloginStatus() {
+        useCarInfo = !$
+        if local notificationType = config.root.additions.carInfo.notificationType {
+            if notificationType != NOTIFICATION_TYPE_NONE {
+                notify::send({
+                    title       = "Рендер информация машин " .. ((useCarInfo) ? "включен." : "выключен."),
+                    text        = "Теперь информация машин будет " .. ((useCarInfo) ? "показываться." : "скрываться."),
+                    icon        = icons.ICON_CHECKMARK,
+                    duration    = 2
+                }, (notificationType == NOTIFICATION_TYPE_SCRIPT_MESSAGE) ? "Рендер информации машин " .. ((useCarInfo) ? "показан." : "скрыт.") : nil)
+            }
+        }
+    }
+})
+
 /**
  * Show cursor.
  *
@@ -143,7 +161,10 @@ imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
             for _, car in getAllVehicles() {
                 local x, y, z = getCarCoordinates(car)
                 local myx, myy, myz = getCharCoordinates(PLAYER_PED)
-                if doesVehicleExist(car) && isCarOnScreen(car) && getDistanceBetweenCoords3d(x, y, z, myx, myy, myz) < 50 && user::getAloginStatus() {
+                if doesVehicleExist(car) && isCarOnScreen(car) &&
+                   getDistanceBetweenCoords3d(x, y, z, myx, myy, myz) < 50
+                   && user::getAloginStatus() && useCarInfo
+                {
                     local engine    = (isCarEngineOn(car)) ? "{8DFF85}{ON}" : "{FF8585}{OFF}"
                     local door      = (getCarDoorLockStatus(car) == 0) ? "{8DFF85}{OPEN}" : "{FF8585}{LOCK}"
                     local hp        = getCarHealth(car)
@@ -186,6 +207,25 @@ imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
 
                     if config.root.additions.gunInfo.use && distance < 50 {
                         onPlayerRenderText ..= "{FFFFFF}{" .. require("game.weapons").names[getCurrentCharWeapon(player)] .. "}{FFFFFF}{\n}"
+                    }
+
+                    if config.root.cheats.wallhack.use && config.root.cheats.wallhack.renderBones {
+                        for _, boneIds in ({
+                            { 6, 4 },
+                            { 4, 22 }, { 22, 23 }, { 23, 24 },
+                            { 4, 32 }, { 32, 33 }, { 33, 34 },
+                            { 4, 3 },  { 3, 2 },
+                            { 2, 52 }, { 52, 53 },
+                            { 2, 42 }, { 42, 43 }
+                        }) {
+                            local xA, yA, zA = ped::getBodyPartCoordinates(boneIds[1], player)
+                            local xB, yB, zB = ped::getBodyPartCoordinates(boneIds[2], player)
+                            local start      = imgui.ImVec2(convert3DCoordsToScreen(xA, yA, zA))
+                            local _end       = imgui.ImVec2(convert3DCoordsToScreen(xB, yB, zB))
+                            local color      = imgui.ColorConvertFloat4ToU32(common::convertHex2ImVec4(clistColorHex))
+
+                            self.DL::AddLine(start, _end, color, 2)
+                        }
                     }
                 
                     if #onPlayerRenderText > 0 {

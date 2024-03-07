@@ -144,7 +144,12 @@ method animations::button(
                 state   = false
                 before  = nil
                 clock   = 0
-                color   = colors.hovered
+                color   = imgui.ImVec4(
+                    colors.hovered.x,
+                    colors.hovered.y,
+                    colors.hovered.z,
+                    0.0
+                )
             }
         }
     }
@@ -243,8 +248,10 @@ method animations::button(
 method animations::hint(
     label,
     hoverCallback = imgui.IsItemHovered,
-    duration = 0.2,
-    hintColor = imgui.GetStyle().Colors[imgui.Col.FrameBg]
+    duration      = 0.2,
+    hintColor     = imgui.GetStyle().Colors[imgui.Col.FrameBg],
+    body,
+    width
 ) {
     local originalPos   = imgui.GetCursorPos()
     local hovered       = hoverCallback()
@@ -260,8 +267,17 @@ method animations::hint(
 
     if !UI_HINTS[id] {
         UI_HINTS[id] = {
-            status  = false,
-            timer   = 0
+            focus  = body != nil,
+            status = false,
+            timer  = 0,
+            width  = 0
+        }
+    }
+
+    body ??= fn {
+        for line with string.gmatch(label, "[^\n]+") {
+            imgui.SetCursorPosX((imgui.GetWindowWidth() - imgui.CalcTextSize(line).x) / 2)
+            imgui.Text(line)
         }
     }
 
@@ -307,12 +323,16 @@ method animations::hint(
                     return result
                 }
 
-                imgui.SetNextWindowSize(imgui.ImVec2(maxWidth(label) + imgui.GetStyle().WindowPadding.x * 2, -1), imgui.Cond.Always)
+                width ??= maxWidth(label) + imgui.GetStyle().WindowPadding.x * 2
+
+                imgui.SetNextWindowSize(imgui.ImVec2(width, -1), imgui.Cond.Always)
+
+                if this.focus {
+                    imgui.SetNextWindowFocus()
+                }
+
                 imgui.Begin(id, nil, flags)
-                    for line with string.gmatch(label, "[^\n]+") {
-                        imgui.SetCursorPosX((imgui.GetWindowWidth() - imgui.CalcTextSize(line).x) / 2)
-                        imgui.Text(line)
-                    }
+                    body()
                 imgui.End()
 		    imgui.PopStyleVar(3)
 		    imgui.PopStyleColor(3)

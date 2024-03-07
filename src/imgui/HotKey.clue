@@ -22,13 +22,40 @@
 @import "Common" => common
 @import "Assets" => assets
 
+@import "imgui.Assets"     => imguiAssets
 @import "imgui.Animations" => animations
 
 static hotKeysCallbacks = {}
 static changingHotKey   = false
 static allHotKeys       = {}
 
+static enum /** @enum HOTKEY_CONDITION */ {
+    HOTKEY_CONDITION_ONLY_IN_SPECTATOR,
+    HOTKEY_CONDITION_ONLY_NOT_IN_SPECTATOR,
+    HOTKEY_CONDITION_ONLY_IF_CURSOR_ACTIVE,
+    HOTKEY_CONDITION_ONLY_IF_CURSOR_NOT_ACTIVE,
+    HOTKEY_CONDITION_ALWAYS,
+    HOTKEY_CONDITION_NEVER
+}
+
 local HotKey = {}; HotKey.__index = HotKey //! @class HotKey
+
+/**
+ * Check if you can use a bind.
+ *
+ * @param condition HOTKEY_CONDITION
+ * @return boolean
+ */
+method HotKey::canUseHotKey(condition) {
+    return match condition {
+        HOTKEY_CONDITION_ONLY_IN_SPECTATOR         => __spectator__.status,
+        HOTKEY_CONDITION_ONLY_NOT_IN_SPECTATOR     => !__spectator__.status,
+        HOTKEY_CONDITION_ONLY_IF_CURSOR_ACTIVE     => common::isCursorActive(),
+        HOTKEY_CONDITION_ONLY_IF_CURSOR_NOT_ACTIVE => !common::isCursorActive(),
+        HOTKEY_CONDITION_ALWAYS                    => true,
+        HOTKEY_CONDITION_NEVER                     => false
+    }
+}
 
 /**
  * Check that `key` is large. Large key is some of them:
@@ -79,7 +106,7 @@ method HotKey::sortKeys(keys) {
  * @return string
  */
 method HotKey::keysToString(keys, separator = " + ") {
-    if #keys == 0 { return "-НЕТ-"}
+    if #keys == 0 { return "-НЕТ-" }
 
     local stringKeys = ""
 
@@ -147,28 +174,26 @@ method HotKey::setupWatcher(event, wparam, lparam) {
                 self::stopChangingKeys()
             }
         } else {
-            if !common::isInputsActive() {
-                local key = match wparam {
-                    VK_CONTROL ||
-                    VK_MENU    ||
-                    VK_SHIFT    => assets::mapScanCodeToVKey((lparam & 0xFF0000) >> 16),
-                    default     => wparam
-                }
+            local key = match wparam {
+                VK_CONTROL ||
+                VK_MENU    ||
+                VK_SHIFT    => assets::mapScanCodeToVKey((lparam & 0xFF0000) >> 16),
+                default     => wparam
+            }
 
-                for _, hotKey in allHotKeys {
-                    //! Implementing keys handling. Allowed length of registered keys is 2.
-                    //! When this(ese) keys is(are) pressed, then we will consume this window message
-                    //! and call callback that passed in `hotKeysCallbacks` table.
-                    if (#hotKey.keys == 1 && key == hotKey.keys[1]) ||
-                       (#hotKey.keys == 2 && isKeyDown(hotKey.keys[1]) && key == hotKey.keys[2])
-                    {
-                        if local item = hotKeysCallbacks[hotKey.id] {
-                            if !item.keysDown {
-                                item.callback()
-                                item.keysDown = true
+            for _, hotKey in allHotKeys {
+                //! Implementing keys handling. Allowed length of registered keys is 2.
+                //! When this(ese) keys is(are) pressed, then we will consume this window message
+                //! and call callback that passed in `hotKeysCallbacks` table.
+                if (#hotKey.keys == 1 && key == hotKey.keys[1]) ||
+                    (#hotKey.keys == 2 && isKeyDown(hotKey.keys[1]) && key == hotKey.keys[2])
+                {
+                    if local item = hotKeysCallbacks[hotKey.id] {
+                        if !item.keysDown && self::canUseHotKey(item.condition) {
+                            item.callback()
+                            item.keysDown = true
 
-                                consumeWindowMessage(true, true)
-                            }
+                            consumeWindowMessage(true, true)
                         }
                     }
                 }
@@ -227,25 +252,32 @@ method HotKey::isKeysDefined(sourceKeys, exceptId) {
  * 
  * @param id string                     HotKey-ID, need for saving and reading keys from/in configuration file.
  * @param keys table|nil                Default keys. Can changed with `HotKey::changeKeysTo(keys)`.
- * @param ignoreActiveCursor boolean    If true, key bind won't call hot key callback if `!commom::isCursorActive()` (default = true).
  * @param description string|nil        Optional description for main window.
+ * @param condition HOTKEY_CONDITION    When user can use this bind.
  * @return HotKey
  */
-method HotKey::new(id, keys, description, ignoreActiveCursor = true) {
+method HotKey::new(id, keys, description, condition = HOTKEY_CONDITION_ONLY_IF_CURSOR_NOT_ACTIVE) {
     self::sortKeys(keys)
     
-    if config.root.hotKeys[id] {
-        keys = config.root.hotKeys[id]
+    if config.root.hotKeys[id] && config.root.hotKeys.conditions[id] {
+        keys      = config.root.hotKeys[id]
+        condition = config.root.hotKeys.conditions[id]
     } else {
-        config.root.hotKeys[id] = keys
+        config.root.hotKeys[id]            = keys
+        config.root.hotKeys.conditions[id] = condition
     }
 
-    return setmetatable({
-        keys        = keys,
-        id          = id,
-        cursor      = ignoreActiveCursor,
-        description = description
-    }, self)
+    local instance = {}
+    
+    setmetatable(instance, self)
+
+    self.__index         = self
+    instance.keys        = keys
+    instance.id          = id
+    instance.condition   = condition
+    instance.description = description
+
+    return instance
 }
 
 /**
@@ -291,7 +323,8 @@ method HotKey::registerCallback(callback) {
         hotKeysCallbacks[self.id] = {
             keys        = self.keys,
             callback    = callback,
-            keysDown    = false
+            keysDown    = false,
+            condition   = self.condition
         }
 
         table.insert(allHotKeys, self)
@@ -315,10 +348,12 @@ method HotKey::render(defaultSize = imgui.ImVec2(80, 25), onChangedCallback) {
 
     if !UI_ANIMATED_HOTKEY[self.id] {
         UI_ANIMATED_HOTKEY[self.id] = {
-            label       = tostring(self),
-            active      = false,
-            keys        = {},
-            tick        = {
+            label             = tostring(self),
+            active            = false,
+            renderOn          = imgui.new.int(self.condition)
+            editingProperties = false,
+            keys              = {},
+            tick              = {
                 status  = false,
                 clock   = os.clock()
             }
@@ -336,6 +371,40 @@ method HotKey::render(defaultSize = imgui.ImVec2(80, 25), onChangedCallback) {
             changingHotKey  = this.active
             this.tick.clock = os.clock()
         }
+
+        if imgui.IsMouseReleased(1 /* ImGuiMouseButton_Right */) && imgui.IsItemHovered() {
+            this.editingProperties = true
+        }
+
+        animations::hint(self.id .. ".hotKeyProperties", fn {
+            return !changingHotKey && this.editingProperties
+        }, nil, imgui.GetStyle().Colors[imgui.Col.ChildBg], fn {
+            if !imgui.IsWindowHovered() && $IS_ANY_MOUSE_BUTTON_CLICKED && this.editingProperties {
+                this.editingProperties = false
+            }
+
+            imgui.BeginGroup()
+                imguiAssets::textWithFont("Условие активации", bold10)
+
+                imgui.SetNextItemWidth(200)
+                if imgui.SliderInt("##" .. self.id .. ".hotKeyProperties.slider", this.renderOn, 1, 6, ({
+                    "Только в режиме наблюдения",
+                    "Только НЕ в режиме наблюдения",
+                    "Только если курсор активен",
+                    "Только если курсор НЕ активен",
+                    "Всегда",
+                    "Никогда"
+                })[this.renderOn[0]]) {
+                    config.root.hotKeys.conditions[self.id] = this.renderOn[0]
+                    self.condition                          = this.renderOn[0]
+                    hotKeysCallbacks[self.id].condition     = this.renderOn[0]
+                }   
+
+                if animations::button("Сбросить бинд##hotKeyProperties.resetKeys", imgui.ImVec2(200, 30)) {
+                    self::changeKeysTo({})
+                }
+            imgui.EndGroup()
+        }, 215)
 
         if this.active {
             if #this.keys > 0 {

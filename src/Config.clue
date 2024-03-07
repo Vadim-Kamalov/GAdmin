@@ -45,7 +45,7 @@ static __config__ = {
         windows = {
             adminList = {
                 use                     = false,
-                sortByLvl               = false,
+                sortByLvl               = true,
                 textAlignMode           = 3,
                 showAdminLvl            = true,
                 textColorBasedOnClist   = true,
@@ -58,7 +58,7 @@ static __config__ = {
                 textAlignMode           = 1,
                 showDistance            = true,
                 showAdmins              = true,
-                sortByDistance          = true, // Works only with `showDistance` enabled.
+                sortByDistance          = true,
                 maxPlayers              = 10,
                 playerColorBasedOnClist = true,
                 strokeSize              = 1
@@ -66,7 +66,7 @@ static __config__ = {
 
             spectatorInformation = {
                 use                 = true,
-                type                = 2,
+                type                = 1,
                 showedHintFirstTime = false,
                 columns             = {
                     { "Пинг",                   true },
@@ -102,7 +102,7 @@ static __config__ = {
             notifications = {
                 use      = true,
                 maxItems = 5,
-                align    = 3
+                align    = 2
             },
 
             farChat = {
@@ -211,15 +211,16 @@ static __config__ = {
 
         cheats = {
             airbreak = {
-                use                 = false,
-                notificationType    = 1,
-                speed               = 1.0
+                use              = false,
+                notificationType = 1,
+                speed            = 1.0
             },
 
             wallhack = {
-                use                 = false,
-                imguiStyle          = false,
-                notificationType    = 1
+                use              = false,
+                imguiStyle       = false,
+                renderBones      = false,
+                notificationType = 1
             },
 
             clickwarp = { use = false }
@@ -334,8 +335,9 @@ static __config__ = {
             },
             
             carInfo = { 
-                use             = false,
-                onlyInSpectator = false
+                use              = false,
+                onlyInSpectator  = false,
+                notificationType = 1
             },
 
             deathNotifyInChat = {
@@ -345,13 +347,13 @@ static __config__ = {
                         
             autoAACommand           = { use = false },
             hideSpectatorMenu       = { use = true },
-            swapLayout              = { use = false },
+            swapLayout              = { use = true },
             idInKillList            = { use = false },
             showAdmins              = { use = true },
             displayIdInIc           = { use = false },
             gunInfo                 = { use = false },
             autoAdminLogin          = { use = false },
-            hideIpAddresses         = { use = false },
+            hideIpAddresses         = { use = true },
             changeNicknameColors    = { use = true }
         },
 
@@ -415,7 +417,7 @@ static __config__ = {
         },
 
         styleChangeableWindows  = {},
-        hotKeys                 = {},
+        hotKeys                 = { conditions = {} },
         movableWindows          = {},
         playerNotes             = {}
     }

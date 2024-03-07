@@ -133,7 +133,7 @@ method __movableWindows__::setupThisWindow(window) {
                 0xAAFFFFFF,
                 window.rounding
             )
-            dl::AddText(imgui.ImVec2(window.pos.x + 2, window.pos.y - 18), 0xFF000000, window.description)
+            dl::AddTextFontPtr(bold, 16, imgui.ImVec2(window.pos.x + 2, window.pos.y - 18), 0xFF000000, window.description)
         }
 
         if imgui.IsMouseDown(0) && window.isFocused {

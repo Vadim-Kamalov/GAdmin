@@ -77,9 +77,11 @@ local RENDER_CHANGE_CONFIGURATION   = $RENDER_CHANGE_CONFIGURATION!()
 static mainWindow = nil
 
 local window = {
-    state   = imgui.new.bool(),
-    frame   = {},
-    menu    = {
+    state                 = false,
+    frame                 = {},
+    recentlyOpened        = false,
+    closeAndOpenAnimation = { alpha = 0, clock = nil }
+    menu                  = {
         UI_MENU_ITEMS   = {},
 
         selectedFrame           = WINDOW_SELECTED_FRAME_HOME,
@@ -93,7 +95,7 @@ local window = {
         alpha                       = 0,
         switchBetweenFramesAlpha    = 0
     },
-
+    
     checker = {
         filter          = InputTextFilter::new(),
         playerNote      = imgui.new.char[65535](),
@@ -277,6 +279,7 @@ local window = {
                 { "imguiStyle", "Использовать ImGui рендер", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.cheats.wallhack.imguiStyle), fn {
                     assets::changeWallhackState(!config.root.cheats.wallhack.imguiStyle)
                 }},
+                { "renderBones", "Рисовать кости на скине", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.cheats.wallhack.renderBones) },
                 { "notificationType", "Тип оповещения при нажатии на хоткей", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.cheats.wallhack.notificationType), "ImGui оповещение", "Сообщение в чат", "Отсутствует" },
                 { "none", "Размер шрифта", WINDOW_WIDGET_CUSTOM, RENDER_CHANGE_CONFIGURATION }
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP }
@@ -326,6 +329,7 @@ local window = {
             { "carInfo", "Информация о машине", {
                 { "use", "Работает только на /alogin", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.carInfo.use) },
                 { "onlyInSpectator", "Отображать только в /sp", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.carInfo.onlyInSpectator) },
+                { "notificationType", "Тип оповещения при нажатии на хоткей", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.additions.carInfo.notificationType), "ImGui оповещение", "Сообщение в чат", "Отсутствует" },
                 { "none", "Размер шрифта", WINDOW_WIDGET_CUSTOM, RENDER_CHANGE_CONFIGURATION },
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
             
@@ -442,7 +446,38 @@ ap = kick <id> AFK public place`, WINDOW_WIDGET_SWITCH, imgui.new.bool(config.ro
     }
 }
 
-mainWindow = window
+/**
+ * Just open main window.
+ * @return void
+ */
+method window::open() {
+    if !self.state {
+        self.closeAndOpenAnimation.alpha = 0
+        self.state = true
+    }
+}
+
+/**
+ * Just close main window.
+ * @return void
+ */
+method window::close() {
+    if self.state {
+        self.closeAndOpenAnimation.clock = os.clock()
+    }
+}
+
+/**
+ * Open or close window by `window.state`
+ * @return void
+ */
+method window::switch() {
+    if self.state {
+        self::close()
+    } else {
+        self::open()
+    }
+}
 
 method window.menu::item(label, icon, title, index, duration = {
     0.2,    //! clicked
@@ -456,7 +491,13 @@ method window.menu::item(label, icon, title, index, duration = {
         def     = imgui.GetStyle().Colors[imgui.Col.ChildBg]
         active  = imgui.GetStyle().Colors[imgui.Col.Button],
         hovered = imgui.GetStyle().Colors[imgui.Col.ButtonHovered],
+        text    = imgui.GetStyle().Colors[imgui.Col.Text]
     }
+
+    colors.def     = imgui.ImVec4($.x, $.y, $.z, window.closeAndOpenAnimation.alpha)
+    colors.active  = imgui.ImVec4($.x, $.y, $.z, window.closeAndOpenAnimation.alpha)
+    colors.hovered = imgui.ImVec4($.x, $.y, $.z, window.closeAndOpenAnimation.alpha)
+    colors.text    = imgui.ImVec4($.x, $.y, $.z, window.closeAndOpenAnimation.alpha)
 
     if local this = self.UI_MENU_ITEMS[label] {
         local cursor = imgui.GetCursorPos()
@@ -511,11 +552,13 @@ method window.menu::item(label, icon, title, index, duration = {
             imgui.Text(icon)
             if self.width == 200 {
                 imgui.PushFont(bold10)
+                imgui.PushStyleColor(imgui.Col.Text, colors.text)
                 imgui.PushStyleVarFloat(imgui.StyleVar.Alpha, self.alpha / 255)
                     imgui.SameLine(40)
                     imgui.SetCursorPosY(cursor.y + 5)    
                     imgui.Text(title)
                 imgui.PopStyleVar()
+                imgui.PopStyleColor()
                 imgui.PopFont()
             }
         imgui.EndGroup()
@@ -533,34 +576,10 @@ method window.menu::item(label, icon, title, index, duration = {
     }
 }
 
-/**
- * @deprecated [TODO: Remove this]
- */
-method window.frame::fillChildEx(size, useBorder = true) {
-    local dl            = imgui.GetWindowDrawList()
-    local pos           = imgui.GetCursorScreenPos()
-    local rounding      = imgui.GetStyle().ChildRounding
-    local color         = imgui.ColorConvertFloat4ToU32(imgui.GetStyle().Colors[imgui.Col.ChildBg])
-    local borderSize    = imgui.GetStyle().ChildBorderSize
-    local borderColor   = imgui.ColorConvertFloat4ToU32(imgui.GetStyle().Colors[imgui.Col.Border])
-
-    if useBorder {
-        dl::AddRect(
-            pos - imgui.ImVec2(borderSize, borderSize),
-            pos + size + imgui.ImVec2(borderSize, borderSize),
-            borderColor,
-            rounding
-        )
-    }
-
-    dl::AddRectFilled(pos, pos + size, color, rounding)
-}
-
 addEventHandler("onWindowMessage", fn(event, wparam) {
     if (event == wm.WM_KEYDOWN || event == wm.WM_SYSKEYDOWN) && !imgui.GetIO().WantTextInput {
-        if wparam == VK_ESCAPE && window.state[0] && !changingHotKey {
-            window.state[0] = false
-            imguiAssets::setCursorStatus(!window.state[0])
+        if wparam == VK_ESCAPE && window.state && !changingHotKey {
+            window::close()
             consumeWindowMessage(true, false)
             return
         }
@@ -568,22 +587,48 @@ addEventHandler("onWindowMessage", fn(event, wparam) {
 })
 
 style::registerWindow("imgui.windows.Main", "Основное окно")
-HotKey::new("imgui.windows.Main", { VK_X }, "Открыть/закрыть это окно")::registerCallback(fn {
+HotKey::new("imgui.windows.Main", { VK_X }, "Открыть/закрыть это окно", HOTKEY_CONDITION_ALWAYS)::registerCallback(fn {
     if !movableWindows::isChangingWindowsPositions() {
-        window.state[0] = !$
-        imguiAssets::setCursorStatus(!window.state[0])
+        window::switch()
     }
 })
 
-imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
+mainWindow = window
+
+imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn(self) {
     self.flags  = imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoScrollbar
     self.flags += (window.menu.width > 60) ? imgui.WindowFlags.NoInputs : 0
+
+    //! Close and open window animation.
+    if window.closeAndOpenAnimation.clock {
+        if window.recentlyOpened { //! Open animation.
+            if os.clock() - window.closeAndOpenAnimation.clock >= 0.2 {
+                window.recentlyOpened               = false
+                window.closeAndOpenAnimation.clock  = nil
+            } else {
+                window.closeAndOpenAnimation.alpha = imguiAssets::bringFloatTo($, 1, window.closeAndOpenAnimation.clock, 0.2)
+            }
+        } else { //! Close animatiion.
+            if os.clock() - window.closeAndOpenAnimation.clock >= 0.1 {
+                window.state                        = false
+                window.closeAndOpenAnimation.clock  = nil
+            } else {
+                window.closeAndOpenAnimation.alpha = imguiAssets::bringFloatTo($, 0, window.closeAndOpenAnimation.clock, 0.2)
+            }
+        }
+    }
+
+    if window.closeAndOpenAnimation.alpha == 0 {
+        window.recentlyOpened               = true
+        window.closeAndOpenAnimation.clock  = os.clock()
+    }
     
     imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2, sizeY / 2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
     imgui.SetNextWindowSize(imgui.ImVec2(700, 420))
 
     style::beginWindowStyleChangeable("imgui.windows.Main")
 
+    imgui.PushStyleVarFloat(imgui.StyleVar.Alpha, window.closeAndOpenAnimation.alpha)
     imgui.PushStyleVarVec2(imgui.StyleVar.WindowPadding, imgui.ImVec2(0, 0))
         imgui.Begin("imgui.windows.Main", nil, self.flags)
             {
@@ -594,84 +639,84 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                     imgui.ImVec2(pos.x + 5, pos.y + 5),
                     imgui.ImVec2(size.x - 10, size.y - 10),
                     24.0,
-                    100,
+                    math.floor(math.floor(window.closeAndOpenAnimation.alpha * 255) / 255) * 100,
                     2
                 )
             }
 
             imgui.SetCursorPos(imgui.ImVec2(60 + imgui.GetStyle().ItemSpacing.x, 7))
-            imgui.PushStyleVarFloat(imgui.StyleVar.Alpha, 1.0 - window.menu.alpha / 255 / 2 - window.menu.switchBetweenFramesAlpha)
+            imgui.PushStyleVarFloat(imgui.StyleVar.Alpha, window.closeAndOpenAnimation.alpha - window.menu.alpha / 255 / 2 - window.menu.switchBetweenFramesAlpha)
             imgui.BeginGroup()
                 local widthAuto = 640 - imgui.GetStyle().ItemSpacing.x * 2 - 1
                 if window.menu.selectedFrame == WINDOW_SELECTED_FRAME_HOME {
                     imgui.SetScrollY(0)
-                    window.frame::fillChildEx(imgui.ImVec2(widthAuto, 100))
-                   
-                    imgui.SetCursorPos(imgui.GetCursorPos() + imgui.ImVec2(5, 7))
-                    imgui.BeginGroup()
-                        imgui.SetCursorPos(imgui.GetCursorPos() + imgui.ImVec2(5, 5))
+                    imgui.BeginChild("imgui.windows.Main.userStats", imgui.ImVec2(widthAuto, 100), true)
+                        imgui.SetCursorPos(imgui.GetCursorPos() + imgui.ImVec2(5, 7))
                         imgui.BeginGroup()
-                            if local time = assets::getLocalTime() {
-                                imguiAssets::textWithFont(string.format(
-                                    "%d-%d-%d %02d:%02d:%02d",
-                                    time.wYear, time.wMonth, time.wDay,
-                                    time.wHour, time.wMinute, time.wSecond
-                                ), bold10)
+                            imgui.SetCursorPos(imgui.GetCursorPos() + imgui.ImVec2(5, 5))
+                            imgui.BeginGroup()
+                                if local time = assets::getLocalTime() {
+                                    imguiAssets::textWithFont(string.format(
+                                        "%d-%d-%d %02d:%02d:%02d",
+                                        time.wYear, time.wMonth, time.wDay,
+                                        time.wHour, time.wMinute, time.wSecond
+                                    ), bold10)
 
-                                local welcomePostfix = (time.wHour <= 10) ? "Доброе утро, " : (
-                                                       (time.wHour >= 10 && time.wHour <= 17) ? "Добрый день, " : "Добрый вечер, ")
+                                    local welcomePostfix = (time.wHour <= 10) ? "Доброе утро, " : (
+                                                        (time.wHour >= 10 && time.wHour <= 17) ? "Добрый день, " : "Добрый вечер, ")
 
-                                imguiAssets::textWithFont(welcomePostfix .. user::getOOCNickname() .. "!", regular9)
-                                imguiAssets::textWithFont("Уровень администрирования - " .. user::getAdminLvl(), regular9)
+                                    imguiAssets::textWithFont(welcomePostfix .. user::getOOCNickname() .. "!", regular9)
+                                    imguiAssets::textWithFont("Уровень администрирования - " .. user::getAdminLvl(), regular9)
 
-                                if local pos = imgui.GetCursorPos() { // imgui.SameLine() with different fonts.
-                                    imguiAssets::textWithFont("Текущая версия GAdmin - ", regular9)
-                                    imguiAssets::textWithFont("v" .. $GADMIN_VERSION, bold9, pos + imgui.ImVec2(132, 0))
+                                    if local pos = imgui.GetCursorPos() { // imgui.SameLine() with different fonts.
+                                        imguiAssets::textWithFont("Текущая версия GAdmin - ", regular9)
+                                        imguiAssets::textWithFont("v" .. $GADMIN_VERSION, bold9, pos + imgui.ImVec2(132, 0))
+                                    }
                                 }
-                            }
-                        imgui.EndGroup()
-                        imgui.SameLine(400)
-                        imgui.BeginGroup()
-                            if local answers, online = user::getAnswersCount(), user::getTime() {
-                                for index, item in ({
-                                    "BeginGroup",
-                                        "Онлайн",
-                                        { "Всего",      string.format("%02d:%02d:%02d", online.total.hour, online.total.min, online.total.sec) },
-                                        { "За неделю",  string.format("%02d:%02d:%02d", online.weekTotal.hour, online.weekTotal.min, online.weekTotal.sec) },
-                                        { "За сессию",  string.format("%02d:%02d:%02d", online.session.hour, online.session.min, online.session.sec) },
-                                    "EndGroup",
+                            imgui.EndGroup()
+                            imgui.SameLine(400)
+                            imgui.BeginGroup()
+                                if local answers, online = user::getAnswersCount(), user::getTime() {
+                                    for index, item in ({
+                                        "BeginGroup",
+                                            "Онлайн",
+                                            { "Всего",      string.format("%02d:%02d:%02d", online.total.hour, online.total.min, online.total.sec) },
+                                            { "За неделю",  string.format("%02d:%02d:%02d", online.weekTotal.hour, online.weekTotal.min, online.weekTotal.sec) },
+                                            { "За сессию",  string.format("%02d:%02d:%02d", online.session.hour, online.session.min, online.session.sec) },
+                                        "EndGroup",
 
-                                    "SameLine",
+                                        "SameLine",
 
-                                    "BeginGroup",
-                                        "Ответы",
-                                        { "Всего",      answers.total },
-                                        { "За неделю",  answers.weekTotal },
-                                        { "За сессию",  answers.session }
-                                    "EndGroup"
-                                }) {
-                                    if type(item) == "string" {
-                                        if item == "BeginGroup" || item == "EndGroup" || item == "SameLine" {
-                                            if item == "SameLine" {
-                                                imgui.SameLine(nil, 10)
+                                        "BeginGroup",
+                                            "Ответы",
+                                            { "Всего",      answers.total },
+                                            { "За неделю",  answers.weekTotal },
+                                            { "За сессию",  answers.session }
+                                        "EndGroup"
+                                    }) {
+                                        if type(item) == "string" {
+                                            if item == "BeginGroup" || item == "EndGroup" || item == "SameLine" {
+                                                if item == "SameLine" {
+                                                    imgui.SameLine(nil, 10)
+                                                } else {
+                                                    imgui[item]()
+                                                }
                                             } else {
-                                                imgui[item]()
+                                                imguiAssets::textWithFont(item, bold10)
                                             }
                                         } else {
-                                            imguiAssets::textWithFont(item, bold10)
-                                        }
-                                    } else {
-                                        imgui.BeginGroup()
-                                            imguiAssets::textWithFont(item[1] .. ":", regular9)
-                                            imgui.SameLine()
-                                            imguiAssets::textWithFont(tostring(item[2]), bold9)
-                                        imgui.EndGroup()
-                                    } 
+                                            imgui.BeginGroup()
+                                                imguiAssets::textWithFont(item[1] .. ":", regular9)
+                                                imgui.SameLine()
+                                                imguiAssets::textWithFont(tostring(item[2]), bold9)
+                                            imgui.EndGroup()
+                                        } 
+                                    }
                                 }
-                            }
-                        imgui.EndGroup()
+                            imgui.EndGroup()
+                        imgui.EndChild()
                         
-                        imgui.SetCursorPos(imgui.ImVec2(imgui.GetCursorPos().x - 5, imgui.GetCursorPos().y + 15 + imgui.GetStyle().ItemSpacing.x))
+                        imgui.SetCursorPosY(imgui.GetCursorPos().y + 4 + imgui.GetStyle().ItemSpacing.x)
                         imgui.PushTextWrapPos(widthAuto + 50)
                         imgui.BeginGroup()
                             imguiAssets::textWithFont("GAdmin", bold14)
@@ -703,9 +748,8 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                 imgui.SetCursorPos(imgui.GetCursorPos() + imgui.ImVec2(0, 6))
                                 
                                 if animations::button("Изменить позицию окон", imgui.ImVec2(math.floor(widthAuto / 3), 30), 5) {
-                                    window.state[0] = false
+                                    window::close()
                                     movableWindows::executeChangingWindowsPositions()
-                                    imguiAssets::setCursorStatus(false)
                                 }
                                     
                                 imgui.SameLine()
@@ -947,6 +991,9 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                 } elseif window.menu.selectedFrame == WINDOW_SELECTED_FRAME_KEYBINDS {
                     imgui.SetScrollY(0)
                     imguiAssets::textWithFont("Горячие клавиши", bold14)
+                    imgui.SameLine(nil, 10)
+                    imgui.SetCursorPosY(imgui.GetCursorPos().y + 4)
+                    imguiAssets::textWithFont("ПКМ по кнопке откроет настройки бинда", regular10, nil, imgui.GetStyle().Colors[imgui.Col.TextDisabled])
                     imgui.SetCursorPosY(imgui.GetCursorPos().y + 2)
                     imgui.BeginGroup()
                         for index, hotKey in allHotKeys {
@@ -959,7 +1006,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                     imguiAssets::textWithFont(hotKey.description, bold10, imgui.GetCursorPos() + imgui.ImVec2(0, 4))
                                 imgui.EndGroup()
 
-                                imgui.SameLine(330)
+                                imgui.SameLine(300)
 
                                 if index % 2 == 0 {
                                     imgui.NewLine()
@@ -2136,10 +2183,16 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
             imgui.PushStyleVarFloat(imgui.StyleVar.ChildBorderSize, 0)
                 imgui.SetCursorPosY(imgui.GetScrollY())
                 imgui.BeginChild("imgui.windows.Main.menu", imgui.ImVec2(window.menu.width, imgui.GetWindowHeight()), true)
+                    local color = imgui.GetStyle().Colors[imgui.Col.ChildBg]
+                          color = imgui.ImVec4($.x, $.y, $.z, window.closeAndOpenAnimation.alpha)
+
+                    local textColor = imgui.GetStyle().Colors[imgui.Col.Text]
+                          textColor = imgui.ImVec4($.x, $.y, $.z, window.closeAndOpenAnimation.alpha)
+
                     imgui.GetWindowDrawList()::AddRectFilled(
                         imgui.GetWindowPos() + imgui.ImVec2(10, 10),
                         imgui.GetWindowPos() + imgui.ImVec2(window.menu.width, imgui.GetWindowHeight()),
-                        imgui.ColorConvertFloat4ToU32(imgui.GetStyle().Colors[imgui.Col.ChildBg])
+                        imgui.ColorConvertFloat4ToU32(color)
                     )
 
                     imgui.PushStyleVarVec2(imgui.StyleVar.ButtonTextAlign, imgui.ImVec2(0.5, 0.85))
@@ -2150,6 +2203,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                         }
 
                         if window.menu.width == 200 {
+                            imgui.PushStyleColor(imgui.Col.Text, textColor)
                             imgui.PushStyleVarFloat(imgui.StyleVar.Alpha, window.menu.alpha / 255)
                                 imgui.SameLine()
                                 imguiAssets::textWithFont(
@@ -2158,6 +2212,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
                                     imgui.ImVec2(122.5 - imgui.CalcTextSize("GAdmin v" .. $GADMIN_VERSION).x / 2, 11)
                                 )
                             imgui.PopStyleVar()
+                            imgui.PopStyleColor()
                         }
                     imgui.PopStyleVar()
 
@@ -2179,7 +2234,8 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
             if local rectMin, rectMax = imgui.GetItemRectMin(), imgui.GetItemRectMax() {
                 // Render rects on menu corners to remove rounding.
                 local dl    = imgui.GetWindowDrawList()
-                local color = imgui.ColorConvertFloat4ToU32(imgui.GetStyle().Colors[imgui.Col.ChildBg])
+                local color = imgui.GetStyle().Colors[imgui.Col.ChildBg]
+                      color = imgui.ColorConvertFloat4ToU32(imgui.ImVec4($.x, $.y, $.z, window.closeAndOpenAnimation.alpha))
                 
                 dl::AddRectFilled(imgui.ImVec2(rectMax.x - 4, rectMin.y), imgui.ImVec2(rectMax.x + 0.5, rectMin.y + 7), color)
                 dl::AddRectFilled(imgui.ImVec2(rectMax.x - 4, rectMax.y), imgui.ImVec2(rectMax.x + 0.5, rectMax.y - 7), color)
@@ -2202,7 +2258,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state[0] }, fn(self) {
             }
             imgui.EndPopup()
         imgui.End()
-    imgui.PopStyleVar()
+    imgui.PopStyleVar(2)
     
     style::endWindowStyleChangeable("imgui.windows.Main")
 })

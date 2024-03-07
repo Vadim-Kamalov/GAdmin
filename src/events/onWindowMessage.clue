@@ -97,7 +97,7 @@ global fn onWindowMessage(msg, wparam, lparam) {
         }
     }
 
-    if msg == wm.WM_MOUSEWHEEL && !greport.window.state && !mainWindow.state[0] {
+    if msg == wm.WM_MOUSEWHEEL && !greport.window.state && !common::isCursorActive() {
         if spectator.status && config.root.additions.zoomSpectatorCamera.use {
             local step = config.root.additions.zoomSpectatorCamera.step
 

@@ -58,6 +58,8 @@
 
 @define COPYRIGHT_YEARS "2023-2024"
 
+@define IS_ANY_MOUSE_BUTTON_CLICKED (imgui.IsMouseClicked(0) || imgui.IsMouseClicked(1) || imgui.IsMouseClicked(2))
+
 @macro IMVEC4_TO_RGB(vector) { string.format("%02X%02X%02X", $vector.x * 255, $vector.y * 255, $vector.z * 255) }
 
 @macro debugSuccessful(entryPoint, message) {
@@ -230,22 +232,22 @@ global fn main() {
         }
     }
 
-    HotKey::new("main->spectatorQuit", { VK_I }, "Выйти из /sp")
+    HotKey::new("main->spectatorQuit", { VK_I }, "Выйти из /sp", HOTKEY_CONDITION_ONLY_IN_SPECTATOR)
         ::registerCallback(hotKeyCallbacks.spectatorQuit)
 
-    HotKey::new("main->airbreak", { VK_RSHIFT }, "Аирбрейк")
+    HotKey::new("main->airbreak", { VK_RSHIFT }, "Аирбрейк", HOTKEY_CONDITION_ONLY_NOT_IN_SPECTATOR)
         ::registerCallback(hotKeyCallbacks.airbreak)
 
-    HotKey::new("main->switchCursorState", { VK_B }, "Переключить курсор")
+    HotKey::new("main->switchCursorState", { VK_B }, "Переключить курсор", HOTKEY_CONDITION_ALWAYS)
         ::registerCallback(hotKeyCallbacks.switchCursorState)
 
-    HotKey::new("main->switchSpectatorState", { VK_U }, "Переключить режим наблюдения")
+    HotKey::new("main->switchSpectatorState", { VK_U }, "Обновить камеру в /sp", HOTKEY_CONDITION_ONLY_IN_SPECTATOR)
         ::registerCallback(hotKeyCallbacks.switchSpectatorState)
 
-    HotKey::new("main->nextPlayerInSpectator", { VK_RIGHT }, "Следующий игрок в /sp")
+    HotKey::new("main->nextPlayerInSpectator", { VK_RIGHT }, "Следующий игрок в /sp", HOTKEY_CONDITION_ONLY_IN_SPECTATOR)
         ::registerCallback(hotKeyCallbacks.nextPlayerInSpectator)
 
-    HotKey::new("main->previousPlayerInSpectator", { VK_LEFT }, "Предыдущий игрок в /sp")
+    HotKey::new("main->previousPlayerInSpectator", { VK_LEFT }, "Предыдущий игрок в /sp", HOTKEY_CONDITION_ONLY_IN_SPECTATOR)
         ::registerCallback(hotKeyCallbacks.previousPlayerInSpectator)
 
     playerNotes::initializeNotes()
@@ -317,6 +319,8 @@ global fn main() {
             })
         }
     })
+
+    sampRegisterChatCommand("gadmin", fn { mainWindow::switch() })
 
     loop {
         wait(0)

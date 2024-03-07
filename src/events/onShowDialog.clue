@@ -49,8 +49,7 @@ sampev.onShowDialog = fn(id, style, title, firstButton, secondButton, text) {
 
     if user::getOOCNickname() != "Администратор"
        && user::getOOCNickname() != "Technical Admin"
-       && string.find(title, "Авторизация")
-       && string.find(text, "Введите логин:")
+       && string.find(text, "Авторизация.*Введите логин:")
     {
         sampSendDialogResponse(id, 1, 0, user::getOOCNickname())
         return false
