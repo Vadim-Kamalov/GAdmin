@@ -258,7 +258,7 @@ method HotKey::isKeysDefined(sourceKeys, exceptId) {
  * @param condition HOTKEY_CONDITION    When user can use this bind.
  * @return HotKey
  */
-method HotKey::new(id, keys, description, condition = HOTKEY_CONDITION_ONLY_IF_CURSOR_NOT_ACTIVE) {
+method HotKey::new(id, keys, description, condition = HOTKEY_CONDITION_ALWAYS) {
     self::sortKeys(keys)
     
     if config.root.hotKeys[id] && config.root.hotKeys.conditions[id] {
