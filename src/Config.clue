@@ -102,7 +102,7 @@ static __config__ = {
             notifications = {
                 use      = true,
                 maxItems = 5,
-                align    = 2
+                align    = 3
             },
 
             farChat = {
