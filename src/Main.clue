@@ -237,8 +237,8 @@ global fn main() {
 
     HotKey::new("main->airbreak", { VK_RSHIFT }, "Аирбрейк", HOTKEY_CONDITION_ONLY_NOT_IN_SPECTATOR)
         ::registerCallback(hotKeyCallbacks.airbreak)
-
-    HotKey::new("main->switchCursorState", { VK_B }, "Переключить курсор", HOTKEY_CONDITION_ALWAYS)
+        
+    HotKey::new("main->switchCursorState", { VK_B }, "Переключить курсор", HOTKEY_CONDITION_ONLY_IF_INPUTS_NOT_ACTIVE)
         ::registerCallback(hotKeyCallbacks.switchCursorState)
 
     HotKey::new("main->switchSpectatorState", { VK_U }, "Обновить камеру в /sp", HOTKEY_CONDITION_ONLY_IN_SPECTATOR)

@@ -34,6 +34,7 @@ static enum /** @enum HOTKEY_CONDITION */ {
     HOTKEY_CONDITION_ONLY_NOT_IN_SPECTATOR,
     HOTKEY_CONDITION_ONLY_IF_CURSOR_ACTIVE,
     HOTKEY_CONDITION_ONLY_IF_CURSOR_NOT_ACTIVE,
+    HOTKEY_CONDITION_ONLY_IF_INPUTS_NOT_ACTIVE,
     HOTKEY_CONDITION_ALWAYS,
     HOTKEY_CONDITION_NEVER
 }
@@ -52,6 +53,7 @@ method HotKey::canUseHotKey(condition) {
         HOTKEY_CONDITION_ONLY_NOT_IN_SPECTATOR     => !__spectator__.status,
         HOTKEY_CONDITION_ONLY_IF_CURSOR_ACTIVE     => common::isCursorActive(),
         HOTKEY_CONDITION_ONLY_IF_CURSOR_NOT_ACTIVE => !common::isCursorActive(),
+        HOTKEY_CONDITION_ONLY_IF_INPUTS_NOT_ACTIVE => !common::isInputsActive(),
         HOTKEY_CONDITION_ALWAYS                    => true,
         HOTKEY_CONDITION_NEVER                     => false
     }

@@ -587,7 +587,7 @@ addEventHandler("onWindowMessage", fn(event, wparam) {
 })
 
 style::registerWindow("imgui.windows.Main", "Основное окно")
-HotKey::new("imgui.windows.Main", { VK_X }, "Открыть/закрыть это окно", HOTKEY_CONDITION_ALWAYS)::registerCallback(fn {
+HotKey::new("imgui.windows.Main", { VK_X }, "Открыть/закрыть это окно", HOTKEY_CONDITION_ONLY_IF_INPUTS_NOT_ACTIVE)::registerCallback(fn {
     if !movableWindows::isChangingWindowsPositions() {
         window::switch()
     }
