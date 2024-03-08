@@ -34,7 +34,6 @@ static enum /** @enum HOTKEY_CONDITION */ {
     HOTKEY_CONDITION_ONLY_NOT_IN_SPECTATOR,
     HOTKEY_CONDITION_ONLY_IF_CURSOR_ACTIVE,
     HOTKEY_CONDITION_ONLY_IF_CURSOR_NOT_ACTIVE,
-    HOTKEY_CONDITION_ONLY_IF_INPUTS_NOT_ACTIVE,
     HOTKEY_CONDITION_ALWAYS,
     HOTKEY_CONDITION_NEVER
 }
@@ -53,7 +52,6 @@ method HotKey::canUseHotKey(condition) {
         HOTKEY_CONDITION_ONLY_NOT_IN_SPECTATOR     => !__spectator__.status,
         HOTKEY_CONDITION_ONLY_IF_CURSOR_ACTIVE     => common::isCursorActive(),
         HOTKEY_CONDITION_ONLY_IF_CURSOR_NOT_ACTIVE => !common::isCursorActive(),
-        HOTKEY_CONDITION_ONLY_IF_INPUTS_NOT_ACTIVE => !common::isInputsActive(),
         HOTKEY_CONDITION_ALWAYS                    => true,
         HOTKEY_CONDITION_NEVER                     => false
     }
@@ -176,26 +174,28 @@ method HotKey::setupWatcher(event, wparam, lparam) {
                 self::stopChangingKeys()
             }
         } else {
-            local key = match wparam {
-                VK_CONTROL ||
-                VK_MENU    ||
-                VK_SHIFT    => assets::mapScanCodeToVKey((lparam & 0xFF0000) >> 16),
-                default     => wparam
-            }
+            if !common::isInputsActive() {
+                local key = match wparam {
+                    VK_CONTROL ||
+                    VK_MENU    ||
+                    VK_SHIFT    => assets::mapScanCodeToVKey((lparam & 0xFF0000) >> 16),
+                    default     => wparam
+                }
 
-            for _, hotKey in allHotKeys {
-                //! Implementing keys handling. Allowed length of registered keys is 2.
-                //! When this(ese) keys is(are) pressed, then we will consume this window message
-                //! and call callback that passed in `hotKeysCallbacks` table.
-                if (#hotKey.keys == 1 && key == hotKey.keys[1]) ||
-                    (#hotKey.keys == 2 && isKeyDown(hotKey.keys[1]) && key == hotKey.keys[2])
-                {
-                    if local item = hotKeysCallbacks[hotKey.id] {
-                        if !item.keysDown && self::canUseHotKey(item.condition) {
-                            item.callback()
-                            item.keysDown = true
+                for _, hotKey in allHotKeys {
+                    //! Implementing keys handling. Allowed length of registered keys is 2.
+                    //! When this(ese) keys is(are) pressed, then we will consume this window message
+                    //! and call callback that passed in `hotKeysCallbacks` table.
+                    if (#hotKey.keys == 1 && key == hotKey.keys[1]) ||
+                        (#hotKey.keys == 2 && isKeyDown(hotKey.keys[1]) && key == hotKey.keys[2])
+                    {
+                        if local item = hotKeysCallbacks[hotKey.id] {
+                            if !item.keysDown && self::canUseHotKey(item.condition) {
+                                item.callback()
+                                item.keysDown = true
 
-                            consumeWindowMessage(true, true)
+                                consumeWindowMessage(true, true)
+                            }
                         }
                     }
                 }
@@ -394,7 +394,6 @@ method HotKey::render(defaultSize = imgui.ImVec2(80, 25), onChangedCallback) {
                     "Только НЕ в режиме наблюдения",
                     "Только если курсор активен",
                     "Только если курсор НЕ активен",
-                    "Только если поля ввода НЕ активны",
                     "Всегда",
                     "Никогда"
                 })[this.renderOn[0]]) {

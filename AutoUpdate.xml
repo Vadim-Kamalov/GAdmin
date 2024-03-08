@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<AutoUpdate version="1.4">
-    <title>GAdmin v1.4</title>
+<AutoUpdate version="1.4.1">
+    <title>GAdmin v1.4 - GAdmin v1.4.1</title>
     <buttons first="Установить" second="Пропустить" third="Позже"/>
     <body>
         <header>Новые функции/изменения</header>
@@ -16,6 +16,7 @@
         <ul>Изменен шрифт заголовка у окна позицию которого вы меняете.</ul>
         <header>Исправления</header>
         <ul>Исправлена вставка OOC никнейма в диалог авторизации, который появляется после смены персонажа.</ul>
+        <ul>Исправлено что хоткеи работали с активными полями ввода. (v1.4.1)</ul>
         <header>Новые значения настроек по умолчанию</header>
         <ul>Сортировка в списке администраторов по уровню теперь включена.</ul>
         <ul>Сортировка по дистанции в окне ближайших игроков теперь включена.</ul>
@@ -24,6 +25,6 @@
         <ul>Скрытие айпи-адрессов теперь включено.</ul>
     </body>
     <links>
-        <link destination="GAdmin-Release.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/download/v1.4/GAdmin-Release.lua</link>
+        <link destination="GAdmin-Release.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/download/v1.4.1/GAdmin-Release.lua</link>
     </links>
 </AutoUpdate>

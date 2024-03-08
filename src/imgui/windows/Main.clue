@@ -1715,6 +1715,12 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn(self) {
                                             }
                                         }
 
+                                        if local command = string.gsub(ffi.string(window.binder.body.command), "^/(.*)", "%1") {
+                                            if sampIsChatCommandDefined(command) {
+                                                sampUnregisterChatCommand(command)
+                                            }
+                                        }
+
                                         table.remove(config.root.binds, window.binder.selectedBind)
 
                                         if #config.root.binds > 0 {
@@ -1724,12 +1730,6 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn(self) {
                                             imgui.StrCopy(window.binder.body.title, config.root.binds[window.binder.selectedBind].title)
                                             imgui.StrCopy(window.binder.body.value, config.root.binds[window.binder.selectedBind].value)
                                             imgui.StrCopy(window.binder.body.command, config.root.binds[window.binder.selectedBind].commandName || "")
-                                        }
-
-                                        if local command = string.gsub(ffi.string(window.binder.body.command), "^/(.*)", "%1") {
-                                            if sampIsChatCommandDefined(command) {
-                                                sampUnregisterChatCommand(command)
-                                            }
                                         }
                                     }
                                 imgui.PopFont()

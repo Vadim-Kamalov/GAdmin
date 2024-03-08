@@ -42,7 +42,7 @@
 @import "game.Spectator" => spectator
 
 @define COMMAND_DELAY       800
-@define GADMIN_VERSION      "1.4"
+@define GADMIN_VERSION      "1.4.1"
 @define AUTOUPDATE_URL      "https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/main/AutoUpdate.xml"
 @define CONTRIBUTORS_URL    "https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/main/CONTRIBUTORS"
 
@@ -238,7 +238,7 @@ global fn main() {
     HotKey::new("main->airbreak", { VK_RSHIFT }, "Аирбрейк", HOTKEY_CONDITION_ONLY_NOT_IN_SPECTATOR)
         ::registerCallback(hotKeyCallbacks.airbreak)
         
-    HotKey::new("main->switchCursorState", { VK_B }, "Переключить курсор", HOTKEY_CONDITION_ONLY_IF_INPUTS_NOT_ACTIVE)
+    HotKey::new("main->switchCursorState", { VK_B }, "Переключить курсор", HOTKEY_CONDITION_ALWAYS)
         ::registerCallback(hotKeyCallbacks.switchCursorState)
 
     HotKey::new("main->switchSpectatorState", { VK_U }, "Обновить камеру в /sp", HOTKEY_CONDITION_ONLY_IN_SPECTATOR)
