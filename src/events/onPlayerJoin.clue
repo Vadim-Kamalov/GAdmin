@@ -23,8 +23,10 @@
 @import "Assets"        => assets
 @import "Config"        => config
 
+@import "game.User" => user
+
 sampev.onPlayerJoin = fn(id, color, isNpc, nickname) {
-    if config.root.windows.playerChecker.use && !isNpc {
+    if config.root.windows.playerChecker.use && !isNpc && user::getAloginStatus() {
         for _, player in config.root.windows.playerChecker.players {
             if player.nickname == nickname {
                 if local notificationType = config.root.windows.playerChecker.notificationType {

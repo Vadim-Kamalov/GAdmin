@@ -143,9 +143,9 @@ sampev.onShowDialog = fn(id, style, title, firstButton, secondButton, text) {
     }
 
     if config.root.windows.greport.use && title == "Обработка репорта" {
-        text                    = string.gsub($, "{......}", "")
-        greport.player.state    = true
-        greport.dialog.state    = true
+        text                  = string.gsub($, "{......}", "")
+        greport.player.active = true
+        greport.dialog.state  = true
 
         greport.player.time ??= os.date("*t")
 

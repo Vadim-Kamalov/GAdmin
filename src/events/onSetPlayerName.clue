@@ -9,7 +9,7 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICvULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
@@ -23,13 +23,15 @@
 @import "Config"        => config
 @import "Assets"        => assets
 
+@import "game.User" => user
+
 sampev.onSetPlayerName = fn(id, nickname, success) {
     local sourceNickname = sampGetPlayerNickname(id)
 
     /**
      * Yes, code for check player join here is same as code in `events.onPlayerJoin`.
      */
-    if config.root.windows.playerChecker.use && !success {
+    if config.root.windows.playerChecker.use && !success && user::getAloginStatus() {
         for _, player in config.root.windows.playerChecker.players {
             if player.nickname == nickname {
                 if local notificationType = config.root.windows.playerChecker.notificationType {

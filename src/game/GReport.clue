@@ -116,7 +116,7 @@ static enum /* GREPORT_OPTION */ {
  * @return void
  */
 method __greport__::loop() {
-    if self.player.clock && config.root.windows.greport.reminderNotification && !self.window.state {
+    if self.player.clock && config.root.windows.greport.reminderNotification && !self.window.state && self.active {
         if os.clock() - self.player.clock >= config.root.windows.greport.remindSeconds {
             self.player.clock = os.clock()
             notify::send({

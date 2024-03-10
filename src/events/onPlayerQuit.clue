@@ -18,13 +18,14 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
-@import "game.Admins"       => admins
-@import "game.GReport"      => greport
-@import "game.Spectator"    => spectator
-@import "Notifications"     => notify
-@import "Icons"             => icons
-@import "Config"            => config
-@import "Assets"            => assets
+@import "game.Admins"    => admins
+@import "game.GReport"   => greport
+@import "game.User"      => user
+@import "game.Spectator" => spectator
+@import "Notifications"  => notify
+@import "Icons"          => icons
+@import "Config"         => config
+@import "Assets"         => assets
 
 sampev.onPlayerQuit = fn(id) {
     local nickname = sampGetPlayerNickname(id)
@@ -38,7 +39,7 @@ sampev.onPlayerQuit = fn(id) {
 
     if config.root.windows.playerChecker.use {
         for _, player in config.root.windows.playerChecker.players {
-            if player.nickname == nickname {
+            if player.nickname == nickname && user::getAloginStatus() {
                 if local notificationType = config.root.windows.playerChecker.notificationType {
                     if notificationType != NOTIFICATION_TYPE_NONE {
                         notify::send({
