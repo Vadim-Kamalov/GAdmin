@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<AutoUpdate version="1.4.2">
-    <title>GAdmin v1.4.2</title>
+<AutoUpdate version="1.4.3">
+    <title>GAdmin v1.4.3</title>
     <buttons first="Установить" second="Пропустить" third="Позже"/>
     <body>
         <header>Исправления</header>
-        <ul>Исправлено что чекер игроков работал даже вне /alogin.</ul>
-        <ul>Исправлено что не приходило оповещение об активном g-report'е.</ul>
+        <ul>Исправлено что оповещение о долгом простое при активном /grep не приходило.</ul>
+        <ul>Исправлено что не обновлялось время с активным /grep в определенных случаях.</ul>
     </body>
     <links>
-        <link destination="GAdmin-Release.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/download/v1.4.2/GAdmin-Release.lua</link>
+        <link destination="GAdmin-Release.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/download/v1.4.3/GAdmin-Release.lua</link>
     </links>
 </AutoUpdate>
