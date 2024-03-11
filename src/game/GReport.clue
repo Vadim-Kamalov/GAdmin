@@ -116,7 +116,7 @@ static enum /* GREPORT_OPTION */ {
  * @return void
  */
 method __greport__::loop() {
-    if self.player.clock && config.root.windows.greport.reminderNotification && !self.window.state && self.active {
+    if self.player.clock && config.root.windows.greport.reminderNotification && !self.window.state {
         if os.clock() - self.player.clock >= config.root.windows.greport.remindSeconds {
             self.player.clock = os.clock()
             notify::send({
@@ -252,7 +252,6 @@ method __greport__.player::remove(reason) {
         this.dialog::setInputValue(reason)
         this.dialog.state = false
         this.window::close(false)
-        self::reset()
     }
 }
 
@@ -297,7 +296,6 @@ method __greport__.player::blockReport(time, reason) {
             this.dialog::setInputValue(reason)
             this.dialog.state = false
             this.window::close(false)
-            self::reset()
         }
     }
 }
@@ -314,7 +312,6 @@ method __greport__.player::answer(answer) {
         this.dialog::setInputValue(answer)
         this.dialog.state = false
         this.window::close(false)
-        self::reset()
     }
 }
 
@@ -337,7 +334,6 @@ method __greport__.player::moveReportToAdministration() {
         this.dialog::callOptionAt(GREPORT_OPTION_TO_ADMINISTRATION)
         this.dialog.state = false
         this.window::close(false)
-        self::reset()
     }
 }
 

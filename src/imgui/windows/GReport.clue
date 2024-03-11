@@ -63,6 +63,10 @@ imgui.OnFrame(fn { return greport.window.state && !isGamePaused() && config.root
                 greport.window.state                        = false
                 greport.window.closeAndOpenAnimation.clock  = nil
 
+                if greport.player.active {
+                    greport.player.clock = os.clock()
+                }
+
                 imgui.StrCopy(greport.window.answerInput, "")
             } else {
                 greport.window.closeAndOpenAnimation.alpha = imguiAssets::bringFloatTo($, 0, greport.window.closeAndOpenAnimation.clock, 0.2)
@@ -74,10 +78,6 @@ imgui.OnFrame(fn { return greport.window.state && !isGamePaused() && config.root
     if greport.window.closeAndOpenAnimation.alpha == 0 {
         greport.window.recentlyOpened               = true
         greport.window.closeAndOpenAnimation.clock  = os.clock()
-    }
-
-    if greport.player.active {
-        greport.player.clock = os.clock()
     }
 
     imgui.SetNextWindowSize(imgui.ImVec2(600, 300))

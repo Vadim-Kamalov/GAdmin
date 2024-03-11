@@ -147,13 +147,15 @@ sampev.onShowDialog = fn(id, style, title, firstButton, secondButton, text) {
         greport.player.active = true
         greport.dialog.state  = true
 
-        greport.player.time ??= os.date("*t")
-
         if style == DIALOG_STYLE_INPUT {
             if greport.dialog.awaiting.input[1] {
                 sampSendDialogResponse(id, 1, 0, greport.dialog.awaiting.input[2])
                 greport.dialog.awaiting.inputs  = { false, nil }
                 greport.dialog.state            = false
+                
+                greport.player::reset()
+
+                return false
             }
         }
 
@@ -169,7 +171,12 @@ sampev.onShowDialog = fn(id, style, title, firstButton, secondButton, text) {
                 sampSendDialogResponse(id, 1, greport.dialog.awaiting.options[2], "")
 
                 if greport.dialog.awaiting.options[2] == GREPORT_OPTION_TO_ADMINISTRATION {
-                    greport.dialog.state = false
+                    greport.dialog.state            = false
+                    greport.dialog.awaiting.options = { false, nil }
+
+                    greport.player::reset()
+
+                    return false 
                 }
 
                 greport.dialog.awaiting.options = { false, nil }
@@ -177,10 +184,17 @@ sampev.onShowDialog = fn(id, style, title, firstButton, secondButton, text) {
         } elseif string.find(text, "Заблокировать на %d+ минут") {
             if greport.dialog.awaiting.special[1] {
                 sampSendDialogResponse(id, 1, greport.dialog.awaiting.special[2], "")
+               
                 greport.dialog.state            = false
                 greport.dialog.awaiting.special = { false, nil }
+              
+                greport.player::reset()
+
+                return false
             }
         }
+
+        greport.player.time ??= os.date("*t")
 
         return false
     }

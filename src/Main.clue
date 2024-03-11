@@ -175,7 +175,7 @@ global fn main() {
 
     /** 
      * Initializing hot keys that used in this module.
-    */
+     */
     local hotKeyCallbacks = {}
 
     hotKeyCallbacks.airbreak = fn {
