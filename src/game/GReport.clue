@@ -384,7 +384,7 @@ method __greport__::setupChatWatcher(text) {
         self.window::close()
 
         if !self.window.state {
-            self::reset()
+            self.player::reset()
         }
 
         if config.root.windows.greport.preferNotifications {
