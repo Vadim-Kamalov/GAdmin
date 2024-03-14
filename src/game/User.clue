@@ -58,6 +58,10 @@ method __user__::setAloginStatus(status) {
         assets::changeWallhackState(self.alogin)
     }
 
+    if config.root.additions.autoAlogout.use && !status {
+        assets::workInBackground(false)
+    }
+
     for _, callback of self.aloginCallbacks {
         callback(self.alogin)
     }
