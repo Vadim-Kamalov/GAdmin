@@ -31,7 +31,7 @@ M: dzone@danwin1210.de
 G: github.com/defaultzone
 C: vk.com/altasd
 D: значительный вклад в разработку
-CLR: 2F9D2F=defaultzone
+CLR: 2E3440=defaultzone
 
 N: Petr Frank (HeroIAm)
 G: github.com/HeroIAm
@@ -62,7 +62,7 @@ C: vk.com/shesh69, tg: ilyashesh
 D: тестировщик
 CLR: bd379b=shesh
 
-N: zXcbobikov
+N: VICTIM
 C: https://vk.com/zxcbobikov
 D: поиск багов, предложение различных функций
-CLR: DC143C=zXcbobikov
+CLR: E0FFFF=VICTIM
