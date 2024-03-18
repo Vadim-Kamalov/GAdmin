@@ -21,15 +21,23 @@
 @import "game.User" => user
 @import "Config"    => config
 
-static onTogglePlayerControllableCount = 0
+local sendedCommand = false
 
-sampev.onTogglePlayerControllable = fn {
-    onTogglePlayerControllableCount += 1
-    if isSampAvailable() && sampGetPlayerScore(user::getId()) == 1
-       && scriptLoadedWithGame
-       && config.root.additions.autoAdminLogin.use
-       && onTogglePlayerControllableCount == 2
+sampev.onTogglePlayerControllable = fn(controllable) {
+    if scriptLoadedWithGame && controllable &&
+        !sendedCommand && config.root.additions.autoAdminLogin.use
     {
         sampSendChat("/alogin")
+
+        //! I don’t know why, but after sending a command to the chat
+        //! the server does not count that the player is unfrozen.
+        
+        freezeCharPosition(PLAYER_PED, true)
+		freezeCharPosition(PLAYER_PED, false)
+		setPlayerControl(PLAYER_HANDLE, true)
+		restoreCameraJumpcut()
+		clearCharTasksImmediately(PLAYER_PED)
+
+        sendedCommand = true;
     }
 }

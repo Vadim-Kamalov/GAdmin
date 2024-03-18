@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<AutoUpdate version="1.4.5">
-    <title>GAdmin v1.4.5</title>
+<AutoUpdate version="1.4.6">
+    <title>GAdmin v1.4.6</title>
     <buttons first="Установить" second="Пропустить" third="Позже"/>
     <body>
         <header>Исправления</header>
-        <ul>Исправлено что афк не засчитывался сервером после /alogin + /alogout с включенной настройкой автоматического /alogout по времени в афк.</ul>
+        <ul>Исправлено что <code>/alogin</code> при спавне <b>не всегда</b> срабатывал.</ul>
+        <ul>Исправлено что сообщения в <code>/a</code> чате следующего формата засчитывались авторизацией администратора:</ul>
+        <quoute>[A] nickname[id]: [A] nickname[id] авторизовался как администратор N уровня.</quoute>
     </body>
     <links>
-        <link destination="GAdmin-Release.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/download/v1.4.5/GAdmin-Release.lua</link>
+        <link destination="GAdmin-Release.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/download/v1.4.6/GAdmin-Release.lua</link>
     </links>
 </AutoUpdate>

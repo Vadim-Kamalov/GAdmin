@@ -199,8 +199,8 @@ sampev.onServerMessage = fn(color, text) {
         common::sendScriptMessage("Вы ввели неверный пароль в настройках для авто-ввода. Пароль был сброшен.")
     }
 
-    if string.find(text, "^%[A%] .*%[%d+%]: %S+") && color == 866792362 && config.root.additions.mention.use {
-        local mentionStarter, possibleMention   = string.match(text, "^%[A%] (.*)%[%d+]: (%S+)")
+    if string.find(text, "^%[A%] %S+%[%d+%]: %S+") && color == 866792362 && config.root.additions.mention.use {
+        local mentionStarter, possibleMention   = string.match(text, "^%[A%] (%S+)%[%d+]: (%S+)")
         local replacedColor                     = false
 
         for index, pattern in ({
@@ -264,13 +264,13 @@ sampev.onServerMessage = fn(color, text) {
         text = string.gsub($, "%d+%.%d+%.%d+%.%d+", "XXX.XXX.XXX.XXX")
     }
 
-    if string.find(safeText, "^%[A%] .*%[%d+%] авторизовался как администратор %d+ уровня%.$") {
+    if string.find(safeText, "^%[A%] %S+%[%d+%] авторизовался как администратор %d+ уровня%.$") {
 @ifdef __GADMIN_DEBUG__
 {
         $debugInformation!("onServerMessage", "found connected administrator")
 }
 
-        local oocNickname, adminId, adminLvl = string.match(safeText, "^%[A%] (.*)%[(%d+)%] авторизовался как администратор (%d+) уровня%.$")
+        local oocNickname, adminId, adminLvl = string.match(safeText, "^%[A%] (%S+)%[(%d+)%] авторизовался как администратор (%d+) уровня%.$")
         local connectionPassed = true
 
         for _, data in admins {
@@ -296,8 +296,8 @@ sampev.onServerMessage = fn(color, text) {
                 }
             })
         }
-    } elseif string.find(safeText, "^%[A%] .*%[%d+%] вышел как администратор%.$") {
-        local adminId = tonumber(string.match(safeText, "^%[A%] .*%[(%d+)%] вышел как администратор%.$"))
+    } elseif string.find(safeText, "^%[A%] %S+%[%d+%] вышел как администратор%.$") {
+        local adminId = tonumber(string.match(safeText, "^%[A%] %S+%[(%d+)%] вышел как администратор%.$"))
     
         if adminId == user::getId() {
             user::setAloginStatus(false)
@@ -343,7 +343,7 @@ sampev.onServerMessage = fn(color, text) {
         }
     }
 
-    if string.match(safeText, "^%[A%] (.+)%[%d+%] ответил .*%[%d+%]: .*") == user::getOOCNickname() {
+    if string.match(safeText, "^%[A%] (%S+)%[%d+%] ответил %S+%[%d+%]: .*") == user::getOOCNickname() {
         user::incrementAnswersCount()
     }
 
@@ -410,7 +410,7 @@ sampev.onServerMessage = fn(color, text) {
 
     if config.root.additions.changeNicknameColors.use {
         if local it = contributorsFileSource {
-            if string.find(text, "^%[A%] .*%[%d+%]") && color == 866792362 {
+            if string.find(text, "^%[A%] %S+%[%d+%]") && color == 866792362 {
                 for line with string.gmatch(it, "[^\r\n]+") {
                     if local color, nickname = string.match(line, "^CLR: (%x+)=(.+)") {
                         local find      = string.format("(%s)", nickname)
