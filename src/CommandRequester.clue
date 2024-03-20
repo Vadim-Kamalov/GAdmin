@@ -122,7 +122,7 @@ method __commandRequester__::setupChatWatcher(text, color) {
         }
     }
 
-    if local id, command = string.match(text, "^%[A%] .+%[(%d+)%]: (/.*)") {
+    if local id, command = string.match(text, "^%[A%] %S+%[(%d+)%]: (/.*)") {
         if color == 866792362 {
 @ifdef __GADMIN_DEBUG__
 {
@@ -134,7 +134,7 @@ method __commandRequester__::setupChatWatcher(text, color) {
     } else {
         local command, type = self.current.command.name, self.current.command.type
         if type == COMMAND_REQUEST_TYPE_NO_COMMENTARY {
-            if local id = string.match(text, "^%[A] .+%[%d+]: (%d+), %+$") {
+            if local id = string.match(text, "^%[A] %S+%[%d+]: (%d+), %+$") {
                 if tonumber(id) == self.current.id.from {
                     self::remove()
                 }
@@ -148,7 +148,7 @@ method __commandRequester__::setupChatWatcher(text, color) {
                 }
             }
         } elseif type == COMMAND_REQUEST_TYPE_ANSWER {
-            if local to, name = string.match(text, "^%[A%] .+%[%d+%] ответил .+%[(%d+)%]: (%w+) by .+") {
+            if local to, name = string.match(text, "^%[A%] %S+%[%d+%] ответил %S+%[(%d+)%]: (%w+) by .+") {
                 if tonumber(to) == tonumber(self.current.id.to) && string.lower(name) == string.lower(self.current.command.splitted.name) {
                     self::remove()
                 }
