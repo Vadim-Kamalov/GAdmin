@@ -159,6 +159,10 @@ sampev.onServerMessage = fn(color, text) {
         }
     }
 
+    //! FIXME: handle next messages:
+    //! FIXME: "| Вы вышли как ведущий администратор."
+    //! FIXME: "| Вы вышли как администратор."
+
     commandRequester::setupChatWatcher(safeText, color)
     greport::setupChatWatcher(safeText)
 
@@ -306,11 +310,22 @@ sampev.onServerMessage = fn(color, text) {
 
         for index, data in admins {
             if data.id == adminId {
-@ifdef __GADMIN_DEBUG__
-{
-                $debugSuccessful!("onServerMessage", "removed disconnected administrator from `admins` table") 
-}
                 admins::remove(index)
+                break
+            }
+        }
+    }
+
+    if string.find(text, "^{FFFF00}%| {ffffff}За сессию администратирования вы заработали {4a86b6}%d+ {FFFFFF}GMoney%.$")
+       && user::getAloginStatus()
+    {
+        user::setAloginStatus(false)
+        checkedAdminList = false
+
+        for index, data in admins {
+            if data.id == user::getId() {
+                admins::remove(index)
+                break
             }
         }
     }
@@ -329,7 +344,8 @@ sampev.onServerMessage = fn(color, text) {
 
     if (string.find(text, "Вы успешно авторизовались как администратор")
         || string.find(text, "Вы уже авторизировались")
-        || string.find(text, "Вы успешно авторизовались как ведущий администратор")) && color == -1
+        || string.find(text, "Вы успешно авторизовались как ведущий администратор")
+        || string.find(text, "Вы успешно авторизовались как разработчик")) && color == -1
     {
         if os.clock() - adminListCheckClock >= $COMMAND_DELAY {
             lua_thread.create(fn {

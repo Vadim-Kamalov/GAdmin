@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<AutoUpdate version="1.4.7">
-    <title>GAdmin v1.4.7</title>
+<AutoUpdate version="1.4.8">
+    <title>GAdmin v1.4.8</title>
     <buttons first="Установить" second="Пропустить" third="Позже"/>
     <body>
-        <ul>Усиление безопасности.</ul>
+        <header>Исправления</header>
+        <ul>Исправлено считывание /alogin и /alogout у технических администраторов.</ul>
     </body>
     <links>
-        <link destination="GAdmin-Release.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/download/v1.4.7/GAdmin-Release.lua</link>
+        <link destination="GAdmin-Release.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/download/v1.4.8/GAdmin-Release.lua</link>
     </links>
 </AutoUpdate>
