@@ -159,10 +159,6 @@ sampev.onServerMessage = fn(color, text) {
         }
     }
 
-    //! FIXME: handle next messages:
-    //! FIXME: "| Вы вышли как ведущий администратор."
-    //! FIXME: "| Вы вышли как администратор."
-
     commandRequester::setupChatWatcher(safeText, color)
     greport::setupChatWatcher(safeText)
 
