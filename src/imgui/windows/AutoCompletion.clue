@@ -227,7 +227,7 @@ imgui.OnFrame(fn { return autoCompletion.condition() && config.root.windows.auto
 
     self.suggestedList = (fn {
         local suggestedList = {}
-        local inputText     = sampGetChatInputText()
+        local inputText     = common::toLowerCase(sampGetChatInputText())
        
         local possibleDot, command, arguments = string.match(inputText, "^(%.+)(%S*)(.*)")
         if possibleDot == '.' {
@@ -295,7 +295,7 @@ imgui.OnFrame(fn { return autoCompletion.condition() && config.root.windows.auto
                                         for id = 0, $SERVER_MAX_PLAYERS {
                                             if id != user::getId() && sampIsPlayerConnected(id) {
                                                 local nickname = sampGetPlayerNickname(id)
-                                                if string.find(common::toLowerCase(nickname), common::toLowerCase(argument), 1, true) {
+                                                if string.find(nickname, argument, 1, true) {
                                                     table.insert(suggestedList, {
                                                         suggested   = textBeforeArgument .. ' ' .. nickname .. ' ',
                                                         description = "Предложенный никнейм игрока"
@@ -339,7 +339,7 @@ imgui.OnFrame(fn { return autoCompletion.condition() && config.root.windows.auto
                                         for _, commandName in commandList {
                                             if type(commandName) == "string" && ('/' .. commandName) == command[1] {
                                                 for _, reason in commandList[#commandList] {
-                                                    if string.find(common::toLowerCase(reason), common::toLowerCase(argument), 1, true) {
+                                                    if string.find(common::toLowerCase(reason), argument, 1, true) {
                                                         table.insert(suggestedList, {
                                                             suggested   = textBeforeArgument .. ' ' .. reason .. ' ',
                                                             description = "Предложенное наказание"

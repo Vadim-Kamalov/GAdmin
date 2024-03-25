@@ -62,7 +62,32 @@ static __commandRequester__ = {
                 args = ""
             }
         }
-    }
+    },
+
+    allowedCommands     = {
+        //! { command: string, type: COMMAND_REQUEST_TYPE, lvl: number }
+        { "pk",         COMMAND_REQUEST_TYPE_ANSWER,        2 },
+        { "ck",         COMMAND_REQUEST_TYPE_ANSWER,        3 },
+        { "slap",       COMMAND_REQUEST_TYPE_ANSWER,        2 },
+        { "unfreeze",   COMMAND_REQUEST_TYPE_ANSWER,        2 },
+        { "setworld",   COMMAND_REQUEST_TYPE_ANSWER,        2 },
+        { "setint",     COMMAND_REQUEST_TYPE_ANSWER,        2 },
+        { "dpame",      COMMAND_REQUEST_TYPE_ANSWER,        2 },
+        { "leave",      COMMAND_REQUEST_TYPE_ANSWER,        3 },
+        { "makemic",    COMMAND_REQUEST_TYPE_ANSWER,        3 },
+        { "unwarn",     COMMAND_REQUEST_TYPE_ANSWER,        5 },
+        { "aheal",      COMMAND_REQUEST_TYPE_ANSWER,        3 },
+        { "warn",       COMMAND_REQUEST_TYPE_COMMENTARY,    2 },
+        { "ban",        COMMAND_REQUEST_TYPE_COMMENTARY,    3 },
+        { "kick",       COMMAND_REQUEST_TYPE_COMMENTARY,    2 },
+        { "mute",       COMMAND_REQUEST_TYPE_COMMENTARY,    2 },
+        { "bmute",      COMMAND_REQUEST_TYPE_COMMENTARY,    2 },
+        { "iban",       COMMAND_REQUEST_TYPE_COMMENTARY,    4 },
+        { "jail",       COMMAND_REQUEST_TYPE_COMMENTARY,    4 },
+        { "vspawn",     COMMAND_REQUEST_TYPE_NO_COMMENTARY, 2 },
+        { "vfuel",      COMMAND_REQUEST_TYPE_NO_COMMENTARY, 3 },
+        { "cflip",      COMMAND_REQUEST_TYPE_NO_COMMENTARY, 2 }
+    } 
 }
 
 /**
@@ -230,7 +255,7 @@ method __commandRequester__::remove() {
  *
  * @param from number       Player/User ID that send this command.
  * @param command string    Full command with arguments.
- * @return boolean          Wheather `command` is in `config.root.additions.commandRequester.allowedCommands`.
+ * @return boolean          Wheather `command` is in `self.allowedCommands`.
  */
 method __commandRequester__::new(from, command) {
     if isGamePaused() || !config.root.additions.commandRequester.use { return false }
@@ -250,13 +275,11 @@ method __commandRequester__::new(from, command) {
         }
     }
 
-    if local this = config.root.additions.commandRequester {
-        for _, commandData in this.allowedCommands {
-            if local command = string.match($, "^/(%S+)") {
-                if string.lower(commandData[1]) == string.lower(command) {
-                    commandType, commandLvl = commandData[2], commandData[3]
-                    break
-                }
+    for _, commandData in self.allowedCommands {
+        if local command = string.match($, "^/(%S+)") {
+            if string.lower(commandData[1]) == string.lower(command) {
+                commandType, commandLvl = commandData[2], commandData[3]
+                break
             }
         }
     }

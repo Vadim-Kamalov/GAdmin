@@ -248,30 +248,7 @@ static __config__ = {
                 windowPositionY     = select(2, getScreenResolution()),
                 displayType         = 2,
                 secondsToHide       = 5,
-                soundNotification   = true,
-                allowedCommands     = {
-                    { "pk",         4, 2 },
-                    { "ck",         4, 3 },
-                    { "slap",       4, 2 },
-                    { "unfreeze",   4, 2 },
-                    { "setworld",   4, 2 },
-                    { "setint",     4, 2 },
-                    { "dpame",      4, 2 },
-                    { "leave",      4, 3 },
-                    { "makemic",    4, 3 },
-                    { "unwarn",     4, 5 },
-                    { "aheal",      4, 3 },
-                    { "warn",       3, 2 },
-                    { "ban",        3, 3 },
-                    { "kick",       3, 2 },
-                    { "mute",       3, 2 },
-                    { "bmute",      3, 2 },
-                    { "iban",       3, 4 },
-                    { "jail",       3, 4 },
-                    { "vspawn",     2, 2 },
-                    { "vfuel",      2, 3 },
-                    { "cflip",      2, 2 }
-                }
+                soundNotification   = true
             },
 
             mention = {
