@@ -1,12 +1,21 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<AutoUpdate version="1.4.8">
-    <title>GAdmin v1.4.8</title>
+<AutoUpdate version="1.4.9">
+    <title>GAdmin v1.4.9</title>
     <buttons first="Установить" second="Пропустить" third="Позже"/>
     <body>
-        <header>Исправления</header>
-        <ul>Исправлено считывание /alogin и /alogout у технических администраторов.</ul>
+        <quote>Если скрипт вылетает после установки авто-обновления - переустановите его с темы на форуме.</quote>
+        <header>Новые функции</header>
+        <ul>Убрана чувствительность к регистру у авто-заполнения.</ul>
+        <ul>Добавлена подсветка никнейма в окне списка администраторов цветом, который он имеет.</ul>
+        <header>Исправления/оптимизация</header>
+        <ul>Оптимизированы методы авто-обновления.</ul>
+        <ul>Исправлен вылет скрипта после установки авто-обновления в определенных случаях.</ul>
+        <ul>Исправлено что не получались никнеймы администраторов в определенных случаях.</ul>
     </body>
     <links>
-        <link destination="GAdmin-Release.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/download/v1.4.8/GAdmin-Release.lua</link>
+        <!-- Redirect links aren't allowed. -->
+        <!-- Notice that file with `destination="GAdmin-Release.lua"` should be last element in this section. -->
+
+        <link destination="GAdmin-Release.lua">https://gist.githubusercontent.com/defaultzone/269775a7e3cf6a9f1cbf58b69033d7a3/raw/69e029d5fd27ac46ff8c4531c9ae50d9338f172c/GAdmin-Release.lua</link>
     </links>
 </AutoUpdate>
