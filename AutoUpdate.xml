@@ -14,8 +14,8 @@
     </body>
     <links>
         <!-- Redirect links aren't allowed. -->
-        <!-- Notice that file with `destination="GAdmin-Release.lua"` should be last element in this section. -->
+        <!-- Notice that `link` with `destination="GAdmin-Release.lua"` should be last element in this section. -->
 
-        <link destination="GAdmin-Release.lua">https://gist.githubusercontent.com/defaultzone/269775a7e3cf6a9f1cbf58b69033d7a3/raw/69e029d5fd27ac46ff8c4531c9ae50d9338f172c/GAdmin-Release.lua</link>
+        <link destination="GAdmin-Release.lua">https://gist.githubusercontent.com/defaultzone/269775a7e3cf6a9f1cbf58b69033d7a3/raw/b06a2f7ce401a9c5544c4ba2b1062075b188d6f3/GAdmin-Release.lua</link>
     </links>
 </AutoUpdate>
