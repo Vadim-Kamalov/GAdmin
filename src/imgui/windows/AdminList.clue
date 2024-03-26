@@ -71,6 +71,16 @@ windows::new("imgui.windows.AdminList", {
                     ? string.format("[LVL: %d] %s[%d]", admin.lvl, admin.nickname.ooc, admin.id)
                     : string.format("%s[%d]", admin.nickname.ooc, admin.id)
 
+                local color = (config.root.windows.adminList.textColorBasedOnClist)
+                    ? common::convertHex2ImVec4($PLAYER_COLOR_TO_HEX!(admin.id)) : nil
+
+                for _, player in nicknameColors {
+                    if player.nickname == admin.nickname.ooc && player.colors[1] {
+                        color = common::convertHex2ImVec4(bit.tohex(player.colors[1], 6))
+                        break
+                    }
+                }
+
                 pos.x = match config.root.windows.adminList.textAlignMode {
                     ALIGN_CENTER    => self.size.x / 2 - imgui.CalcTextSize(text).x / 2,
                     ALIGN_RIGHT     => self.size.x - imgui.CalcTextSize(text).x - 10,
@@ -81,8 +91,7 @@ windows::new("imgui.windows.AdminList", {
                 local isClicked, isHovered = imguiAssets::addStrokedText(
                     text,
                     config.root.windows.adminList.strokeSize,
-                    (config.root.windows.adminList.textColorBasedOnClist) ?
-                        common::convertHex2ImVec4($PLAYER_COLOR_TO_HEX!(admin.id)) : nil
+                    color
                 )
 
                 if self.size.x < imgui.GetItemRectSize().x {

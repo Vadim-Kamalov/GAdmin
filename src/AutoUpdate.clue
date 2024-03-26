@@ -18,9 +18,10 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
-@import "Common" => common
-@import "Assets" => assets
-@import "Config" => config
+@import "Common"    => common
+@import "Assets"    => assets
+@import "Config"    => config
+@import "Requests"  => requests
 
 @import "imgui.Assets" => imguiAssets
 
@@ -48,8 +49,6 @@ static __autoUpdate__ = {
     config      = nil
 }
 
-
-
 /**
  * Merges two JSON strings into a single file.
  *
@@ -71,10 +70,26 @@ method __autoUpdate__::mergeJson(file, first, second) {
  */
 method __autoUpdate__::update() {
     local fn downloadCallback() {
-        config.root.autoUpdate.hasUpdateInstalled = true
-        thisScript()::reload()
+        local mustReloadScript                      = true
+        config.root.autoUpdate.hasUpdateInstalled   = true
+
+        for _, luaScript in script.list() {
+            //! Compatible with a script that reloads each script when it changes.
+            if luaScript.name == "ML-AutoReboot" {
+                mustReloadScript = false
+                break
+            }
+        }
+
+        if mustReloadScript {
+            lua_thread.create(fn {
+                wait(5000) // to prevent possible `error in error handling` error message.
+                script.this::reload()
+            })
+        }
     }
 
+    // TODO: are we still need this?
     if self.handler.root.AutoUpdate.merge {
         if #self.handler.root.AutoUpdate.merge.json > 1 {
             local this = self.handler.root.AutoUpdate.merge.json
@@ -122,42 +137,23 @@ method __autoUpdate__::update() {
  * @return void
  */
 method __autoUpdate__::checkUpdates(url) {
-    local downloadStatus        = require("moonloader").download_status
-    local content               = ""
-    local tempFileDestination   = getWorkingDirectory() .. "\\GAdmin\\temp\\AutoUpdate.xml"
-    
     if config.root.autoUpdate.hasUpdateInstalled {
         config.root.autoUpdate.hasUpdateInstalled = false
         return
     }
 
-    downloadUrlToFile(url, tempFileDestination, fn(id, status, p1, p2) {
-        if status == downloadStatus.STATUS_ENDDOWNLOADDATA {
-@ifdef __GADMIN_DEBUG__
-{
-            $debugSuccessful!("autoUpdate.init", "received downloadStatus.STATUS_ENDDOWNLOADDATA")
-}
-            lua_thread.create(fn {
-                while !doesFileExist(tempFileDestination) {
-                    wait(0)
-                }
-
-@ifdef __GADMIN_DEBUG__
-{
-                $debugSuccessful!("autoUpdate.init", "while !doesFileExist(tempFileDestination) passed.")
-}
+    lua_thread.create(fn {
+        requests::asyncHttpRequest("GET", url, nil, fn (response) {
+            if response.status_code == 200 {
                 try {
-                    content         = xml2lua.loadFile(tempFileDestination)
-                    local parser    = xml2lua.parser(self.handler)
+                    local parser = xml2lua.parser(self.handler)
                 
-                    parser::parse(content)
-
-                    os.remove(tempFileDestination)
+                    parser::parse(response.text)
 
                     if self.handler.root.AutoUpdate._attr.version != $GADMIN_VERSION 
                         && config.root.autoUpdate.skipVersionUpdate != self.handler.root.AutoUpdate._attr.version
                     {
-                        self.imgui.body             = string.match(content, "<body>%s*(.*)%s*</body>")
+                        self.imgui.body             = string.match(response.text, "<body>%s*(.*)%s*</body>")
                         self.imgui.title            = self.handler.root.AutoUpdate.title
                         self.imgui.version          = self.handler.root.AutoUpdate._attr.version
                         self.imgui.buttons.first    = self.handler.root.AutoUpdate.buttons._attr.first
@@ -177,15 +173,20 @@ method __autoUpdate__::checkUpdates(url) {
                     $debugWarning!("xml2lua.parser(self.handler)", err)
 }
                 }
-            })
-        }
-    }) 
+            } else {
+                $debugWarning!("autoUpdate::checkUpdates", "failed to fetch " .. url .. ", response.status_code = " .. response.status_code)
+            }
+        }, fn (error) {
+            $debugWarning!("autoUpdate::checkUpdates", "failed to fetch " .. url .. ", error = ")
+            $debugWarning!("autoUpdate::checkUpdates", error)
+        })
+    })
 }
 
 /**
  * Render XML elements that listed below:
  *  <quote> ... </quote>, <ul> ... </ul>, <code> ... </code>,
- *  <b> ... </b>, <link> ... </link>, <header> ... </header>, <br/>, <newline/>0
+ *  <b> ... </b>, <link> ... </link>, <header> ... </header>, <br/>, <newline/>
  *
  * Notice that `<br/>` (break line) is only available in `quote`, `ul`,
  * `code`, `b`, `link` and `header` elements.

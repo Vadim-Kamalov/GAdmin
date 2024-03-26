@@ -21,6 +21,7 @@
 @version 3.4.4
 
 @import "Hook"             => hook
+@import "Requests"         => requests
 @import "Icons"            => icons
 @import "Common"           => common
 @import "Notifications"    => notify
@@ -42,9 +43,9 @@
 @import "game.Spectator" => spectator
 
 @define COMMAND_DELAY       800
-@define GADMIN_VERSION      "1.4.8"
+@define GADMIN_VERSION      "1.4.9"
 @define AUTOUPDATE_URL      "https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/main/AutoUpdate.xml"
-@define CONTRIBUTORS_URL    "https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/main/CONTRIBUTORS"
+@define NICKNAME_COLORS_URL "TODO"
 
 @define SAMP_BASE                       getModuleHandle("samp.dll")
 @define RECALL_UP_ADDR                  $SAMP_BASE + 0x65990
@@ -109,6 +110,7 @@ static encoding     = require("encoding")
 static imgui        = require("mimgui")
 static wm           = require("windows.message")
 static ffi          = require("ffi")
+static effil        = require("effil")
 static neatJSON     = require("neatjson")
 static xml2lua      = require("xml2lua")
 static sampev       = require("samp.events")
@@ -134,6 +136,7 @@ static baseNameTagsDistance     = 60
 static scriptLoadedWithGame     = false //! `true` only when called `sampev.onInitGame`.
 static bulletData               = { lastId = 0 }
 static contributorsFileSource   = nil
+static nicknameColors           = {} //! { nickname: string, colors: number[] }...
 
 local airbreak              = { status = false, coords = {} }
 local fishEyeWeaponLock     = false
@@ -300,24 +303,31 @@ global fn main() {
 }
 
     /**
-     * Get file content of `CONTRIBUTORS` file and write it in `contributorsFileSource` variable.
-     * Used to change color of contributors.
+     * Fetching nickname colors that listed in `$NICKNAME_COLORS_URL`. Lines are represented
+     * as `nickname = [ FIRST-COLOR, SECOND-COLOR, ..., N-COLOR ]`. Colors are hexadecimal numbers
+     * in `0xRRGGBB` format.
      */
-    downloadUrlToFile($CONTRIBUTORS_URL, getWorkingDirectory() .. "\\GAdmin\\temp\\CONTRIBUTORS.txt", fn(_, status, _, _) {
-        local downloadStatus    = require("moonloader").download_status
-        local filePath          = getWorkingDirectory() .. "\\GAdmin\\temp\\CONTRIBUTORS.txt"
+    lua_thread.create(fn {
+        requests::asyncHttpRequest("GET", $NICKNAME_COLORS_URL, {}, fn (response) {
+            if response.status_code == 200 {
+                for line with string.gmatch(response.text, "[^\n]+") {
+                    if local nickname, colors = string.match(line, "^(%S+)%s*=%s*%[([%s,0xX%x]+)]") {
+                        local fetchedColors = {}
+                        
+                        for color with string.gmatch(colors, "0x%x+") {
+                            table.insert(fetchedColors, tonumber(color))
+                        }
 
-        if status == downloadStatus.STATUS_ENDDOWNLOADDATA {
-            lua_thread.create(fn {
-                while !doesFileExist(filePath) {
-                    wait(0)
+                        table.insert(nicknameColors, { nickname = nickname, colors = fetchedColors })
+                    }
                 }
-
-                contributorsFileSource = common::readFileContent(filePath)
-                
-                os.remove(filePath)
-            })
-        }
+            } else {
+                $debugWarning!("system", "failed to fetch $NICKNAME_COLORS_URL")
+            }
+        }, fn (error) {
+            $debugWarning!("system", "failed to fetch $NICKNAME_COLORS_URL, error:")
+            $debugWarning!("system", error)
+        })
     })
 
     sampRegisterChatCommand("gadmin", fn { mainWindow::switch() })

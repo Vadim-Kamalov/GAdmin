@@ -421,15 +421,13 @@ sampev.onServerMessage = fn(color, text) {
     }
 
     if config.root.additions.changeNicknameColors.use {
-        if local it = contributorsFileSource {
-            if string.find(text, "^%[A%] %S+%[%d+%]") && color == 866792362 {
-                for line with string.gmatch(it, "[^\r\n]+") {
-                    if local color, nickname = string.match(line, "^CLR: (%x+)=(.+)") {
-                        local find      = string.format("(%s)", nickname)
-                        local replace   = "{" .. color .. "}%1{33AA33}" 
-                        text            = string.gsub($, find, replace)
-                    }
-                }
+        if string.find(text, "^%[A%] %S+%[%d+%]") && color == 866792362 {
+            math.randomseed(os.clock())
+            for _, player of nicknameColors {
+                local color     = bit.tohex(player.colors[math.random(#player.colors)], 6)
+                local find      = string.format("(%s)", player.nickname)
+                local replace   = "{" .. color .. "}%1{33AA33}" 
+                text            = string.gsub($, find, replace)
             }
         }
     }

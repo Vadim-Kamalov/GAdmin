@@ -88,17 +88,17 @@ sampev.onShowDialog = fn(id, style, title, firstButton, secondButton, text) {
                     if tonumber(adminId) == user::getId() {
                         user::setOOCNickname(oocNickname)
                         user::setAdminLvl(tonumber(adminLvl))    
-                    } else {
-                        admins::insert({
-                            id  = tonumber(adminId),
-                            lvl = tonumber(adminLvl),
-
-                            nickname = {
-                                ooc = oocNickname,
-                                ic  = icNickname
-                            }
-                        })
                     }
+
+                    admins::insert({
+                        id  = tonumber(adminId),
+                        lvl = tonumber(adminLvl),
+
+                        nickname = {
+                            ooc = oocNickname,
+                            ic  = icNickname
+                        }
+                    })
 
                     if user::getOOCNickname() == "Администратор" && user::getAdminLvl() == -1 {
                         user::setOOCNickname("Technical Admin")

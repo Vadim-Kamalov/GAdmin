@@ -18,6 +18,9 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
+@import "Requests"  => requests
+@import "Common"    => common
+
 @define MAPVK_VSC_TO_VK_EX 3
 
 ffi.cdef("
@@ -126,51 +129,33 @@ assets.voidQuotes = {
  *
  * @param files table
  * @param afterDownloadCallback
- * @return boolean
+ * @return void
  */
-method assets::downloadFileList(files, afterDownloadCallback) {
-    local downloadStatus    = require("moonloader").download_status
-    local total             = 0
-    local time              = os.clock()
-    local result            = false
-
-    lua_thread.create(fn {
-        while true {
-            wait(0)
-            if total == #files {
-                result = true
-                afterDownloadCallback(files)
-                break
-            } else {
-                if os.clock() - time >= 120 {
-@ifdef __GADMIN_DEBUG__
-{
-                    $debugError!("assets::downloadFileList", "`files` not downloaded after 120 seconds. `entryPoint` returned false")
-}
-                    break
-                }
-            }
-        }
-    })
-
-    for _, data in files {
+method assets::downloadFileList(files, afterDownloadCallback, iteration = 1) {
+    if iteration > #files {
+        return afterDownloadCallback(files)
+    } else {
         lua_thread.create(fn {
-            wait(1000) // We need to add delay to avoid the "device or resource busy: device or resource busy" error.
-            downloadUrlToFile(data.url, data.destination, fn(_, status, p1, p2) {
-                if status == downloadStatus.STATUS_ENDDOWNLOADDATA {
-                    total += 1
-@ifdef __GADMIN_DEBUG__
-                    {
-                    $debugSuccessful!("assets::downloadFileList", "loaded " .. data.destination .. " from " .. data.url)
-}
-                } else {
+            requests::asyncHttpRequest("GET", files[iteration].url, nil, fn (response) {
+                if response.status_code == 200 {
 @ifdef __GADMIN_DEBUG__
 {
-                    $debugInformation!("assets::downloadFileList", "loading " .. data.destination .. ". Downloaded " .. string.format("%d of %d.", p1, p2))
+                    $debugSuccessful!("assets::downloadFileList", "downloaded " .. files[iteration].url .. " in " .. files[iteration].destination)
 }
+
+                    common::writeInFile(files[iteration].destination, response.text)
+                    return self::downloadFileList(files, afterDownloadCallback, iteration + 1)
+                } else {
+                    $debugWarning!("assets::downloadFileList", "received response.status = " .. response.status .. " on ...")
+                    $debugWarning!("assets::downloadFileList", "iteration = " .. iteration .. ", url = " .. files[iteration].url)
+                    common::sendScriptMessage("Что-то пошло не так при загрузке файла(-ов). Подробнее в консоле.")
                 }
+            }, fn (error) {
+                $debugWarning!("assets::downloadFileList", "failed to download file. Iteration = " .. iteration .. ", url = " .. files[iteration].url)
+                $debugWarning!("assets::downloadFileList", "error = " .. error)
+                common::sendScriptMessage("Что-то пошло не так при загрузке файла(-ов). Подробнее в консоле.")
             })
-        })   
+        })
     }
 }
 
@@ -380,7 +365,6 @@ assets.collectScriptInformation = fn {
     local imguiAssets       = __imguiAssets__
     local movableWindows    = __movableWindows__
     local admins            = __admins__
-    local common            = import("Common")
 
     local config        = neatJSON($, { lua = true })
     local windowsList   = (fn {
