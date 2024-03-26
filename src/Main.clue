@@ -45,7 +45,7 @@
 @define COMMAND_DELAY       800
 @define GADMIN_VERSION      "1.4.9"
 @define AUTOUPDATE_URL      "https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/main/AutoUpdate.xml"
-@define NICKNAME_COLORS_URL "TODO"
+@define NICKNAME_COLORS_URL "https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/main/nickname-colors.conf"
 
 @define SAMP_BASE                       getModuleHandle("samp.dll")
 @define RECALL_UP_ADDR                  $SAMP_BASE + 0x65990
