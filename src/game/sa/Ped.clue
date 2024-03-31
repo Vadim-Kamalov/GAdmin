@@ -62,7 +62,7 @@ method ped::getClosestHandleTo(to = PLAYER_PED) {
 
     for _, handle in getAllChars() {
         local result, _ = sampGetPlayerIdByCharHandle(handle)
-        if result {
+        if result && handle != to && handle != PLAYER_PED {
             local xI, yI, zI    = getCharCoordinates(handle)
             local distance      = math.sqrt((xI - x) ^ 2 + (yI - y) ^ 2 + (zI - z) ^ 2)
             if distance < minDistance {

@@ -59,13 +59,13 @@
 local variables = { description = {}, order = {} }
 
 $NEW_VARIABLE!("CLOSEST_PLAYER_ID", "ID ближайшего игрока к вам/игроку за которым вы следите", (fn {
-    if local handle = ped::getClosestHandle((spectator.status) ? spectator.id : PLAYER_PED) {
+    if local handle = ped::getClosestHandleTo((spectator.status) ? spectator.id : PLAYER_PED) {
         return select(2, sampGetPlayerIdByCharHandle(handle))
     }
 }))
 
 $NEW_VARIABLE!("CLOSEST_PLAYER_NICKNAME", "Никнейм ближайшего игрока к вам/игроку за которым вы следите", (fn {
-    if local handle = ped::getClosestHandle((spectator.status) ? spectator.id : PLAYER_PED) {
+    if local handle = ped::getClosestHandleTo((spectator.status) ? spectator.id : PLAYER_PED) {
         local _, id = sampGetPlayerIdByCharHandle(handle)
         return sampGetPlayerNickname(id)
     }

@@ -209,7 +209,7 @@ imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
                         onPlayerRenderText ..= "{FFFFFF}{" .. require("game.weapons").names[getCurrentCharWeapon(player)] .. "}{FFFFFF}{\n}"
                     }
 
-                    if config.root.cheats.wallhack.use && config.root.cheats.wallhack.renderBones {
+                    if config.root.cheats.wallhack.use && config.root.cheats.wallhack.renderBones && useWallhack {
                         for _, boneIds in ({
                             { 6, 4 },
                             { 4, 22 }, { 22, 23 }, { 23, 24 },

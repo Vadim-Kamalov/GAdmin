@@ -138,6 +138,14 @@ sampev.onServerMessage = fn(color, text) {
         safeText = ""
     }
 
+    if messageContinuation.awaiting && messageContinuation.color == color
+       && unwrapFinished && !unwrapStarted
+    {
+        color                        = rgb2color(messageContinuation.new)
+        messageContinuation.awaiting = false
+        messageContinuation.color    = nil
+    }
+
     for sectionIndex, section in logs {
         local log = {
             time = assets::getLocalTime()

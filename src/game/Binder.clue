@@ -20,33 +20,22 @@
 
 @import "game.binder.Variables" => variables
 @import "imgui.HotKey"          => HotKey
+@import "imgui.Assets"          => imguiAssets
+@import "imgui.Animations"      => animations
 @import "Config"                => config
 
 local binder = {}
 
 /**
- * Preprocesses variables that defined in `game.binder.Variables` and sends 
- * input to SA:MP chat(`input` can be multilined). Variable format:
- * 
- *   ${{ VARIABLE_NAME, <replace> }}, where:
+ * Preprocess variables that defined in `game.binger.Variables`.
  *
- * `VARIABLE_NAME`   - name of variable;
- * `<replace>`       - optional argument; string that will be replaced if got `nil` from `VARIABLE_NAME`. (default = "N/A")
- *
- *
- * Extra variable to get arguments that passed in `arguments = {}` argument: `${{ GET_ARGUMENT, <argument index> }}`.
- *  `<argument index>` isn't optional and value always must be number and above zero.
- *
- * @see game.binder.Variables
- *
- * @param command               string Need this parameter to avoid unhandled exception of `0C8F` opcode. 
- * @param input                 string
- * @param arguments             table|nil   (default = {})
- * @param delayBetweenMessages  number|nil  (default = $COMMAND_DELAY)
- * @return void
+ * @see binder::sendString
+ * @param input string
+ * @param arguments table|nil
+ * @return string
  */
-method binder::sendString(command, input, arguments = {}, delayBetweenMessages = $COMMAND_DELAY) {
-    input = string.gsub($, "%${{(.-)}}", fn(params) {
+method binder::preprocess(input, arguments = {}) {
+    return string.gsub(input, "%${{(.-)}}", fn(params) {
         if local variable, params = string.match(params, "^%s*([A-Z_]+)(.*)") {
             local parameter = nil
 
@@ -74,6 +63,31 @@ method binder::sendString(command, input, arguments = {}, delayBetweenMessages =
 
         return ""
     })
+}
+
+/**
+ * Preprocesses variables that defined in `game.binder.Variables` and sends 
+ * input to SA:MP chat(`input` can be multilined). Variable format:
+ * 
+ *   ${{ VARIABLE_NAME, <replace> }}, where:
+ *
+ * `VARIABLE_NAME`   - name of variable;
+ * `<replace>`       - optional argument; string that will be replaced if got `nil` from `VARIABLE_NAME`. (default = "N/A")
+ *
+ *
+ * Extra variable to get arguments that passed in `arguments = {}` argument: `${{ GET_ARGUMENT, <argument index> }}`.
+ *  `<argument index>` isn't optional and value always must be number and above zero.
+ *
+ * @see game.binder.Variables
+ *
+ * @param command               string Need this parameter to avoid unhandled exception of `0C8F` opcode. 
+ * @param input                 string
+ * @param arguments             table|nil   (default = {})
+ * @param delayBetweenMessages  number|nil  (default = $COMMAND_DELAY)
+ * @return void
+ */
+method binder::sendString(command, input, arguments = {}, delayBetweenMessages = $COMMAND_DELAY) {
+    input = self::preprocess(input, arguments)
 
     lua_thread.create(fn {
         for line with string.gmatch(input, "[^\n]+") {
@@ -131,6 +145,79 @@ method binder::newBind(title, value, delayBetweenMessages, commandName) {
     HotKey::new("binderIndex" .. #config.root.binds, {})::registerCallback(fn {
         self::sendString(commandName, value, nil, delayBetweenMessages)
     })
+}
+
+method binder::getPopupRenderer(buffer, popup, onInsertVariableCallback) {
+    if !UI_BINDER_INPUT {
+        global UI_BINDER_INPUT = imgui.new.char[256]()
+    }
+
+    local input = UI_BINDER_INPUT
+
+    return fn {
+        local fn insertVariable(variableName) {
+            local value = string.format(
+                "%s${{ %s%s }}",
+                ffi.string(buffer),
+                variableName,
+                (#ffi.string(input) > 0) ? ", " .. ffi.string(input) : "" 
+            )
+
+            onInsertVariableCallback?(value)
+
+            imgui.StrCopy(buffer, value)
+            imgui.StrCopy(input, "")
+            imgui.CloseCurrentPopup()
+        }
+
+        imgui.SetCursorPos(imgui.ImVec2(5, 5))
+        imgui.BeginGroup()
+            imguiAssets::textWithFont("Переменные биндера", bold14)
+            
+            imgui.PushFont(regular12)
+                imgui.SetNextItemWidth(math.max(260, imgui.GetWindowWidth() - 10))
+                imgui.InputTextWithHint("##binder::getPopupRenderer.input", "Параметр", input, ffi.sizeof(input))
+            imgui.PopFont()
+                
+            imgui.BeginChild("binder::getPopupRenderer.list", imgui.ImVec2(imgui.GetWindowWidth() - 10, 300), true)
+                imgui.SetCursorPos(imgui.ImVec2(5, 5))
+                imgui.BeginGroup()
+                    local width = math.max(240, imgui.GetWindowWidth() - 10) 
+                        imgui.PushFont(bold10)
+                            if animations::button("GET_ARGUMENT##binder::getPopupRenderer.variable", imgui.ImVec2(width, 25)) {
+                                insertVariable("GET_ARGUMENT")
+                            }
+                        imgui.PopFont()
+    
+                        imgui.PushFont(regular12)
+                            animations::hint("Получить значение аргумента по индексу, но только если бинд выполнен через команду\n"
+                                .. "Обязательный параметр: индекс аргумента (начиная с 1)")
+                        imgui.PopFont()
+
+                        for _, id in variables.order {
+                            imgui.PushFont(bold10)
+                                if animations::button(id .. "##binder::getPopupRenderer.variable", imgui.ImVec2(width, 25)) {
+                                    insertVariable(id)
+                                }
+                            imgui.PopFont()
+                            imgui.PushFont(regular12)
+                                animations::hint(variables.description[id]
+                                    .. "\nНеобязательный параметр: текст который вставится если переменная ничего не вернула")
+                            imgui.PopFont()
+                        }
+                imgui.EndGroup()
+            imgui.EndChild()
+
+            if animations::button(
+                "Закрыть##binder::getPopupRenderer.close",
+                imgui.ImVec2(imgui.GetWindowWidth() - 10, 30)
+                ) {
+                    imgui.CloseCurrentPopup()
+                }
+        imgui.EndGroup()
+
+        popup.size = imgui.GetItemRectSize() + imgui.ImVec2(10, 10)
+    }
 }
 
 /**

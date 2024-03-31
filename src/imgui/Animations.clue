@@ -296,14 +296,16 @@ method animations::hint(
         local fn render(alpha) {
             local size      = imgui.GetItemRectSize()
             local screenPos = imgui.GetCursorScreenPos()
-            local dl        = imgui.GetWindowDrawList()
+            local dl        = imgui.GetForegroundDrawList()
             local center    = imgui.ImVec2(screenPos.x - (size.x / 2), screenPos.y + (size.y / 2) - (alpha * 4) + 10)
-            local a         = imgui.ImVec2(center.x - 7, center.y - size.y - 3)
-            local b         = imgui.ImVec2(center.x + 7, center.y - size.y - 3)
+            local a         = imgui.ImVec2(center.x - 10, center.y - size.y - 4)
+            local b         = imgui.ImVec2(center.x + 10, center.y - size.y - 4)
             local c         = imgui.ImVec2(center.x, center.y - size.y + 3)
             local color     = imgui.ColorConvertFloat4ToU32(imgui.ImVec4(hintColor.x, hintColor.y, hintColor.z, alpha))
             local flags     = imgui.WindowFlags.Tooltip + imgui.WindowFlags.NoResize 
                 + imgui.WindowFlags.NoScrollbar + imgui.WindowFlags.NoTitleBar 
+
+            dl.Flags = imgui.DrawListFlags.AntiAliasedLines * 3
 
             dl::AddTriangleFilled(a, b, c, color)
             imgui.SetNextWindowPos(imgui.ImVec2(center.x, center.y - size.y - 3), imgui.Cond.Always, imgui.ImVec2(0.5, 1))

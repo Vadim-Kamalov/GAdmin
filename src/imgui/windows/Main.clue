@@ -684,6 +684,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn(self) {
                                             { "За неделю",  string.format("%02d:%02d:%02d", online.weekTotal.hour, online.weekTotal.min, online.weekTotal.sec) },
                                             { "За сессию",  string.format("%02d:%02d:%02d", online.session.hour, online.session.min, online.session.sec) },
                                         "EndGroup",
+                                        "DetailedInformation:online",
 
                                         "SameLine",
 
@@ -692,10 +693,57 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn(self) {
                                             { "Всего",      answers.total },
                                             { "За неделю",  answers.weekTotal },
                                             { "За сессию",  answers.session }
-                                        "EndGroup"
+                                        "EndGroup",
+                                        "DetailedInformation:answers"
                                     }) {
                                         if type(item) == "string" {
-                                            if item == "BeginGroup" || item == "EndGroup" || item == "SameLine" {
+                                            if local to = string.match(item, "^DetailedInformation:(%S+)$") {
+                                                local title = ({ online = "Онлайн", answers = "Ответы" })[to] .. " по дням недели"
+                                                local width = bold10::CalcTextSizeA(bold10.FontSize, math.huge, 0.0, title).x
+                                                local days  = config.root.user[to].weeks[#config.root.user[to].weeks].days
+                                                local items = {}
+                                                local write = fn (dayIndex, dayName) {
+                                                    local value = (to == "answers") ? days[dayIndex] : ""
+
+                                                    if to == "online" {
+                                                        local time = assets::explodeDate(days[dayIndex] || 0)
+                                                        value = string.format("%02d:%02d:%02d", time.hour, time.min, time.sec)
+                                                    }
+
+                                                    local size = regular10::CalcTextSizeA(regular10.FontSize, math.huge, 0.0, dayName .. ": ")
+                                                    size      += bold10::CalcTextSizeA(bold10.FontSize, math.huge, 0.0, tostring(value))
+
+                                                    if size.x > width {
+                                                        width = size.x
+                                                    }
+
+                                                    table.insert(items, { name = dayName .. ": ", value = tostring(value) })
+                                                }
+
+                                                for dayIndex = 2, #days {
+                                                    write(dayIndex, ({
+                                                        "Понедельник",
+                                                        "Вторник",
+                                                        "Среда",
+                                                        "Четверг",
+                                                        "Пятница",
+                                                        "Суббота"
+                                                    })[dayIndex - 1])
+                                                }
+
+                                                write(1, "Воскресенье")
+
+                                                width += 15
+
+                                                animations::hint(item, nil, nil, imgui.GetStyle().Colors[imgui.Col.WindowBg], fn {
+                                                    imguiAssets::textWithFont(title, bold10)
+                                                    for _, item in items {
+                                                        imguiAssets::textWithFont(item.name, regular10)
+                                                        imgui.SameLine(nil, 0)
+                                                        imguiAssets::textWithFont(item.value, bold10)
+                                                    }
+                                                }, width)
+                                            } elseif item == "BeginGroup" || item == "EndGroup" || item == "SameLine" {
                                                 if item == "SameLine" {
                                                     imgui.SameLine(nil, 10)
                                                 } else {
@@ -1619,75 +1667,9 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn(self) {
                                     imgui.EndGroup()
                                     imgui.PushFont(bold10)
                                         if animations::button("Вставить переменную##imgui.windows.Main.selectedBindBody", imgui.ImVec2(imgui.GetWindowWidth() - 12, 25)) {
-                                            window.popupModal.body = fn {
-                                                local fn insertVariable(variableName) {
-                                                    local value = string.format(
-                                                        "%s${{ %s%s }}",
-                                                        ffi.string(window.binder.body.value),
-                                                        variableName,
-                                                        (#ffi.string(window.binder.popup.inputParameter) > 0) ? ", " .. ffi.string(window.binder.popup.inputParameter) : "" 
-                                                    )
-                                        
-                                                    config.root.binds[window.binder.selectedBind].value = value
-
-                                                    imgui.StrCopy(window.binder.body.value, value)
-                                                    imgui.StrCopy(window.binder.popup.inputParameter, "")
-                                                    imgui.CloseCurrentPopup()
-                                                }
-
-                                                imgui.SetCursorPos(imgui.ImVec2(5, 5))
-                                                imgui.BeginGroup()
-                                                    imguiAssets::textWithFont("Переменные биндера", bold14)
-                                                    
-                                                    imgui.PushFont(regular12)
-                                                        imgui.SetNextItemWidth(math.max(260, imgui.GetWindowWidth() - 10))
-                                                        imgui.InputTextWithHint(
-                                                            "##imgui.windows.Main.BinderPopup.inputParameter",
-                                                            "Параметр",
-                                                            window.binder.popup.inputParameter,
-                                                            ffi.sizeof(window.binder.popup.inputParameter)
-                                                        )
-                                                    imgui.PopFont()
-                                                    
-                                                    imgui.BeginChild("imgui.windows.Main.BinderPopup.variableList", imgui.ImVec2(imgui.GetWindowWidth() - 10, 300), true)
-                                                        imgui.SetCursorPos(imgui.ImVec2(5, 5))
-                                                        imgui.BeginGroup()
-                                                            local width = math.max(240, imgui.GetWindowWidth() - 10) 
-                                                            imgui.PushFont(bold10)
-                                                                if animations::button("GET_ARGUMENT##imgui.windows.Main.BinderPopup.variable", imgui.ImVec2(width, 25)) {
-                                                                    insertVariable("GET_ARGUMENT")
-                                                                }
-                                                            imgui.PopFont()
-    
-                                                            imgui.PushFont(regular12)
-                                                                animations::hint("Получить значение аргумента по индексу, но только если бинд выполнен через команду\n"
-                                                                    .. "Обязательный параметр: индекс аргумента (начиная с 1)")
-                                                            imgui.PopFont()
-
-                                                            for _, id in binderVariables.order {
-                                                                imgui.PushFont(bold10)
-                                                                    if animations::button(id .. "##imgui.windows.Main.BinderPopup.variable", imgui.ImVec2(width, 25)) {
-                                                                        insertVariable(id)
-                                                                    }
-                                                                imgui.PopFont()
-                                                                imgui.PushFont(regular12)
-                                                                    animations::hint(binderVariables.description[id]
-                                                                        .. "\nНеобязательный параметр: текст который вставится если переменная ничего не вернула")
-                                                                imgui.PopFont()
-                                                            }
-                                                        imgui.EndGroup()
-                                                    imgui.EndChild()
-
-                                                    if animations::button(
-                                                        "Закрыть##imgui.windows.Main.BinderPopup.close",
-                                                        imgui.ImVec2(imgui.GetWindowWidth() - 10, 30)
-                                                    ) {
-                                                        imgui.CloseCurrentPopup()
-                                                    }
-                                                imgui.EndGroup()
-
-                                                window.popupModal.size = imgui.GetItemRectSize() + imgui.ImVec2(10, 10)
-                                            }
+                                            window.popupModal.body = binder::getPopupRenderer(window.binder.body.value, window.popupModal, fn (value) {
+                                                config.root.binds[window.binder.selectedBind].value = value
+                                            })
 
                                             window.binder.callPopup = true
                                         }
@@ -1736,11 +1718,6 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn(self) {
                             imgui.EndGroup()
                         }
                     imgui.EndChild()
-
-                    if window.binder.callPopup {
-                        imgui.OpenPopup("imgui.windows.Main.Popup")
-                        window.binder.callPopup = false
-                    }
                 } elseif window.menu.selectedFrame == WINDOW_SELECTED_FRAME_LOGS {
                     imgui.SetScrollY(0)
                     imgui.BeginChild("imgui.windows.Main.logs.LogSelection", imgui.ImVec2(widthAuto, 32), true, self.flags)
@@ -2128,9 +2105,22 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn(self) {
                                     imguiAssets::textWithFont("Отобразить на экране", regular12)
                                 imgui.EndGroup()
 
-                                imgui.PushFont(regular12)
+                                imgui.PushFont(bold12)
                                     animations::hint("Ваша заметка будет также как и остальные окна:\nеё можно кастомизировать и изменять ее положение.")
-                                    imgui.Text("Описание заметки")    
+                                    imgui.Text("Описание заметки")
+                                    
+                                    if animations::button("Вставить переменную##imgui.windows.Main.notes.insertVariables", imgui.ImVec2(
+                                        imgui.GetWindowWidth() - 12 /* padding * 2 */,
+                                        25
+                                    )) {
+                                        window.popupModal.body  = binder::getPopupRenderer(this.body, window.popupModal, fn (value) {
+                                            config.root.playerNotes[this.selected].body = value
+                                        })
+                                        window.binder.callPopup = true
+                                    }
+                                imgui.PopFont()
+                                
+                                imgui.PushFont(regular12)
                                     if imgui.InputTextMultiline(
                                         "##imgui.windows.Main.notes.body.description",
                                         this.body,
@@ -2230,6 +2220,11 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn(self) {
                     imgui.EndGroup()
                 imgui.EndChild()
             imgui.PopStyleVar()
+            
+            if window.binder.callPopup {
+                imgui.OpenPopup("imgui.windows.Main.Popup")
+                window.binder.callPopup = false
+            }
 
             if local rectMin, rectMax = imgui.GetItemRectMin(), imgui.GetItemRectMax() {
                 // Render rects on menu corners to remove rounding.

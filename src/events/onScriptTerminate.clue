@@ -27,5 +27,6 @@ global fn onScriptTerminate(scr, quitGame) {
         config::saveIfChanged()
         hook::unref()
         assets::workInBackground(false)
+        assets::changeWallhackState(false)
     }
 }

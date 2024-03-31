@@ -21,9 +21,11 @@
 @import "Icons"         => icons
 @import "Notifications" => notify
 @import "Common"        => common
+@import "Assets"        => assets
 
 static __imguiAssets__ = {
-    cursor = true
+    cursor = true,
+    lastCursorPosition = nil
 }
 
 /**
@@ -37,7 +39,7 @@ method __imguiAssets__::getCursorStatus() { return self.cursor }
  * @param status boolean Cursor status (default = false).
  * @return void
  */
-method __imguiAssets__::setCursorStatus(status = false) { self.cursor = status  }
+method __imguiAssets__::setCursorStatus(status = false) { self.cursor = status }
 
 /**
  * Globally change the state of the ImGui cursor.

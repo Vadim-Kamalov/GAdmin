@@ -26,6 +26,8 @@
 @import "Config" => config
 @import "Common" => common
 
+@import "game.Binder" => binder
+
 @define NOTE_POST_HOVER_ANIMATION_DURATION  0.4
 @define NOTE_HOVER_ANIMATION_DURATION       0.3
 
@@ -90,7 +92,10 @@ method __playerNotes__::renderNote(note) {
                 imgui.PopFont()
 
                 imgui.PushFont(regular12)
-                    imguiAssets::addStrokedText(note.body, (imgui.GetStyle().Colors[imgui.Col.WindowBg].w <= 0.4) ? 1 : 0)
+                    imguiAssets::addStrokedText(
+                        binder::preprocess(note.body),
+                        (imgui.GetStyle().Colors[imgui.Col.WindowBg].w <= 0.4) ? 1 : 0
+                    )
                 imgui.PopFont()
             imgui.EndGroup()
 
