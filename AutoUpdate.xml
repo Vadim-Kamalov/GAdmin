@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<AutoUpdate version="1.5.1">
-    <title>GAdmin v1.5.1</title>
+<AutoUpdate version="1.5.2">
+    <title>GAdmin v1.5 - v1.5.2</title>
     <buttons first="Установить" second="Пропустить" third="Позже"/>
     <body>
         <quote>Появилась возможность поддержать разработку скрипта материально. При поддержке вы становитесь <br/> спонсором проекта и вам выдается цветной ник в <code>/a</code> чате. <b>Подробнее (кликабельно):</b> <br/>        <link>https://forum.gambit-rp.ru/threads/485599/post-6157760</link></quote>
@@ -24,11 +24,12 @@
         <ul>Исправлено что не изменялся цвет оставшегося текста репорта, если он перенесен два и более раза.</ul>
         <ul>Исправлено что игра вылетала после перезагрузки скрипта (v1.5.1)</ul>
         <ul>Исправлено что скрипт крашился при попытке открыть основное окно (v1.5.1)</ul>
+        <ul>Исправлено что скрипт вылетал при попытке настроить Wallhack (v1.5.2)</ul>
     </body>
     <links>
         <!-- Redirect links aren't allowed. -->
         <!-- Notice that `link` with `destination="GAdmin-Release.lua"` should be last element in this section. -->
 
-        <link destination="GAdmin-Release.lua">https://gist.githubusercontent.com/defaultzone/269775a7e3cf6a9f1cbf58b69033d7a3/raw/b037d4630ffcc5cdc716513aafe9d0d90e67264b/GAdmin-Release.lua</link>
+        <link destination="GAdmin-Release.lua">https://gist.githubusercontent.com/defaultzone/269775a7e3cf6a9f1cbf58b69033d7a3/raw/06f917b4a1f2933f47eb92e80aa3ada3430b284f/GAdmin-Release.lua</link>
     </links>
 </AutoUpdate>
