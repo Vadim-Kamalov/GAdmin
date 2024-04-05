@@ -70,7 +70,7 @@ method __notifications__::send(notification = {}, scriptMessage) {
     if config.root.windows.notifications.use && #self.root < config.root.windows.notifications.maxItems {
         table.insert(self.root, {
             icon        = notification.icon || icons.ICON_HOME_EMPTY
-            iconColor   = notification.iconColor || imgui.GetStyle().Colors[imgui.Col.Text]
+            iconColor   = notification.iconColor || imgui.ImVec4(1, 1, 1, 1)
             title       = notification.title || "Title"
             text        = notification.text || "Description"
             duration    = notification.duration || 5

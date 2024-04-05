@@ -70,9 +70,7 @@ static allowedLogs = {
     { "Входы/Выходы", {} }
 }
 
-local sizeX, sizeY                  = getScreenResolution()
-local RENDER_CHANGE_CONFIGURATION   = $RENDER_CHANGE_CONFIGURATION!()
-
+local sizeX, sizeY = getScreenResolution()
 static mainWindow = nil
 
 local window = {
@@ -701,49 +699,51 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn(self) {
                                             if local to = string.match(item, "^DetailedInformation:(%S+)$") {
                                                 local title = ({ online = "Онлайн", answers = "Ответы" })[to] .. " по дням недели"
                                                 local width = bold10::CalcTextSizeA(bold10.FontSize, math.huge, 0.0, title).x
-                                                local days  = config.root.user[to].weeks[#config.root.user[to].weeks].days
-                                                local items = {}
-                                                local write = fn (dayIndex, dayName) {
-                                                    local value = (to == "answers") ? days[dayIndex] : ""
+                                                
+                                                if local days = config.root.user[to].weeks[#config.root.user[to].weeks]?.days {
+                                                    local items = {}
+                                                    local write = fn (dayIndex, dayName) {
+                                                        local value = (to == "answers") ? days[dayIndex] : ""
 
-                                                    if to == "online" {
-                                                        local time = assets::explodeDate(days[dayIndex] || 0)
-                                                        value = string.format("%02d:%02d:%02d", time.hour, time.min, time.sec)
+                                                        if to == "online" {
+                                                            local time = assets::explodeDate(days[dayIndex] || 0)
+                                                            value = string.format("%02d:%02d:%02d", time.hour, time.min, time.sec)
+                                                        }
+
+                                                        local size = regular10::CalcTextSizeA(regular10.FontSize, math.huge, 0.0, dayName .. ": ")
+                                                        size      += bold10::CalcTextSizeA(bold10.FontSize, math.huge, 0.0, tostring(value))
+
+                                                        if size.x > width {
+                                                            width = size.x
+                                                        }
+
+                                                        table.insert(items, { name = dayName .. ": ", value = tostring(value) })
                                                     }
 
-                                                    local size = regular10::CalcTextSizeA(regular10.FontSize, math.huge, 0.0, dayName .. ": ")
-                                                    size      += bold10::CalcTextSizeA(bold10.FontSize, math.huge, 0.0, tostring(value))
-
-                                                    if size.x > width {
-                                                        width = size.x
+                                                    for dayIndex = 2, #days {
+                                                        write(dayIndex, ({
+                                                            "Понедельник",
+                                                            "Вторник",
+                                                            "Среда",
+                                                            "Четверг",
+                                                            "Пятница",
+                                                            "Суббота"
+                                                        })[dayIndex - 1])
                                                     }
 
-                                                    table.insert(items, { name = dayName .. ": ", value = tostring(value) })
+                                                    write(1, "Воскресенье")
+
+                                                    width += 15
+
+                                                    animations::hint(item, nil, nil, imgui.GetStyle().Colors[imgui.Col.WindowBg], fn {
+                                                        imguiAssets::textWithFont(title, bold10)
+                                                        for _, item in items {
+                                                            imguiAssets::textWithFont(item.name, regular10)
+                                                            imgui.SameLine(nil, 0)
+                                                            imguiAssets::textWithFont(item.value, bold10)
+                                                        }
+                                                    }, width)
                                                 }
-
-                                                for dayIndex = 2, #days {
-                                                    write(dayIndex, ({
-                                                        "Понедельник",
-                                                        "Вторник",
-                                                        "Среда",
-                                                        "Четверг",
-                                                        "Пятница",
-                                                        "Суббота"
-                                                    })[dayIndex - 1])
-                                                }
-
-                                                write(1, "Воскресенье")
-
-                                                width += 15
-
-                                                animations::hint(item, nil, nil, imgui.GetStyle().Colors[imgui.Col.WindowBg], fn {
-                                                    imguiAssets::textWithFont(title, bold10)
-                                                    for _, item in items {
-                                                        imguiAssets::textWithFont(item.name, regular10)
-                                                        imgui.SameLine(nil, 0)
-                                                        imguiAssets::textWithFont(item.value, bold10)
-                                                    }
-                                                }, width)
                                             } elseif item == "BeginGroup" || item == "EndGroup" || item == "SameLine" {
                                                 if item == "SameLine" {
                                                     imgui.SameLine(nil, 10)

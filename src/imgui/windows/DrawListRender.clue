@@ -33,23 +33,6 @@
 @import "Common"        => common
 @import "Config"        => config
 
-@macro RENDER_CHANGE_CONFIGURATION() {
-    (fn {
-        global RENDER_CHANGE_CONFIGURATION_SLIDER =
-            RENDER_CHANGE_CONFIGURATION_SLIDER || imgui.new.int(config.root.render.size.common)
-
-        imgui.SetNextItemWidth(imgui.GetWindowWidth() - 10)
-        if imgui.SliderInt(
-            "##imgui.windows.Main.configuration.renderChangeSlider",
-            RENDER_CHANGE_CONFIGURATION_SLIDER,
-            10,
-            50
-        ) {
-            config.root.render.size.common = RENDER_CHANGE_CONFIGURATION_SLIDER[0]
-        }
-    })
-}
-
 static clickWarp = {
     enabled         = false,
     teleportation   = {
