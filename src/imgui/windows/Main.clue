@@ -279,7 +279,6 @@ local window = {
                 { "textSize", "Размер текста в ImGui рендере", WINDOW_WIDGET_SLIDER_INT, 5, 50, imgui.new.int(config.root.cheats.wallhack.textSize) },
                 { "renderBones", "Рисовать кости на скине", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.cheats.wallhack.renderBones) },
                 { "notificationType", "Тип оповещения при нажатии на хоткей", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.cheats.wallhack.notificationType), "ImGui оповещение", "Сообщение в чат", "Отсутствует" },
-                { "none", "Размер шрифта", WINDOW_WIDGET_CUSTOM, RENDER_CHANGE_CONFIGURATION }
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP }
         }},
 
