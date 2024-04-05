@@ -43,7 +43,7 @@
 @import "game.Spectator" => spectator
 
 @define COMMAND_DELAY       800
-@define GADMIN_VERSION      "1.4.9"
+@define GADMIN_VERSION      "1.5"
 @define AUTOUPDATE_URL      "https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/main/AutoUpdate.xml"
 @define NICKNAME_COLORS_URL "https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/main/nickname-colors.conf"
 
