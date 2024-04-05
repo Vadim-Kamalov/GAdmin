@@ -88,7 +88,7 @@ windows::new("imgui.windows.AdminList", {
                 }
 
                 imgui.SetCursorPos(pos)
-                local isClicked, isHovered = imguiAssets::addStrokedText(
+                local clicked, hovered = imguiAssets::addStrokedText(
                     text,
                     config.root.windows.adminList.strokeSize,
                     color
@@ -98,7 +98,7 @@ windows::new("imgui.windows.AdminList", {
                     self.size.x = imgui.GetItemRectSize().x + 20
                 }
 
-                if isHovered {
+                if hovered {
                     imgui.GetForegroundDrawList()::AddLine(
                         imgui.ImVec2(imgui.GetItemRectMin().x, imgui.GetItemRectMax().y),
                         imgui.GetItemRectMax(),
@@ -107,7 +107,8 @@ windows::new("imgui.windows.AdminList", {
                     )
                 } 
 
-                if isClicked && setClipboardText(admin.nickname.ooc) {
+                if clicked {
+                    setClipboardText(admin.nickname.ooc)
                     notify::send({
                         icon        = icons.ICON_KEYBOARD
                         title       = "Никнейм скопирован"

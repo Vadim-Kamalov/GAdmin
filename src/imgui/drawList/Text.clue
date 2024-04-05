@@ -47,39 +47,61 @@ method text::addStroke(drawList, text, color, pos, font, textSize, strokeWidth =
 }
 
 /**
- * Render colored text using ImDrawList. Text must be next format:
- *  {HEX}{SOME_TEXT}; for example: {FFFFFF}{Hello,}{FF0000}{ world!};
- * All symbols that not in `{}` characters are ignored.
+ * Draw text that passed in `objects` array. `objects` argument example: 
  *
- * @param drawList      ImDrawList
- * @param text          string
- * @param pos           ImVec2
- * @param font          ImFont
- * @param textSize      number
- * @param strokeWidth   number
+ * ```clue
+ * {
+ *     { /// Text render configuration. These tables are unlimited in the current array.
+ *         text: string,       /// The text. Don't use `\n` inside of this string!
+ *         size: number,       /// The text font size.
+ *         stroke: number = 1, /// Size of the text stroke.
+ *         color: ImVec4  = imgui.GetStyle().Colors[imgui.Col.Text],
+ *         font: ImFont   = _G.bold
+ *     },
  *
+ *     /// You can also set position of the next rendered item.
+ *     { x: number = 0, y: number = 0 },
+ *
+ *     /// Or just add a new line.
+ *     "NewLine",
+ *
+ *     /// ...
+ * }
+ * ```
+ *
+ * @param drawList ImDrawList
+ * @param position ImVec2
+ * @param objects table<number, table<string, string|number|ImVec4|ImFont>|"NewLine">
  * @return void
  */
-method text::addColored(drawList, text, pos, font = nil, textSize = 14, strokeWidth = 1) {
-    local changeablePos     = imgui.ImVec2(pos.x, pos.y)
-    local textColoredList   = (fn {
-        local output = {}
-        for color, coloredText with string.gmatch(text, "{(%x%x%x%x%x%x)}{(.-)}") {
-            table.insert(output, { text = coloredText, hex = color, size = imgui.CalcTextSize(coloredText) })
-        }
-        return output
-    })()
+method text::renderTextObjects(drawList, position, objects) {
+    local basePosition = imgui.ImVec2(position.x, position.y)
+    local maxTextSize  = 0
 
-    for _, data in textColoredList {
-        local r, g, b, _    = assets::explodeARGB(tonumber(data.hex .. "FF", 16))
-        local color         = imgui.GetColorU32Vec4(imgui.ImVec4(r / 255, g / 255, b / 255, 1 /* Alpha */))
-        self::addStroke(drawList, data.text, color, changeablePos, font, textSize, strokeWidth)
-        
-        if data.text == "\n" {
-            changeablePos.y += data.size.y + textSize / 2.5
-            changeablePos.x = pos.x
+    for _, object in objects {
+        if type(object) == "string" && object == "NewLine" {
+            basePosition.x, basePosition.y = position.x, basePosition.y + maxTextSize + 2
+            maxTextSize = 0
+        } elseif object.x || object.y {
+            basePosition.x, basePosition.y = object.x || 0, object.y || 0
         } else {
-            changeablePos.x += data.size.x + textSize / 2.5
+            object.font ??= bold
+
+            self::addStroke(
+                drawList,
+                object.text,
+                imgui.ColorConvertFloat4ToU32(object.color || imgui.GetStyle().Colors[imgui.Col.Text]),
+                basePosition,
+                object.font,
+                object.size,
+                object.stroke || 1
+            )
+
+            basePosition.x += object.font::CalcTextSizeA(object.size, math.huge, 0.0, object.text).x
+
+            if object.size > maxTextSize {
+                maxTextSize = object.size
+            }
         }
     }
 }

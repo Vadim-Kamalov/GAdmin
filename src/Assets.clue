@@ -46,14 +46,6 @@ ffi.cdef("
     typedef const char      *LPCSTR;
     typedef long            LONG;
 
-    typedef struct {
-        LONG x;
-        LONG y;
-    } POINT, *PPOINT, *NPPOINT, *LPPOINT;
-
-    BOOL SetCursorPos(int x, int y);
-    BOOL ClientToScreen(HWND hWnd, LPPOINT lpPoint);
-
     HKL GetKeyboardLayout(DWORD idThread);
     UINT MapVirtualKeyExA(UINT uCode, UINT uMapType, HKL dwhkl);
     void GetLocalTime(PSYSTEMTIME lpSystemTime);
@@ -264,22 +256,6 @@ method assets::getLocalTime() {
     local time = ffi.new("SYSTEMTIME")
     ffi.C.GetLocalTime(time)
     return time
-}
-
-/**
- * Set position of the mouse cursor.
- *
- * @param x number
- * @param y number
- * @return cdata
- */
-method assets::setMouseCursorPos(x, y) {
-    local point = ffi.new("POINT", x, y)
-    local hwnd  = ffi.cast("void*", readMemory(0x00C8CF88, 4, false))
-    
-    ffi.C.ClientToScreen(hwnd, point)
-    
-    return ffi.C.SetCursorPos(point.x, point.y)
 }
 
 /**

@@ -134,22 +134,6 @@ HotKey::new("imgui.windows.DrawListRender->switchCarInfoRender", { VK_LCONTROL, 
     }
 })
 
-/**
- * Show cursor.
- *
- * @author FYP
- * @author we_sux team
- * @author https://www.blast.hk/threads/15459/
- *
- * @param toggle boolean
- * @return void
- */
-local fn showCursor(toggle) {
-    if toggle {
-        sampSetCursorMode(CMODE_LOCKCAM)
-    }
-}
-
 imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
     self.HideCursor = imguiAssets::getCursorStatus()
     self.DL         = imgui.GetBackgroundDrawList()
@@ -165,19 +149,60 @@ imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
                    getDistanceBetweenCoords3d(x, y, z, myx, myy, myz) < 50
                    && user::getAloginStatus() && useCarInfo
                 {
-                    local engine    = (isCarEngineOn(car)) ? "{8DFF85}{ON}" : "{FF8585}{OFF}"
-                    local door      = (getCarDoorLockStatus(car) == 0) ? "{8DFF85}{OPEN}" : "{FF8585}{LOCK}"
                     local hp        = getCarHealth(car)
                     local _, id     = sampGetVehicleIdByCarHandle(car)
-                    local carmodel  = getCarModel(car)
-                    local vehname   = vehicle::getName(carmodel)
+                    local carModel  = getCarModel(car)
+                    local vehName   = vehicle::getName(carModel)
                     local sx, sy    = convert3DCoordsToScreen(x, y, z)
 
-                    local firstText, secondText = 
-                        string.format("{FFFFFF}{ID: }{8DFF85}{%s}{FFFFFF}{ HP: }{8DFF85}{%s}", id, hp),
-                        string.format("{FFFFFF}{%s }%s{FFFFFF}{ / }%s", vehname, engine, door)
-                    imguiText::addColored(self.DL, firstText, imgui.ImVec2(sx, sy), nil, config.root.render.size.carInfo, 1)
-                    imguiText::addColored(self.DL, secondText, imgui.ImVec2(sx, sy + 15), nil, config.root.render.size.carInfo, 1)
+                    imguiText::renderTextObjects(self.DL, imgui.ImVec2(sx, sy), {
+                        {
+                            text = "HP: ",
+                            size = config.root.additions.carInfo.textSize,
+                            font = bold
+                        },
+
+                        {
+                            text    = tostring(hp),
+                            size    = config.root.additions.carInfo.textSize,
+                            font    = regular,
+                            color   = common::convertHex2ImVec4("8DFF85")
+                        },
+
+                        {
+                            text = " · ",
+                            size = config.root.additions.carInfo.textSize,
+                            font = bold
+                        },
+                        
+                        {
+                            text    = (getCarDoorLockStatus(car) == 0) ? "Opened" : "Locked",
+                            size    = config.root.additions.carInfo.textSize,
+                            font    = regular,
+                            color   = common::convertHex2ImVec4((getCarDoorLockStatus(car) == 0) ? "8DFF85" : "FF8585")
+                        },
+                        
+                        {
+                            text = " · ",
+                            size = config.root.additions.carInfo.textSize,
+                            font = bold
+                        },
+                        
+                        {
+                            text    = (isCarEngineOn(car)) ? "On" : "Off",
+                            size    = config.root.additions.carInfo.textSize,
+                            font    = regular,
+                            color   = common::convertHex2ImVec4((isCarEngineOn(car)) ? "8DFF85" : "FF8585")
+                        },
+
+                        "NewLine",
+
+                        {
+                            text = string.format("%s[ID: %d]", vehName, id),
+                            size = config.root.additions.carInfo.textSize,
+                            font = bold
+                        }
+                    })
                 }
             }
         } // if config.root.additions.carInfo.use
@@ -192,21 +217,51 @@ imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
                 local charCheck                 = charResult && isCharOnScreen(char) && id != select(2, sampGetPlayerIdByCharHandle(PLAYER_PED))
                 local distance                  = getDistanceBetweenCoords3d(x, y, z, myx, myy, myz)
                 local clistColorHex             = string.format("%06X", sampGetPlayerColor(id) & 0xFFFFFF)
-                local onPlayerRenderText        = ""
 
                 if charCheck && user::getAloginStatus() {
+                    local objects = {}
+
                     if config.root.cheats.wallhack.use && useWallhack && config.root.cheats.wallhack.imguiStyle {
-                        onPlayerRenderText ..= string.format("{%s}{%s[%s] [X: %1.f]}{FFFFFF}{\n}", clistColorHex, sampGetPlayerNickname(id), id, distance)
+                        for _, object in ({
+                            {
+                                text    = string.format("%s[%s] [X: %1.f]", sampGetPlayerNickname(id), id, distance),
+                                color   = common::convertHex2ImVec4(clistColorHex),
+                                size    = config.root.cheats.wallhack.textSize
+                            },
+                            
+                            "NewLine"
+                        }) {
+                            table.insert(objects, object)
+                        }
                     }
 
                     if config.root.additions.showAdmins.use && distance < 50 && !ped::isBehindWall(char) {
                         if local admin = admins::getAdminById(id) {
-                            onPlayerRenderText ..= "{FF8585}{" .. admin.nickname.ooc .. "}{FFFFFF}{\n}" 
+                            for _, object in ({
+                                {
+                                    text    = admin.nickname.ooc,
+                                    color   = common::convertHex2ImVec4(config.root.additions.showAdmins.color),
+                                    size    = config.root.additions.showAdmins.textSize
+                                },
+
+                                "NewLine"
+                            }) {
+                                table.insert(objects, object)
+                            }
                         }
                     }
 
                     if config.root.additions.gunInfo.use && distance < 50 {
-                        onPlayerRenderText ..= "{FFFFFF}{" .. require("game.weapons").names[getCurrentCharWeapon(player)] .. "}{FFFFFF}{\n}"
+                        for _, object in ({
+                            {
+                                text = require("game.weapons").names[getCurrentCharWeapon(player)],
+                                size = config.root.additions.gunInfo.textSize
+                            },
+
+                            "NewLine"
+                        }) {
+                            table.insert(objects, object)
+                        }
                     }
 
                     if config.root.cheats.wallhack.use && config.root.cheats.wallhack.renderBones && useWallhack {
@@ -228,15 +283,8 @@ imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
                         }
                     }
                 
-                    if #onPlayerRenderText > 0 {
-                        imguiText::addColored(
-                            self.DL,
-                            onPlayerRenderText,
-                            imgui.ImVec2(screenPosX, screenPosY), 
-                            nil, 
-                            config.root.render.size.common, 
-                            1
-                        )
+                    if #objects > 0 {
+                        imguiText::renderTextObjects(self.DL, imgui.ImVec2(screenPosX, screenPosY), objects)
                     }
                 }
 

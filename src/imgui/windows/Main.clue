@@ -27,7 +27,6 @@
 @import "imgui.drawList.Shadow" => shadow
 @import "imgui.InputTextFilter" => InputTextFilter
 
-@import "game.binder.Variables" => binderVariables
 @import "game.Binder"           => binder
 @import "game.User"             => user
 @import "game.samp.Player"      => sampPlayer
@@ -279,6 +278,7 @@ local window = {
                 { "imguiStyle", "Использовать ImGui рендер", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.cheats.wallhack.imguiStyle), fn {
                     assets::changeWallhackState(!config.root.cheats.wallhack.imguiStyle)
                 }},
+                { "textSize", "Размер текста в ImGui рендере", WINDOW_WIDGET_SLIDER_INT, 5, 50, imgui.new.int(config.root.cheats.wallhack.textSize) },
                 { "renderBones", "Рисовать кости на скине", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.cheats.wallhack.renderBones) },
                 { "notificationType", "Тип оповещения при нажатии на хоткей", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.cheats.wallhack.notificationType), "ImGui оповещение", "Сообщение в чат", "Отсутствует" },
                 { "none", "Размер шрифта", WINDOW_WIDGET_CUSTOM, RENDER_CHANGE_CONFIGURATION }
@@ -330,7 +330,7 @@ local window = {
                 { "use", "Работает только на /alogin", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.carInfo.use) },
                 { "onlyInSpectator", "Отображать только в /sp", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.carInfo.onlyInSpectator) },
                 { "notificationType", "Тип оповещения при нажатии на хоткей", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.additions.carInfo.notificationType), "ImGui оповещение", "Сообщение в чат", "Отсутствует" },
-                { "none", "Размер шрифта", WINDOW_WIDGET_CUSTOM, RENDER_CHANGE_CONFIGURATION },
+                { "textSize", "Размер шрифта", WINDOW_WIDGET_SLIDER_INT, 5, 50, imgui.new.int(config.root.additions.carInfo.textSize) }
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
             
             { "shortCommands", "Короткие команды", {
@@ -358,7 +358,7 @@ ap = kick <id> AFK public place`, WINDOW_WIDGET_SWITCH, imgui.new.bool(config.ro
             
             { "gunInfo", "Отображение оружия у игрока", {
                 { "use", "Работает только на /alogin", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.gunInfo.use) },
-                { "none", "Размер шрифта", WINDOW_WIDGET_CUSTOM, RENDER_CHANGE_CONFIGURATION }
+                { "textSize", "Размер шрифта", WINDOW_WIDGET_SLIDER_INT, 5, 50, imgui.new.int(config.root.additions.gunInfo.textSize) },
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
 
             { "zoomSpectatorCamera", "Отдаление камеры в /sp", {
@@ -372,7 +372,8 @@ ap = kick <id> AFK public place`, WINDOW_WIDGET_SWITCH, imgui.new.bool(config.ro
             
             { "showAdmins", "Показывать админов", {
                 { "use", "Показывать администраторов на скине, если он таковым является", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.additions.showAdmins.use) },
-                { "none", "Размер шрифта", WINDOW_WIDGET_CUSTOM, RENDER_CHANGE_CONFIGURATION }
+                { "textSize", "Размер шрифта", WINDOW_WIDGET_SLIDER_INT, 5, 50, imgui.new.int(config.root.additions.showAdmins.textSize) },
+                { "color", "Цвет никнейма", WINDOW_WIDGET_COLOR_PICKER, imguiAssets::convertHex2Float3(config.root.additions.showAdmins.color) }
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
 
             { "hideIpAddresses", "Прятать IP адреса", {

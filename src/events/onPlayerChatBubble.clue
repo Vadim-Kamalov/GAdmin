@@ -22,14 +22,8 @@
 
 sampev.onPlayerChatBubble = fn(playerId, color, distance, duration, message) {
     if config.root.windows.farChat.use {
-        if color == -413892353 {
+        if color == -413892353 && string.sub(message, 1, 1) != '*' {
             return { playerId, color, distance, duration, message }
-        } 
-
-        for _, ignoredText in config.root.windows.farChat.ignore {
-            if string.find(u8(message), ignoredText) {
-                return { playerId, color, distance, duration, message }
-            }
         }
 
         if local it = farChatMessages[#farChatMessages] {
@@ -41,7 +35,7 @@ sampev.onPlayerChatBubble = fn(playerId, color, distance, duration, message) {
         table.insert(farChatMessages, {
             id          = playerId,
             nickname    = sampGetPlayerNickname(playerId),
-            color       = color,
+            color       = (color == 0) ? -1 : color,
             distance    = distance,
             message     = u8(message),
             clock       = os.clock(),

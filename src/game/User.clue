@@ -169,7 +169,7 @@ method __user__::getAfkTime() {
  * @return void
  */
 method __user__::updateTime() {
-    if os.clock() - self.online.clock >= 1 && self::getAloginStatus() {
+    if os.clock() - self.online.clock >= 1 && self::getAloginStatus() && !isGamePaused() {
         self.online.clock               = os.clock()
         self.online.session             += 1
         config.root.user.online.total   += 1
@@ -215,7 +215,7 @@ method __user__::getTime() {
 }
 
 /**
- * Increment answers count/
+ * Increment answers count.
  * @return void
  */
 method __user__::incrementAnswersCount() {

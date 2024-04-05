@@ -109,9 +109,8 @@ static __config__ = {
                 use         = false,
                 maxLines    = 8,
                 strokeSize  = 1,
-                ignore      = {},
-
                 displayTime = true,
+                ignore      = {}
 
                 // In cases when message can repeated (for example, /phone message can spam),
                 // use this option. Delay in seconds.
@@ -220,7 +219,8 @@ static __config__ = {
                 use              = false,
                 imguiStyle       = false,
                 renderBones      = false,
-                notificationType = 1
+                notificationType = 1,
+                textSize         = 15
             },
 
             clickwarp = { use = false }
@@ -314,21 +314,31 @@ static __config__ = {
             carInfo = { 
                 use              = false,
                 onlyInSpectator  = false,
-                notificationType = 1
+                notificationType = 1,
+                textSize         = 16
             },
 
             deathNotifyInChat = {
                 use   = false,
                 color = "AFAFAF"
             },
-                        
+            
+            showAdmins = {
+                use         = true,
+                color       = "FF8585",
+                textSize    = 15
+            },
+            
+            gunInfo = {
+                use         = false,
+                textSize    = 15
+            },
+            
             autoAACommand           = { use = false },
             hideSpectatorMenu       = { use = true },
             swapLayout              = { use = true },
             idInKillList            = { use = false },
-            showAdmins              = { use = true },
             displayIdInIc           = { use = false },
-            gunInfo                 = { use = false },
             autoAdminLogin          = { use = false },
             hideIpAddresses         = { use = true },
             changeNicknameColors    = { use = true }

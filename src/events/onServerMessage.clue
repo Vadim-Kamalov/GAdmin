@@ -207,63 +207,73 @@ sampev.onServerMessage = fn(color, text) {
         common::sendScriptMessage("Вы ввели неверный пароль в настройках для авто-ввода. Пароль был сброшен.")
     }
 
-    if string.find(text, "^%[A%] %S+%[%d+%]: %S+") && color == 866792362 && config.root.additions.mention.use {
-        local mentionStarter, possibleMention   = string.match(text, "^%[A%] (%S+)%[%d+]: (%S+)")
-        local replacedColor                     = false
+    if string.find(text, "^%[A%] %S+%[%d+%]: %S+") && color == 866792362 {
+        local nickname, id, message = string.match(text, "^%[A%] (%S+)%[(%d+)]: (%S+)")
+        
+        if user::getAdminLvl() == 6 &&
+           user::getId() == tonumber(id) &&
+           user::getOOCNickname() == "Technical Admin"
+        {
+            user::setOOCNickname(nickname)
+        }
 
-        for index, pattern in ({
-            "^(%d+),",
-            "^@(%d+)",
-            "^(%d+)$",
-            "^@(%d+)$"
-            "^(.+),",
-            "^@(.+)",
-            "^(.+)$",
-            "^@(.+)$"
-        }) {
-            if index <= 4 {
-                if tonumber(string.match(possibleMention, pattern)) == user::getId() {
-                    color           = rgb2color(config.root.additions.mention.color)
-                    replacedColor   = true
-                }
-            } else {
-                if local nickname = string.match(possibleMention, pattern) {
-                    if string.lower(nickname) == string.lower(user::getOOCNickname()) {
+        if config.root.additions.mention.use {
+            local replacedColor = false
+
+            for index, pattern in ({
+                "^(%d+),",
+                "^@(%d+)",
+                "^(%d+)$",
+                "^@(%d+)$"
+                "^(.+),",
+                "^@(.+)",
+                "^(.+)$",
+                "^@(.+)$"
+            }) {
+                if index <= 4 {
+                    if tonumber(string.match(message, pattern)) == user::getId() {
                         color           = rgb2color(config.root.additions.mention.color)
                         replacedColor   = true
                     }
-                } elseif possibleMention == "all" {
-                    color = rgb2color(config.root.additions.mention.color)
-                    if mentionStarter != user::getOOCNickname() {
-                        replacedColor = true
-                    }
-                }
-            }
-
-            if replacedColor {
-                if config.root.additions.mention.soundNotification {
-                    addOneOffSound(0, 0, 0, 1137)
-                }
-
-                if local dots = string.match(text, "(%.+)$") {
-                    if #dots == 2 || #dots == 3 {
-                        messageContinuation.awaiting = true
-                        messageContinuation.color    = color
-                        messageContinuation.new      = config.root.additions.mention.color
+                } else {
+                    if local nickname = string.match(message, pattern) {
+                        if string.lower(nickname) == string.lower(user::getOOCNickname()) {
+                            color           = rgb2color(config.root.additions.mention.color)
+                            replacedColor   = true
+                        }
+                    } elseif message == "all" || message == "@all" {
+                        color = rgb2color(config.root.additions.mention.color)
+                        if nickname != user::getOOCNickname() {
+                            replacedColor = true
+                        }
                     }
                 }
 
-                if local notificationType = config.root.additions.mention.notificationType {
-                    if notificationType != NOTIFICATION_TYPE_NONE {
-                        notify::send({
-                            title   = "Вас упомянули в /a чате",
-                            text    = "Вас упомянул " .. mentionStarter .. ". Сообщение выделено в чате.",
-                            icon    = icons.ICON_PEOPLE
-                        }, (notificationType == NOTIFICATION_TYPE_SCRIPT_MESSAGE) ? mentionStarter .. " вас упомянул в /a чате." : nil)
+                if replacedColor {
+                    if config.root.additions.mention.soundNotification {
+                        addOneOffSound(0, 0, 0, 1137)
                     }
-                }
 
-                break
+                    if local dots = string.match(text, "(%.+)$") {
+                        if #dots == 2 || #dots == 3 {
+                            messageContinuation.awaiting = true
+                            messageContinuation.color    = color
+                            messageContinuation.new      = config.root.additions.mention.color
+                        }
+                    }
+
+                    if local notificationType = config.root.additions.mention.notificationType {
+                        if notificationType != NOTIFICATION_TYPE_NONE {
+                            notify::send({
+                                title   = "Вас упомянули в /a чате",
+                                text    = "Вас упомянул " .. nickname .. ". Сообщение выделено в чате.",
+                                icon    = icons.ICON_PEOPLE
+                            }, (notificationType == NOTIFICATION_TYPE_SCRIPT_MESSAGE) ? nickname .. " вас упомянул в /a чате." : nil)
+                        }
+                    }
+
+                    break
+                }
             }
         }
     }
