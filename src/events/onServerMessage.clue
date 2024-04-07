@@ -278,10 +278,6 @@ sampev.onServerMessage = fn(color, text) {
         }
     }
 
-    if config.root.additions.hideIpAddresses.use {
-        text = string.gsub($, "%d+%.%d+%.%d+%.%d+", "XXX.XXX.XXX.XXX")
-    }
-
     if string.find(safeText, "^%[A%] %S+%[%d+%] авторизовался как администратор %d+ уровня%.$") {
 @ifdef __GADMIN_DEBUG__
 {
@@ -415,7 +411,15 @@ sampev.onServerMessage = fn(color, text) {
                 "^%[A] .+%[%d+] установил слухи: ",
                 "^%[A] .+%[%d+] установил действие: ",
                 "^%[A] .+%[%d+] перевёл деньги ",
-                "^%[A] .+%[%d+] передал деньги"
+                "^%[A] .+%[%d+] передал деньги",
+                "^%[A] .+%[%d+]%[%d+%.%d+%.%d+%.%d+] нарисовал граффити%. MysqlID: %d+$",
+                "^%[A] .+%[%d+]%[%d+%.%d+%.%d+%.%d+] установил описание: ",
+                "^%[A] .+%[%d+]%[%d+%.%d+%.%d+%.%d+] установил описание авто: ",
+                "^%[GBUY] .*%[%d+]%[%d+%.%d+%.%d+%.%d+] создал объявление %[%d+]: ",
+                "^%[A] .+%[%d+]%[%d+%.%d+%.%d+%.%d+] установил слухи: ",
+                "^%[A] .+%[%d+]%[%d+%.%d+%.%d+%.%d+] установил действие: ",
+                "^%[A] .+%[%d+]%[%d+%.%d+%.%d+%.%d+] перевёл деньги ",
+                "^%[A] .+%[%d+]%[%d+%.%d+%.%d+%.%d+] передал деньги"
             }
         }) {
             if config.root.additions.disableServerMessages[key] {
@@ -454,6 +458,10 @@ sampev.onServerMessage = fn(color, text) {
         if compare(data.pattern, rgb2color(data.color)) {
             return false
         }
+    }
+    
+    if config.root.additions.hideIpAddresses.use {
+        text = string.gsub($, "%d+%.%d+%.%d+%.%d+", "XXX.XXX.XXX.XXX")
     }
 
     return { color, u8::decode(text) }

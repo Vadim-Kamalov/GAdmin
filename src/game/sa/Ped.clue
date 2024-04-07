@@ -50,6 +50,52 @@ method ped::getPlayerWeaponNameById(id) {
 }
 
 /**
+ * Check that `handle` is male by his skin ID. Howewer,
+ * there is `isCharMale` function already implemented in the MoonLoader API,
+ * but, for some reasons this function will always return true.
+ *
+ * @param handle number
+ * @return boolean
+ */
+method ped::isMale(handle) {
+    for _, womanSkinId in ({
+        9, 10, 11, 12, 13, 31, 38, 39, 40, 41, 53, 54, 55, 56,
+        63, 64, 65, 69, 75, 76, 77, 85, 87, 88, 89, 90, 91, 92,
+        93, 129, 130, 131, 138, 139, 140, 141, 145, 148, 150,
+        151, 152, 157, 169, 172, 178, 190, 191, 192, 193, 194,
+        195, 196, 197, 198, 199, 201, 205, 207, 211, 214, 215,
+        216, 218, 219, 224, 225, 226, 231, 232, 233, 237, 238,
+        243, 244, 245, 246, 251, 256, 257, 263, 298, 306, 307,
+        308, 309
+    }) {
+        if getCharModel(handle) == womanSkinId {
+            return false
+        }
+    }
+
+    return true
+}
+
+/**
+ * Get character max speed by his handle. If character is
+ * in any car - then this function will always return `0`.
+ *
+ * @param handle number
+ * @return number
+ */
+method ped::getMaxSpeed(handle) {
+    if !isCharInAnyCar(handle) {
+        return match getCharModel(handle) {
+            0        => 11,
+            92 || 99 => 8,
+            default  => (self::isMale(handle)) ? 7 : 5
+        }
+    } else {
+        return 0
+    }
+}
+
+/**
  * Get closest handle.
  *
  * @param to number (default = PLAYER_PED)

@@ -18,8 +18,12 @@
  * SDPX-License-Identifier: GPL-3.0-only
  */
 
-@import "game.sa.Ped"   => ped
-@import "game.User"     => user
+@import "game.sa.Ped"       => ped
+@import "game.sa.Vehicle"   => vehicle
+@import "game.User"         => user
+
+@import "Assets" => assets
+@import "Common" => common
 
 global enum /** @enum SPECTATOR_MENU */ {
     SPECTATOR_MENU_NEXT = 0,
@@ -166,6 +170,49 @@ method __spectator__::setKeyStatus(syncType, key, status) {
 method __spectator__::setInformation(information = {}) {
     for key, value of information {
         self.information[key] = value
+    }
+}
+
+/**
+ * Setup main loop for this module. Only for use in while-true loop!
+ * @return void
+ */
+method __spectator__::loop() {
+    if self.status {
+        if sampIsPlayerPaused(self.id) {
+            if os.clock() - self.afk.clock >= 1 {
+                self.afk.time += 1
+                self.afk.clock = os.clock()
+            }
+        } else {
+            self.afk.time = 0
+        }
+
+        local result, handle = self::getHandle()
+
+        if result {
+            local speed = { current = 0, max = 0 }
+
+            if isCharInAnyCar(handle) {
+                if local car = storeCarCharIsInNoSave(handle) {
+                    speed.current = getCarSpeed(car)
+                    speed.max     = vehicle::getMaxSpeed(getCarModel(car))
+                }
+            } else {
+                speed.current = getCharSpeed(handle)
+                speed.max     = ped::getMaxSpeed(handle)
+            }
+
+            self.information.moveSpeedCurrent = math.floor(speed.current)
+            self.information.moveSpeedMax     = math.floor(speed.max)
+        } else {
+            while !result && !common::isInputsActive() {
+                sampSendMenuSelectRow(SPECTATOR_MENU_SWITCH)
+                wait(1000)
+
+                result, handle = self::getHandle()
+            }
+        }
     }
 }
 

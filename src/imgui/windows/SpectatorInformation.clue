@@ -127,6 +127,8 @@ window::new("imgui.windows.SpectatorInformation", {
         if isCharInAnyCar(handle) {
             self.speedColor = (tonumber(self.information.moveSpeed.current) > tonumber(self.information.moveSpeed.max))
                 && common::convertHex2ImVec4("FF8585")
+        } else {
+            self.speedColor = imgui.GetStyle().Colors[imgui.Col.Text]
         }
         
         if local ping = tonumber(self.information.ping) {

@@ -39,7 +39,7 @@ window::new("imgui.windows.SpectatorKeys", {
     defaultPos  = { x = sizeX / 2.346, y = sizeY / 1.242 }
     initialize  = {
         style = StyleChanger::new({
-            WindowBg = "22222200"
+            WindowBg = "00000000"
             WindowBorderSize = 0
         })
     }

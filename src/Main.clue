@@ -367,6 +367,7 @@ global fn main() {
         }
 
         commandRequester::loop()
+        spectator::loop()
         greport::loop()
         user::updateTime()
 
@@ -388,25 +389,6 @@ global fn main() {
                     autoCompletion.clock = os.clock()
                     autoCompletion.position = ($ == autoCompletion.commandsLength) ? 1 : $ + 1
                 }
-            }
-        }
-
-        if spectator.status {
-            local result, _ = sampGetCharHandleBySampPlayerId(spectator.id)
-
-            while !result && !common::isInputsActive() {
-                sampSendMenuSelectRow(SPECTATOR_MENU_SWITCH)
-                wait(1000)
-                result = sampGetCharHandleBySampPlayerId(spectator.id)
-            }
-
-            if sampIsPlayerPaused(spectator.id) {
-                if os.clock() - spectator.afk.clock >= 1 {
-                    spectator.afk.time += 1
-                    spectator.afk.clock = os.clock()
-                }
-            } else {
-                spectator.afk.time = 0
             }
         }
 
