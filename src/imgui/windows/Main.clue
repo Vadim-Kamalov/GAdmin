@@ -95,8 +95,8 @@ local window = {
     
     checker = {
         filter          = InputTextFilter::new(),
-        playerNote      = imgui.new.char[65535](),
-        selectedPlayer  = -1 
+        playerNote      = imgui.new.char[65535]((config.root.windows.playerChecker.players[1]?.commentary) || ""),
+        selectedPlayer  = (config.root.windows.playerChecker.players[1]) ? 1 : -1
     },
    
     customization = {
@@ -1096,12 +1096,16 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn(self) {
 
                         imguiAssets::textWithFont("Заметка об игроке", bold10)
                         imgui.PushFont(regular9)
-                            imgui.InputTextMultiline(
+                            if imgui.InputTextMultiline(
                                 "##imgui.windows.Main.CheckerPlayerDescription",
                                 window.checker.playerNote,
                                 ffi.sizeof(window.checker.playerNote),
                                 imgui.ImVec2(widthAuto / 2, 100)
-                            )
+                            ) {
+                                if local player = config.root.windows.playerChecker.players[window.checker.selectedPlayer] {
+                                    player.commentary = ffi.string(window.checker.playerNote)
+                                }
+                            }
                         imgui.PopFont()
 
                         imgui.PushFont(bold10)
@@ -1115,7 +1119,9 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn(self) {
                                         commentary  = commentary
                                     })
 
-                                    imgui.StrCopy(window.checker.playerNote, "")
+                                    window.checker.selectedPlayer = #config.root.windows.playerChecker.players
+
+                                    imgui.StrCopy(window.checker.playerNote, commentary || "")
                                     window.checker.filter::clear()
                                 }
                             }
@@ -1140,6 +1146,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn(self) {
                                                 window.checker.selectedPlayer == index
                                             ) {
                                                 window.checker.selectedPlayer = index
+                                                imgui.StrCopy(window.checker.playerNote, player.commentary || "")
                                             }
 
                                             imgui.SetCursorPos(pos)
@@ -1154,7 +1161,16 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn(self) {
                         imgui.PopStyleVar()
                         
                         if animations::button("Удалить", imgui.ImVec2(widthAuto / 2 - 5, 30)) && window.checker.selectedPlayer != -1 {
-                            table.remove(config.root.windows.playerChecker.players, window.checker.selectedPlayer)
+                            local players = config.root.windows.playerChecker.players
+
+                            table.remove(players, window.checker.selectedPlayer)
+                            
+                            if local player = players[#players] {
+                                window.checker.selectedPlayer = #players
+                                imgui.StrCopy(window.checker.playerNote, player.commentary || "")
+                            } else {
+                                imgui.StrCopy(window.checker.playerNote, "")
+                            }
                         }
                     imgui.EndGroup()
                 } elseif window.menu.selectedFrame == WINDOW_SELECTED_FRAME_CUSTOMIZATION {

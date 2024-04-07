@@ -106,48 +106,50 @@ window::new("imgui.windows.PlayerChecker", {
                 }
             }
 
-            imgui.SetCursorPosX(align)
-            imgui.BeginGroup()
-                if config.root.windows.playerChecker.displayOfflinePlayers {
-                    imguiAssets::addStrokedText(
-                        (playerConnected) ? "[ONLINE] " : "[OFFLINE] ",
-                        strokeSize,
-                        common::convertHex2ImVec4((playerConnected) ? "8DFF85" : "FF8585")
-                    )
-                    imgui.SameLine()
+            if config.root.windows.playerChecker.displayOfflinePlayers || playerConnected {
+                imgui.SetCursorPosX(align)
+                imgui.BeginGroup()
+                    if config.root.windows.playerChecker.displayOfflinePlayers {
+                        imguiAssets::addStrokedText(
+                            (playerConnected) ? "[ONLINE] " : "[OFFLINE] ",
+                            strokeSize,
+                            common::convertHex2ImVec4((playerConnected) ? "8DFF85" : "FF8585")
+                        )
+                        imgui.SameLine()
+                    }
+
+                    if config.root.windows.playerChecker.displayOfflinePlayers || playerConnected {
+                        imguiAssets::addStrokedText(player.nickname, strokeSize, textColor)
+                        if playerConnected {
+                            imgui.SameLine()
+                            imguiAssets::addStrokedText("[" .. id .. "]", strokeSize, textColor)
+                        }
+                    }
+                imgui.EndGroup()
+            
+                if imgui.GetItemRectSize().x > self.size.x {
+                    self.size.x = imgui.GetItemRectSize().x + 20 
                 }
 
-                if config.root.windows.playerChecker.displayOfflinePlayers || playerConnected {
-                    imguiAssets::addStrokedText(player.nickname, strokeSize, textColor)
-                    if playerConnected {
-                        imgui.SameLine()
-                        imguiAssets::addStrokedText("[" .. id .. "]", strokeSize, textColor)
+                if imgui.IsItemClicked() {
+                    imgui.OpenPopup("PlayerChecker.popup")
+                    self.var.popupInformation = {
+                        nickname    = player.nickname
+                        id          = id
+                        commentary  = player.commentary
+                        isConnected = playerConnected
+                        index       = index
                     }
                 }
-            imgui.EndGroup()
 
-            if imgui.GetItemRectSize().x > self.size.x {
-                self.size.x = imgui.GetItemRectSize().x + 20 
-            }
-
-            if imgui.IsItemClicked() {
-                imgui.OpenPopup("PlayerChecker.popup")
-                self.var.popupInformation = {
-                    nickname    = player.nickname
-                    id          = id
-                    commentary  = player.commentary
-                    isConnected = playerConnected
-                    index       = index
+                if imgui.IsItemHovered() {
+                    imgui.GetWindowDrawList()::AddLine(
+                        imgui.ImVec2(imgui.GetItemRectMin().x, imgui.GetItemRectMax().y),
+                        imgui.GetItemRectMax(),    
+                        -1,
+                        2
+                    )
                 }
-            }
-
-            if imgui.IsItemHovered() {
-                imgui.GetWindowDrawList()::AddLine(
-                    imgui.ImVec2(imgui.GetItemRectMin().x, imgui.GetItemRectMax().y),
-                    imgui.GetItemRectMax(),    
-                    -1,
-                    2
-                )
             }
         }
 
@@ -196,6 +198,7 @@ window::new("imgui.windows.PlayerChecker", {
                     self.var.popupCommentaryStyle::reset()
                 }
 
+                imgui.PushStyleVarVec2(imgui.StyleVar.ItemSpacing, imgui.ImVec2(0, 2))
                 imgui.PushFont(regular9)
                     if animations::button(
                         "Удалить##PlayerChecker.popup.removeButton",
@@ -207,12 +210,6 @@ window::new("imgui.windows.PlayerChecker", {
                     }
                     
                     if this.commentary {
-                        imgui.GetWindowDrawList()::AddRectFilled(
-                            imgui.ImVec2(imgui.GetItemRectMin().x, imgui.GetItemRectMax().y - 4),
-                            imgui.GetItemRectMax() + imgui.ImVec2(0, 6),
-                            imgui.ColorConvertFloat4ToU32(imgui.GetStyle().Colors[imgui.Col.Button])
-                        )
-
                         if animations::button(
                             "Изменить комментарий##PlayerChecker.popup.changeCommentaryButton",
                             imgui.ImVec2(imgui.GetWindowWidth() - 10, 25),
@@ -224,18 +221,13 @@ window::new("imgui.windows.PlayerChecker", {
                     }
 
                     if this.isConnected {
-                        imgui.GetWindowDrawList()::AddRectFilled(
-                            imgui.ImVec2(imgui.GetItemRectMin().x, imgui.GetItemRectMax().y - 4),
-                            imgui.GetItemRectMax() + imgui.ImVec2(0, 6),
-                            imgui.ColorConvertFloat4ToU32(imgui.GetStyle().Colors[imgui.Col.Button])
-                        )
-                        
                         if animations::button("Следить##PlayerChecker.popup.spectateButton", imgui.ImVec2(imgui.GetWindowWidth() - 10, 25), 12) {
                             sampSendChat("/sp " .. this.id)
                             imgui.CloseCurrentPopup()
                         }
                     }
                 imgui.PopFont()
+                imgui.PopStyleVar()
             }
         }
         imgui.EndPopup()
