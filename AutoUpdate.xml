@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<AutoUpdate version="1.5.3">
-    <title>GAdmin v1.5.3</title>
+<AutoUpdate version="1.5.4">
+    <title>GAdmin v1.5.4</title>
     <buttons first="Установить" second="Пропустить" third="Позже"/>
     <body>
         <header>Изменения</header>
-        <ul>Текущая и максимальная скорость игрока за которым Вы следите теперь получается от игры/скрипта.</ul>
+        <ul>Теперь можно просматривать и изменять описание игрока в чекере напрямую в основном окне.</ul>
+        <ul>Изменен шрифт у следующих окон: дальний чат, чекер, игроки рядом, список администраторов.</ul>
         <header>Исправления</header>
-        <ul>Испавлено что не скрывались некоторые системные сообщения (при включенной настройке), в которых находился айпи-адрес.</ul>
-        <ul>Исправлено что не изменялся цвет в окне об информации об игроке за которым Вы следите в колонке скоростей в определенных случаях.</ul>
+        <ul>Исправлено что если выключено отображение игроков в оффлайне в окне чекера, то тот игрок, что не подключен - создавал пустую строку.</ul>
+        <ul>Исправлено что некоторый текст не помещался в окна, если они выравниваются по правой стороне окна.</ul>
     </body>
     <links>
         <!-- Redirect links aren't allowed. -->
         <!-- Notice that `link` with `destination="GAdmin-Release.lua"` should be last element in this section. -->
 
-        <link destination="GAdmin-Release.lua">https://gist.githubusercontent.com/defaultzone/269775a7e3cf6a9f1cbf58b69033d7a3/raw/03f6846ff83794e6599ceba990495f64e8c6d074/GAdmin-Release.lua</link>
+        <link destination="GAdmin-Release.lua">https://gist.githubusercontent.com/defaultzone/269775a7e3cf6a9f1cbf58b69033d7a3/raw/ea9e7e2e3bf25e3155401a958685f8fd2c70e648/GAdmin-Release.lua</link>
     </links>
 </AutoUpdate>
