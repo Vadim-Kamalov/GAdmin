@@ -123,90 +123,93 @@ window::new("imgui.windows.PlayersNearby", {
 
         for i = 1, config.root.windows.playersNearby.maxPlayers {
             if local player = players[i] {
-                local textSize = nil
-                {
-                    local text = string.format("%s[%d]", player.nickname, player.id)
-                        text ..= (config.root.windows.playersNearby.showDistance) ? string.format("[X: %1.f]", player.distance) : ""
-                        text ..= (config.root.windows.playersNearby.showAdmins && player.admin)
-                            ? string.format("[%s]", player.admin.nickname.ooc)
-                            : ""
-                    textSize = imgui.CalcTextSize(text)
-                }
-
-                local alignX = match config.root.windows.playersNearby.textAlignMode {
-                    ALIGN_CENTER    => self.size.x / 2 - textSize.x / 2,
-                    ALIGN_RIGHT     => self.size.x - textSize.x - 10
-                    default         => imgui.GetCursorPos().x
-                } 
-
-                imgui.SetCursorPosX(alignX)
-                imgui.BeginGroup()
-                    local strokeSize    = config.root.windows.playersNearby.strokeSize
-                    local color         = (config.root.windows.playersNearby.playerColorBasedOnClist) 
-                        ? common::convertHex2ImVec4(string.format("%06X", sampGetPlayerColor(player.id) & 0xFFFFFF))
-                        : nil
-
-                    local isClicked, isHovered = 
-                        imguiAssets::addStrokedText("%s[%d]", strokeSize, color, player.nickname, player.id)
-
-                    if isHovered {
-                        imgui.GetWindowDrawList()::AddLine(
-                            imgui.ImVec2(imgui.GetItemRectMin().x, imgui.GetItemRectMax().y),
-                            imgui.GetItemRectMax(),
-                            -1,
-                            2
-                        )
+                imgui.PushFont(bold10)
+                    local alignMode = config.root.windows.playersNearby.textAlignMode
+                    local textSize  = nil
+                    {
+                        local text = string.format("%s[%d]", player.nickname, player.id)
+                            text ..= (config.root.windows.playersNearby.showDistance) ? string.format("[X: %1.f]", player.distance) : ""
+                            text ..= (config.root.windows.playersNearby.showAdmins && player.admin)
+                                ? string.format("[%s]", player.admin.nickname.ooc)
+                                : ""
+                        textSize = imgui.CalcTextSize(text)
                     }
-                    
-                    if isClicked && !self.isChangingWindowsPositions {
-                        imgui.OpenPopup("PlayersNearby.popup")
-                        self.var.popupInformation = {
-                            nickname    = player.nickname
-                            id          = player.id
+
+                    local alignX = match alignMode {
+                        ALIGN_CENTER    => self.size.x / 2 - textSize.x / 2,
+                        ALIGN_RIGHT     => self.size.x - textSize.x - 5
+                        default         => imgui.GetCursorPos().x
+                    }
+
+                    imgui.SetCursorPosX(alignX)
+                    imgui.BeginGroup()
+                        local strokeSize    = config.root.windows.playersNearby.strokeSize
+                        local color         = (config.root.windows.playersNearby.playerColorBasedOnClist) 
+                            ? common::convertHex2ImVec4(string.format("%06X", sampGetPlayerColor(player.id) & 0xFFFFFF))
+                            : nil
+
+                        local isClicked, isHovered = 
+                            imguiAssets::addStrokedText("%s[%d]", strokeSize, color, player.nickname, player.id)
+
+                        if isHovered {
+                            imgui.GetWindowDrawList()::AddLine(
+                                imgui.ImVec2(imgui.GetItemRectMin().x, imgui.GetItemRectMax().y),
+                                imgui.GetItemRectMax(),
+                                -1,
+                                2
+                            )
                         }
-                    }
+                    
+                        if isClicked && !self.isChangingWindowsPositions {
+                            imgui.OpenPopup("PlayersNearby.popup")
+                            self.var.popupInformation = {
+                                nickname    = player.nickname
+                                id          = player.id
+                            }
+                        }
 
-                    if config.root.windows.playersNearby.showDistance {
-                        imgui.SameLine(nil, 0)
-                        imguiAssets::addStrokedText("[X: %1.f]", strokeSize, color, player.distance)
-                        imguiAssets::setPreviousItemAbleToCopy(
-                            string.format("%1.f", player.distance),
-                            "Скопировано расстояние",
-                            "Успешно скопировано расстояние: " .. string.format("%1.f", player.distance)
-                        )
-                    }
+                        if config.root.windows.playersNearby.showDistance {
+                            imgui.SameLine(nil, 0)
+                            imguiAssets::addStrokedText("[X: %1.f]", strokeSize, color, player.distance)
+                            imguiAssets::setPreviousItemAbleToCopy(
+                                string.format("%1.f", player.distance),
+                                "Скопировано расстояние",
+                                "Успешно скопировано расстояние: " .. string.format("%1.f", player.distance)
+                            )
+                        }
 
-                    if config.root.windows.playersNearby.showAdmins && player.admin {
-                        imgui.SameLine(nil, 0)
-                        imguiAssets::addStrokedText("[%s]", strokeSize, color, player.admin.nickname.ooc)
-                        imguiAssets::setPreviousItemAbleToCopy(player.admin.nickname.ooc, nil, nil, {
-                            icon        = icons.ICON_KEYBOARD
-                            title       = "Никнейм скопирован"
-                            text        = "Успешно скопирован OOC никнейм у администратора " .. player.admin.nickname.ooc .. "!"
-                            duration    = 4
-                            buttons     = {
-                                first   = {
-                                    name = "Закрыть"
-                                    call = fn(close) { close() }
-                                }
+                        if config.root.windows.playersNearby.showAdmins && player.admin {
+                            imgui.SameLine(nil, 0)
+                            imguiAssets::addStrokedText("[%s]", strokeSize, color, player.admin.nickname.ooc)
+                            imguiAssets::setPreviousItemAbleToCopy(player.admin.nickname.ooc, nil, nil, {
+                                icon        = icons.ICON_KEYBOARD
+                                title       = "Никнейм скопирован"
+                                text        = "Успешно скопирован OOC никнейм у администратора " .. player.admin.nickname.ooc .. "!"
+                                duration    = 4
+                                buttons     = {
+                                    first   = {
+                                        name = "Закрыть"
+                                        call = fn (close) { close() }
+                                    }
 
-                                second = {
-                                    name = "Упомянуть"
-                                    call = fn {
-                                        if !self.isChangingWindowsPositions {
-                                            sampSetChatInputEnabled(true)
-                                            sampSetChatInputText("/a @" .. player.admin.nickname.ooc .. " ")
+                                    second = {
+                                        name = "Упомянуть"
+                                        call = fn (close) {
+                                            if !self.isChangingWindowsPositions {
+                                                sampSetChatInputEnabled(true)
+                                                sampSetChatInputText("/a @" .. player.admin.nickname.ooc .. " ")
+                                                close()
+                                            }
                                         }
                                     }
                                 }
-                            }
-                        })
-                    }
-                imgui.EndGroup()
+                            })
+                        }
+                    imgui.EndGroup()
+                imgui.PopFont()
 
-                if imgui.GetItemRectSize().x > self.size.x {
-                    self.size.x = imgui.GetItemRectSize().x + imgui.GetStyle().WindowPadding.x * 2
-                        + config.root.windows.playersNearby.strokeSize
+                if imgui.GetItemRectSize().x + ((alignMode == ALIGN_RIGHT ? 5 : 0)) > self.size.x {
+                    self.size.x = imgui.GetItemRectSize().x + ((alignMode == ALIGN_RIGHT) ? 5 : 0)
                 }
             }
         }

@@ -107,29 +107,34 @@ window::new("imgui.windows.FarChat", {
                     message = (#this.message >= 140) ? string.sub(this.message, 1, 140) .. "..." : this.message
                 }
 
-                imguiAssets::addStrokedText("> ", strokeSize, playerColor)
+                imgui.PushFont(bold10)
+                    imguiAssets::addStrokedText("> ", strokeSize, playerColor)
 
-                if config.root.windows.farChat.displayTime {
-                    local time = this.time
-                    
+                    if config.root.windows.farChat.displayTime {
+                        local time = this.time
+                        imgui.SameLine()
+                        imguiAssets::addStrokedText("[%02d:%02d:%02d] ", strokeSize, playerColor, time.hour, time.min, time.sec)
+                    }
+
                     imgui.SameLine()
-                    imguiAssets::addStrokedText("[%02d:%02d:%02d] ", strokeSize, playerColor, time.hour, time.min, time.sec)
-                }
-
-                imgui.SameLine()
-                imguiAssets::addStrokedText(nickname, strokeSize, playerColor)
-                imguiAssets::setPreviousItemAbleToCopy(this.nickname, nil, nil, onNicknameClickNotify)
+                    imguiAssets::addStrokedText(nickname, strokeSize, playerColor)
+                    imguiAssets::setPreviousItemAbleToCopy(this.nickname, nil, nil, onNicknameClickNotify)
                 
-                imgui.SameLine()
-                imguiAssets::addStrokedText("[%d]", strokeSize, playerColor, this.id)
-                imguiAssets::setPreviousItemAbleToCopy(this.id, "Скопирован айди", "Успешно скопирован айди игрока " .. nickname .. ": " .. this.id)
+                    imgui.SameLine()
+                    imguiAssets::addStrokedText("[%d]", strokeSize, playerColor, this.id)
+                    imguiAssets::setPreviousItemAbleToCopy(this.id, "Скопирован айди", "Успешно скопирован айди игрока " .. nickname .. ": " .. this.id)
 
-                imgui.SameLine()
-                imguiAssets::addStrokedText(": ", strokeSize, playerColor)
+                    imgui.SameLine()
+                    imguiAssets::addStrokedText(": ", strokeSize, playerColor)
+                imgui.PopFont()
 
-                imgui.SameLine()
-                imguiAssets::addStrokedText(message, strokeSize, messageColor)
-                imguiAssets::setPreviousItemAbleToCopy(this.message)
+                imgui.PushFont(regular10)
+                    imgui.SameLine()
+                    imgui.SetCursorPosY(imgui.GetCursorPos().y + 1)
+                    
+                    imguiAssets::addStrokedText(message, strokeSize, messageColor)
+                    imguiAssets::setPreviousItemAbleToCopy(this.message)
+                imgui.PopFont()
             }
         }
     })

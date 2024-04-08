@@ -66,6 +66,7 @@ windows::new("imgui.windows.AdminList", {
     self::begin(self.id, fn {
         for _, admin in getAdmins() {
             imgui.BeginGroup()
+                local align = config.root.windows.adminList.textAlignMode
                 local pos   = imgui.GetCursorPos()
                 local text  = (config.root.windows.adminList.showAdminLvl)
                     ? string.format("[LVL: %d] %s[%d]", admin.lvl, admin.nickname.ooc, admin.id)
@@ -81,22 +82,23 @@ windows::new("imgui.windows.AdminList", {
                     }
                 }
 
-                pos.x = match config.root.windows.adminList.textAlignMode {
-                    ALIGN_CENTER    => self.size.x / 2 - imgui.CalcTextSize(text).x / 2,
-                    ALIGN_RIGHT     => self.size.x - imgui.CalcTextSize(text).x - 10,
-                    default         => pos.x
-                }
+                imgui.PushFont(bold10)
+                    pos.x = match align {
+                        ALIGN_CENTER    => self.size.x / 2 - imgui.CalcTextSize(text).x / 2,
+                        ALIGN_RIGHT     => self.size.x - imgui.CalcTextSize(text).x - 10,
+                        default         => pos.x
+                    }
 
-                imgui.SetCursorPos(pos)
-                local clicked, hovered = imguiAssets::addStrokedText(
-                    text,
-                    config.root.windows.adminList.strokeSize,
-                    color
-                )
-
-                if self.size.x < imgui.GetItemRectSize().x {
-                    self.size.x = imgui.GetItemRectSize().x + 20
-                }
+                    imgui.SetCursorPos(pos)
+                    local clicked, hovered = imguiAssets::addStrokedText(
+                        text,
+                        config.root.windows.adminList.strokeSize,
+                        color
+                    )
+                    if self.size.x < (imgui.GetItemRectSize().x + ((align == ALIGN_RIGHT) ? 10 : 0)) {
+                        self.size.x = imgui.GetItemRectSize().x + ((align == ALIGN_RIGHT) ? 10 : 0)
+                    }
+                imgui.PopFont()
 
                 if hovered {
                     imgui.GetForegroundDrawList()::AddLine(

@@ -78,6 +78,7 @@ window::new("imgui.windows.PlayerChecker", {
         for index, player in getPlayers(self.isChangingWindowsPositions) {
             local id                = sampPlayer::getIdByNickname(player.nickname)
             local playerConnected   = id != nil
+            local alignMode         = config.root.windows.playerChecker.textAlignMode
             local strokeSize        = config.root.windows.playerChecker.strokeSize
 
             local textColor = imgui.GetStyle().Colors[imgui.Col.Text]
@@ -86,28 +87,31 @@ window::new("imgui.windows.PlayerChecker", {
             local align = imgui.GetCursorPos().x
             {
                 if local it = config.root.windows.playerChecker {
-                    local textSize = imgui.ImVec2(0, 0)
+                    imgui.PushFont(bold10)
+                        local textSize = imgui.ImVec2(0, 0)
 
-                    if it.displayOfflinePlayers {
-                        textSize = imgui.CalcTextSize((playerConnected) ? "[ONLINE] " : "[OFFLINE] ")
-                    }
+                        if it.displayOfflinePlayers {
+                            textSize = imgui.CalcTextSize((playerConnected) ? "[ONLINE] " : "[OFFLINE] ")
+                        }
 
-                    textSize += imgui.CalcTextSize(player.nickname)
+                        textSize += imgui.CalcTextSize(player.nickname)
 
-                    if playerConnected {
-                        textSize += imgui.CalcTextSize("[" .. id .. "]")
-                    }
+                        if playerConnected {
+                            textSize += imgui.CalcTextSize("[" .. id .. "]")
+                        }
 
-                    align = match it.textAlignMode {
-                        ALIGN_CENTER    => self.size.x / 2 - textSize.x / 2,
-                        ALIGN_RIGHT     => self.size.x - textSize.x - (5 + strokeSize),
-                        default         => align
-                    }
+                        align = match alignMode {
+                            ALIGN_CENTER    => self.size.x / 2 - textSize.x / 2,
+                            ALIGN_RIGHT     => self.size.x - textSize.x - 5,
+                            default         => align
+                        }
+                    imgui.PopFont()
                 }
             }
 
             if config.root.windows.playerChecker.displayOfflinePlayers || playerConnected {
                 imgui.SetCursorPosX(align)
+                imgui.PushFont(bold10)
                 imgui.BeginGroup()
                     if config.root.windows.playerChecker.displayOfflinePlayers {
                         imguiAssets::addStrokedText(
@@ -126,9 +130,10 @@ window::new("imgui.windows.PlayerChecker", {
                         }
                     }
                 imgui.EndGroup()
+                imgui.PopFont()
             
-                if imgui.GetItemRectSize().x > self.size.x {
-                    self.size.x = imgui.GetItemRectSize().x + 20 
+                if (imgui.GetItemRectSize().x + ((alignMode == ALIGN_RIGHT) ? 5 : 0)) > self.size.x {
+                    self.size.x = imgui.GetItemRectSize().x + ((alignMode == ALIGN_RIGHT) ? 5 : 0) 
                 }
 
                 if imgui.IsItemClicked() {
