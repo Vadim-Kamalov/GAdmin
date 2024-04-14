@@ -1,19 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<AutoUpdate version="1.5.4">
-    <title>GAdmin v1.5.4</title>
+<AutoUpdate version="1.5.5">
+    <title>GAdmin v1.5.5</title>
     <buttons first="Установить" second="Пропустить" third="Позже"/>
     <body>
-        <header>Изменения</header>
-        <ul>Теперь можно просматривать и изменять описание игрока в чекере напрямую в основном окне.</ul>
-        <ul>Изменен шрифт у следующих окон: дальний чат, чекер, игроки рядом, список администраторов.</ul>
         <header>Исправления</header>
-        <ul>Исправлено что если выключено отображение игроков в оффлайне в окне чекера, то тот игрок, что не подключен - создавал пустую строку.</ul>
-        <ul>Исправлено что некоторый текст не помещался в окна, если они выравниваются по правой стороне окна.</ul>
+        <ul>Дальность ников по умолчанию теперь зафиксирована на значениях от сервера.</ul>
+        <ul>Исправлено что скрипт не засчитывал выход администраторов в определенных случаях.</ul>
+        <ul>Исправлено что нельзя было выключить настройку <code>Чат на русскую T</code>  </ul>
     </body>
     <links>
         <!-- Redirect links aren't allowed. -->
         <!-- Notice that `link` with `destination="GAdmin-Release.lua"` should be last element in this section. -->
 
-        <link destination="GAdmin-Release.lua">https://gist.githubusercontent.com/defaultzone/269775a7e3cf6a9f1cbf58b69033d7a3/raw/ea9e7e2e3bf25e3155401a958685f8fd2c70e648/GAdmin-Release.lua</link>
+        <link destination="GAdmin-Release.lua">https://gist.githubusercontent.com/defaultzone/269775a7e3cf6a9f1cbf58b69033d7a3/raw</link>
     </links>
 </AutoUpdate>
