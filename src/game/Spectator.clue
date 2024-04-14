@@ -57,9 +57,9 @@ static enum /** @enum SYNC_KEYS */ {
 }
 
 static __spectator__ = {
-    id          = -1
-    nickname    = ""
-    time        = nil
+    id       = -1
+    nickname = ""
+    time     = nil
 
     afk = {
         thread  = nil
@@ -195,7 +195,7 @@ method __spectator__::loop() {
 
             if isCharInAnyCar(handle) {
                 if local car = storeCarCharIsInNoSave(handle) {
-                    speed.current = getCarSpeed(car)
+                    speed.current = getCarSpeed(car) * 2 + 0.5
                     speed.max     = vehicle::getMaxSpeed(getCarModel(car))
                 }
             } else {
@@ -204,7 +204,7 @@ method __spectator__::loop() {
             }
 
             self.information.moveSpeedCurrent = math.floor(speed.current)
-            self.information.moveSpeedMax     = math.floor(speed.max)
+            self.information.moveSpeedMax = math.floor(speed.max)
         } else {
             while !result && !common::isInputsActive() {
                 sampSendMenuSelectRow(SPECTATOR_MENU_SWITCH)
