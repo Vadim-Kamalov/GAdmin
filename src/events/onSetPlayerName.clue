@@ -23,10 +23,18 @@
 @import "Config"        => config
 @import "Assets"        => assets
 
-@import "game.User" => user
+@import "game.Admins" => admins
+@import "game.User"   => user
 
 sampev.onSetPlayerName = fn(id, nickname, success) {
     local sourceNickname = sampGetPlayerNickname(id)
+
+    for index, admin in admins {
+        if admin.id == id {
+            admins::remove(index)
+            break
+        }
+    }
 
     /**
      * Yes, code for check player join here is same as code in `events.onPlayerJoin`.

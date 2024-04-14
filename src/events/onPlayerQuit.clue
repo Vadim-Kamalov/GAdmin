@@ -30,13 +30,6 @@
 sampev.onPlayerQuit = fn(id) {
     local nickname = sampGetPlayerNickname(id)
     
-    for index, admin in admins {
-        if admin.id == id {
-            admins::remove(index)
-            break
-        }
-    }
-
     if config.root.windows.playerChecker.use {
         for _, player in config.root.windows.playerChecker.players {
             if player.nickname == nickname && user::getAloginStatus() {

@@ -37,6 +37,7 @@
 @import "imgui.HotKey"      => HotKey
 @import "imgui.Assets"      => imguiAssets
 
+@import "game.Admins"    => admins
 @import "game.GReport"   => greport
 @import "game.Binder"    => binder
 @import "game.User"      => user
@@ -54,8 +55,9 @@
 
 @define DEFAULT_FOV_VALUE 70
 
-@define SERVER_ADDRESS      "46.174.48.194"
-@define SERVER_MAX_PLAYERS  600
+@define SERVER_NAME_TAGS_DISTANCE   20
+@define SERVER_ADDRESS              "46.174.48.194"
+@define SERVER_MAX_PLAYERS          600
 
 @define COPYRIGHT_YEARS "2023-2024"
 
@@ -132,7 +134,6 @@ math.randomseed(os.time())
 
 static u8                       = encoding.UTF8
 static spectatorCameraFov       = -1
-static baseNameTagsDistance     = 60
 static scriptLoadedWithGame     = false //! `true` only when called `sampev.onInitGame`.
 static bulletData               = { lastId = 0 }
 static contributorsFileSource   = nil
@@ -173,8 +174,7 @@ imgui.OnInitialize(fn {
 global fn main() {
     while !isSampAvailable() { wait(0) }
 
-    encoding.default        = "CP1251"
-    baseNameTagsDistance    = memory.getfloat(sampGetServerSettingsPtr() + 39)
+    encoding.default = "CP1251"
 
     /** 
      * Initializing hot keys that used in this module.
@@ -285,6 +285,7 @@ global fn main() {
     }
 
     common::makeDirectoryTree({ "GAdmin", "GAdmin/temp", "GAdmin/config", "GAdmin/logs" })
+    assets::changeWallhackState(false)
 
 @ifndef __GADMIN_DEBUG__
 {
@@ -344,6 +345,12 @@ global fn main() {
             user::setAfkTime(0)
         }
 
+        for index, admin in admins {
+            if !sampIsPlayerConnected(admin.id) {
+                admins::remove(index)
+            }
+        }
+
         if os.clock() - config.clock >= 600 /* 10m */ {
             config::saveIfChanged()
             config.clock = os.clock()
@@ -392,7 +399,7 @@ global fn main() {
             }
         }
 
-        if config.root.fix.chatOnVK_T && isKeyJustPressed(VK_T) && !common::isInputsActive() {
+        if config.root.fix.chatOnVK_T.use && isKeyJustPressed(VK_T) && !common::isInputsActive() {
             sampSetChatInputEnabled(true)
         }
 

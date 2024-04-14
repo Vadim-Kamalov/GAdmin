@@ -497,7 +497,7 @@ method assets::messageBox(text, title, style) {
  */
 method assets::changeWallhackState(state) {
     local pointer = sampGetServerSettingsPtr()
-	memory.setfloat(pointer + 39, (state) ? 0x7D0 : baseNameTagsDistance)
+	memory.setfloat(pointer + 39, (state) ? 0x7D0 : $SERVER_NAME_TAGS_DISTANCE)
 	memory.setint8(pointer + 47, (state) ? 0 : 1)
 }
 
