@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE UserThemes [
+  <!ELEMENT UserThemes (theme+)>
+  <!ELEMENT theme EMPTY>
+  <!ATTLIST theme
+    author      CDATA #REQUIRED
+    version     CDATA #REQUIRED
+    title       CDATA #REQUIRED
+    description CDATA #IMPLIED
+    link        CDATA #REQUIRED>
+]>
+
+<UserThemes>
+    <theme author="" version="" title="" link="" />
+</UserThemes>

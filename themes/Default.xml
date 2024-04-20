@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="Theme.dtd" type="application/xml-dtd"?>
+
+<UserTheme>
+    <global>
+        <colors>
+            <color name="Text">{ x = 1.00, y = 1.00, z = 1.00, w = 1.00 }</color>
+            <color name="TextDisabled">{ x = 0.50, y = 0.50, z = 0.50, w = 1.00 }</color>
+            <color name="WindowBg">#222222</color>
+            <color name="ChildBg">#2B2B2B</color>
+            <color name="PopupBg">#222222</color>
+            <color name="Border">{ x = 0.25, y = 0.25, z = 0.26, w = 0.54 }</color>
+            <color name="BorderShadow">{ x = 0.00, y = 0.00, z = 0.00, w = 0.00 }</color>
+            <color name="FrameBg">#424242</color>
+            <color name="FrameBgHovered">#2B2B2B</color>
+            <color name="FrameBgActive">#555554</color>
+            <color name="ScrollbarBg">{ x = 0.12, y = 0.12, z = 0.12, w = 1.00 }</color>
+            <color name="ScrollbarGrab">#424242</color>
+            <color name="ScrollbarGrabHovered">#333333</color>
+            <color name="SeparatorActive">#333333</color>
+            <color name="Button">#424242</color>
+            <color name="ButtonHovered">#555554</color>
+            <color name="ButtonActive">#333333</color>
+            <color name="Header">#5B5B5B</color>
+            <color name="HeaderHovered">#838383</color>
+            <color name="HeaderActive">#424242</color>
+            <color name="Separator">{ x = 0.47, y = 0.47, z = 0.47, w = 1.00 }</color>
+            <color name="SeparatorHovered">{ x = 0.47, y = 0.47, z = 0.47, w = 1.00 }</color>
+            <color name="SeparatorActive">{ x = 0.47, y = 0.47, z = 0.47, w = 1.00 }</color>
+            <color name="TextSelectedBg">{ x = 1.00, y = 0.00, z = 0.00, w = 0.35 }</color>
+            <color name="Tab">{ x = 0.12, y = 0.12, z = 0.12, w = 1.00 }</color>
+            <color name="TabHovered">{ x = 0.28, y = 0.28, z = 0.28, w = 1.00 }</color>
+            <color name="TabActive">{ x = 0.30, y = 0.30, z = 0.30, w = 1.00 }</color>
+            <color name="TabUnfocused">{ x = 0.07, y = 0.10, z = 0.15, w = 0.97 }</color>
+            <color name="TabUnfocusedActive">{ x = 0.14, y = 0.26, z = 0.42, w = 1.00 }</color>
+            <color name="DragDropTarget">{ x = 1.00, y = 1.00, z = 0.00, w = 0.20 }</color>
+            <color name="NavHighlight">{ x = 0.26, y = 0.59, z = 0.98, w = 1.00 }</color>
+            <color name="NavWindowingHighlight">{ x = 1.00, y = 1.00, z = 1.00, w = 0.70 }</color>
+            <color name="NavWindowingDimBg">{ x = 0.80, y = 0.80, z = 0.80, w = 0.20 }</color>
+            <color name="ModalWindowDimBg">{ x = 0.00, y = 0.00, z = 0.00, w = 0.70 }</color>
+            <color name="TitleBg">{ x = 0.12, y = 0.12, z = 0.12, w = 1.00 }</color>
+            <color name="TitleBgActive">{ x = 0.12, y = 0.12, z = 0.12, w = 1.00 }</color>
+            <color name="TitleBgCollapsed">{ x = 0.12, y = 0.12, z = 0.12, w = 1.00 }</color>
+            <color name="MenuBarBg">{ x = 0.12, y = 0.12, z = 0.12, w = 1.00 }</color>
+            <color name="CheckMark">{ x = 1.00, y = 1.00, z = 1.00, w = 1.00 }</color>
+            <color name="SliderGrab">#222222</color>
+            <color name="SliderGrabActive">#222222</color>
+        </colors>
+        <values>
+            <value name="IndentSpacing">0</value>
+            <value name="ScrollbarSize">10</value>
+            <value name="GrabMinSize">10</value>
+            <value name="WindowBorderSize">1</value>
+            <value name="ChildBorderSize">1</value>
+            <value name="PopupBorderSize">1</value>
+            <value name="FrameBorderSize">1</value>
+            <value name="TabBorderSize">1</value>
+            <value name="WindowRounding">8</value>
+            <value name="ChildRounding">8</value>
+            <value name="FrameRounding">5</value>
+            <value name="PopupRounding">5</value>
+            <value name="ScrollbarRounding">5</value>
+            <value name="GrabRounding">5</value>
+            <value name="TabRounding">5</value>
+            <value name="WindowPadding">{ x = 5, y = 5 }</value>
+            <value name="FramePadding">{ x = 5, y = 5 }</value>
+            <value name="ItemSpacing">{ x = 5, y = 5 }</value>
+            <value name="ItemInnerSpacing">{ x = 2, y = 2 }</value>
+            <value name="TouchExtraPadding">{ x = 0, y = 0 }</value>
+            <value name="ButtonTextAlign">{ x = 0.5, y = 0.5 }</value>
+            <value name="SelectableTextAlign">{ x = 0.5, y = 0.5 }</value>
+        </values>
+    </global>
+</UserTheme>
