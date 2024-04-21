@@ -7,8 +7,8 @@
             <color name="Text">#F9EEEE</color>
             <color name="TextDisabled">#7D7474</color>
             <color name="WindowBg">#271718</color>
-            <color name="ChildBg">#BCC0CC</color>
-            <color name="PopupBg">#BCC0CC</color>
+            <color name="ChildBg">#3D2C2C</color>
+            <color name="PopupBg">#3D2C2C</color>
             <color name="Border">{ 0.25, 0.25, 0.26, 0.54 }</color>
             <color name="BorderShadow">{ 0.00, 0.00, 0.00, 0.00 }</color>
             <color name="FrameBg">#6D5A5A</color>
