@@ -17,6 +17,7 @@
             <color name="ScrollbarBg">{ 0.12, 0.12, 0.12, 1.00 }</color>
             <color name="ScrollbarGrab">#424242</color>
             <color name="ScrollbarGrabHovered">#333333</color>
+            <color name="ScrollbarGrabActive">#333333</color>
             <color name="SeparatorActive">#333333</color>
             <color name="Button">#424242</color>
             <color name="ButtonHovered">#555554</color>
