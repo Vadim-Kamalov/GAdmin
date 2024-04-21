@@ -64,26 +64,25 @@
 
 <!ELEMENT values (value+)>
 <!ELEMENT value (#PCDATA)>
-<!ATTLIST value
-    name (IndentSpacing 
-          | ScrollbarSize 
-          | GrabMinSize 
-          | WindowBorderSize 
-          | ChildBorderSize 
-          | PopupBorderSize 
-          | FrameBorderSize 
-          | TabBorderSize 
-          | WindowRounding 
-          | ChildRounding 
-          | FrameRounding 
-          | PopupRounding 
-          | ScrollbarRounding 
-          | GrabRounding 
-          | TabRounding 
-          | WindowPadding 
-          | FramePadding 
-          | ItemSpacing 
-          | ItemInnerSpacing 
-          | TouchExtraPadding 
-          | ButtonTextAlign 
-          | SelectableTextAlign) #REQUIRED>
+<!ATTLIST value name (IndentSpacing
+                      | ScrollbarSize 
+                      | GrabMinSize 
+                      | WindowBorderSize 
+                      | ChildBorderSize 
+                      | PopupBorderSize 
+                      | FrameBorderSize 
+                      | TabBorderSize 
+                      | WindowRounding 
+                      | ChildRounding 
+                      | FrameRounding 
+                      | PopupRounding 
+                      | ScrollbarRounding 
+                      | GrabRounding 
+                      | TabRounding 
+                      | WindowPadding 
+                      | FramePadding 
+                      | ItemSpacing 
+                      | ItemInnerSpacing 
+                      | TouchExtraPadding 
+                      | ButtonTextAlign 
+                      | SelectableTextAlign) #REQUIRED>
