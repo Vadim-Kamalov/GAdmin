@@ -15,9 +15,13 @@
         link="https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/main/themes/Default.xml" />
     
     <theme author="defaultzone" version="1.0" title="CatpuccinLatte"
-        description="Светлая тема на палитре Catpuccin Latte" 
+        description="Светлая тема на основе палитры Catpuccin Latte" 
         link="https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/main/themes/CatpuccinLatte.xml" />
     
     <theme author="Related" version="1.0" title="Коричневая тема"
         link="https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/main/themes/Brown.xml" />
+
+    <theme author="defaultzone" version="1.0" title="TokyoNight"
+        description="Темная тема на основе палитры TokyoNight"
+        link="https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/main/themes/TokyoNight.xml" />
 </UserThemes>
