@@ -45,6 +45,7 @@
 
 @define COMMAND_DELAY       800
 @define GADMIN_VERSION      "1.5.6"
+@define THEMES_URL          "https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/main/themes/Themes.xml"
 @define AUTOUPDATE_URL      "https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/main/AutoUpdate.xml"
 @define NICKNAME_COLORS_URL "https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/main/nickname-colors.conf"
 
@@ -136,8 +137,8 @@ static u8                       = encoding.UTF8
 static spectatorCameraFov       = -1
 static scriptLoadedWithGame     = false //! `true` only when called `sampev.onInitGame`.
 static bulletData               = { lastId = 0 }
-static contributorsFileSource   = nil
 static nicknameColors           = {} //! { nickname: string, colors: number[] }...
+static userThemes               = {} //! { author: string, version: string, title: string, link: string, description: string? = nil }...
 
 local airbreak              = { status = false, coords = {} }
 local fishEyeWeaponLock     = false
@@ -169,6 +170,85 @@ imgui.OnInitialize(fn {
     global shadowPng   = imgui.CreateTextureFromFileInMemory(imgui.new("const char*", compressed.shadow), #compressed.shadow)
 
     imgui.GetIO().IniFilename = nil
+})
+
+sampfuncsRegisterConsoleCommand("applytheme", fn {
+   style::loadThemeFromXML(`
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="Theme.dtd" type="application/xml-dtd"?>
+
+<UserTheme>
+    <global>
+        <colors>
+            <color name="Text">#4C4F69</color>
+            <color name="TextDisabled">#5C5F77</color>
+            <color name="WindowBg">#CCD0DA</color>
+            <color name="ChildBg">#BCC0CC</color>
+            <color name="PopupBg">#CCD0DA</color>
+            <color name="Border">#7C7F93</color>
+            <color name="BorderShadow">{ 0.00, 0.00, 0.00, 0.00 }</color>
+            <color name="FrameBg">#ACB0BE</color>
+            <color name="FrameBgHovered">#8C8FA1</color>
+            <color name="FrameBgActive">#7C7F93</color>
+            <color name="ScrollbarBg">#7C7F937D</color>
+            <color name="ScrollbarGrab">#424242</color>
+            <color name="ScrollbarGrabHovered">#8C8FA1</color>
+            <color name="ScrollbarGrabActive">#7C7F93</color>
+            <color name="Button">#ACB0BE</color>
+            <color name="ButtonHovered">#8C8FA1</color>
+            <color name="ButtonActive">#7C7F93</color>
+            <color name="Header">#ACB0BE</color>
+            <color name="HeaderHovered">#8C8FA1</color>
+            <color name="HeaderActive">#7C7F93</color>
+            <color name="Separator">#4C4F69</color>
+            <color name="SeparatorHovered">#4C4F69</color>
+            <color name="SeparatorActive">#4C4F69</color>
+            <color name="TextSelectedBg">#6C6F85</color>
+            <color name="Tab">#ACB0BE</color>
+            <color name="TabHovered">#8C8FA1</color>
+            <color name="TabActive">#7C7F93</color>
+            <color name="TabUnfocused">{ 0.07, 0.10, 0.15, 0.97 }</color>
+            <color name="TabUnfocusedActive">{ 0.14, 0.26, 0.42, 1.00 }</color>
+            <color name="DragDropTarget">{ 1.00, 1.00, 0.00, 0.20 }</color>
+            <color name="NavHighlight">{ 0.26, 0.59, 0.98, 1.00 }</color>
+            <color name="NavWindowingHighlight">{ 1.00, 1.00, 1.00, 0.70 }</color>
+            <color name="NavWindowingDimBg">{ 0.80, 0.80, 0.80, 0.20 }</color>
+            <color name="ModalWindowDimBg">{ 0.00, 0.00, 0.00, 0.70 }</color>
+            <color name="TitleBg">#ACB0BE</color>
+            <color name="TitleBgActive">#8C8FA1</color>
+            <color name="TitleBgCollapsed">#7C7F93</color>
+            <color name="MenuBarBg">{ 0.12, 0.12, 0.12, 1.00 }</color>
+            <color name="CheckMark">{ 1.00, 1.00, 1.00, 1.00 }</color>
+            <color name="SliderGrab">#5C5F77</color>
+            <color name="SliderGrabActive">#5C5F77</color>
+        </colors>
+        <values>
+            <value name="IndentSpacing">0</value>
+            <value name="ScrollbarSize">10</value>
+            <value name="GrabMinSize">10</value>
+            <value name="WindowBorderSize">1</value>
+            <value name="ChildBorderSize">1</value>
+            <value name="PopupBorderSize">1</value>
+            <value name="FrameBorderSize">1</value>
+            <value name="TabBorderSize">1</value>
+            <value name="WindowRounding">8</value>
+            <value name="ChildRounding">8</value>
+            <value name="FrameRounding">5</value>
+            <value name="PopupRounding">5</value>
+            <value name="ScrollbarRounding">5</value>
+            <value name="GrabRounding">5</value>
+            <value name="TabRounding">5</value>
+            <value name="WindowPadding">{ 5, 5 }</value>
+            <value name="FramePadding">{ 5, 5 }</value>
+            <value name="ItemSpacing">{ 5, 5 }</value>
+            <value name="ItemInnerSpacing">{ 2, 2 }</value>
+            <value name="TouchExtraPadding">{ 0, 0 }</value>
+            <value name="ButtonTextAlign">{ 0.5, 0.5 }</value>
+            <value name="SelectableTextAlign">{ 0.5, 0.5 }</value>
+        </values>
+    </global>
+</UserTheme>
+   `) 
 })
 
 global fn main() {
@@ -279,10 +359,13 @@ global fn main() {
             type    = 0
         }
     }
-    
+
+@ifndef __GADMIN_DEBUG__
+{
     if sampGetCurrentServerAddress() != $SERVER_ADDRESS {
         thisScript()::unload()
     }
+}
 
     common::makeDirectoryTree({ "GAdmin", "GAdmin/temp", "GAdmin/config", "GAdmin/logs" })
     assets::changeWallhackState(false)
@@ -327,6 +410,32 @@ global fn main() {
             }
         }, fn (error) {
             $debugWarning!("system", "failed to fetch $NICKNAME_COLORS_URL, error:")
+            $debugWarning!("system", error)
+        })
+    })
+
+    lua_thread.create(fn {
+        requests::asyncHttpRequest("GET", $THEMES_URL, {}, fn (response) {
+            if response.status_code == 200 {
+                local handler = require("xmlhandler.tree")
+                local parser  = xml2lua.parser(handler)
+                
+                parser::parse(response.text)
+
+                for _, theme in assets::getXMLElements(handler.root.UserThemes, "theme") {
+                    table.insert(userThemes, {
+                        author      = theme._attr.author,
+                        version     = theme._attr.version,
+                        title       = theme._attr.title,
+                        link        = theme._attr.link,
+                        description = theme._attr.description
+                    })
+                }
+            } else {
+                $debugWarning!("system", "failed to fetch $THEMES_URL")
+            }
+        }, fn (error) {
+            $debugWarning!("system", "failed to fetch, $THEMES_URL, error:")
             $debugWarning!("system", error)
         })
     })

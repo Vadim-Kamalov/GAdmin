@@ -48,7 +48,8 @@ local enum /* WINDOW_SELECTED_FRAME */ {
     WINDOW_SELECTED_FRAME_BINDER,
     WINDOW_SELECTED_FRAME_LOGS,
     WINDOW_SELECTED_FRAME_SERVER_TABLES,
-    WINDOW_SELECTED_FRAME_NOTES
+    WINDOW_SELECTED_FRAME_NOTES,
+    WINDOW_SELECTED_FRAME_STATISTICS
 }
 
 local enum /* WINDOW_WIDGET */ {
@@ -622,7 +623,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn(self) {
     }
     
     imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2, sizeY / 2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
-    imgui.SetNextWindowSize(imgui.ImVec2(700, 420))
+    imgui.SetNextWindowSize(imgui.ImVec2(700, 460))
 
     style::beginWindowStyleChangeable("imgui.windows.Main")
 
@@ -829,7 +830,6 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn(self) {
                                 
                                 if animations::button("Применить тему", imgui.ImVec2(math.floor(widthAuto / 3), 30), 5) {
                                     local theme = decodeJson(getClipboardText())
-
                                     if theme && type(theme) == "table" {
                                         config.root.styleChangeableWindows = theme
                                         thisScript()::reload()
@@ -857,39 +857,109 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn(self) {
 
                                 imgui.SameLine()
 
-                                if animations::button("Сброс настроек", imgui.ImVec2(math.floor(widthAuto / 3), 30), 10) {
+                                if animations::button("Открыть каталог тем", imgui.ImVec2(math.floor(widthAuto / 3), 30), 10)
+                                   && #userThemes != 0
+                                {
                                     window.popupModal.body = fn {
                                         imgui.SetCursorPos(imgui.ImVec2(5, 5))
                                         imgui.BeginGroup()
-                                            imguiAssets::textWithFont("Сброс настроек", bold14)
-                                            imguiAssets::textWithFont("Учтите, что если вы были на /alogin в момент сброса всех настроек, то вам придется\n
-ввести /alogin еще раз для корректной работы функционала скрипта.", regular12)
+                                            imguiAssets::textWithFont("Каталог пользовательских тем", bold14)
 
-                                            imgui.PushFont(regular12)
-                                                if animations::button("Сбросить все настройки", imgui.ImVec2(imgui.GetWindowWidth() - 10, 25)) {
-                                                    config.root = assets::copyTable(config.def)
-                                                    imgui.CloseCurrentPopup()
-                                                    thisScript()::reload()
-                                                }
+                                            for index, theme in userThemes {
+                                                imgui.BeginChild(
+                                                    "userThemeIndex" .. index,
+                                                    imgui.ImVec2(imgui.GetWindowWidth() - 10, (theme.description) ? 80 : 59),
+                                                    true
+                                                )
+                                                    imgui.SetCursorPos(imgui.ImVec2(6, 6))
+                                                    imgui.BeginGroup()
+                                                        imguiAssets::textWithFont(theme.title, bold12)
+                                                        imgui.SameLine()
+                                                        imgui.SetCursorPos(imgui.GetCursorPos() + imgui.ImVec2(0, 1))
+                                                        imguiAssets::textWithFont("v" .. theme.version, regular12, nil, imgui.GetStyle().Colors[imgui.Col.TextDisabled])
+                                                        imgui.SameLine()
+                                                        imgui.SetCursorPos(imgui.GetCursorPos() - imgui.ImVec2(0, 1))
+                                                        imguiAssets::textWithFont("от", bold12)
+                                                        imgui.SameLine(nil, 4)
+                                                        imguiAssets::textWithFont(theme.author, regular12)
 
-                                                if animations::button("Сбросить статистику", imgui.ImVec2(imgui.GetWindowWidth() - 10, 25)) {
-                                                    config.root.user.online     = assets::copyTable(config.def.user.online)
-                                                    config.root.user.answers    = assets::copyTable(config.def.user.answers)
-                                                    user.online.session         = 0
+                                                        if local description = theme.description {
+                                                            imguiAssets::textWithFont(description, regular12)
+                                                        }
 
-                                                    imgui.CloseCurrentPopup()
-                                                }
-                                                
-                                                if animations::button("Закрыть##imgui.windows.Main.Popup.resetConfiguration", imgui.ImVec2(imgui.GetWindowWidth() - 10, 30)) {
+                                                        imgui.PushFont(bold10)
+                                                            if animations::button(
+                                                                "Установить##userThemeInstallIndex" .. index,
+                                                                imgui.ImVec2(imgui.GetWindowWidth() - 12, 25)
+                                                            ) {
+                                                                style::downloadTheme(theme.link)
+                                                                imgui.CloseCurrentPopup()
+                                                            }
+                                                        imgui.PopFont()
+                                                    imgui.EndGroup()
+                                                imgui.EndChild()
+                                            }
+
+                                            imgui.PushFont(bold10)
+                                                if animations::button("Закрыть##imgui.windows.Main.CloseCurrentPopup", imgui.ImVec2(
+                                                    math.max(300, imgui.GetWindowWidth() - 10),
+                                                    30
+                                                )) {
                                                     imgui.CloseCurrentPopup()
                                                 }
                                             imgui.PopFont()
                                         imgui.EndGroup()
-                                        
+
                                         window.popupModal.size = imgui.GetItemRectSize() + imgui.ImVec2(10, 10)
                                     }
 
                                     imgui.OpenPopup("imgui.windows.Main.Popup")
+                                }
+
+                                if #userThemes == 0 {
+                                    animations::hint("Не удалось получить список пользовательских тем.\nПопробуйте перезагрузить скрипт и попытаться снова.")
+                                }
+
+                                if animations::button("Импортировать настройки", imgui.ImVec2(math.floor(widthAuto / 3), 30), 5) {
+                                    local settings = decodeJson(getClipboardText())
+                                    if settings && type(settings) == "table" {
+                                        config.root = settings
+                                        config::save()
+                                        thisScript()::reload()
+                                    } else {
+                                        notify::send({
+                                            title   = "Ошибка!",
+                                            text    = "Произошла ошибка при применении темы. Убедитесь, что вы скопировали содержимое файла настроек.",
+                                            icon    = icons.ICON_WARNING
+                                        })
+                                    }
+                                }
+
+                                imgui.SameLine()
+
+                                if animations::button("Сбросить настройки", imgui.ImVec2(math.floor(widthAuto / 3) - 2, 30), 0) {
+                                    config.root = config.def
+                                    thisScript()::reload()
+                                }
+
+                                animations::hint("Сбросятся абсолютно все настройки. Скрипт перезагрузится.")
+
+                                imgui.SameLine()
+
+                                if animations::button("Экспортировать настройки", imgui.ImVec2(math.floor(widthAuto / 3), 30), 10) {
+                                    local configuration = neatJSON(config.root, { sort = true, wrap = 40 })
+                                    local filePath = string.format(
+                                        "%s\\GAdmin\\config\\ExportSettings (%s).json",
+                                        getWorkingDirectory(),
+                                        os.date("%Y%m%d-%H-%M-%S")
+                                    )
+
+                                    common::writeInFile(filePath, configuration)
+                                    notify::send({
+                                        title   = "Настройки экспортированы в файл по пути ...",
+                                        text    = filePath,
+                                        icon    = icons.ICON_CHECKMARK
+                                    })
                                 }
 
                                 if animations::button("Перезагрузить скрипт", imgui.ImVec2(widthAuto, 30)) {
@@ -2176,6 +2246,8 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn(self) {
                             }
                         imgui.EndGroup()
                     imgui.EndChild()
+                } elseif window.selectedFrame == WINDOW_SELECTED_FRAME_STATISTICS {
+                   
                 }
             imgui.EndGroup()
             imgui.PopStyleVar()
@@ -2233,6 +2305,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn(self) {
                         window.menu::item("imgui.windows.Main.menu.logs", icons.ICON_BOOK_OPEN, "Логи", 7)
                         window.menu::item("imgui.windows.Main.menu.serverTables", icons.ICON_VERTICAL_BAR_CHART, "Серверные таблицы", 8)
                         window.menu::item("imgui.windows.Main.menu.notes", icons.ICON_BOOKMARK_FILLED, "Заметки", 9)
+                        window.menu::item("imgui.windows.Main.menu.statistics", icons.ICON_VERTICAL_BAR_CHART, "Статистика", 10)
                     imgui.EndGroup()
                 imgui.EndChild()
             imgui.PopStyleVar()

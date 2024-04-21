@@ -58,7 +58,6 @@ method common::writeInFile(source, str) {
     }
 }
 
-
 /**
  * Create all directories (from working directory) in tree table if some of them doesn't exist.
  * All "/" characters in directory path will be replaced with "\\" character (UNIX path-style => Windows path-style).

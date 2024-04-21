@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="Theme.dtd" type="application/xml-dtd"?>
+
+<UserTheme>
+    <global>
+        <colors>
+            <color name="Text">#F9EEEE</color>
+            <color name="TextDisabled">#7D7474</color>
+            <color name="WindowBg">#271718</color>
+            <color name="ChildBg">#BCC0CC</color>
+            <color name="PopupBg">#BCC0CC</color>
+            <color name="Border">{ 0.25, 0.25, 0.26, 0.54 }</color>
+            <color name="BorderShadow">{ 0.00, 0.00, 0.00, 0.00 }</color>
+            <color name="FrameBg">#6D5A5A</color>
+            <color name="FrameBgHovered">#857171</color>
+            <color name="FrameBgActive">#A18C8C</color>
+            <color name="ScrollbarBg">#3D2C2C</color>
+            <color name="ScrollbarGrab">#6D5A5A</color>
+            <color name="ScrollbarGrabHovered">#857171</color>
+            <color name="ScrollbarGrabActive">#A18C8C</color>
+            <color name="Button">#857171</color>
+            <color name="ButtonHovered">#A18C8C</color>
+            <color name="ButtonActive">#BCA6A6</color>
+            <color name="Header">#3D2C2C</color>
+            <color name="HeaderHovered">#544242</color>
+            <color name="HeaderActive">#6D5A5A</color>
+            <color name="Separator">#D7C1C1</color>
+            <color name="SeparatorHovered">#F4DDDD</color>
+            <color name="SeparatorActive">#FFECEB</color>
+            <color name="TextSelectedBg">#B3A9A9</color>
+            <color name="Tab">#857171</color>
+            <color name="TabHovered">#A18C8C</color>
+            <color name="TabActive">#BCA6A6</color>
+            <color name="TabUnfocused">{ 0.07, 0.10, 0.15, 0.97 }</color>
+            <color name="TabUnfocusedActive">{ 0.14, 0.26, 0.42, 1.00 }</color>
+            <color name="DragDropTarget">{ 1.00, 1.00, 0.00, 0.20 }</color>
+            <color name="NavHighlight">{ 0.26, 0.59, 0.98, 1.00 }</color>
+            <color name="NavWindowingHighlight">{ 1.00, 1.00, 1.00, 0.70 }</color>
+            <color name="NavWindowingDimBg">{ 0.80, 0.80, 0.80, 0.20 }</color>
+            <color name="ModalWindowDimBg">{ 0.00, 0.00, 0.00, 0.70 }</color>
+            <color name="TitleBg">#857171</color>
+            <color name="TitleBgActive">#A18C8C</color>
+            <color name="TitleBgCollapsed">#BCA6A6</color>
+            <color name="MenuBarBg">{ 0.12, 0.12, 0.12, 1.00 }</color>
+            <color name="CheckMark">{ 1.00, 1.00, 1.00, 1.00 }</color>
+            <color name="SliderGrab">#222222</color>
+            <color name="SliderGrabActive">#222222</color>
+        </colors>
+        <values>
+            <value name="IndentSpacing">0</value>
+            <value name="ScrollbarSize">10</value>
+            <value name="GrabMinSize">10</value>
+            <value name="WindowBorderSize">1</value>
+            <value name="ChildBorderSize">1</value>
+            <value name="PopupBorderSize">1</value>
+            <value name="FrameBorderSize">1</value>
+            <value name="TabBorderSize">1</value>
+            <value name="WindowRounding">8</value>
+            <value name="ChildRounding">8</value>
+            <value name="FrameRounding">5</value>
+            <value name="PopupRounding">5</value>
+            <value name="ScrollbarRounding">5</value>
+            <value name="GrabRounding">5</value>
+            <value name="TabRounding">5</value>
+            <value name="WindowPadding">{ 5, 5 }</value>
+            <value name="FramePadding">{ 5, 5 }</value>
+            <value name="ItemSpacing">{ 5, 5 }</value>
+            <value name="ItemInnerSpacing">{ 2, 2 }</value>
+            <value name="TouchExtraPadding">{ 0, 0 }</value>
+            <value name="ButtonTextAlign">{ 0.5, 0.5 }</value>
+            <value name="SelectableTextAlign">{ 0.5, 0.5 }</value>
+        </values>
+    </global>
+</UserTheme>

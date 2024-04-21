@@ -403,6 +403,7 @@ static __config__ = {
             }
         },
 
+        globalTheme             = nil,
         styleChangeableWindows  = {},
         hotKeys                 = { conditions = {} },
         movableWindows          = {},

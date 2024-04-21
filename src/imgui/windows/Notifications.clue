@@ -41,7 +41,7 @@ imgui.OnFrame(fn { return notify.active && config.root.windows.notifications.use
     self.style = StyleChanger::new({
         WindowBg            = "22222200"
         WindowBorderSize    = 0
-        ChildBg             = "222222"
+        ChildBg             = imgui.GetStyle().Colors[imgui.Col.WindowBg]
         ChildRounding       = 8
         ItemSpacing         = imgui.ImVec2(0, 15)
         WindowPadding       = imgui.ImVec2(0, 0)

@@ -389,7 +389,7 @@ method animations::keyCap(label, isPressed = false, size) {
 
         imgui.Dummy(size)
         dl::AddRectFilled(p, p + size, imgui.ColorConvertFloat4ToU32(this.color), rounding)
-        dl::AddRect(p, p + size, imgui.ColorConvertFloat4ToU32(colors[true]), rounding, _, 1)
+        dl::AddRect(p, p + size, imgui.ColorConvertFloat4ToU32(colors[true]), rounding, nil, 1)
    
         if this.color.w <= 0.5 {
             dl::AddText(imgui.ImVec2(textPos.x + 1, textPos.y + 1), 0xFF000000, text)

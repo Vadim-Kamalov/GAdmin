@@ -299,6 +299,27 @@ method assets::convertARGBToU32(argb) {
 }
 
 /**
+ * Get elements in the XML group, as an array.
+ *
+ * @param where table
+ * @param what string
+ * @return table[]
+ */
+method assets::getXMLElements(where, what) {
+    if where {
+        if #where[what] > 1 {
+            local elements = {}
+            for _, element in where[what] { table.insert(elements, element) }
+            return elements
+        } else {
+            return { where[what] }
+        }
+    } else {
+        return {}
+    }
+}
+
+/**
  * Swap language layout from russian to english.
  * 
  * @param text string
