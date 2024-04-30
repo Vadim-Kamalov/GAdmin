@@ -576,8 +576,8 @@ method assets::sendWindowsNotification(icon, title, text, millisecondsToHide = 2
     iconData.uFlags      = 19
     iconData.dwInfoFlags = (iconType == 0) ? 0 : 36
     
-    imgui.StrCopy(iconData.szInfoTitle, title)
-    imgui.StrCopy(iconData.szInfo, text)
+    imgui.StrCopy(iconData.szInfoTitle, u8::decode(title))
+    imgui.StrCopy(iconData.szInfo, u8::decode(text))
     shell32.Shell_NotifyIconA(1, iconData)
 
     lua_thread.create(fn {
