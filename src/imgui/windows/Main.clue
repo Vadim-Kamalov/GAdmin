@@ -623,7 +623,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn(self) {
     }
     
     imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2, sizeY / 2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
-    imgui.SetNextWindowSize(imgui.ImVec2(700, 460))
+    imgui.SetNextWindowSize(imgui.ImVec2(700, 455))
 
     style::beginWindowStyleChangeable("imgui.windows.Main")
 
@@ -1140,7 +1140,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn(self) {
                             imguiAssets::textWithFont("Введите никнейм игрока", bold10)
                             window.checker.filter::draw("##imgui.windows.Main.CheckerFilter", "Никнейм", widthAuto / 2)
                             imgui.PushStyleVarVec2(imgui.StyleVar.WindowPadding, imgui.ImVec2(6, 6))
-                                imgui.BeginChild("imgui.windows.Main.CheckerFilter.Child", imgui.ImVec2(widthAuto / 2, 170), true, self.flags)
+                                imgui.BeginChild("imgui.windows.Main.CheckerFilter.Child", imgui.ImVec2(widthAuto / 2, 205), true, self.flags)
                                     for playerId = 0, $SERVER_MAX_PLAYERS {
                                         if playerId != user::getId() && sampIsPlayerConnected(playerId) {
                                             local nickname          = sampGetPlayerNickname(playerId)
@@ -1201,7 +1201,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn(self) {
                     imgui.BeginGroup()
                         imguiAssets::textWithFont("Все игроки", bold10)
                         imgui.PushStyleVarVec2(imgui.StyleVar.WindowPadding, imgui.ImVec2(6, 6))
-                            imgui.BeginChild("imgui.windows.Main.Checker.AllPlayers.Child", imgui.ImVec2(widthAuto / 2 - 5, 350), true, self.flags)
+                            imgui.BeginChild("imgui.windows.Main.Checker.AllPlayers.Child", imgui.ImVec2(widthAuto / 2 - 5, 385), true, self.flags)
                                 for index, player in config.root.windows.playerChecker.players {
                                     local id            = sampPlayer::getIdByNickname(player.nickname)
                                     local prefix        = ((id == nil) ? "[OFFLINE]" : "[ONLINE]") .. " "
@@ -2246,8 +2246,14 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn(self) {
                             }
                         imgui.EndGroup()
                     imgui.EndChild()
-                } elseif window.selectedFrame == WINDOW_SELECTED_FRAME_STATISTICS {
-                   
+                } elseif window.menu.selectedFrame == WINDOW_SELECTED_FRAME_STATISTICS {
+                    local text = "Вкладка со статистикой будет реализована в полноценном релизе v1.6"
+                    local size = regular12::CalcTextSizeA(regular12.FontSize, math.huge, 0.0, text)
+
+                    imguiAssets::textWithFont(text, regular12, imgui.ImVec2(
+                        ((imgui.GetWindowWidth()) - size.x) / 2,
+                        ((imgui.GetWindowHeight() - size.y) - size.y) / 2
+                    ), imgui.GetStyle().Colors[imgui.Col.TextDisabled])   
                 }
             imgui.EndGroup()
             imgui.PopStyleVar()
@@ -2305,7 +2311,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn(self) {
                         window.menu::item("imgui.windows.Main.menu.logs", icons.ICON_BOOK_OPEN, "Логи", 7)
                         window.menu::item("imgui.windows.Main.menu.serverTables", icons.ICON_VERTICAL_BAR_CHART, "Серверные таблицы", 8)
                         window.menu::item("imgui.windows.Main.menu.notes", icons.ICON_BOOKMARK_FILLED, "Заметки", 9)
-                        window.menu::item("imgui.windows.Main.menu.statistics", icons.ICON_VERTICAL_BAR_CHART, "Статистика", 10)
+                        window.menu::item("imgui.windows.Main.menu.statistics", icons.ICON_TREE_MAP, "Статистика", 10)
                     imgui.EndGroup()
                 imgui.EndChild()
             imgui.PopStyleVar()

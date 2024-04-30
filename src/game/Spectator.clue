@@ -191,20 +191,14 @@ method __spectator__::loop() {
         local result, handle = self::getHandle()
 
         if result {
-            local speed = { current = 0, max = 0 }
-
             if isCharInAnyCar(handle) {
                 if local car = storeCarCharIsInNoSave(handle) {
-                    speed.current = getCarSpeed(car) * 2 + 0.5
-                    speed.max     = vehicle::getMaxSpeed(getCarModel(car))
+                    self.information.moveSpeedMax = math.floor(vehicle::getMaxSpeed(getCarModel(car)))
                 }
             } else {
-                speed.current = getCharSpeed(handle)
-                speed.max     = ped::getMaxSpeed(handle)
+                self.information.moveSpeedCurrent = math.floor(getCharSpeed(handle))
+                self.information.moveSpeedMax     = math.floor(ped::getMaxSpeed(handle))
             }
-
-            self.information.moveSpeedCurrent = math.floor(speed.current)
-            self.information.moveSpeedMax = math.floor(speed.max)
         } else {
             while !result && !common::isInputsActive() {
                 sampSendMenuSelectRow(SPECTATOR_MENU_SWITCH)
