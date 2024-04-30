@@ -37,6 +37,10 @@ ffi.cdef("
         WORD wMilliseconds;
     } SYSTEMTIME, *PSYSTEMTIME;
 
+    typedef struct {
+        int Data[4];
+    } GUID;
+
     typedef void            *PVOID;
     typedef PVOID           HANDLE;
     typedef HANDLE          HKL;
@@ -45,12 +49,41 @@ ffi.cdef("
     typedef unsigned int    UINT;
     typedef const char      *LPCSTR;
     typedef long            LONG;
+    typedef intptr_t        HICON;
+    typedef intptr_t        HINSTANCE;
+
+    typedef struct {
+        DWORD   cbSize;
+        HWND    hWnd;
+        UINT    uID;
+        UINT    uFlags;
+        UINT    uCallbackMessage;
+        HICON   hIcon;
+        char    szTip[128];
+        DWORD   dwState;
+        DWORD   dwStateMask;
+        char    szInfo[256];
+        union {
+            UINT uTimeout;
+            UINT uVersion;
+        };
+        char    szInfoTitle[64];
+        DWORD   dwInfoFlags;
+        GUID    guidItem;
+        HICON   hBalloonIcon;
+    } NOTIFYICONDATAA;
+
+    BOOL Shell_NotifyIconA(int dwMessage, NOTIFYICONDATAA * lpData);
+    HICON LoadIconA(HINSTANCE hInstance, intptr_t IconCode);
+    BOOL DestroyIcon(HICON hIcon);
 
     HKL GetKeyboardLayout(DWORD idThread);
     UINT MapVirtualKeyExA(UINT uCode, UINT uMapType, HKL dwhkl);
     void GetLocalTime(PSYSTEMTIME lpSystemTime);
     int MessageBoxA(HWND hWnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType);
     HWND GetDesktopWindow();
+
+    int __stdcall GetModuleHandleA(const char* lpModuleName);
 ")
 
 local assets = {}
@@ -115,6 +148,16 @@ assets.voidQuotes = {
     "Ничто не может быть лучше или хуже чего-либо. Ничто - это ничто.",
     "Всё, что пусто, легко управляемо.",
     "Вокруг меня только черная пустота, и нет мне утешения."
+}
+
+static enum /** @enum WINDOWS_NOTIFICATION_ICON */ {
+    WINDOWS_NOTIFICATION_ICON_NONE = 0,
+    WINDOWS_NOTIFICATION_ICON_APPLICATION = 32512,
+    WINDOWS_NOTIFICATION_ICON_ERROR,
+    WINDOWS_NOTIFICATION_ICON_QUESTION,
+    WINDOWS_NOTIFICATION_ICON_WARNING,
+    WINDOWS_NOTIFICATION_ICON_INFORMATION,
+    WINDOWS_NOTIFICATION_ICON_SECURITY = 32518
 }
 
 /**
@@ -498,16 +541,45 @@ Configuration: %s
 }
 
 /**
- * Show windows message box.
- * 
- * @param text string
+ * Send a notification by the WinAPI and `shell32` methods.
+ *
+ * @param icon WINDOWS_NOTIFICATION_ICON
  * @param title string
- * @param style number|nil
+ * @param text string
+ * @param millisecondsToHide number
  * @return void
  */
-method assets::messageBox(text, title, style) {
-    local hwnd = ffi.C.GetDesktopWindow()
-    ffi.C.MessageBoxA(hwnd, u8::decode(text), u8::decode(title), (style) ? (style + 0x50000) : 0x50000)
+method assets::sendWindowsNotification(icon, title, text, millisecondsToHide = 2000) {
+    local instance = (icon) ? 0 : ffi.C.GetModuleHandleA(ffi.NULL)
+    local iconType = (icon) ? 100 : 0
+
+    local trayIconHandle    = ffi.C.LoadIconA(instance, (iconType == 0) ? 100 : iconType)
+    local balloonIconHandle = ffi.C.LoadIconA(instance, iconType)
+    local iconData          = ffi.new("NOTIFYICONDATAA")
+
+    iconData.cbSize       = ffi.sizeof(iconData)
+    iconData.hWnd         = ffi.cast("HWND", readMemory(0x00C8CF88, 4, false))
+    iconData.uFlags       = 3
+    iconData.hIcon        = trayIconHandle
+    iconData.uVersion     = 4
+    iconData.hBalloonIcon = balloonIconHandle
+
+    shell32.Shell_NotifyIconA(0, iconData)
+    shell32.Shell_NotifyIconA(4, iconData)
+
+    iconData.uFlags      = 19
+    iconData.dwInfoFlags = (iconType == 0) ? 0 : 36
+    
+    imgui.StrCopy(iconData.szInfoTitle, title)
+    imgui.StrCopy(iconData.szInfo, text)
+    shell32.Shell_NotifyIconA(1, iconData)
+
+    lua_thread.create(fn {
+        wait(millisecondsToHide)
+        shell32.Shell_NotifyIconA(2, iconData)
+        ffi.C.DestroyIcon(balloonIconHandle)
+        ffi.C.DestroyIcon(trayIconHandle)
+    })
 }
 
 /**

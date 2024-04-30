@@ -113,6 +113,7 @@ static encoding     = require("encoding")
 static imgui        = require("mimgui")
 static wm           = require("windows.message")
 static ffi          = require("ffi")
+static shell32      = ffi.load("shell32")
 static effil        = require("effil")
 static neatJSON     = require("neatjson")
 static xml2lua      = require("xml2lua")
@@ -390,16 +391,18 @@ global fn main() {
             if user::getAfkTime() == config.root.additions.autoAlogout.alogoutSeconds {
                 user::setAloginStatus(false)
                 sampSendChat("/alogout")
-                assets::messageBox(
-                    "Вы провели в AFK на /alogin " .. user::getAfkTime() .. " секунд. Скрипт покинул дежурство.",
-                    "GAdmin v" .. $GADMIN_VERSION
+                assets::sendWindowsNotification(
+                    WINDOWS_NOTIFICATION_ICON_SECURITY,
+                    "GAdmin v" .. $GADMIN_VERSION,
+                    "Вы провели в AFK на /alogin " .. user::getAfkTime() .. " секунд. Скрипт покинул дежурство."
                 )
             } elseif user::getAfkTime() == config.root.additions.autoAlogout.warningSeconds {
-                assets::messageBox(string.format(
+                assets::sendWindowsNotification(WINDOWS_NOTIFICATION_ICON_SECURITY, "GAdmin v" .. $GADMIN_VERSION, string.format(
                     "Вы провели в AFK на /alogin %d секунд. У вас есть еще %d секунд что-бы зайти, иначе скрипт сам покинет дежурство.",
                     user::getAfkTime(),
-                    config.root.additions.autoAlogout.alogoutSeconds - config.root.additions.autoAlogout.warningSeconds
-                ), "GAdmin v" .. $GADMIN_VERSION)
+                    config.root.additions.autoAlogout.alogoutSeconds - config.root.additions.autoAlogout.warningSeconds,
+                    5000
+                ))
             }
         }
 
