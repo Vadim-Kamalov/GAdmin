@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<AutoUpdate version="1.6-pre">
-    <title>GAdmin v1.6-pre</title>
+<AutoUpdate version="1.6-pre1-1">
+    <title>GAdmin v1.6-pre1-1</title>
     <buttons first="Установить" second="Пропустить" third="Позже"/>
     <body>
         <header>Новые функции/изменения</header>
@@ -10,6 +10,7 @@
         <ul>Теперь текущая скорость машины в режиме наблюдения берется из серверного текстдрава.</ul>
         <header>Исправления</header>
         <ul>Исправлено что игра замораживалась при получении уведомления от настройки <code>/alogout по времени</code>.    </ul>
+        <ul>Исправлена неверная кодировка оповещещения у настройки <code>/alogout по времени</code>.       </ul>
     </body>
     <links>
         <!-- Redirect links aren't allowed. -->
