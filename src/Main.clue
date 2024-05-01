@@ -141,6 +141,7 @@ static bulletData               = { lastId = 0 }
 static nicknameColors           = {} //! { nickname: string, colors: number[] }...
 static userThemes               = {} //! { author: string, version: string, title: string, link: string, description: string? = nil }...
 
+local sendedAlogoutWarning  = false
 local airbreak              = { status = false, coords = {} }
 local fishEyeWeaponLock     = false
 local userFullyConnected    = false
@@ -374,6 +375,7 @@ global fn main() {
             }
         } else {
             user::setAfkTime(0)
+            sendedAlogoutWarning = false
         }
 
         for index, admin in admins {
@@ -396,12 +398,12 @@ global fn main() {
                     "GAdmin v" .. $GADMIN_VERSION,
                     "Вы провели в AFK на /alogin " .. user::getAfkTime() .. " секунд. Скрипт покинул дежурство."
                 )
-            } elseif user::getAfkTime() == config.root.additions.autoAlogout.warningSeconds {
+            } elseif user::getAfkTime() == config.root.additions.autoAlogout.warningSeconds && !sendedAlogoutWarning {
+                sendedAlogoutWarning = true
                 assets::sendWindowsNotification(WINDOWS_NOTIFICATION_ICON_SECURITY, "GAdmin v" .. $GADMIN_VERSION, string.format(
                     "Вы провели в AFK на /alogin %d секунд. У вас есть еще %d секунд что-бы зайти, иначе скрипт сам покинет дежурство.",
                     user::getAfkTime(),
-                    config.root.additions.autoAlogout.alogoutSeconds - config.root.additions.autoAlogout.warningSeconds,
-                    5000
+                    config.root.additions.autoAlogout.alogoutSeconds - config.root.additions.autoAlogout.warningSeconds
                 ))
             }
         }

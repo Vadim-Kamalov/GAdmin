@@ -552,10 +552,9 @@ Configuration: %s
  * @param icon WINDOWS_NOTIFICATION_ICON
  * @param title string
  * @param text string
- * @param millisecondsToHide number
  * @return void
  */
-method assets::sendWindowsNotification(icon, title, text, millisecondsToHide = 2000) {
+method assets::sendWindowsNotification(icon, title, text) {
     local instance = (icon) ? 0 : ffi.C.GetModuleHandleA(ffi.NULL)
     local iconType = (icon) ? 100 : 0
 
@@ -579,13 +578,6 @@ method assets::sendWindowsNotification(icon, title, text, millisecondsToHide = 2
     imgui.StrCopy(iconData.szInfoTitle, u8::decode(title))
     imgui.StrCopy(iconData.szInfo, u8::decode(text))
     shell32.Shell_NotifyIconA(1, iconData)
-
-    lua_thread.create(fn {
-        wait(millisecondsToHide)
-        shell32.Shell_NotifyIconA(2, iconData)
-        ffi.C.DestroyIcon(balloonIconHandle)
-        ffi.C.DestroyIcon(trayIconHandle)
-    })
 }
 
 /**
