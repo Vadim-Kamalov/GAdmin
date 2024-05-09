@@ -40,7 +40,6 @@ method __notifications__::get() {
  * ```clue
  * {
  *     icon         = Icon|nil
- *     iconColor    = ImVec4|nil
  *     title        = String|nil
  *     text         = String|nil
  *     duration     = Number|nil
@@ -70,7 +69,6 @@ method __notifications__::send(notification = {}, scriptMessage) {
     if config.root.windows.notifications.use && #self.root < config.root.windows.notifications.maxItems {
         table.insert(self.root, {
             icon        = notification.icon || icons.ICON_HOME_EMPTY
-            iconColor   = notification.iconColor || imgui.ImVec4(1, 1, 1, 1)
             title       = notification.title || "Title"
             text        = notification.text || "Description"
             duration    = notification.duration || 5

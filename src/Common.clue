@@ -129,8 +129,8 @@ method common::convertHex2ImVec4(hex, alpha = 255) {
 
     r = (rgb >> 16) & 255
     g = (rgb >> 8) & 255
-    b = rgb & 255
-    a = (#hex == 6) ? alpha : ((rgb >> 24) & 255)
+    b = (#hex == 6) ? rgb & 255 : ((rgb >> 24) & 255)
+    a = (#hex == 6) ? alpha : (rgb & 255)
 
     return imgui.ImVec4(r / 255, g / 255, b / 255, a / 255)
 }

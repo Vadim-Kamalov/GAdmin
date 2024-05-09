@@ -55,8 +55,8 @@ method animations::clickableText(
     areaToClickSize = imgui.ImVec4(0, 0),
     duration = 0.2,
     colors = {
-        def     = common::convertHex2ImVec4("5B5B5B"),
-        hovered = common::convertHex2ImVec4("FFFFFF")
+        def     = imgui.GetStyle().Colors[imgui.Col.TextDisabled],
+        hovered = imgui.GetStyle().Colors[imgui.Col.Text]
     }
 ) {
     

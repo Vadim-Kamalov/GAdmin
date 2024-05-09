@@ -61,7 +61,7 @@ imgui.OnFrame(fn { return notify.active && config.root.windows.notifications.use
             )
             
             imgui.SetCursorPos(imgui.ImVec2(12, 28))
-            imgui.TextColored(notification.iconColor, notification.icon)
+            imgui.TextColored(imgui.GetStyle().Colors[imgui.Col.Text], notification.icon)
         
             imguiAssets::textWithFont(notification.title, bold10, imgui.ImVec2(52, 8))
         
@@ -70,11 +70,13 @@ imgui.OnFrame(fn { return notify.active && config.root.windows.notifications.use
             imgui.PopTextWrapPos()
 
             if notification.buttons?.first && notification.buttons?.second {
-                local dl = imgui.GetWindowDrawList()
+                local dl    = imgui.GetWindowDrawList()
                 local pos   = imgui.GetWindowPos()
                 local size  = imgui.GetWindowSize()
-                dl::AddLine(imgui.ImVec2(pos.x + 263, pos.y), imgui.ImVec2(pos.x + 263, pos.y + size.y), 0xFF5B5B5B, 1)
-                dl::AddLine(imgui.ImVec2(pos.x + 263, pos.y + 32), imgui.ImVec2(pos.x + size.x, pos.y + 32), 0xFF5B5B5B, 1)
+                local color = imgui.ColorConvertFloat4ToU32(imgui.GetStyle().Colors[imgui.Col.TextDisabled])
+                
+                dl::AddLine(imgui.ImVec2(pos.x + 263, pos.y), imgui.ImVec2(pos.x + 263, pos.y + size.y), color, 1)
+                dl::AddLine(imgui.ImVec2(pos.x + 263, pos.y + 32), imgui.ImVec2(pos.x + size.x, pos.y + 32), color, 1)
 
                 imgui.BeginGroup()
                     if local this = notification.buttons.first {
