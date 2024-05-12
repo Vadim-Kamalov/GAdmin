@@ -11,4 +11,4 @@ jobs:
       run: cargo install --list | grep -q clue || cargo install clue
     - uses: actions/checkout@v2
     - name: Checkout code
-      run: grep -rn print ${{ github.workspace }}/src/ && bash ${{ github.workspace }}/build.sh debug
+      run: ! grep -rnq print ${{ github.workspace }}/src/ && bash ${{ github.workspace }}/build.sh debug
