@@ -125,7 +125,7 @@ window::new("imgui.windows.SpectatorInformation", {
     local result, handle = spectator::getHandle()
     if result {
         if isCharInAnyCar(handle) {
-            self.speedColor = (tonumber(self.information.moveSpeed.current) > tonumber(self.information.moveSpeed.max))
+            self.speedColor = ((tonumber(self.information.moveSpeed.current) || 0) > (tonumber(self.information.moveSpeed.max) || 0))
                 && common::convertHex2ImVec4("FF8585")
         } else {
             self.speedColor = imgui.GetStyle().Colors[imgui.Col.Text]
@@ -194,16 +194,25 @@ window::new("imgui.windows.SpectatorInformation", {
                     self.centerWrappedColumnText(tostring(name), bold10)
                     imgui.NextColumn()
                     imgui.PushFont(regular9)
-                        imgui.PushStyleColor(imgui.Col.Text, item.color)
+                        imgui.PushStyleColor(imgui.Col.Text, (common::toLowerCase(item.value) == "нет")
+                            ? imgui.GetStyle().Colors[imgui.Col.TextDisabled] 
+                            : item.color)
                             if name != "Машина(-ы)" {
-                                self.centerWrappedColumnText(tostring(item.value), regular9)
+                                local text = (common::toLowerCase(tostring(item.value)) == "нет")
+                                    ? "Отсутствует"
+                                    : tostring(item.value)
+
+                                self.centerWrappedColumnText(text, regular9)
                             } else {
                                 local _, count  = string.gsub(item.value, "%d+", "")
                                 local index     = 1
+                                local text = (common::toLowerCase(tostring(item.value)) == "нет")
+                                    ? "Отсутствуют"
+                                    : tostring(item.value)
+
+                                imgui.SetCursorPosX((imgui.GetColumnOffset() + (imgui.GetColumnWidth() / 2)) - imgui.CalcTextSize(text).x / 2)
                                 
-                                imgui.SetCursorPosX((imgui.GetColumnOffset() + (imgui.GetColumnWidth() / 2)) - imgui.CalcTextSize(item.value).x / 2)
-                                
-                                if count == 0 { imgui.Text("Нет") } else {
+                                if count == 0 { imgui.TextDisabled(text) } else {
                                     imgui.BeginGroup()
                                         for carId with string.gmatch(item.value, "%d+") {
                                             imgui.Text(carId)
