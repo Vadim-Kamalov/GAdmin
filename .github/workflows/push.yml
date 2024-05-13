@@ -7,8 +7,15 @@ jobs:
   code-checkout:
     runs-on: ubuntu-latest
     steps:
-    - name: Check for the presence of a compiler, install it if not
-      run: cargo install --list | grep -q clue || cargo install clue
-    - uses: actions/checkout@v2
     - name: Checkout code
-      run: ! grep -rnq print ${{ github.workspace }}/src/ && bash ${{ github.workspace }}/build.sh debug
+      uses: actions/checkout@v2
+    - name: Check for the presence of a compiler, install it if not
+      run: |
+        if ! cargo install --list | grep -q clue; then
+          cargo install clue
+        fi
+    - name: Perform operations with the code
+      run: |
+        if ! grep -rnq 'print' ${{ github.workspace }}/src/; then
+          bash ${{ github.workspace }}/build.sh debug
+        fi
