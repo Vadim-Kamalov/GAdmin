@@ -232,6 +232,7 @@ method __style__::loadThemeFromXML(content) {
                     config.root.styleChangeableWindows[id] = {}
                     
                     for index, section in ({ window.colors || {}, window.values || {} }) {
+                        //! FIXME: this will throw an error if `windows.values["value"]` is null.
                         for _, property in assets::getXMLElements(section, (index == 1) ? "color" : "value") {
                             table.insert(config.root.styleChangeableWindows[id], {
                                 property._attr.name,

@@ -18,6 +18,10 @@
         description="Светлая тема на основе палитры Catpuccin Latte" 
         link="https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/main/themes/CatpuccinLatte.xml" />
     
+    <theme author="defaultzone" version="1.0" title="CatpuccinMocha"
+        description="Темная тема на основе палитры Catpuccin Mocha" 
+        link="https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/main/themes/CatpuccinMocha.xml" />
+    
     <theme author="Related" version="1.0" title="Коричневая тема"
         link="https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/main/themes/Brown.xml" />
 
