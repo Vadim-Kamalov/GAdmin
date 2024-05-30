@@ -991,7 +991,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn(self) {
                 } elseif window.menu.selectedFrame == WINDOW_SELECTED_FRAME_SETTINGS {
                     // forgive me for all of this code below (in current `window.menu.selectedFrame`).
                     for sectionIndex, section in window.configuration {
-                        if sectionIndex == 4 || sectionIndex == 2 { imgui.NewLine() }
+                        if sectionIndex == 4 { imgui.NewLine() }
                         imguiAssets::textWithFont(section[2], bold14)
 
                         for index, setting in section[3] {
