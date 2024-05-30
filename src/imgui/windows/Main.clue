@@ -263,7 +263,11 @@ local window = {
                 { "playerColorBasedOnClist", "Цвет игрока зависит от клиста", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.playerChecker.playerColorBasedOnClist) },
                 { "strokeSize", "Размер обводки", WINDOW_WIDGET_SLIDER_INT, 0, 5, imgui.new.int(config.root.windows.playerChecker.strokeSize) },
                 { "textAlignMode", "Выравнивание текста", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.windows.playerChecker.textAlignMode), "Слева", "По центру", "Справа" },
-            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP }
+            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
+
+            { "chess", "Шахматы", {
+                { "use", "Активация по горячей клавише (см. Горячие клавиши -> Открыть/закрыть шахматы)", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.chess.use) }
+            }}
         }},
 
         { "cheats", "Читы", {

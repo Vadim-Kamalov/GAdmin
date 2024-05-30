@@ -50,7 +50,7 @@ method __imguiAssets__::switchCursorStatus() { self.cursor = !$ }
 /**
  * Drawing imgui text with a specific font, optionally with a position.
  *
- * @param text string
+ * @param text any
  * @param font ImFont
  * @param pos ImVec2
  * @return void
@@ -58,7 +58,7 @@ method __imguiAssets__::switchCursorStatus() { self.cursor = !$ }
 method __imguiAssets__::textWithFont(text, font, pos, color = imgui.GetStyle().Colors[imgui.Col.Text]) {
     imgui.PushFont(font)
         if pos { imgui.SetCursorPos(pos) }
-        imgui.TextColored(color, text)
+        imgui.TextColored(color, tostring(text))
     imgui.PopFont()
 }
 

@@ -31,6 +31,7 @@
 @import "Config"           => config
 @import "Assets"           => assets
 @import "MovableWindows"   => movableWindows
+@import "Timers"           => timers
 
 @import "imgui.Style"       => style
 @import "imgui.PlayerNotes" => playerNotes
@@ -43,8 +44,10 @@
 @import "game.User"      => user
 @import "game.Spectator" => spectator
 
+@define GADMIN_VERSION  "1.6-pre2-1"
+@define SACHESS_VERSION "1.1"
+
 @define COMMAND_DELAY       800
-@define GADMIN_VERSION      "1.6-pre2-1"
 @define THEMES_URL          "https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/main/themes/Themes.xml"
 @define AUTOUPDATE_URL      "https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/main/AutoUpdate.xml"
 @define NICKNAME_COLORS_URL "https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/main/nickname-colors.conf"
@@ -170,6 +173,7 @@ imgui.OnInitialize(fn {
     global regular     = imgui.GetIO().Fonts::AddFontFromMemoryCompressedBase85TTF(compressed.cantarellRegular, 25.0, nil, glyphRanges)
     
     global shadowPng   = imgui.CreateTextureFromFileInMemory(imgui.new("const char*", compressed.shadow), #compressed.shadow)
+    global cburnett    = imgui.CreateTextureFromFileInMemory(imgui.new("const char*", compressed.cburnett), #compressed.cburnett)
 
     imgui.GetIO().IniFilename = nil
 })
@@ -367,6 +371,8 @@ global fn main() {
 
     loop {
         wait(0)
+
+        timers::initialize()
 
         if common::isGamePaused() {
             if os.clock() - user.afkTimeClock >= 1 {

@@ -22,6 +22,7 @@
 @import "imgui.StyleChanger"    => StyleChanger
 @import "imgui.InputTextFilter" => InputTextFilter
 @import "imgui.Animations"      => animations
+@import "imgui.Style"           => style
 @import "game.sa.Vehicle"       => vehicle
 @import "Common"                => common
 
@@ -38,6 +39,7 @@ static vehicleSelectionPanel = {
     }
 }
 
+style::registerWindow("imgui.windows.VehicleSelectionPanel", "Выбор машины для спавна")
 addEventHandler("onWindowMessage", fn (event, wparam) {
     if event == wm.WM_KEYDOWN || event == wm.WM_SYSKEYDOWN {
         if wparam == VK_ESCAPE && vehicleSelectionPanel.active && !changingHotKey {
@@ -108,6 +110,7 @@ imgui.OnFrame(fn { return vehicleSelectionPanel.active && !isGamePaused()) }, fn
     )
 
     self.style::apply()
+    style::beginWindowStyleChangeable("imgui.windows.VehicleSelectionPanel")
     imgui.PushStyleVarFloat(imgui.StyleVar.Alpha, vehicleSelectionPanel.alpha.window / 255)
     imgui.SetNextWindowPos(imgui.ImVec2(self.sizeX / 2, self.sizeY / 2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
     imgui.SetNextWindowSizeConstraints(imgui.ImVec2(400, 600), imgui.ImVec2(math.huge, math.huge))
@@ -201,4 +204,5 @@ imgui.OnFrame(fn { return vehicleSelectionPanel.active && !isGamePaused()) }, fn
     imgui.End()
     imgui.PopStyleVar()
     self.style::reset()
+    style::endWindowStyleChangeable("imgui.windows.VehicleSelectionPanel")
 })

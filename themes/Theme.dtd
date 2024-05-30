@@ -16,7 +16,9 @@
                        | SpectatorInformation
                        | UserInformation
                        | FarChat
-                       | Notifications) #REQUIRED>
+                       | Notifications
+                       | SAChess
+                       | VehicleSelectionPanel) #REQUIRED>
 
 <!ELEMENT colors (color+)>
 <!ELEMENT color (#PCDATA)>

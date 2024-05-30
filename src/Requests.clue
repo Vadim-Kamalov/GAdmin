@@ -60,4 +60,17 @@ method requests::asyncHttpRequest(type, url, args = {}, resolve = fn {}, reject 
     }
 }
 
+/**
+ * Convert `str` to `application/x-www-form-urlencoded` schema string.
+ *
+ * @param str string
+ * @return string
+ */
+method requests::encodeURLString(str) {
+    str = string.gsub(str, "\n", "\r\n")
+    str = string.gsub(str, "([^%w ])", fn (c) { return string.format("%%%02X", string.byte(c)) })
+    str = string.gsub(str, " ", "+")
+    return str
+}
+
 return requests
