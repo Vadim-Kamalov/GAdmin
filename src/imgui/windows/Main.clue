@@ -209,6 +209,11 @@ local window = {
                 { "use", "", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.spectatorKeys.use) }
             }},
 
+            { "roundMenu", "Круговое меню поиска", {
+                { "use", "Меню, в котором можно выбрать игрока/машину от центра экрана и выполнять разные действия.\nАктивация: удерживать соответствующий хоткей. (см. Горячие клавиши -> Круговое меню поиска)\nРаботает только на /alogin.", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.roundMenu.use) },
+                { "radius", "Радиус поиска", WINDOW_WIDGET_SLIDER_INT, 100, 1000, imgui.new.int(config.root.windows.roundMenu.radius) }
+            }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
+
             { "killList", "Килл-лист", {
                 { "use", "Работает только на /alogin", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.killList.use) },
                 { "displayTime", "Отображать время", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.killList.displayTime) },

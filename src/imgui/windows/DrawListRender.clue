@@ -26,6 +26,7 @@
 @import "game.sa.Ped"       => ped
 @import "game.Admins"       => admins
 @import "game.User"         => user
+@import "game.Spectator"    => spectator
 
 @import "Assets"        => assets
 @import "Icons"         => icons
@@ -41,9 +42,19 @@ static clickWarp = {
     }
 }
 
+local enum /** @enum ROUND_MENU_SELECTED_MODE */ {
+    ROUND_MENU_SELECTED_MODE_PLAYER,
+    ROUND_MENU_SELECTED_MODE_VEHICLE
+}
+
 local useWallhack = true
 local useCarInfo  = true
 local useTraccers = true
+
+local roundMenuSelectedMode = ROUND_MENU_SELECTED_MODE_PLAYER
+
+local roundMenuHotKey = HotKey::new("imgui.windows.DrawListRender->roundMenu", { VK_Z }, "Круговое меню поиска", HOTKEY_CONDITION_NEVER)
+::registerCallback(fn {})
 
 HotKey::new("imgui.windows.DrawListRender->wallhack", { VK_LCONTROL, VK_Z }, "Wallhack")
 ::registerCallback(fn {
@@ -293,6 +304,135 @@ imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
                 }
             }
         } // for _, player in getAllChars()
+
+        if config.root.windows.roundMenu.use && user::getAloginStatus() {
+            local render  = true
+            local radius  = config.root.windows.roundMenu.radius
+            local nearest = {
+                [ROUND_MENU_SELECTED_MODE_PLAYER]  = ped::getNearestToScreenCenter(radius),
+                [ROUND_MENU_SELECTED_MODE_VEHICLE] = vehicle::getNearestToScreenCenter(radius)
+            }
+
+            for _, key in roundMenuHotKey.keys {
+                if !isKeyDown(key) {
+                    render = false
+                    break
+                }
+            }
+
+            if render && !common::isInputsActive() {
+                local sizeX, sizeY = getScreenResolution()
+                local center       = imgui.ImVec2(sizeX / 2, sizeY / 2)
+                local found        = ""
+
+                freezedHotKeysCallbacks = true
+
+                if isKeyJustPressed(VK_1) {
+                    roundMenuSelectedMode = ($ == ROUND_MENU_SELECTED_MODE_VEHICLE)
+                        ? ROUND_MENU_SELECTED_MODE_PLAYER
+                        : ROUND_MENU_SELECTED_MODE_VEHICLE
+                }
+
+                self.DL::AddCircle(center, radius, -1, 64, 2)
+
+                if local it = nearest[roundMenuSelectedMode] {
+                    self.DL::AddLine(center, imgui.ImVec2(table.unpack(it.pos)), -1, 2)
+
+                    if roundMenuSelectedMode == ROUND_MENU_SELECTED_MODE_VEHICLE {
+                        local id            = getCarModel(it.handle)
+                        local name          = vehicle::getName(id)
+                        local result, vehId = sampGetVehicleIdByCarHandle(it.handle)
+
+                        if result {
+                            found = string.format("%s[ID: %d]", name, vehId)
+
+                            for index, command in ({ "vrepair", "vspawn", "vfuel", "adm_vehid", "getcar" }) {
+                                if isKeyJustPressed(_G["VK_" .. index + 1]) {
+                                    sampSendChat(string.format("/%s %d%s", command, vehId, (command == "vfuel") ? " 90" : ""))
+                                }
+                            }
+                        }
+                    } else {
+                        local _, id     = sampGetPlayerIdByCharHandle(it.handle)
+                        local nickname  = sampGetPlayerNickname(id)
+
+                        found = string.format("%s[%d]", nickname, id)
+                        
+                        for index, command in ({ "sp", "heal", "stats", "pame", "gethere" }) {
+                            if isKeyJustPressed(_G["VK_" .. index + 1]) {
+                                sampSendChat(string.format("/%s %d", command, id))
+                            }
+                        }
+                    }
+                }
+
+                for index, text in ({
+                    "1 - переключение между режимами (поиск игроков или машин)",
+                    found
+                }) {
+                    local font = (index == 1) ? regular : bold
+                    local x    = center.x - font::CalcTextSizeA(18, math.huge, 0.0, text).x / 2
+                    local y    = center.y + ((index == 1) ? radius + 20 : -radius - 30)
+
+                    imguiText::renderTextObjects(self.DL, imgui.ImVec2(x, y), {{
+                        text  = text,
+                        size  = 18,
+                        font  = font,
+                        color = imgui.ImVec4(1, 1, 1, 1)
+                    }})
+                }
+
+                for index, group in ({
+                    {
+                        "[2] Следить",
+                        "[3] Вылечить",
+                        "[4] Открыть статистику",
+                        "[5] Открыть /pame",
+                        "[6] Телепортировать к себе",
+                    },
+                    
+                    {
+                        "Починить [2]",
+                        "Заспавнить [3]",
+                        "Заправить [4]",
+                        "Узнать владельца [5]"
+                        "Телепортировать к себе [6]",
+                    }
+                }) {
+                    local maxTextSize = imgui.ImVec2(0, 0)
+                    local groupHeight = 0
+
+                    for _, text in group {
+                        local size = bold::CalcTextSizeA(18, math.huge, 0.0, text)
+                        
+                        if size.x > maxTextSize.x || size.y > maxTextSize.y {
+                            maxTextSize = size
+                        }
+
+                        groupHeight += size.y + 2
+                    }
+
+                    groupHeight -= 2
+
+                    for lineIndex, text in group {
+                        local size  = bold10::CalcTextSizeA(18, math.huge, 0.0, text)
+                        local color = (roundMenuSelectedMode == index) ? imgui.ImVec4(1, 1, 1, 1) : imgui.ImVec4(0.5, 0.5, 0.5, 1)
+                        local x     = center.x + ((index == 1) ? -radius - 20 - maxTextSize.x : radius + 20 + (maxTextSize.x - size.x))
+                        local y     = center.y - (groupHeight / 2) + ((lineIndex - 1) * 20)
+                        local key   = lineIndex + 1
+
+                        imguiText::renderTextObjects(self.DL, imgui.ImVec2(x, y), {{
+                            text  = text,
+                            size  = 18,
+                            font  = bold,
+                            color = color
+                        }})
+                    }
+                }
+            } else {
+                freezedHotKeysCallbacks = false
+            }
+        }
 
         /**
          * Clickwarp implementation. Authors - FYP and we_sux team.

@@ -41,6 +41,34 @@ vehicle.names = {
 }
 
 /**
+ * Get vehicle that nearest to the center of the screen.
+ *
+ * @param radius number
+ * @return ({ handle: number, distance: number, pos: { number, number }})|nil
+ */
+method vehicle::getNearestToScreenCenter(radius) {
+    local nearest       = { handle = nil, distance = radius, pos = { 0.0, 0.0 }}
+    local sizeX, sizeY  = getScreenResolution()
+
+    for _, handle in getAllVehicles() {
+        if getDriverOfCar(handle) != PLAYER_PED && isCarOnScreen(handle) {
+            local x, y     = convert3DCoordsToScreen(getCarCoordinates(handle))
+            local distance = getDistanceBetweenCoords2d(sizeX / 2, sizeY / 2, x, y)
+
+            if distance < nearest.distance && radius > distance {
+                nearest = {
+                    handle   = handle,
+                    distance = distance,
+                    pos      = { x, y }
+                }
+            }
+        }
+    }
+
+    return (nearest.handle) ? nearest : nil
+}
+
+/**
  * Get vehicle name by id as string.
  *
  * @param id number Vehicle-ID

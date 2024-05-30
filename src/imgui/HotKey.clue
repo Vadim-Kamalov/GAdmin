@@ -25,9 +25,10 @@
 @import "imgui.Assets"     => imguiAssets
 @import "imgui.Animations" => animations
 
-static hotKeysCallbacks = {}
-static changingHotKey   = false
-static allHotKeys       = {}
+static freezedHotKeysCallbacks  = false
+static hotKeysCallbacks         = {}
+static changingHotKey           = false
+static allHotKeys               = {}
 
 static enum /** @enum HOTKEY_CONDITION */ {
     HOTKEY_CONDITION_ONLY_IN_SPECTATOR,
@@ -161,6 +162,8 @@ method HotKey::getDownKeys(limit = 2) {
  * @return void
  */
 method HotKey::setupWatcher(event, wparam, lparam) {
+    if freezedHotKeysCallbacks { return }
+
     if event == wm.WM_KILLFOCUS && changingHotKey {
         self::stopChangingKeys()
     }
@@ -190,9 +193,12 @@ method HotKey::setupWatcher(event, wparam, lparam) {
                         (#hotKey.keys == 2 && isKeyDown(hotKey.keys[1]) && key == hotKey.keys[2])
                     {
                         if local item = hotKeysCallbacks[hotKey.id] {
-                            if !item.keysDown && self::canUseHotKey(item.condition) {
+                            if (!item.keysDown || item.canHoldKeys) && self::canUseHotKey(item.condition) {
                                 item.callback()
-                                item.keysDown = true
+
+                                if !item.canHoldKeys {
+                                    item.keysDown = true
+                                }
 
                                 consumeWindowMessage(true, true)
                             }
@@ -252,13 +258,14 @@ method HotKey::isKeysDefined(sourceKeys, exceptId) {
 /**
  * Create new HotKey class.
  * 
- * @param id string                     HotKey-ID, need for saving and reading keys from/in configuration file.
- * @param keys table|nil                Default keys. Can changed with `HotKey::changeKeysTo(keys)`.
- * @param description string|nil        Optional description for main window.
- * @param condition HOTKEY_CONDITION    When user can use this bind.
+ * @param id string                       HotKey-ID, need for saving and reading keys from/in configuration file.
+ * @param keys table|nil                  Default keys. Can changed with `HotKey::changeKeysTo(keys)`.
+ * @param description string|nil          Optional description for main window.
+ * @param condition HOTKEY_CONDITION|nil  When user can use this bind.
+ * @param canHoldKeys boolean|nil         Wheather user can hold `keys` to execute callback.
  * @return HotKey
  */
-method HotKey::new(id, keys, description, condition = HOTKEY_CONDITION_ALWAYS) {
+method HotKey::new(id, keys, description, condition = HOTKEY_CONDITION_ALWAYS, canHoldKeys = false) {
     self::sortKeys(keys)
     
     if config.root.hotKeys[id] && config.root.hotKeys.conditions[id] {
@@ -278,6 +285,7 @@ method HotKey::new(id, keys, description, condition = HOTKEY_CONDITION_ALWAYS) {
     instance.id          = id
     instance.condition   = condition
     instance.description = description
+    instance.canHoldKeys = canHoldKeys
 
     return instance
 }
@@ -326,7 +334,8 @@ method HotKey::registerCallback(callback) {
             keys        = self.keys,
             callback    = callback,
             keysDown    = false,
-            condition   = self.condition
+            condition   = self.condition,
+            canHoldKeys = self.canHoldKeys
         }
 
         table.insert(allHotKeys, self)

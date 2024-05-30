@@ -36,6 +36,37 @@ method ped::getBodyPartCoordinates(id, handle) {
 }
 
 /**
+ * Get player that nearest to the center of the screen.
+ *
+ * @param radius number
+ * @return ({ handle: number, distance: number, pos: { number, number }})|nil
+ */
+method ped::getNearestToScreenCenter(radius) {
+    local nearest       = { handle = nil, distance = radius, pos = { 0.0, 0.0 }}
+    local sizeX, sizeY  = getScreenResolution()
+
+    for _, handle in getAllChars() {
+        if select(1, sampGetPlayerIdByCharHandle(handle))
+            && handle != PLAYER_PED && handle != select(2, __spectator__::getHandle())
+            && isCharOnScreen(handle)
+        {
+            local x, y     = convert3DCoordsToScreen(self::getBodyPartCoordinates(6, handle))
+            local distance = getDistanceBetweenCoords2d(sizeX / 2, sizeY / 2, x, y)
+
+            if distance < nearest.distance && radius > distance {
+                nearest = {
+                    handle   = handle,
+                    distance = distance,
+                    pos      = { x, y }
+                }
+            }
+        }
+    }
+
+    return (nearest.handle) ? nearest : nil
+}
+
+/**
  * Get player weapon by id as string.
  * 
  * @param id number Weapon-ID

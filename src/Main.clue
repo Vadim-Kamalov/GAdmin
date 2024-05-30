@@ -464,10 +464,10 @@ global fn main() {
                     airbreak.coords[1] += speed * math.sin(-math.rad(angle))
                     airbreak.coords[2] += speed * math.cos(-math.rad(angle))
 
-                    if !isCharInAnyCar(playerPed) {
-                        setCharHeading(playerPed, angle)
+                    if !isCharInAnyCar(PLAYER_PED) {
+                        setCharHeading(PLAYER_PED, angle)
                     } else {
-                        setCarHeading(storeCarCharIsInNoSave(playerPed), angle)
+                        setCarHeading(storeCarCharIsInNoSave(PLAYER_PED), angle)
                     }
                 } elseif isKeyDown(VK_S) {
                     airbreak.coords[1] -= speed * math.sin(-math.rad(heading))

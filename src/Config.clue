@@ -199,6 +199,11 @@ static __config__ = {
                 }
             },
 
+            roundMenu = {
+                use    = false,
+                radius = 300
+            },
+
             chess                 = { use = true },
             vehicleSelectionPanel = { use = true },
             spectatorKeys         = { use = true }
