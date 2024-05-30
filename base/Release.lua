@@ -1,3 +1,4 @@
+--- @diagnostic disable
 ---
 --- This file is compiled from the source code of the GAdmin project using the Lua dialect - Clue:
 ---

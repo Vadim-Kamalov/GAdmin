@@ -168,6 +168,15 @@ local window = {
                 { "strokeSize", "Размер обводки", WINDOW_WIDGET_SLIDER_INT, 0, 5, imgui.new.int(config.root.windows.autoCompletion.strokeSize) },
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
             
+            { "vehicleSelectionPanel", "Выбор машины для спавна", {
+                {
+                    "use",
+                    "Активация: ввод /veh без аргументов.\nДоступно только с 4 уровня и на /alogin",
+                    WINDOW_WIDGET_SWITCH,
+                    imgui.new.bool(config.root.windows.vehicleSelectionPanel.use)
+                }
+            }},
+            
             { "userInformation", "Ваша статистика", {
                 { "use", "Работает только на /alogin", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.userInformation.use) },
                 { "showTime", "Отображать текущее время", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.userInformation.showTime) },
@@ -175,7 +184,7 @@ local window = {
                 { "textAlignMode", "Выравнивание текста", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.windows.userInformation.textAlignMode), "Слева", "По центру", "Справа" },
                 { "none", "Отображение элементов", WINDOW_WIDGET_CUSTOM, $USER_INFORMATION_CUSTOM_WIDGET!() }
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
-            
+
             { "farChat", "Дальний чат", {
                 { "use", "Работает только на /alogin", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.farChat.use) },
                 { "displayTime", "Отображать время", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.farChat.use) },
@@ -647,6 +656,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn(self) {
             imgui.PushStyleVarFloat(imgui.StyleVar.Alpha, window.closeAndOpenAnimation.alpha - window.menu.alpha / 255 / 2 - window.menu.switchBetweenFramesAlpha)
             imgui.BeginGroup()
                 local widthAuto = 640 - imgui.GetStyle().ItemSpacing.x * 2 - 1
+                local heightAuto = imgui.GetWindowHeight() - 3
                 if window.menu.selectedFrame == WINDOW_SELECTED_FRAME_HOME {
                     imgui.SetScrollY(0)
                     imgui.BeginChild("imgui.windows.Main.userStats", imgui.ImVec2(widthAuto, 100), true)
@@ -2247,13 +2257,13 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn(self) {
                         imgui.EndGroup()
                     imgui.EndChild()
                 } elseif window.menu.selectedFrame == WINDOW_SELECTED_FRAME_STATISTICS {
-                    local text = "Вкладка со статистикой будет реализована в полноценном релизе v1.6"
+                    local text = "Вкладка со статистикой будет реализована когда рак на горе свистнет."
                     local size = regular12::CalcTextSizeA(regular12.FontSize, math.huge, 0.0, text)
 
                     imguiAssets::textWithFont(text, regular12, imgui.ImVec2(
                         ((imgui.GetWindowWidth()) - size.x) / 2,
                         ((imgui.GetWindowHeight() - size.y) - size.y) / 2
-                    ), imgui.GetStyle().Colors[imgui.Col.TextDisabled])   
+                    ), imgui.GetStyle().Colors[imgui.Col.TextDisabled])
                 }
             imgui.EndGroup()
             imgui.PopStyleVar()

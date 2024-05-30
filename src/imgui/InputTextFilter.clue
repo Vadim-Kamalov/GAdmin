@@ -56,12 +56,16 @@ method InputTextFilter::new() {
  * @param with number|nil
  * @return boolean
  */
-method InputTextFilter::draw(label, hint = "Поиск", width = 0.0) {
+method InputTextFilter::draw(label, hint = "Поиск", width = 0.0, font = regular10) {
     if width != 0.0 {
         imgui.SetNextItemWidth(width)
     }
 
-    return imgui.InputTextWithHint(label, hint, self.buffer, ffi.sizeof(self.buffer))
+    imgui.PushFont(font)
+        local result = imgui.InputTextWithHint(label, hint, self.buffer, ffi.sizeof(self.buffer))
+    imgui.PopFont()
+
+    return result
 }
 
 /**

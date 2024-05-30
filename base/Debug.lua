@@ -1,3 +1,4 @@
+--- @diagnostic disable
 ---
 --- This file is compiled from the source code of the GAdmin project using the Lua dialect - Clue:
 ---
@@ -30,10 +31,10 @@
 --- SDPX-License-Identifier: GPL-3.0-only
 ---
 
-script_name         "GAdmin"
-script_authors      "https://github.com/Vadim-Kamalov/GAdmin/blob/main/CONTRIBUTORS"
-script_url          "https://github.com/Vadim-Kamalov/GAdmin/"
-script_properties   "work-in-pause"
+script_name       "GAdmin"
+script_authors    "https://github.com/Vadim-Kamalov/GAdmin/blob/main/CONTRIBUTORS"
+script_url        "https://github.com/Vadim-Kamalov/GAdmin/"
+script_properties "work-in-pause"
 
 local import, modules
 do
@@ -50,7 +51,7 @@ end
 
 --STATICS
 
-modules = {§}
+modules = { § }
 
 ---! END_AUTO_GENERATED_CONTENT
 

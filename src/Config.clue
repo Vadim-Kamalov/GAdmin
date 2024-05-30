@@ -199,7 +199,8 @@ static __config__ = {
                 }
             },
 
-            spectatorKeys = { use = true },
+            vehicleSelectionPanel = { use = true },
+            spectatorKeys         = { use = true },
         },
 
         render = {

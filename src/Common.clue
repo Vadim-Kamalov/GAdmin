@@ -135,4 +135,16 @@ method common::convertHex2ImVec4(hex, alpha = 255) {
     return imgui.ImVec4(r / 255, g / 255, b / 255, a / 255)
 }
 
+/**
+ * Limit `value` in `min..max` range.
+ *
+ * @param value number
+ * @param min number
+ * @param max number
+ * @return number
+ */
+method common::clamp(value, min, max) {
+    return math.min(math.max(value, min), max)
+}
+
 return common
