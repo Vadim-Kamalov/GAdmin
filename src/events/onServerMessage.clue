@@ -278,7 +278,9 @@ sampev.onServerMessage = fn(color, text) {
         }
     }
 
-    if string.find(safeText, "^%[A%] %S+%[%d+%] авторизовался как администратор %d+ уровня%.$") {
+    if string.find(safeText, "^%[A%] %S+%[%d+%] авторизовался как администратор %d+ уровня%.$")
+       && user::getAloginStatus()
+    {
 @ifdef __GADMIN_DEBUG__
 {
         $debugInformation!("onServerMessage", "found connected administrator")
