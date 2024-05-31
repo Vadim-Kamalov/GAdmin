@@ -294,7 +294,7 @@ global fn main() {
     }
 }
 
-    common::makeDirectoryTree({ "GAdmin", "GAdmin/temp", "GAdmin/config", "GAdmin/logs" })
+    common::makeDirectoryTree({ "GAdmin", "GAdmin/temp", "GAdmin/config", "GAdmin/logs", "GAdmin/profiles" })
     assets::changeWallhackState(false)
 
 @ifndef __GADMIN_DEBUG__

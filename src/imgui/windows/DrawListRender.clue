@@ -358,7 +358,7 @@ imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
 
                         found = string.format("%s[%d]", nickname, id)
                         
-                        for index, command in ({ "sp", "heal", "stats", "pame", "gethere" }) {
+                        for index, command in ({ "sp", "aheal", "stats", "pame", "gethere" }) {
                             if isKeyJustPressed(_G["VK_" .. index + 1]) {
                                 sampSendChat(string.format("/%s %d", command, id))
                             }

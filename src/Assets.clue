@@ -611,4 +611,26 @@ method assets::workInBackground(state) {
     }
 }
 
+/**
+ * Get all files in the `mask` (example - `moonloader\\*.lua`).
+ *
+ * @param mask string
+ * @return string[]
+ */
+method assets::getFilesByMask(mask) {
+    local handle, file = findFirstFile(mask)
+    local files        = {}
+
+    while file {
+        if file {
+            table.insert(files, file)
+            file = findNextFile(handle)
+        } else {
+            findClose(handle)
+        }
+    }
+
+    return files
+}
+
 return assets

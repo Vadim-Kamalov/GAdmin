@@ -939,19 +939,63 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn(self) {
                                     animations::hint("Не удалось получить список пользовательских тем.\nПопробуйте перезагрузить скрипт и попытаться снова.")
                                 }
 
-                                if animations::button("Импортировать настройки", imgui.ImVec2(math.floor(widthAuto / 3), 30), 5) {
-                                    local settings = decodeJson(getClipboardText())
-                                    if settings && type(settings) == "table" {
-                                        config.root = settings
-                                        config::save()
-                                        thisScript()::reload()
-                                    } else {
-                                        notify::send({
-                                            title   = "Ошибка!",
-                                            text    = "Произошла ошибка при применении темы. Убедитесь, что вы скопировали содержимое файла настроек.",
-                                            icon    = icons.ICON_WARNING
-                                        })
+                                if animations::button("Открыть профили настроек", imgui.ImVec2(math.floor(widthAuto / 3), 30), 5) {
+                                    window.popupModal.body = fn {
+                                        local id    = "imgui.windows.Main.Popup.settingsProfiles"
+                                        local width = imgui.GetWindowWidth() - 10
+
+                                        imgui.SetCursorPos(imgui.ImVec2(5, 5))
+                                        imgui.BeginGroup()
+                                            imguiAssets::textWithFont("Доступные профили настроек", bold14)
+                                            imgui.BeginChild(id, imgui.ImVec2(math.max(width, 300), 305), true)
+                                                imgui.SetCursorPos(imgui.ImVec2(5, 5))
+                                                imgui.PushFont(regular10)
+                                                imgui.BeginGroup()
+                                                    for index, file in assets::getFilesByMask("moonloader/GAdmin/profiles/*.json") {
+                                                        if animations::button(file .. "##" .. id .. index, imgui.ImVec2(
+                                                            imgui.GetWindowWidth() - 10,
+                                                            25
+                                                        )) {
+                                                            local content  = common::readFileContent(getWorkingDirectory() .. "/GAdmin/profiles/" .. file)
+                                                            local settings = decodeJson(content)
+                                                            if settings && type(settings) == "table" {
+                                                                config.root = settings
+                                                                config::save()
+                                                                thisScript()::reload()
+                                                            } else {
+                                                                notify::send({
+                                                                    title   = "Ошибка!",
+                                                                    text    = "Произошла ошибка при применении темы. Убедитесь, что вы скопировали содержимое файла настроек.",
+                                                                    icon    = icons.ICON_WARNING
+                                                                })
+                                                            }
+                                                        }
+                                                    }
+                                                imgui.EndGroup()
+                                                imgui.PopFont()
+                                            imgui.EndChild()
+
+                                            imgui.PushFont(bold10)
+                                                if animations::button("Сохранить текущий профиль##" .. id, imgui.ImVec2(width, 25)) {
+                                                    common::writeInFile(string.format(
+                                                        "%s\\GAdmin\\profiles\\%s.json",
+                                                        getWorkingDirectory(),
+                                                    os.date("%Y%m%d-%H-%M-%S")
+                                                    ), neatJSON(config.root, { sort = true, wrap = 40 }))
+                                                }
+
+                                                animations::hint("Профили сохраняются по moonloader/GAdmin/profiles пути.\nНи с кем не делитесь файлами из этой папки.")
+
+                                                if animations::button("Закрыть##" .. id, imgui.ImVec2(width, 30)) {
+                                                    imgui.CloseCurrentPopup()
+                                                }
+                                            imgui.PopFont()
+                                        imgui.EndGroup()
+
+                                        window.popupModal.size = imgui.GetItemRectSize() + imgui.ImVec2(10, 10)
                                     }
+
+                                    imgui.OpenPopup("imgui.windows.Main.Popup")
                                 }
 
                                 imgui.SameLine()
@@ -965,20 +1009,9 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn(self) {
 
                                 imgui.SameLine()
 
-                                if animations::button("Экспортировать настройки", imgui.ImVec2(math.floor(widthAuto / 3), 30), 10) {
-                                    local configuration = neatJSON(config.root, { sort = true, wrap = 40 })
-                                    local filePath = string.format(
-                                        "%s\\GAdmin\\config\\ExportSettings (%s).json",
-                                        getWorkingDirectory(),
-                                        os.date("%Y%m%d-%H-%M-%S")
-                                    )
-
-                                    common::writeInFile(filePath, configuration)
-                                    notify::send({
-                                        title   = "Настройки экспортированы в файл по пути ...",
-                                        text    = filePath,
-                                        icon    = icons.ICON_CHECKMARK
-                                    })
+                                if animations::button("Сбросить статистику", imgui.ImVec2(math.floor(widthAuto / 3), 30), 10) {
+                                    config.root.user.online   = assets::copyTable(config.def.user.online)
+                                    config.root.user.answers  = assets::copyTable(config.def.user.answers)
                                 }
 
                                 if animations::button("Перезагрузить скрипт", imgui.ImVec2(widthAuto, 30)) {
