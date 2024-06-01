@@ -44,7 +44,7 @@
 @import "game.User"      => user
 @import "game.Spectator" => spectator
 
-@define GADMIN_VERSION  "1.6-pre2-1"
+@define GADMIN_VERSION  "1.7"
 @define SACHESS_VERSION "1.1"
 
 @define COMMAND_DELAY       800
