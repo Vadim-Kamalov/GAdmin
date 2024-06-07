@@ -342,18 +342,6 @@ sampev.onServerMessage = fn(color, text) {
         }
     }
 
-    if string.find(text, "Игрок не AFK!") && spectator.afk.awaiting.message {
-        spectator.afk.awaiting.message = false
-        return false
-    }
-
-    if spectator.afk.awaiting.message && string.find(text, "^.+%-%s+%d+$") {
-        spectator.afk.time              = tonumber(string.match(text, "^.+%-%s+(%d+)$"))
-        spectator.afk.clock             = os.clock()
-        spectator.afk.awaiting.message  = false
-        return false
-    }
-
     if (string.find(text, "Вы успешно авторизовались как администратор")
         || string.find(text, "Вы уже авторизировались")
         || string.find(text, "Вы успешно авторизовались как ведущий администратор")

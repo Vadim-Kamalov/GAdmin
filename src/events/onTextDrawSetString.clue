@@ -31,9 +31,11 @@ sampev.onTextDrawSetString = fn(id, text) {
         if result && isCharInAnyCar(handle) {
             spectator::setInformation({ moveSpeedCurrent = string.match(text, "(%d+) / [%-]?%d+") })
         }
+
+        spectator::setInformation({ world = string.match(text, "~n~Android: .+~n~Mo.+: (%d+)$") })
     }
 
-    if string.find(text, "Android: .+") {
-        spectator.platform = (#string.match(text, "Android: (.+)") == 2) ? PLATFORM_ANDROID : PLATFORM_PC
+    if string.find(text, "~n~Android: .+~n~") {
+        spectator.platform = (string.match(text, "~n~Android: (.+)~n~") == "He\166") ? PLATFORM_PC : PLATFORM_ANDROID
     }
 }

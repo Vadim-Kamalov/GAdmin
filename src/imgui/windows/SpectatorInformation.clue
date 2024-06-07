@@ -152,7 +152,7 @@ window::new("imgui.windows.SpectatorInformation", {
         ["Стадия"]              = { value = self.information.stage },
         ["VIP статус"]          = { value = self.information.vip },
         ["Предупреждения"]      = { value = self.information.warnings },
-        ["Время в афк"]         = { value = self.information.afkTime },
+        ["Модульный мир"]       = { value = self.information.world },
         ["Тек./макс. скорость"] = { value = self.information.moveSpeed.current .. " / " .. self.information.moveSpeed.max, color = self.speedColor },
         ["Выстрелы/попадания"]  = { value = self.information.shot.total .. " / " .. self.information.shot.hit, color = self.shotColor }
     }

@@ -61,15 +61,6 @@ static __spectator__ = {
     nickname = ""
     time     = nil
 
-    afk = {
-        thread  = nil
-        time    = 0
-        clock   = -1 
-        awaiting = {
-            message = false
-        }
-    }
-
     keys = {
         [PLATFORM_PC] = {
             [SYNC_KEYS_PLAYER]      = {}
@@ -133,7 +124,7 @@ method __spectator__::getInformation() {
         regDate     = self.information.regDate || "N/A"
         warnings    = self.information.warnings || "N/A"
         stage       = self.information.stage || "N/A"
-        afkTime     = self.afk.time || "N/A"
+        world       = self.information.world || "N/A"
 
         moveSpeed = {
             current = self.information.moveSpeedCurrent || "N/A"
@@ -179,15 +170,6 @@ method __spectator__::setInformation(information = {}) {
  */
 method __spectator__::loop() {
     if self.status {
-        if sampIsPlayerPaused(self.id) {
-            if os.clock() - self.afk.clock >= 1 {
-                self.afk.time += 1
-                self.afk.clock = os.clock()
-            }
-        } else {
-            self.afk.time = 0
-        }
-
         local result, handle = self::getHandle()
 
         if result {
@@ -272,9 +254,8 @@ method __spectator__::setTo(playerId) {
            && !sampIsDialogActive() && !self.stats.checking
         {
             sampSendMenuSelectRow(3)
-            self.stats.checking         = true
-            self.stats.lastChecked      = os.clock()
-            self.afk.time               = 0
+            self.stats.checking     = true
+            self.stats.lastChecked  = os.clock()
 
             self.information.shotTotal  = "0"
             self.information.shotHit    = "0"
@@ -296,14 +277,6 @@ method __spectator__::setTo(playerId) {
                         clock   = os.clock()
                     }
                 }
-            }
-            
-            if !self.afk.awaiting.message {
-                lua_thread.create(fn {
-                    wait($COMMAND_DELAY)
-                    self.afk.awaiting.message = true
-                    sampSendChat(string.format("/afk %d", self.id))
-                })
             }
         }
     }
