@@ -168,6 +168,8 @@ method HotKey::setupWatcher(event, wparam, lparam) {
         self::stopChangingKeys()
     }
 
+    if common::isGamePaused() { return }
+
     if event == wm.WM_KEYDOWN || event == wm.WM_SYSKEYDOWN {
         //! Consuming window message when changing any `HotKey` keys.
         //! When pressed `VK_ESCAPE`, we will stop changing keys and reset to default keys.

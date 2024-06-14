@@ -42,13 +42,13 @@ local justPressed = {
 global fn onWindowMessage(msg, wparam, lparam) {
     $SETUP_EVENT_MV!(msg, wparam)
 
-    HotKey::setupWatcher(msg, wparam, lparam)
-
     if msg == wm.WM_KILLFOCUS {
         receivedKillFocusEvent = true
     } elseif msg == wm.WM_SETFOCUS {
         receivedKillFocusEvent = false
     }
+    
+    HotKey::setupWatcher(msg, wparam, lparam)
 
     if config.root.cheats.clickwarp.use && user::getAloginStatus() {
         if msg == wm.WM_MBUTTONDOWN && !justPressed.mButtonDown {
