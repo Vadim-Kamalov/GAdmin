@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<AutoUpdate version="1.7.1">
-    <title>GAdmin v1.7.1</title>
+<AutoUpdate version="1.7.2">
+    <title>GAdmin v1.7.2</title>
     <buttons first="Установить" second="Пропустить" third="Позже"/>
     <body>
-        <header>Изменения/исправления</header>
-        <ul>Исправлено неверное определение платформы игрока в /sp.</ul>
-        <ul>Колонка времени в афк окна информации об игроке /sp заменена на значение номера модульного мира. (соответственно сброшены настройки этого окна).</ul>
+        <header>Изменения</header>
+        <ul>Исправлено что горячие клавиши работали в паузе или со свернутой игрой.</ul>
     </body>
     <links>
         <!-- Redirect links aren't allowed. -->
