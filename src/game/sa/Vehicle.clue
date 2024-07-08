@@ -21,23 +21,23 @@
 local vehicle = {}
 
 vehicle.names = {
-    "Landstalker", "Bravura", "Buffalo", "Linerunner", "Perrenial", "Sentinel", "Dumper", "Firetruck", "Trashmaster", "Stretch", "Manana", 
-    "Infernus", "Voodoo", "Pony", "Mule", "Cheetah", "Ambulance", "Leviathan", "Moonbeam", "Esperanto", "Taxi", "Washington", "Bobcat",
-    "Whoopee", "BFInjection", "Hunter", "Premier", "Enforcer", "Securicar", "Banshee", "Predator", "Bus", "Rhino", "Barracks", "Hotknife",
-    "Trailer", "Previon", "Coach", "Cabbie", "Stallion", "Rumpo", "RCBandit", "Romero","Packer", "Monster", "Admiral", "Squalo", "Seasparrow",
-    "Pizzaboy", "Tram", "Trailer", "Turismo", "Speeder", "Reefer", "Tropic", "Flatbed", "Yankee", "Caddy", "Solair", "Berkley'sRCVan", "Skimmer",
-    "PCJ-600", "Faggio", "Freeway", "RCBaron", "RCRaider", "Glendale", "Oceanic", "Sanchez", "Sparrow", "Patriot", "Quad", "Coastguard", "Dinghy",
-    "Hermes", "Sabre", "Rustler", "ZR-350", "Walton", "Regina", "Comet", "BMX", "Burrito", "Camper", "Marquis", "Baggage", "Dozer", "Maverick",
-    "NewsChopper", "Rancher", "FBIRancher", "Virgo", "Greenwood", "Jetmax", "Hotring", "Sandking", "BlistaCompact", "PoliceMaverick", "Boxvillde",
-    "Benson", "Mesa", "RCGoblin", "HotringRacerA", "HotringRacerB", "BloodringBanger", "Rancher", "SuperGT", "Elegant", "Journey", "Bike", "MountainBike",
-    "Beagle", "Cropduster", "Stunt", "Tanker", "Roadtrain", "Nebula", "Majestic", "Buccaneer", "Shamal", "Hydra", "FCR-900", "NRG-500", "HPV1000",
-    "CementTruck", "TowTruck", "Fortune", "Cadrona", "FBITruck", "Willard", "Forklift", "Tractor", "Combine", "Feltzer", "Remington", "Slamvan",
-    "Blade", "Freight", "Streak", "Vortex", "Vincent", "Bullet", "Clover", "Sadler", "Firetruck", "Hustler", "Intruder", "Primo", "Cargobob", "Tampa",
-    "Sunrise", "Merit", "Utility", "Nevada", "Yosemite", "Windsor", "Monster", "Monster", "Uranus", "Jester", "Sultan", "Stratum", "Elegy", "Raindance",
-    "RCTiger", "Flash", "Tahoma", "Savanna", "Bandito", "FreightFlat", "StreakCarriage", "Kart", "Mower", "Dune", "Sweeper", "Broadway", "Tornado",
-    "AT-400", "DFT-30", "Huntley", "Stafford", "BF-400", "NewsVan", "Tug", "Trailer", "Emperor", "Wayfarer", "Euros", "Hotdog", "Club", "FreightBox",
-    "Trailer", "Andromada", "Dodo", "RCCam", "Launch", "PoliceCar", "PoliceCar LS", "PoliceCar SF", "PoliceRanger LV", "Picador", "S.W.A.T", "Alpha",
-    "Phoenix", "GlendaleShit", "SadlerShit", "Luggage A", "Luggage B", "Stairs", "Boxville", "Tiller", "UtilityTrailer"
+    "Landstalker", "Bravura", "Buffalo", "Linerunner", "Perennial", "Sentinel", "Dumper", "Firetruck", "Trashmaster", "Stretch", "Manana", "Infernus",
+    "Voodoo", "Pony", "Mule", "Cheetah", "Ambulance", "Leviathan", "Moonbeam", "Esperanto", "Taxi", "Washington", "Bobcat", "Mr. Whoopee", "BF Injection",
+    "Hunter", "Premier", "Enforcer", "Securicar", "Banshee", "Predator", "Bus", "Rhino", "Barracks", "Hotknife", "Trailer", "Previon", "Coach", "Cabbie",
+    "Stallion", "Rumpo", "RC Bandit", "Romero", "Packer", "Monster", "Admiral", "Squalo", "Seasparrow", "Pizzaboy", "Tram", "Trailer", "Turismo", "Speeder",
+    "Reefer", "Tropic", "Flatbed", "Yankee", "Caddy", "Solair", "Berkley's RC Van", "Skimmer", "PCJ-600", "Faggio", "Freeway", "RC Baron", "RC Raider",
+    "Glendale", "Oceanic", "Sanchez", "Sparrow", "Patriot", "Quad", "Coastguard", "Dinghy", "Hermes", "Sabre", "Rustler", "ZR-350", "Walton", "Regina",
+    "Comet", "BMX", "Burrito", "Camper", "Marquis", "Baggage", "Dozer", "Maverick", "SAN News Maverick", "Rancher", "FBI Rancher", "Virgo", "Greenwood",
+    "Jetmax", "Hotring Racer", "Sandking", "Blista Compact", "Police Maverick", "Boxville", "Benson", "Mesa", "RC Goblin", "Hotring Racer", "Hotring Racer",
+    "Bloodring Banger", "Rancher", "Super GT", "Elegant", "Journey", "Bike", "Mountain Bike", "Beagle", "Cropduster", "Stuntplane", "Tanker", "Roadtrain",
+    "Nebula", "Majestic", "Buccaneer", "Shamal", "Hydra", "FCR-900", "NRG-500", "HPV1000", "Cement Truck", "Towtruck", "Fortune", "Cadrona", "FBI Truck",
+    "Willard", "Forklift", "Tractor", "Combine Harvester", "Feltzer", "Remington", "Slamvan", "Blade", "Freight", "Brown Streak", "Vortex", "Vincent",
+    "Bullet", "Clover", "Sadler", "Firetruck LA", "Hustler", "Intruder", "Primo", "Cargobob", "Tampa", "Sunrise", "Merit", "Utility Van", "Nevada",
+    "Yosemite", "Windsor", "Monster", "Monster", "Uranus", "Jester", "Sultan", "Stratum", "Elegy", "Raindance", "RC Tiger", "Flash", "Tahoma", "Savanna",
+    "Bandito", "Freight", "Brown Streak", "Kart", "Mower", "Dune", "Sweeper", "Broadway", "Tornado", "AT-400", "DFT-30", "Huntley", "Stafford", "BF-400",
+    "Newsvan", "Tug", "Petrol Truck", "Emperor", "Wayfarer", "Euros", "Hotdog", "Club", "Freight Box", "Trailer", "Andromada", "Dodo", "RC Cam",
+    "Launch", "Police Car (LSPD)", "Police Car (SFPD)", "Police Car (LVPD)", "Ranger", "Picador", "S.W.A.T.", "Alpha", "Phoenix", "Glendale", "Sadler",
+    "Luggage A", "Luggage B", "Stairs", "Boxville", "Tiller", "Utility Trailer"
 }
 
 /**
@@ -76,44 +76,7 @@ method vehicle::getNearestToScreenCenter(radius) {
  */
 method vehicle::getName(id) {
     assert(id >= 400 && id <= 611, "Vehicle-ID should be in 400..611 range!")
-
-    return match tonumber(id) {
-        525 => "Towtruck",
-        552 => "Utility Van",
-        437 => "Coach",
-        582 => "Newsvan",
-        431 => "Bus",
-        510 => "Mountain Bike",
-        490 => "FBI Rancher",
-        488 => "SAN News Maverick",
-        497 => "Police Maverick",
-        420 => "Taxi",
-        416 => "Ambulance",
-        472 => "Coastguard",
-        528 => "FBI Truck",
-        406 => "Dumper",
-        407 => "Firetruck",
-        408 => "Trashmaster",
-        428 => "Securicar",
-        438 => "Cabbie",
-        443 => "Packer",
-        471 => "Quad",
-        485 => "Baggage",
-        486 => "Dozer",
-        524 => "Cement Truck",
-        530 => "Forklift",
-        531 => "Tractor",
-        532 => "Combine Harvester",
-        544 => "Firetruck LA",
-        571 => "Kart",
-        572 => "Mower",
-        574 => "Sweeper",
-        596 => "Police Car (LSPD)",
-        597 => "Police Car (SFPD)",
-        598 => "Police Car (LVPD)",
-        509 => "Bike",
-        default => getGxtText(getNameOfVehicleModel(tonumber(id)))
-    }
+    return self.names[id - 399]
 }
 
 /**
