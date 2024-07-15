@@ -78,6 +78,8 @@ method HotKey::isLargeKey(key) {
         VK_LCONTROL ||
         VK_LSHIFT   ||
         VK_RSHIFT   ||
+        VK_XBUTTON1 ||
+        VK_XBUTTON2 ||
         VK_RETURN   => true,
         default     => false
     }
@@ -154,6 +156,12 @@ method HotKey::getDownKeys(limit = 2) {
 
     self::sortKeys(keys)
 
+    if (keys[1] == VK_XBUTTON2 || keys[1] == VK_XBUTTON1) &&
+       (keys[2] == VK_XBUTTON2 || keys[2] == VK_XBUTTON1)
+    {
+        return { keys[1] }
+    }
+
     return keys
 }
 
@@ -209,7 +217,29 @@ method HotKey::setupWatcher(event, wparam, lparam) {
                 }
             }
         }
-    } elseif event == wm.WM_KEYUP || event == wm.WM_SYSKEYUP {
+    } elseif event == wm.WM_XBUTTONDOWN {
+        if changingHotKey {
+            return consumeWindowMessage(true, false)
+        }
+
+        for _, hotKey in allHotKeys {
+            if #hotKey.keys == 1 && (hotKey.keys[1] == VK_XBUTTON1 || hotKey.keys[1] == VK_XBUTTON2)
+                && ((wparam & 0xFF) == (hotKey.keys[1] - 4) * 32)
+            {
+                if local item = hotKeysCallbacks[hotKey.id] {
+                    if (!item.keysDown || item.canHoldKeys) && self::canUseHotKey(item.condition) {
+                        item.callback()
+
+                        if !item.canHoldKeys {
+                            item.keysDown = true
+                        }
+
+                        consumeWindowMessage(true, true)
+                    }
+                }
+            }
+        }
+    } elseif event == wm.WM_KEYUP || event == wm.WM_SYSKEYUP || event == wm.WM_XBUTTONUP {
         for _, hotKey in allHotKeys {
             if local item = hotKeysCallbacks[hotKey.id] {
                 if item.keysDown {
@@ -435,7 +465,9 @@ method HotKey::render(defaultSize = imgui.ImVec2(80, 25), onChangedCallback) {
             }
     
             if local keys = self::getDownKeys() {
-                animations::hint("Эти клавиши уже зарегистрированы!", fn {
+                local label = (#keys == 1) ? "Эта клавиша уже зарегистрирована!" : "Эти клавиши уже зарегистрированы!"
+
+                animations::hint(label, fn {
                     return #keys > 0 && self::isKeysDefined(keys, self.id)
                 }, nil, common::convertHex2ImVec4("E46876"))
 
