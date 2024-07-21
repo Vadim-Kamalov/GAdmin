@@ -118,20 +118,13 @@ method requests::fetchUserThemes() {
         self::asyncHttpRequest("GET", $THEMES_URL, {}, fn (response) {
             if response.status_code == 200 {
                 userThemes = {}
-
-                local assets  = import("Assets")
-                local handler = assets::copyTable(require("xmlhandler.tree"))
-                local parser  = xml2lua.parser(handler)
-
-                parser::parse(response.text)
-
-                for _, theme in assets::getXMLElements(handler.root.UserThemes, "theme") {
+                for attributes with string.gmatch(response.text, "<%s*theme%s+(.-)/>") {
                     table.insert(userThemes, {
-                        author      = theme._attr.author,
-                        version     = theme._attr.version,
-                        title       = theme._attr.title,
-                        link        = theme._attr.link,
-                        description = theme._attr.description
+                        author      = string.match(attributes, "author%s*=%s*\"(.-)\""),
+                        version     = string.match(attributes, "version%s*=%s*\"(.-)\""),
+                        title       = string.match(attributes, "title%s*=%s*\"(.-)\""),
+                        link        = string.match(attributes, "link%s*=%s*\"(.-)\""),
+                        description = string.match(attributes, "description%s*=%s*\"(.-)\"")
                     })
                 }
             } else {
