@@ -29,8 +29,6 @@
 
 style::registerWindow("imgui.windows.GReport", "Окно /greport")
 
-local focusKeyboard = false
-
 greport.window.answerInput ??=imgui.new.char[65535]()
 
 addEventHandler("onWindowMessage", fn(event, wparam, lparam) {
@@ -44,46 +42,33 @@ addEventHandler("onWindowMessage", fn(event, wparam, lparam) {
 })
 
 imgui.OnFrame(fn { return greport.window.state && !isGamePaused() && config.root.windows.greport.use }, fn(self) {
-    self.flags = imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoScrollbar
+    self.flags      = imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoScrollbar
+    self.HideCursor = imguiAssets::getCursorStatus()
 
     local sizeX, sizeY = getScreenResolution()
 
-    //! Close and open window animation.
-    if greport.window.closeAndOpenAnimation.clock {
-        if greport.window.recentlyOpened { //! Open animation.
-            if os.clock() - greport.window.closeAndOpenAnimation.clock >= 0.2 {
-                greport.window.recentlyOpened               = false
-                greport.window.closeAndOpenAnimation.clock  = nil
-                focusKeyboard                               = true
-            } else {
-                greport.window.closeAndOpenAnimation.alpha = imguiAssets::bringFloatTo($, 1, greport.window.closeAndOpenAnimation.clock, 0.2)
-            }
-        } else { //! Close animatiion.
-            if os.clock() - greport.window.closeAndOpenAnimation.clock >= 0.2 {
-                greport.window.state                        = false
-                greport.window.closeAndOpenAnimation.clock  = nil
+    greport.window.closeAndOpenAnimation.alpha = imguiAssets::bringFloatTo(
+        $,
+        (greport.window.closing) ? 0 : 255,
+        greport.window.closeAndOpenAnimation.clock,
+        0.2
+    )
 
-                if greport.player.active {
-                    greport.player.clock = os.clock()
-                }
-
-                imgui.StrCopy(greport.window.answerInput, "")
-            } else {
-                greport.window.closeAndOpenAnimation.alpha = imguiAssets::bringFloatTo($, 0, greport.window.closeAndOpenAnimation.clock, 0.2)
-            }
+    if greport.window.closeAndOpenAnimation.alpha == 0 && greport.window.closing {
+        greport.window.closing = false
+        greport.window.state   = false
+    
+        if greport.player.active {
+            greport.player.clock = os.clock()
         }
-    }
 
-    //! Handle `greport.window.recentlyOpened` variable. Need for open animation.
-    if greport.window.closeAndOpenAnimation.alpha == 0 {
-        greport.window.recentlyOpened               = true
-        greport.window.closeAndOpenAnimation.clock  = os.clock()
+        imgui.StrCopy(greport.window.answerInput, "")
     }
 
     imgui.SetNextWindowSize(imgui.ImVec2(600, 300))
     imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2, sizeY / 2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
 
-    imgui.PushStyleVarFloat(imgui.StyleVar.Alpha, greport.window.closeAndOpenAnimation.alpha)
+    imgui.PushStyleVarFloat(imgui.StyleVar.Alpha, greport.window.closeAndOpenAnimation.alpha / 255)
     style::beginWindowStyleChangeable("imgui.windows.GReport")
     imgui.Begin("imgui.windows.GReport", nil, self.flags)
         local itemFullWidth = imgui.GetWindowWidth() - imgui.GetStyle().WindowPadding.x * 2 
@@ -101,9 +86,9 @@ imgui.OnFrame(fn { return greport.window.state && !isGamePaused() && config.root
                 imgui.BeginGroup()
                     imgui.SetNextItemWidth(itemFullWidth)
 
-                    if focusKeyboard {
+                    if greport.window.focusKeyboard {
                         imgui.SetKeyboardFocusHere()
-                        focusKeyboard = false
+                        greport.window.focusKeyboard = false
                     }
 
                     imgui.InputTextWithHint(

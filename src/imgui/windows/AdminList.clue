@@ -95,6 +95,7 @@ windows::new("imgui.windows.AdminList", {
                         config.root.windows.adminList.strokeSize,
                         color
                     )
+
                     if self.size.x < (imgui.GetItemRectSize().x + ((align == ALIGN_RIGHT) ? 10 : 0)) {
                         self.size.x = imgui.GetItemRectSize().x + ((align == ALIGN_RIGHT) ? 10 : 0)
                     }

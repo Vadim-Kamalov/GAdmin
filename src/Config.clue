@@ -25,7 +25,6 @@
 @import "Assets" => assets
 
 static enum /* NOTIFICATION_TYPE */ {
-    NOTIFICATION_TYPE_DEFAULT,
     NOTIFICATION_TYPE_SCRIPT_MESSAGE,
     NOTIFICATION_TYPE_NONE
 }
@@ -227,6 +226,7 @@ static __config__ = {
                 use              = false,
                 imguiStyle       = false,
                 renderBones      = false,
+                showDistance     = false,
                 notificationType = 1,
                 textSize         = 15
             },

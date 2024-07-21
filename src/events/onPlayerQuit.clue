@@ -27,7 +27,7 @@
 @import "Config"         => config
 @import "Assets"         => assets
 
-sampev.onPlayerQuit = fn(id) {
+method sampev.onPlayerQuit(id) {
     local nickname = sampGetPlayerNickname(id)
     
     if config.root.windows.playerChecker.use {
@@ -51,8 +51,7 @@ sampev.onPlayerQuit = fn(id) {
         }
     }
     
-    local CONNECTION_LOG_INDEX = 5
-    table.insert(allowedLogs[CONNECTION_LOG_INDEX][2], {
+    table.insert(allowedLogs[LOG_INDEX_CONNECTION][2], {
         time = assets::getLocalTime(),
         text = string.format("%s[%d] вышел из игры.", nickname, id)
     })

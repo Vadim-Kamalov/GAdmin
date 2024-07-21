@@ -86,7 +86,7 @@ global fn onWindowMessage(msg, wparam, lparam) {
         }
     }
 
-    if msg == wm.WM_SYSKEYDOWN || msg == wm.WM_KEYDOWN && !sampIsChatInputActive() && !isSampfuncsConsoleActive() && !sampIsDialogActive() {
+    if msg == wm.WM_SYSKEYDOWN || msg == wm.WM_KEYDOWN && !common::isInputsActive() {
         if greport.window.state && !isGamePaused() && config.root.windows.greport.use && wparam == 13 /* VK_ESCAPE */ {
             if #ffi.string(greport.window.answerInput) == 0 {
                 greport.window.noInputClock = os.clock()

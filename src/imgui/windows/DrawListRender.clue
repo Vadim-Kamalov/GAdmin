@@ -215,17 +215,30 @@ imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
                 if charCheck && user::getAloginStatus() {
                     local objects = {}
 
-                    if config.root.cheats.wallhack.use && useWallhack && config.root.cheats.wallhack.imguiStyle {
-                        for _, object in ({
-                            {
-                                text    = string.format("%s[%s] [X: %1.f]", sampGetPlayerNickname(id), id, distance),
-                                color   = common::convertHex2ImVec4(clistColorHex),
-                                size    = config.root.cheats.wallhack.textSize
-                            },
+                    if config.root.cheats.wallhack.use && useWallhack {
+                        if config.root.cheats.wallhack.imguiStyle {
+                            local text = (config.root.cheats.wallhack.showDistance)
+                                ? string.format("%s[%s] [X: %1.f]", sampGetPlayerNickname(id), id, distance)
+                                : string.format("%s[%s]", sampGetPlayerNickname(id), id)
+
+                            for _, object in ({
+                                {
+                                    text    = text,
+                                    color   = common::convertHex2ImVec4(clistColorHex),
+                                    size    = config.root.cheats.wallhack.textSize
+                                },
                             
-                            "NewLine"
-                        }) {
-                            table.insert(objects, object)
+                                "NewLine"
+                            }) {
+                                table.insert(objects, object)
+                            }
+                        } elseif config.root.cheats.wallhack.showDistance {
+                            table.insert(objects, {
+                                text  = string.format("X: %1.f", distance),
+                                color = common::convertHex2ImVec4(clistColorHex),
+                                size  = config.root.cheats.wallhack.textSize
+                            })
+                            table.insert(objects, "NewLine")
                         }
                     }
 

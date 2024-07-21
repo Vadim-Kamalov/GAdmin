@@ -29,7 +29,7 @@ local sizeX, sizeY = getScreenResolution()
 
 imgui.OnFrame(fn { return autoUpdate.windowState }, fn(self) {
     self.HideCursor = imguiAssets::getCursorStatus()
-    self.flags      = imgui.WindowFlags.NoMove + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoScrollbar
+    self.flags      = imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoScrollbar
 
     imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2, sizeY / 2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
     imgui.SetNextWindowSize(imgui.ImVec2(720, 400))

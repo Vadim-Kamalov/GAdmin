@@ -20,7 +20,7 @@
 
 @import "game.Spectator" => spectator
 
-sampev.onVehicleSync = fn(id, _, data) {
+method sampev.onVehicleSync(id, _, data) {
     if id == spectator.id {
         if spectator.platform == PLATFORM_PC {
             for _, arguments in ({

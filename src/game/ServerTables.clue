@@ -98,12 +98,14 @@ return {
             "Intruder", "6500$",
             "Emperor", "7000$",
             "Sentinel", "7500$",
+            "Benson", "8000$"
             "Willard", "8000$",
             "Cadrona", "8500$",
             "Vincent", "9000$",
             "Merit", "10000$",
             "Admiral", "10000$",
             "Windsor", "10500$",
+            "Boxvile", "11000$"
             "Bobcat", "11500$",
             "Blistacompact", "11500$",
             "Burrito", "12500$",
@@ -119,18 +121,26 @@ return {
             "Yosemite", "17500$",
             "Uranus", "17500$",
             "Rancher", "18000$",
+            "Mule", "18500$"
             "Euros", "19000$",
             "Landstalker", "20000$",
             "Jester", "20000$",
             "Flash", "20000$",
             "Stratum", "23000$",
+            "Utility Van", "25000$"
             "Sultan", "25000$",
             "Elegy", "27500$",
             "Huntley", "27500$",
             "Comet", "28000$",
             "Hotknife", "27500$",
+            "DFT-30", "35000$",
+            "Yankee", "35000$",
             "ZR-350", "40000$",
+            "Flatbed", "55000$"
+            "Linerunner", "75000$"
             "Buffalo", "75000$",
+            "Tanker", "85000$",
+            "Roadtrain", "100000$"
             "Banshee", "215000$",
             "SuperGT", "250000$",
             "Cheetah", "575000$",

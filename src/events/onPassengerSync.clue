@@ -20,7 +20,7 @@
 
 @import "game.Spectator" => spectator
 
-sampev.onPassengerSync = fn(id, data) {
+method sampev.onPassengerSync(id, data) {
     if id == spectator.id {
         //! Why is there no sync check for mobile devices? Yes, you can also track this, but at the output we will get
         //! only four keys: ALT, F, H, 2. Synchronization is also sent to the Y and N keys, but they will always be zero.

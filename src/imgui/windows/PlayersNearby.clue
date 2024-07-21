@@ -22,7 +22,6 @@
 @import "imgui.Assets"          => imguiAssets
 @import "imgui.StyleChanger"    => StyleChanger
 @import "imgui.Animations"      => animations
-@import "imgui.drawList.Shadow" => shadow
 
 @import "game.User"         => user
 @import "game.Admins"       => admins
@@ -34,7 +33,7 @@
 @import "Assets"    => assets
 @import "Algorithm" => algorithm
 
-local sizeX, sizeY  = getScreenResolution()
+local _, sizeY  = getScreenResolution()
 local randomPlayers = {}
 
 /**
@@ -50,7 +49,7 @@ local fn getAllPlayersNearby(isChangingWindowsPositions) {
     if !isSampAvailable() { return playersNearby }
     if isChangingWindowsPositions {
         if #randomPlayers != config.root.windows.playersNearby.maxPlayers {
-            for i = 1, config.root.windows.playersNearby.maxPlayers {
+            for _ = 1, config.root.windows.playersNearby.maxPlayers {
                 table.insert(randomPlayers, {
                     distance    = math.random(1, 230)
                     nickname    = assets.randomICNicknames[math.random(#assets.randomICNicknames)]

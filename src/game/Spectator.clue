@@ -186,7 +186,7 @@ method __spectator__::loop() {
                 sampSendMenuSelectRow(SPECTATOR_MENU_SWITCH)
                 wait(1000)
 
-                result, handle = self::getHandle()
+                result = self::getHandle()
             }
         }
     }

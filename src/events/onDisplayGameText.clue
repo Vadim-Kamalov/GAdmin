@@ -20,10 +20,8 @@
 
 @import "game.Spectator" => spectator
 
-sampev.onDisplayGameText = fn(style, time, text) {
-    if text == "~b~Some kind of bug" {
-        spectator::exit()
-    } elseif text == "~b~Spectate Exit" {
+method sampev.onDisplayGameText(style, time, text) {
+    if text == "~b~Some kind of bug" || text == "~b~Spectate Exit" {
         spectator::exit()
     }
 }

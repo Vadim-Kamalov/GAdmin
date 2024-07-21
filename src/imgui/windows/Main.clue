@@ -24,7 +24,6 @@
 @import "imgui.HotKey"          => HotKey
 @import "imgui.Style"           => style
 @import "imgui.PlayerNotes"     => playerNotes
-@import "imgui.drawList.Shadow" => shadow
 @import "imgui.InputTextFilter" => InputTextFilter
 
 @import "game.Binder"           => binder
@@ -77,7 +76,7 @@ static mainWindow = nil
 local window = {
     state                 = false,
     frame                 = {},
-    recentlyOpened        = false,
+    closing               = false,
     closeAndOpenAnimation = { alpha = 0, clock = nil }
     menu                  = {
         UI_MENU_ITEMS   = {},
@@ -297,6 +296,7 @@ local window = {
                 }},
                 { "textSize", "Размер текста в ImGui рендере", WINDOW_WIDGET_SLIDER_INT, 5, 50, imgui.new.int(config.root.cheats.wallhack.textSize) },
                 { "renderBones", "Рисовать кости на скине", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.cheats.wallhack.renderBones) },
+                { "showDistance", "Отображать дистанцию", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.cheats.wallhack.showDistance) },
                 { "notificationType", "Тип оповещения при нажатии на хоткей", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.cheats.wallhack.notificationType), "ImGui оповещение", "Сообщение в чат", "Отсутствует" },
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP }
         }},
@@ -469,8 +469,10 @@ ap = kick <id> AFK public place`, WINDOW_WIDGET_SWITCH, imgui.new.bool(config.ro
  */
 method window::open() {
     if !self.state {
-        self.closeAndOpenAnimation.alpha = 0
-        self.state = true
+        self.closeAndOpenAnimation.clock  = os.clock()
+        self.state                        = true
+        
+        imguiAssets::setCursorStatus(false)
     }
 }
 
@@ -480,7 +482,10 @@ method window::open() {
  */
 method window::close() {
     if self.state {
-        self.closeAndOpenAnimation.clock = os.clock()
+        self.closeAndOpenAnimation.clock  = os.clock()
+        self.closing                      = true
+
+        imguiAssets::setCursorStatus(true)
     }
 }
 
@@ -613,31 +618,15 @@ HotKey::new("imgui.windows.Main", { VK_X }, "Открыть/закрыть эт�
 mainWindow = window
 
 imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn(self) {
-    self.flags  = imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoScrollbar
-    self.flags += (window.menu.width > 60) ? imgui.WindowFlags.NoInputs : 0
+    self.HideCursor = imguiAssets::getCursorStatus()
+    self.flags      = imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoScrollbar
+    self.flags     += (window.menu.width > 60) ? imgui.WindowFlags.NoInputs : 0
 
-    //! Close and open window animation.
-    if window.closeAndOpenAnimation.clock {
-        if window.recentlyOpened { //! Open animation.
-            if os.clock() - window.closeAndOpenAnimation.clock >= 0.2 {
-                window.recentlyOpened               = false
-                window.closeAndOpenAnimation.clock  = nil
-            } else {
-                window.closeAndOpenAnimation.alpha = imguiAssets::bringFloatTo($, 1, window.closeAndOpenAnimation.clock, 0.2)
-            }
-        } else { //! Close animatiion.
-            if os.clock() - window.closeAndOpenAnimation.clock >= 0.1 {
-                window.state                        = false
-                window.closeAndOpenAnimation.clock  = nil
-            } else {
-                window.closeAndOpenAnimation.alpha = imguiAssets::bringFloatTo($, 0, window.closeAndOpenAnimation.clock, 0.2)
-            }
-        }
-    }
-
-    if window.closeAndOpenAnimation.alpha == 0 {
-        window.recentlyOpened               = true
-        window.closeAndOpenAnimation.clock  = os.clock()
+    window.closeAndOpenAnimation.alpha = imguiAssets::bringFloatTo($, (window.closing) ? 0.0 : 1.0, window.closeAndOpenAnimation.clock, 0.2)
+    
+    if window.closeAndOpenAnimation.alpha == 0 && window.closing {
+        window.closing = false
+        window.state   = false
     }
     
     imgui.SetNextWindowPos(imgui.ImVec2(sizeX / 2, sizeY / 2), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
@@ -648,19 +637,6 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn(self) {
     imgui.PushStyleVarFloat(imgui.StyleVar.Alpha, window.closeAndOpenAnimation.alpha)
     imgui.PushStyleVarVec2(imgui.StyleVar.WindowPadding, imgui.ImVec2(0, 0))
         imgui.Begin("imgui.windows.Main", nil, self.flags)
-            {
-                local pos   = imgui.GetWindowPos()
-                local size  = imgui.GetWindowSize()
-                shadow::apply(
-                    imgui.GetBackgroundDrawList(),
-                    imgui.ImVec2(pos.x + 5, pos.y + 5),
-                    imgui.ImVec2(size.x - 10, size.y - 10),
-                    24.0,
-                    math.floor(math.floor(window.closeAndOpenAnimation.alpha * 255) / 255) * 100,
-                    2
-                )
-            }
-
             imgui.SetCursorPos(imgui.ImVec2(60 + imgui.GetStyle().ItemSpacing.x, 7))
             imgui.PushStyleVarFloat(imgui.StyleVar.Alpha, window.closeAndOpenAnimation.alpha - window.menu.alpha / 255 / 2 - window.menu.switchBetweenFramesAlpha)
             imgui.BeginGroup()
@@ -2317,6 +2293,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn(self) {
             }
 
             imgui.SetCursorPos(imgui.ImVec2(0, 0))
+            imgui.PushStyleVarFloat(imgui.StyleVar.ChildRounding, 50)
             imgui.PushStyleVarFloat(imgui.StyleVar.ChildBorderSize, 0)
                 imgui.SetCursorPosY(imgui.GetScrollY())
                 imgui.BeginChild("imgui.windows.Main.menu", imgui.ImVec2(window.menu.width, imgui.GetWindowHeight()), true)
@@ -2326,10 +2303,14 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn(self) {
                     local textColor = imgui.GetStyle().Colors[imgui.Col.Text]
                           textColor = imgui.ImVec4($.x, $.y, $.z, window.closeAndOpenAnimation.alpha)
 
+                    local borderSize = imgui.GetStyle().WindowBorderSize
+
                     imgui.GetWindowDrawList()::AddRectFilled(
-                        imgui.GetWindowPos() + imgui.ImVec2(10, 10),
-                        imgui.GetWindowPos() + imgui.ImVec2(window.menu.width, imgui.GetWindowHeight()),
-                        imgui.ColorConvertFloat4ToU32(color)
+                        imgui.GetWindowPos() + imgui.ImVec2(borderSize, borderSize),
+                        imgui.GetWindowPos() + imgui.ImVec2(window.menu.width, imgui.GetWindowHeight() - borderSize),
+                        imgui.ColorConvertFloat4ToU32(color),
+                        imgui.GetStyle().WindowRounding,
+                        5
                     )
 
                     imgui.PushStyleVarVec2(imgui.StyleVar.ButtonTextAlign, imgui.ImVec2(0.5, 0.85))
@@ -2367,7 +2348,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn(self) {
                         window.menu::item("imgui.windows.Main.menu.statistics", icons.ICON_TREE_MAP, "Статистика", 10)
                     imgui.EndGroup()
                 imgui.EndChild()
-            imgui.PopStyleVar()
+            imgui.PopStyleVar(2)
             
             if window.binder.callPopup {
                 imgui.OpenPopup("imgui.windows.Main.Popup")

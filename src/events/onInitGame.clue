@@ -18,7 +18,7 @@
  * SPDX-License-Identifier: GPL-3.0-only
  */
 
-sampev.onInitGame = fn {
+method sampev.onInitGame() {
     scriptLoadedWithGame            = true
     onTogglePlayerControllableCount = 0
 }

@@ -85,8 +85,7 @@ static __commandRequester__ = {
         { "iban",       COMMAND_REQUEST_TYPE_COMMENTARY,    4 },
         { "jail",       COMMAND_REQUEST_TYPE_COMMENTARY,    2 },
         { "vspawn",     COMMAND_REQUEST_TYPE_NO_COMMENTARY, 2 },
-        { "vfuel",      COMMAND_REQUEST_TYPE_NO_COMMENTARY, 3 },
-        { "cflip",      COMMAND_REQUEST_TYPE_NO_COMMENTARY, 2 }
+        { "vfuel",      COMMAND_REQUEST_TYPE_NO_COMMENTARY, 3 }
     } 
 }
 
@@ -258,7 +257,11 @@ method __commandRequester__::remove() {
  * @return boolean          Wheather `command` is in `self.allowedCommands`.
  */
 method __commandRequester__::new(from, command) {
-    if isGamePaused() || !config.root.additions.commandRequester.use { return false }
+    if isGamePaused() || !config.root.additions.commandRequester.use 
+       || !user::getAloginStatus()
+    {
+        return false
+    }
 
     local commandType = COMMAND_REQUEST_TYPE_NONE
     local commandLvl  = 0

@@ -44,7 +44,7 @@
 @import "game.User"      => user
 @import "game.Spectator" => spectator
 
-@define GADMIN_VERSION  "1.7.2"
+@define GADMIN_VERSION  "1.7.4"
 @define SACHESS_VERSION "1.1"
 
 @define COMMAND_DELAY       800
@@ -183,6 +183,13 @@ global fn main() {
 
     encoding.default = "CP1251"
 
+@ifndef __GADMIN_DEBUG__
+{
+    if sampGetCurrentServerAddress() != $SERVER_ADDRESS {
+        thisScript()::unload()
+    }
+}
+
     /** 
      * Initializing hot keys that used in this module.
      */
@@ -287,12 +294,16 @@ global fn main() {
         }
     }
 
+    timers::add(fn { return true }, fn {
+        requests::fetchNicknameColors()
+        requests::fetchUserThemes()
 @ifndef __GADMIN_DEBUG__
 {
-    if sampGetCurrentServerAddress() != $SERVER_ADDRESS {
-        thisScript()::unload()
-    }
+        if !autoUpdate.windowState {
+            autoUpdate::checkUpdates($AUTOUPDATE_URL)
+        }
 }
+    }, 300)
 
     common::makeDirectoryTree({ "GAdmin", "GAdmin/temp", "GAdmin/config", "GAdmin/logs", "GAdmin/profiles" })
     assets::changeWallhackState(false)
@@ -310,62 +321,12 @@ global fn main() {
     $debugInformation!("system", "samp.dll base address: 0x" .. bit.tohex($SAMP_BASE))
     $debugSuccessful!("system", "CInput::RecallUp hook installed. Base address: 0x" .. bit.tohex($RECALL_UP_ADDR))
     $debugSuccessful!("system", "CInput::RecallDown hook installed. Base address: 0x" .. bit.tohex($RECALL_DOWN_ADDR))
+    
+    import("DebugCommands")::init()
+
+    $debugSuccessful!("system", "registered `gdebug.*` debug commands")
     $debugSuccessful!("system", "GAdmin " .. $GADMIN_VERSION .." compelety loaded!")
 }
-
-    /**
-     * Fetching nickname colors that listed in `$NICKNAME_COLORS_URL`. Lines are represented
-     * as `nickname = [ FIRST-COLOR, SECOND-COLOR, ..., N-COLOR ]`. Colors are hexadecimal numbers
-     * in `0xRRGGBB` format.
-     */
-    lua_thread.create(fn {
-        requests::asyncHttpRequest("GET", $NICKNAME_COLORS_URL, {}, fn (response) {
-            if response.status_code == 200 {
-                for line with string.gmatch(response.text, "[^\n]+") {
-                    if local nickname, colors = string.match(line, "^(%S+)%s*=%s*%[([%s,0xX%x]+)]") {
-                        local fetchedColors = {}
-                        
-                        for color with string.gmatch(colors, "0x%x+") {
-                            table.insert(fetchedColors, tonumber(color))
-                        }
-
-                        table.insert(nicknameColors, { nickname = nickname, colors = fetchedColors })
-                    }
-                }
-            } else {
-                $debugWarning!("system", "failed to fetch $NICKNAME_COLORS_URL")
-            }
-        }, fn (error) {
-            $debugWarning!("system", "failed to fetch $NICKNAME_COLORS_URL, error:")
-            $debugWarning!("system", error)
-        })
-    })
-
-    lua_thread.create(fn {
-        requests::asyncHttpRequest("GET", $THEMES_URL, {}, fn (response) {
-            if response.status_code == 200 {
-                local handler = require("xmlhandler.tree")
-                local parser  = xml2lua.parser(handler)
-                
-                parser::parse(response.text)
-
-                for _, theme in assets::getXMLElements(handler.root.UserThemes, "theme") {
-                    table.insert(userThemes, {
-                        author      = theme._attr.author,
-                        version     = theme._attr.version,
-                        title       = theme._attr.title,
-                        link        = theme._attr.link,
-                        description = theme._attr.description
-                    })
-                }
-            } else {
-                $debugWarning!("system", "failed to fetch $THEMES_URL")
-            }
-        }, fn (error) {
-            $debugWarning!("system", "failed to fetch, $THEMES_URL, error:")
-            $debugWarning!("system", error)
-        })
-    })
 
     sampRegisterChatCommand("gadmin", fn { mainWindow::switch() })
 

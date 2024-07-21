@@ -38,12 +38,14 @@ local InputTextFilter = {}; InputTextFilter.__index = InputTextFilter
  * @return InputTextFilter
  */
 method InputTextFilter::new() {
-    setmetatable({}, self)
+    local instance = {}
 
+    setmetatable(instance, self)
+    
     self.__index    = self
-    self.buffer     = imgui.new.char[256]()
+    instance.buffer = imgui.new.char[256]()
 
-    return self
+    return instance
 }
 
 /**

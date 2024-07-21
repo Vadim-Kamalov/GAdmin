@@ -21,7 +21,7 @@
 @import "game.Spectator"    => spectator
 @import "Config"            => config
 
-sampev.onBulletSync = fn(id, data) {
+method sampev.onBulletSync(id, data) {
     if id == spectator.id {
         local information   = spectator::getInformation()
         local shotHit       = (data.targetType == 0 || data.targetType == 3) ? 0 : 1 

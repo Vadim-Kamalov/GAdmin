@@ -23,10 +23,7 @@
 @import "Common"        => common
 @import "Assets"        => assets
 
-static __imguiAssets__ = {
-    cursor = true,
-    lastCursorPosition = nil
-}
+static __imguiAssets__ = { cursor = true }
 
 /**
  * @return boolean Whether the ImGui cursor is active (Cursor Status).

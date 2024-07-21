@@ -20,7 +20,7 @@
 
 @import "game.Spectator" => spectator
 
-sampev.onPlayerSync = fn(id, data) {
+method sampev.onPlayerSync(id, data) {
     if id == spectator.id {
         if spectator.platform == PLATFORM_PC {
             for _, arguments in ({

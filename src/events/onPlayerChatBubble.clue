@@ -20,7 +20,7 @@
 
 @import "Config" => config
 
-sampev.onPlayerChatBubble = fn(playerId, color, distance, duration, message) {
+method sampev.onPlayerChatBubble(playerId, color, distance, duration, message) {
     if config.root.windows.farChat.use {
         if color == -413892353 && string.sub(message, 1, 1) != '*' {
             return { playerId, color, distance, duration, message }

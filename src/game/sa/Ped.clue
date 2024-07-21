@@ -163,7 +163,7 @@ method ped::isBehindWall(ped) {
     local result, _     = sampGetPlayerIdByCharHandle(ped)
 
     if result && isCharOnScreen(ped) {
-        if ped == PLAYER_PED { behindWall = true }
+        if ped == PLAYER_PED { return true }
         
         local x, y, z       = self::getBodyPartCoordinates(8, ped)
         local x1, y1, z1    = getActiveCameraCoordinates()
@@ -186,25 +186,21 @@ method ped::isBehindWall(ped) {
  * @return void
  */
 method ped::teleport(x, y, z) {
-    local fn setEntityCoordinates(entityPtr, x, y, z) {
-        if entityPtr != 0 {
-            local matrixPtr = readMemory(entityPtr + 0x14, 4, false)
-            if matrixPtr != 0 {
-                local posPtr = matrixPtr + 0x30
-                writeMemory(posPtr + 0, 4, representFloatAsInt(x), false)
-                writeMemory(posPtr + 4, 4, representFloatAsInt(y), false)
-                writeMemory(posPtr + 8, 4, representFloatAsInt(z), false)
-            }
-        }
-    }
-
     if isCharInAnyCar(PLAYER_PED) {
         setCharCoordinates(PLAYER_PED, x, y, z)
     }
 
     if doesCharExist(PLAYER_PED) {
         local pointer = getCharPointer(PLAYER_PED)
-        setEntityCoordinates(pointer, x, y, z)
+        if pointer != 0 {
+            local matrixPointer = readMemory(pointer + 0x14, 4, false)
+            if matrixPointer != 0 {
+                local posPointer = matrixPointer + 0x30
+                writeMemory(posPointer + 0, 4, representFloatAsInt(x), false)
+                writeMemory(posPointer + 4, 4, representFloatAsInt(y), false)
+                writeMemory(posPointer + 8, 4, representFloatAsInt(z), false)
+            }
+        }
     }
 }
 

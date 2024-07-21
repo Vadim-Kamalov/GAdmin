@@ -20,7 +20,7 @@
 
 @import "game.Spectator" => spectator
 
-sampev.onTextDrawHide = fn(id) {
+method sampev.onTextDrawHide(id) {
     if id == spectator.textDrawId {
         spectator::exit()
     }

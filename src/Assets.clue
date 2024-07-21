@@ -356,7 +356,7 @@ method assets::convertARGBToU32(argb) {
  */
 method assets::getXMLElements(where, what) {
     if where {
-        if #where[what] > 1 {
+        if where[what] && #where[what] > 1 {
             local elements = {}
             for _, element in where[what] { table.insert(elements, element) }
             return elements

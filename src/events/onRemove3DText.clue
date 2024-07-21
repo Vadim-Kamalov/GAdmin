@@ -20,7 +20,7 @@
 
 @import "game.Spectator" => spectator
 
-sampev.onRemove3DTextLabel = fn(id) {
+method sampev.onRemove3DTextLabel(id) {
     if spectator.information.stage {
         if id == tonumber(string.match(spectator.information.stage, ".*##(%d+)")) {
             spectator.information.stage = "0"

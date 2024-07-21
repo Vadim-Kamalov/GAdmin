@@ -50,7 +50,7 @@ method StyleChanger::new(style) {
  */
 method StyleChanger::apply() {
     for property, style of self {
-        if string.find(tostring(style), "^ImVec2") || type(style) == "number" {
+        if ffi.istype("ImVec2", style) || type(style) == "number" {
             imgui.GetStyle()[property] = style
         } else {
             imgui.GetStyle().Colors[imgui.Col[property]] = (type(style) == "string") ? 
@@ -69,7 +69,7 @@ method StyleChanger::apply() {
 method StyleChanger::reset() {
     for property, oldValue of self {
         if local defaultValue = style.def[property] {
-            if string.find(tostring(oldValue), "^ImVec2") || type(oldValue) == "number" {
+            if ffi.istype("ImVec2", oldValue) || type(oldValue) == "number" {
                 imgui.GetStyle()[property] = defaultValue
             } else {
                 imgui.GetStyle().Colors[imgui.Col[property]] = defaultValue
@@ -98,8 +98,9 @@ method StyleChanger::update(style) {
  */
 method StyleChanger::getConfigSafeTable() {
     local result = {}
+
     for property, value of self {
-        if string.find(tostring(value), "^ImVec2") {
+        if ffi.istype("ImVec2", value) {
             result[property] = { value.x, value.y }
         } elseif type(value) == "number" {
             result[property] = value
@@ -108,6 +109,7 @@ method StyleChanger::getConfigSafeTable() {
             result[property] = { value.x, value.y, value.z, value.w }
         }
     }
+    
     return result
 }
 

@@ -50,21 +50,6 @@ static __autoUpdate__ = {
 }
 
 /**
- * Merges two JSON strings into a single file.
- *
- * @param file string   The file where the merged JSON string will be written.
- * @param first string  JSON
- * @param second string JSON
- * @return void
- */
-method __autoUpdate__::mergeJson(file, first, second) {
-    if doesFileExist(file) {
-        first, second = decodeJson(first), decodeJson(second)
-        common::writeInFile(file, neatJSON(assets::mergeTables(first, second), { sort = true, wrap = 40 }))
-    }
-}
-
-/**
  * Update script with settings that passed in AutoUpdate.xml. **Must** called after `autoUpdate::checkUpdates(url)`!
  * @return void
  */
@@ -86,23 +71,6 @@ method __autoUpdate__::update() {
                 wait(5000) // to prevent possible `error in error handling` error message.
                 script.this::reload()
             })
-        }
-    }
-
-    // TODO: are we still need this?
-    if self.handler.root.AutoUpdate.merge {
-        if #self.handler.root.AutoUpdate.merge.json > 1 {
-            local this = self.handler.root.AutoUpdate.merge.json
-            for _, json in this {
-                local src   = getWorkingDirectory() .. "\\" .. json._attr.src
-                local value = json[1]
-                self::mergeJson(src, common::readFileContent(src), value)
-            }
-        } elseif #self.handler.root.AutoUpdate.merge.json == 1 {
-            local this  = self.handler.root.AutoUpdate.merge.json
-            local src   = getWorkingDirectory() .. "\\" .. this._attr.src
-            local value = this[1]
-            self::mergeJson(src, common::readFileContent(src), value)
         }
     }
 
@@ -146,8 +114,9 @@ method __autoUpdate__::checkUpdates(url) {
         requests::asyncHttpRequest("GET", url, nil, fn (response) {
             if response.status_code == 200 {
                 try {
+                    self.handler = assets::copyTable(require("xmlhandler.tree"))
                     local parser = xml2lua.parser(self.handler)
-                
+
                     parser::parse(response.text)
 
                     if self.handler.root.AutoUpdate._attr.version != $GADMIN_VERSION 
@@ -160,7 +129,8 @@ method __autoUpdate__::checkUpdates(url) {
                         self.imgui.buttons.second   = self.handler.root.AutoUpdate.buttons._attr.second
                         self.imgui.buttons.third    = self.handler.root.AutoUpdate.buttons._attr.third
                         self.windowState            = true
-               
+                        
+                        imguiAssets::setCursorStatus(false)
 @ifdef __GADMIN_DEBUG__
 { 
                         $debugSuccessful!("autoUpdate.init", "window is called. awaiting response from user.")

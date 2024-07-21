@@ -21,7 +21,7 @@
 @import "game.Spectator"    => spectator
 @import "Config"            => config
 
-sampev.onShowMenu = fn {
+method sampev.onShowMenu() {
     if config.root.additions.hideSpectatorMenu.use {
         return false
     }

@@ -23,7 +23,7 @@
 
 local sendedCommand = false
 
-sampev.onTogglePlayerControllable = fn(controllable) {
+method sampev.onTogglePlayerControllable(controllable) {
     if scriptLoadedWithGame && controllable &&
         !sendedCommand && config.root.additions.autoAdminLogin.use
     {

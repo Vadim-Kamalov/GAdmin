@@ -144,12 +144,21 @@ window::new("imgui.windows.SpectatorKeys", {
                         imgui.SameLine()
                     }
 
+                    local newLinesCount = 1
+
                     imgui.BeginGroup()
                         imgui.PushFont(regular9)
                             for index, item in data[currentSyncType] {
                                 if type(item) == "string" {
                                     if item == "NewLine" {
-                                        imgui.NewLine()
+                                        local padding = imgui.GetStyle().WindowPadding
+                                        local x       = (platform == PLATFORM_ANDROID) ? (75 + imgui.GetStyle().ItemSpacing.x + padding.x) : padding.x
+                                        local y       = (imgui.GetItemRectSize().y + imgui.GetStyle().ItemSpacing.y) 
+                                            * newLinesCount + padding.y
+
+                                        imgui.SetCursorPos(imgui.ImVec2(x, y))
+                                        
+                                        newLinesCount += 1
                                     } else {
                                         animations::keyCap(string.upper(item) .. id, spectator.keys[platform][currentSyncType][item], imgui.ImVec2(35, 35))
                                         imgui.SameLine()
@@ -158,7 +167,7 @@ window::new("imgui.windows.SpectatorKeys", {
                                     animations::keyCap(string.upper(item[1]) .. id, spectator.keys[platform][currentSyncType][item[1]], item[2])
                                     imgui.SameLine()
                                 }
-                            } 
+                            }
                         imgui.PopFont()
                     imgui.EndGroup()
                 }

@@ -20,7 +20,16 @@
 
 @import "game.Spectator" => spectator
 
-sampev.onCreate3DText = fn(id, color, position, distance, testLOS, attachedPlayerId, attachedVehicleId, text) {
+method sampev.onCreate3DText(
+    id,
+    color,
+    position,
+    distance,
+    testLOS,
+    attachedPlayerId,
+    attachedVehicleId,
+    text
+) {
     local attachedPlayerId  = (attachedPlayerId == 65535) ? nil : attachedPlayerId
     local text              = u8(text)
     if attachedPlayerId {

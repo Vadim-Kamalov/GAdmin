@@ -25,7 +25,11 @@
 
 @import "game.User" => user
 
-sampev.onPlayerJoin = fn(id, color, isNpc, nickname) {
+static enum /** @enum LOG_INDEX */ {
+    LOG_INDEX_CONNECTION = 5
+}
+
+method sampev.onPlayerJoin(id, color, isNpc, nickname) {
     if config.root.windows.playerChecker.use && !isNpc && user::getAloginStatus() {
         for _, player in config.root.windows.playerChecker.players {
             if player.nickname == nickname {
@@ -47,8 +51,7 @@ sampev.onPlayerJoin = fn(id, color, isNpc, nickname) {
         }
     }
 
-    local CONNECTION_LOG_INDEX = 5
-    table.insert(allowedLogs[CONNECTION_LOG_INDEX][2], {
+    table.insert(allowedLogs[LOG_INDEX_CONNECTION][2], {
         time = assets::getLocalTime(),
         text = string.format("%s[%d] подключился к игре.", nickname, id)
     })

@@ -64,7 +64,7 @@ local commands = {
     { "/id", "Поиск игрока", COMMAND_ARGUMENT_PLAYER_NICKNAME },
     { "/afk", "Узнать, находится ли игрок в AFK", COMMAND_ARGUMENT_PLAYER_ID }, 
     { "/pame", "Посмотреть описание игрока", COMMAND_ARGUMENT_PLAYER_ID },
-    { "/mypame", "Управление описанием персонажа", COMMAND_ARGUMENT_PLAYER_ID }, 
+    { "/mypame", "Управление описанием персонажа" }, 
     { "/dmypame", "Удалить описание персонажа" },
     { "/action", "Установить/Убрать действие своего персонажа" }, 
     { "/time", "Информация о времени и дате" },
@@ -96,7 +96,6 @@ local commands = {
     { "/me", "Действия от первого лица" },
     { "/do", "Действия от третьего лица" }, 
     { "/n", "Писать в радио во время эфира" },
-    { "/try", "Попытка действия \"Удачно\" / \"Неудачно\"" }, 
     { "/todo", "Добавляет к сказанным словам деепричастный оборот" },
     { "/ame", "Действие от первого лица над головой" }, 
     { "/pame", "Описание персонажа от первого лица над головой" },
@@ -236,7 +235,7 @@ imgui.OnFrame(fn { return autoCompletion.condition() && config.root.windows.auto
         }
         
         for _, command in commands {
-            if string.find(inputText, "^" .. command[1] .. " ") { //! Working with command arguments.
+            if string.find(inputText, "^" .. command[1] .. " ") {
                 local index = 3
 
                 while #command >= index {

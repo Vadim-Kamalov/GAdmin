@@ -20,7 +20,7 @@
 
 @import "game.Spectator" => spectator
 
-sampev.onShowTextDraw = fn(id, data) {
+method sampev.onShowTextDraw(id, data) {
     if string.find(data.text, "~y~%(%d+%)") {
         spectator.textDrawId = id
         spectator::setTo(tonumber(string.match(data.text, "~y~%(%d+%)")))

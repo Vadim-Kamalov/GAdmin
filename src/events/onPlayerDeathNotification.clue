@@ -61,7 +61,7 @@ local enum /* DIE_SPECIAL_REASON */ {
     DIE_SPECIAL_REASON_SUICIDE
 }
 
-sampev.onPlayerDeathNotification = fn(killerId, killedId, reason) {
+method sampev.onPlayerDeathNotification(killerId, killedId, reason) {
     local userId            = user::getId()
     local killerNickname    = (sampIsPlayerConnected(killerId) || killerId == userId) ? sampGetPlayerNickname(killerId) : nil
     local killedNickname    = (sampIsPlayerConnected(killedId) || killedId == userId) ? sampGetPlayerNickname(killedId) : nil

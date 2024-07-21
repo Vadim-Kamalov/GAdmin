@@ -96,11 +96,6 @@
 @import "Common" => common
 @import "Config" => config
 
-static enum /* SPECTATOR_INFORMATION_TYPE */ {
-    SPECTATOR_INFORMATION_TYPE_SINGLE,
-    SPECTATOR_INFORMATION_TYPE_DOUBLE
-}
-
 local sizeX, sizeY  = getScreenResolution()
 local hintClock     = nil
 

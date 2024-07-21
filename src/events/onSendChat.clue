@@ -23,7 +23,7 @@
 @import "game.User"      => user
 @import "Assets"         => assets
 
-sampev.onSendChat = fn(message) {
+method sampev.onSendChat(message) {
     local possibleDot, command, arguments = string.match(message, "^(%.+)(%S*)(.*)")
     if possibleDot == "." && config.root.additions.swapLayout.use {
         local swappedCommand = assets::swapLayout(command)

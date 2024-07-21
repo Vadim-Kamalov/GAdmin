@@ -85,7 +85,7 @@ local messageContinuation = {
     new      = nil
 }
 
-sampev.onServerMessage = fn(color, text) {
+method sampev.onServerMessage(color, text) {
     local text     = u8($)
     local pureText = string.gsub(text, "{%x%x%x%x%x%x}", "")
     

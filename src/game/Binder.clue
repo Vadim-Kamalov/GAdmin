@@ -35,13 +35,13 @@ local binder = {}
  * @return string
  */
 method binder::preprocess(input, arguments = {}) {
-    return string.gsub(input, "%${{(.-)}}", fn(params) {
+    return string.gsub(input, "%${{(.-)}}", fn (params) {
         if local variable, params = string.match(params, "^%s*([A-Z_]+)(.*)") {
             local parameter = nil
 
             if #params > 0 && string.sub(params, 1, 1) == ',' {
                 parameter = string.match(params, "^,%s*(.*)")
-                if local start, _ = string.find(parameter, "%s*$") {
+                if local start = string.find(parameter, "%s*$") {
                     parameter = (start != 1) ? string.sub($, 1, start - 1) : ""
                 }
             }

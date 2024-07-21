@@ -19,6 +19,7 @@
  */
 
 @import "imgui.HotKey" => HotKey
+@import "imgui.Assets" => imguiAssets
 
 @import "Notifications" => notify
 @import "Icons"         => icons
@@ -64,7 +65,8 @@ static __greport__ = {
 
     window = {
         state                   = false,
-        recentlyOpened          = false, //! Only `true` for 0.2 seconds when `closeAndOpenAnimation.alpha == 0`.
+        closing                 = false,
+        focusKeyboard           = false,
         noInputClock            = nil,
         answerInput             = nil,
         closeAndOpenAnimation   = {
@@ -102,8 +104,7 @@ __greport__.hotKey ??= HotKey::new("imgui.window.GReport", { 0xA2, 0x31 }, "От
     }
 })
 
-static enum /* GREPORT_OPTION */ {
-    GREPORT_OPTION_SPECTATE = 0,
+static enum /** @enum GREPORT_OPTION */ {
     GREPORT_OPTION_ANSWER,
     GREPORT_OPTION_REMOVE,
     GREPORT_OPTION_BLOCK,
@@ -148,8 +149,11 @@ method __greport__::loop() {
  */
 method __greport__.window::open(withDialog = true) {
     if !self.state {
-        self.closeAndOpenAnimation.alpha = 0
-        self.state = true
+        self.closeAndOpenAnimation.clock  = os.clock()
+        self.focusKeyboard                = true
+        self.state                        = true
+        
+        imguiAssets::setCursorStatus(false)
         
         if local this = __greport__ {
             if !this.dialog.state && withDialog {
@@ -167,7 +171,11 @@ method __greport__.window::open(withDialog = true) {
  */
 method __greport__.window::close(withDialog = true) {
     if self.state {
-        self.closeAndOpenAnimation.clock = os.clock()
+        self.closeAndOpenAnimation.clock  = os.clock()
+        self.closing                      = true
+
+        imguiAssets::setCursorStatus(true)
+
         if withDialog {
             __greport__.player::closeDialogIfPresent()
         }

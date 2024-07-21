@@ -18,6 +18,8 @@
  * SPDX-License-Identifier: GPL-3.0-only
  */
 
+@import "game.User" => user
+
 local player = {}
 
 /**
@@ -27,13 +29,16 @@ local player = {}
  * @return number|nil
  */
 method player::getIdByNickname(nickname) {
-    local _, myid = sampGetPlayerIdByCharHandle(PLAYER_PED)
-    if nickname == sampGetPlayerNickname(myid) { return myid }
-    for i = 0, $SERVER_MAX_PLAYERS {
-        if sampIsPlayerConnected(i) && sampGetPlayerNickname(i) == nickname {
-            return i
+    if nickname == user::getNickname() {
+        return user::getId()
+    }
+
+    for id = 0, $SERVER_MAX_PLAYERS {
+        if sampIsPlayerConnected(id) && sampGetPlayerNickname(id) == nickname {
+            return id
         }
     }
+
     return nil
 }
 

@@ -22,7 +22,7 @@
 @import "Config"            => config
 @import "game.User"         => user
 
-sampev.onSendCommand = fn(command) {
+method sampev.onSendCommand(command) {
     local command = u8($)
 
     commandRequester::setupUserCommandWatcher(command)
@@ -36,7 +36,7 @@ sampev.onSendCommand = fn(command) {
         }
     }
 
-    if config.root.windows.vehicleSelectionPanel.use && string.find(string.lower(command), "^/veh%S*$")
+    if config.root.windows.vehicleSelectionPanel.use && string.find(string.lower(command), "^/veh%s*$")
 @ifndef __GADMIN_DEBUG__
 {
        && user::getAloginStatus() && user::getAdminLvl() >= 4

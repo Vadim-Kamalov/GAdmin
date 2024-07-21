@@ -34,7 +34,7 @@ user::addOnAloginCallback("resetCheckedAdminListVar", fn(state) {
     }
 })
 
-sampev.onShowDialog = fn(id, style, title, firstButton, secondButton, text) {
+method sampev.onShowDialog(id, style, title, firstButton, secondButton, text) {
     title, firstButton, secondButton, text = u8($1), u8($2), u8($3), u8($4)
 
     greport.dialog.state = false

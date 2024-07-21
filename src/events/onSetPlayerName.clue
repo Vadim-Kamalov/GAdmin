@@ -26,7 +26,7 @@
 @import "game.Admins" => admins
 @import "game.User"   => user
 
-sampev.onSetPlayerName = fn(id, nickname, success) {
+method sampev.onSetPlayerName(id, nickname, success) {
     local sourceNickname = sampGetPlayerNickname(id)
 
     for index, admin in admins {
@@ -60,8 +60,7 @@ sampev.onSetPlayerName = fn(id, nickname, success) {
         }
     }
     
-    local CONNECTION_LOG_INDEX = 5
-    table.insert(allowedLogs[CONNECTION_LOG_INDEX][2], {
+    table.insert(allowedLogs[LOG_INDEX_CONNECTION][2], {
         time = assets::getLocalTime(),
         text = string.format("%s[%d] сменил никнейм на %s.", sourceNickname, id, nickname)
     })

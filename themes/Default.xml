@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml-model href="Theme.dtd" type="application/xml-dtd"?>
+<?xml-model href="../dtd/Theme.dtd" type="application/xml-dtd"?>
 
 <UserTheme>
     <global>
