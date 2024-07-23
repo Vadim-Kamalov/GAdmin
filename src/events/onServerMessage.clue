@@ -435,11 +435,16 @@ method sampev.onServerMessage(color, text) {
     if config.root.additions.changeNicknameColors.use {
         if string.find(text, "^%[A%] %S+%[%d+%]") && color == 866792362 {
             math.randomseed(os.clock())
+
+            local nickname, continuation = string.match(text, "^%[A%] (%S+)(%[%d+%].*)")
+
             for _, player of nicknameColors {
-                local color     = bit.tohex(player.colors[math.random(#player.colors)], 6)
-                local find      = string.format("(%s)", player.nickname)
-                local replace   = "{" .. color .. "}%1{33AA33}" 
-                text            = string.gsub($, find, replace)
+                if player.nickname == nickname {
+                    local color = bit.tohex(player.colors[math.random(#player.colors)], 6)
+                    text        = string.format("[A] {%s}%s{33AA33}%s", color, nickname, continuation)
+
+                    break
+                }
             }
         }
     }
@@ -449,10 +454,12 @@ method sampev.onServerMessage(color, text) {
             return false
         }
     }
-    
+
     if config.root.additions.hideIpAddresses.use {
         text = string.gsub($, "%d+%.%d+%.%d+%.%d+", "XXX.XXX.XXX.XXX")
     }
+
+    if string.len(u8::decode(text)) > 144 { $debugError!("onServerMessage->(if #text > 144)", "text: " .. u8::decode(text)) }
 
     return { color, u8::decode(text) }
 }
