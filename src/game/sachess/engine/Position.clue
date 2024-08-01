@@ -196,7 +196,7 @@ method Position::rotate() {
     self.wc, self.bc    = $2, $1
     self.ep             = 119 - $
     self.kp             = 119 - $
-    self.board          = string.reverse(string.gsub($, "%a", fn(c) {
+    self.board          = string.reverse(string.gsub($, "%a", fn (c) {
         return ($IS_LOWER!(c)) ? string.upper(c) : string.lower(c)
     }))
 }

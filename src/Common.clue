@@ -78,7 +78,7 @@ method common::makeDirectoryTree(tree) {
  * @return string
  */
 method common::toLowerCase(str) {
-    str = string.gsub(u8::decode($), "([A-Z\192-\223Ё])", fn(c) {
+    str = string.gsub(u8::decode($), "([A-Z\192-\223Ё])", fn (c) {
         return string.char(string.byte(c) + ((c == 'ё') ? 16 : 32))
     })
     

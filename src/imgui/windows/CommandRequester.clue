@@ -35,7 +35,7 @@ local hotKey        = HotKey::new("imgui.windows.CommandRequester", { VK_LSHIFT,
 
 style::registerWindow("imgui.windows.CommandRequester", "Полоса оповещения админской формы")
 
-imgui.OnFrame(fn { return commandRequester.states.frame }, fn(self) {
+imgui.OnFrame(fn { return commandRequester.states.frame }, fn (self) {
     self.HideCursor = imguiAssets::getCursorStatus()
     self.flags      = imgui.WindowFlags.NoMove + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize
     self.style      = StyleChanger::new({

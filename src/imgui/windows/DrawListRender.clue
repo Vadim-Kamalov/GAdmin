@@ -128,7 +128,7 @@ HotKey::new("imgui.windows.DrawListRender->switchCarInfoRender", { VK_LCONTROL, 
     }
 })
 
-imgui.OnFrame(fn { return isSampAvailable() }, fn(self) {
+imgui.OnFrame(fn { return isSampAvailable() }, fn (self) {
     self.HideCursor = imguiAssets::getCursorStatus()
     self.DL         = imgui.GetBackgroundDrawList()
 

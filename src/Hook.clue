@@ -63,7 +63,7 @@ method __hooks__::new(cast, callback, hookAddress, size = 5) {
     table.insert(self.hooks, newHook)
     
     return setmetatable(newHook, {
-        __call = fn(self, ...) {
+        __call = fn (self, ...) {
             self.stop()
             local result = self.call(...)
             self.start()

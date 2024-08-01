@@ -133,7 +133,7 @@ method __greport__::loop() {
 
                     second = {
                         name = "Закрыть",
-                        call = fn(close) { close() }
+                        call = fn (close) { close() }
                     }
                 }
             })

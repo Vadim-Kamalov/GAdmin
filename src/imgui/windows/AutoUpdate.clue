@@ -27,7 +27,7 @@
 
 local sizeX, sizeY = getScreenResolution()
 
-imgui.OnFrame(fn { return autoUpdate.windowState }, fn(self) {
+imgui.OnFrame(fn { return autoUpdate.windowState }, fn (self) {
     self.HideCursor = imguiAssets::getCursorStatus()
     self.flags      = imgui.WindowFlags.NoResize + imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoScrollbar
 

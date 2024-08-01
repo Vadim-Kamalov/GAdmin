@@ -52,9 +52,9 @@ windows::new("imgui.windows.KillList", {
             WindowBg            = imgui.ImVec4(0, 0, 0, 0)
         })
     }
-}, fn(self) {
+}, fn (self) {
     self.strokeSize     = config.root.windows.killList.strokeSize
-    self.allowOpenPopup = fn(player, color) {
+    self.allowOpenPopup = fn (player, color) {
         if imgui.IsItemHovered() {
             imgui.GetWindowDrawList()::AddLine(
                 imgui.ImVec2(imgui.GetItemRectMin().x, imgui.GetItemRectMax().y),

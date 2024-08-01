@@ -42,7 +42,7 @@
                         imgui.BeginGroup()
                             local baseCursorPos = imgui.GetCursorPos()
                             local id            = "##SPECTATOR_INFORMATION_CUSTOM_WIDGET.indexN" .. index
-                            local moveItem      = fn(new) {
+                            local moveItem      = fn (new) {
                                 table.insert(
                                     config.root.windows.spectatorInformation.columns,
                                     new,
@@ -112,7 +112,7 @@ window::new("imgui.windows.SpectatorInformation", {
             ItemInnerSpacing    = imgui.ImVec2(0, 0)
         })
     }
-}, fn(self) {
+}, fn (self) {
     self.information = spectator::getInformation()
 
     hintClock ??= os.clock()
@@ -152,7 +152,7 @@ window::new("imgui.windows.SpectatorInformation", {
         ["Выстрелы/попадания"]  = { value = self.information.shot.total .. " / " .. self.information.shot.hit, color = self.shotColor }
     }
 
-    self.centerWrappedColumnText = fn(text, font) {
+    self.centerWrappedColumnText = fn (text, font) {
         local text         = string.match(text, "^%s*(.+)%s*$")
         local originalText = text
         local size         = font::CalcTextSizeA(font.FontSize, math.huge, 0.0, text)
@@ -173,7 +173,7 @@ window::new("imgui.windows.SpectatorInformation", {
         }
     }
 
-    self.addColumns = fn(columnsCount, columns, id) {
+    self.addColumns = fn (columnsCount, columns, id) {
         columnsCount *= 2
 
         imgui.Separator()
@@ -259,7 +259,7 @@ window::new("imgui.windows.SpectatorInformation", {
         }
     }
     
-    self.addMiddleTextAfterColumns = fn(text, color = imgui.GetStyle().Colors[imgui.Col.Text], ...) {
+    self.addMiddleTextAfterColumns = fn (text, color = imgui.GetStyle().Colors[imgui.Col.Text], ...) {
         text = string.format($, ...)
 
         imgui.Columns(1)

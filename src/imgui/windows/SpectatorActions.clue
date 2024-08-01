@@ -35,11 +35,11 @@
     local id         = "spectatorActionsCustomWidget"
     local childSizeX = math.max(imgui.GetWindowWidth() - 12, 350)
 
-    local getActionType = fn(index) {
+    local getActionType = fn (index) {
         return (type(config.root.windows.spectatorActions.buttons[index][2]) == "string") ? 1 : 2
     }
 
-    local getValue = fn(index) {
+    local getValue = fn (index) {
         return (type(config.root.windows.spectatorActions.buttons[index][2]) == "number")
             ? imgui.new.int(config.root.windows.spectatorActions.buttons[index][2])
             : imgui.new.char[512](config.root.windows.spectatorActions.buttons[index][2])
@@ -124,7 +124,7 @@
             for index, item in config.root.windows.spectatorActions.buttons {
                 imgui.BeginGroup()
                     local itemWidth  = imgui.GetWindowWidth() - 22
-                    local selectItem = fn(index) {
+                    local selectItem = fn (index) {
                         if index != this.selected {
                             this.selected  = index
                             this.action[0] = getActionType(index)
@@ -145,7 +145,7 @@
                     imgui.BeginGroup()
                         local baseCursorPos = imgui.GetCursorPos()
                         local id            = "##" .. id .. ".itemIndex-" .. index
-                        local moveItem      = fn(new) {
+                        local moveItem      = fn (new) {
                             if index == this.selected {
                                 selectItem(new)
                             }
@@ -198,7 +198,7 @@ windows::new("imgui.windows.SpectatorActions", {
             ItemSpacing     = imgui.ImVec2(2, 0)
         })
     }
-}, fn(self) {
+}, fn (self) {
     self.specInfo     = spectator::getInformation()
     self.size.y       = config.root.windows.spectatorActions.windowSizeY
     self.centeredText = string.format(
@@ -246,7 +246,7 @@ windows::new("imgui.windows.SpectatorActions", {
             local itemWidth          = math.floor(self.size.x / maxItemsPerLine) - 1
             local itemHeight         = self.size.y - imgui.GetCursorPos().y - imgui.GetStyle().WindowPadding.y
             local cornerButtonSize   = imgui.ImVec2(math.floor((itemWidth - 12) / 2), itemHeight)
-            local renderCornerButton = fn(text, id, action, rounding) {
+            local renderCornerButton = fn (text, id, action, rounding) {
                 imgui.BeginGroup()
                     imgui.PushFont(icon)
                         local pos = imgui.GetCursorPos()

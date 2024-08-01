@@ -31,7 +31,7 @@
 
 style::registerWindow("imgui.windows.Notifications", "Оповещения")
 
-imgui.OnFrame(fn { return notify.active && config.root.windows.notifications.use }, fn(self) {
+imgui.OnFrame(fn { return notify.active && config.root.windows.notifications.use }, fn (self) {
     self.HideCursor = imguiAssets::getCursorStatus()
     self.align      = config.root.windows.notifications.align 
     self.notifySize = math.min(5, #notify::get())
@@ -47,7 +47,7 @@ imgui.OnFrame(fn { return notify.active && config.root.windows.notifications.use
         WindowPadding       = imgui.ImVec2(0, 0)
     })
 
-    self.notification = fn(notification, closeCallback) {
+    self.notification = fn (notification, closeCallback) {
         imgui.BeginChild(tostring(notification.clock + os.time()), imgui.ImVec2(344, 65), false, self.flags)
             local pos = imgui.GetWindowPos()
             local size = imgui.GetWindowSize()

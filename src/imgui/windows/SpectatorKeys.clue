@@ -43,7 +43,7 @@ window::new("imgui.windows.SpectatorKeys", {
             WindowBorderSize = 0
         })
     }
-}, fn(self) {
+}, fn (self) {
     self.var.style::apply()
     self::begin(self.id, fn {
         local result, ped = spectator::getHandle()

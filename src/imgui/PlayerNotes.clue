@@ -83,7 +83,7 @@ method __playerNotes__::renderNote(note) {
                 WindowBg            = imgui.ImVec4(0, 0, 0, 0)
             })
         }
-    }, fn(this) {
+    }, fn (this) {
         this.var.style::apply()
         this::begin(this.id, fn {
             imgui.BeginGroup()

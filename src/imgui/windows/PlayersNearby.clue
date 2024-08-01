@@ -115,7 +115,7 @@ window::new("imgui.windows.PlayersNearby", {
             WindowPadding       = imgui.ImVec2(2, 2)
         }),
     }
-}, fn(self) {
+}, fn (self) {
     self.var.style::apply()
     self::begin(self.id, fn {
         local players = getAllPlayersNearby(self.isChangingWindowsPositions)

@@ -95,7 +95,7 @@ static __spectator__ = {
  * Callback to handle all errors due using methods in this module
  * when user is recently called /alogout.
  */
-user::addOnAloginCallback("game.Spectator", fn(state) {
+user::addOnAloginCallback("game.Spectator", fn (state) {
     if !state {
         __spectator__::exit()
     }

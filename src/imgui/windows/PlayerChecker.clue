@@ -72,7 +72,7 @@ window::new("imgui.windows.PlayerChecker", {
             FrameBorderSize = 0
         })
     }
-}, fn(self) {
+}, fn (self) {
     self.var.windowStyle::apply()
     self::begin(self.id, fn {
         for index, player in getPlayers(self.isChangingWindowsPositions) {

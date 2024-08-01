@@ -71,7 +71,7 @@ window::new("imgui.windows.FarChat", {
             WindowBg            = imgui.ImVec4(0, 0, 0, 0)
         })
     }
-}, fn(self) {
+}, fn (self) {
     self.var.style::apply()
     self::begin(self.id, fn {
         local messages = getFarMessages(self.isChangingWindowsPositions)
@@ -89,12 +89,12 @@ window::new("imgui.windows.FarChat", {
                     buttons = {
                         first = {
                             name = "Закрыть"
-                            call = fn(close) { close() }
+                            call = fn (close) { close() }
                         }
 
                         second = {
                             name = "Следить"
-                            call = fn(close) {
+                            call = fn (close) {
                                 sampSendChat("/sp " .. this.id)
                                 close()
                             }

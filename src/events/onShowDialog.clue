@@ -28,7 +28,7 @@
 
 static checkedAdminList = false
 
-user::addOnAloginCallback("resetCheckedAdminListVar", fn(state) {
+user::addOnAloginCallback("resetCheckedAdminListVar", fn (state) {
     if !state {
         checkedAdminList = false
     }

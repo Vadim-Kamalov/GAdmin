@@ -421,7 +421,7 @@ ap = kick <id> AFK public place`, WINDOW_WIDGET_SWITCH, imgui.new.bool(config.ro
                 { "notificationType", "Тип оповещения при переключении на хоткей", WINDOW_WIDGET_TYPE_SELECTOR, imgui.new.int(config.root.additions.tracers.notificationType), "ImGui оповещение", "Сообщение в чат", "Отсутствует" },
                 { "hitColor", "Цвет попадания", WINDOW_WIDGET_COLOR_PICKER, imguiAssets::convertHex2Float3(config.root.additions.tracers.hitColor) },
                 { "missColor", "Цвет промаха", WINDOW_WIDGET_COLOR_PICKER, imguiAssets::convertHex2Float3(config.root.additions.tracers.missColor) },
-                { "maxLines", "Максимальное количество трассеров", WINDOW_WIDGET_CUSTOM, (fn(this) {
+                { "maxLines", "Максимальное количество трассеров", WINDOW_WIDGET_CUSTOM, (fn (this) {
                     imgui.SetNextItemWidth(imgui.GetWindowWidth() - 10)
                     if imgui.SliderInt("##imgui.windows.Main.Settings.changeTraccersAmount", this[5], 1, 100) {
                         config.root.additions.tracers.maxLines = this[5][0]
@@ -598,7 +598,7 @@ method window.menu::item(label, icon, title, index, duration = {
     }
 }
 
-addEventHandler("onWindowMessage", fn(event, wparam) {
+addEventHandler("onWindowMessage", fn (event, wparam) {
     if (event == wm.WM_KEYDOWN || event == wm.WM_SYSKEYDOWN) && !imgui.GetIO().WantTextInput {
         if wparam == VK_ESCAPE && window.state && !changingHotKey {
             window::close()
@@ -617,7 +617,7 @@ HotKey::new("imgui.windows.Main", { VK_X }, "Открыть/закрыть эт�
 
 mainWindow = window
 
-imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn(self) {
+imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn (self) {
     self.HideCursor = imguiAssets::getCursorStatus()
     self.flags      = imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoScrollbar
     self.flags     += (window.menu.width > 60) ? imgui.WindowFlags.NoInputs : 0
@@ -1677,7 +1677,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn(self) {
                                             ffi.sizeof(window.binder.body.command)
                                         ) {
                                             local newCommand            = string.gsub(ffi.string(window.binder.body.command), "^/(.*)", "%1")
-                                            local newCommandCallback    = fn(args = "") {
+                                            local newCommandCallback    = fn (args = "") {
                                                 local arguments = {}
 
                                                 for argument with string.gmatch(args, "[^%s]+") {
@@ -1752,7 +1752,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn(self) {
                                             if local index = string.match(hotKey.id, "^binderIndex(%d+)$") {
                                                 if tonumber(index) == window.binder.selectedBind {
                                                     imgui.SetCursorPosY(imgui.GetCursorPos().y + 4)
-                                                    hotKey::render(imgui.ImVec2(123, 26), fn(self) {
+                                                    hotKey::render(imgui.ImVec2(123, 26), fn (self) {
                                                         hotKeysCallbacks[self.id].callback = fn {
                                                             binder::sendString(
                                                                 config.root.binds[window.binder.selectedBind].commandName,

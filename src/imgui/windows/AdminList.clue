@@ -56,7 +56,7 @@ windows::new("imgui.windows.AdminList", {
             ScrollbarBg         = imgui.ImVec4(0, 0, 0, 0)
         })
     }
-}, fn(self) {
+}, fn (self) {
     self.flags = imgui.WindowFlags.NoMove + imgui.WindowFlags.NoTitleBar
         + imgui.WindowFlags.NoResize + imgui.WindowFlags.AlwaysAutoResize
 
@@ -120,7 +120,7 @@ windows::new("imgui.windows.AdminList", {
                         buttons     = {
                             first   = {
                                 name = "Закрыть"
-                                call = fn(close) { close() }
+                                call = fn (close) { close() }
                             }
 
                             second = {

@@ -244,7 +244,7 @@ method icons::init(iconSize = 14.0) {
 }
 
 return setmetatable(icons, {
-    __call = fn(table, value) {
+    __call = fn (table, value) {
         if type(value) == "string" {
             return t["ICON_" .. string.upper(value)] || "?"
         } elseif type(value) == "number" && (value >= $MIN_ICON && value <= $MAX_ICON) {

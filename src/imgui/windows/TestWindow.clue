@@ -32,7 +32,7 @@
         initialize  = {
             testNumber = 1
         }
-    }, fn(self) {
+    }, fn (self) {
         self::begin("JustTestWindow", fn {
             imgui.Text("Hello, world!")
             

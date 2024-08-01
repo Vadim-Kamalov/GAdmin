@@ -278,7 +278,7 @@ global fn main() {
     /**
      * Callback to handle all alogouts (reconnect, etc.) when AirBreak is active.
      */
-    user::addOnAloginCallback("Main->AirBreak", fn(state) {
+    user::addOnAloginCallback("Main->AirBreak", fn (state) {
         if !state && airbreak.status {
             airbreak.status = false
         }

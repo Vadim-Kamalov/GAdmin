@@ -131,7 +131,7 @@ method binder::newBind(title, value, delayBetweenMessages, commandName) {
     })
 
     if commandName {
-        sampRegisterChatCommand(commandName, fn(args = "") {
+        sampRegisterChatCommand(commandName, fn (args = "") {
             local arguments = {}
 
             for argument with string.gmatch(args, "[^%s]+") {
@@ -227,7 +227,7 @@ method binder::getPopupRenderer(buffer, popup, onInsertVariableCallback) {
 method binder::initializeBinds() {
     for index, bind in config.root.binds {
         if bind.commandName {
-            sampRegisterChatCommand(bind.commandName, fn(args = "") {
+            sampRegisterChatCommand(bind.commandName, fn (args = "") {
                 local arguments = {}
 
                 for argument with string.gmatch(args, "[^%s]+") {

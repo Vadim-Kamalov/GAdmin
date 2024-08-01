@@ -133,7 +133,7 @@ method windows::new(id, configuration, render) {
         }
     }
 
-    imgui.OnFrame(fn { return movableWindows::setupThisWindowCondition(self.type) && self.condition() }, fn(window) {
+    imgui.OnFrame(fn { return movableWindows::setupThisWindowCondition(self.type) && self.condition() }, fn (window) {
         window.HideCursor = imguiAssets::getCursorStatus()
 
         self.isChangingWindowsPositions = movableWindows::isChangingWindowsPositions()

@@ -219,7 +219,7 @@ static autoCompletion = {
     }
 }
 
-imgui.OnFrame(fn { return autoCompletion.condition() && config.root.windows.autoCompletion.use }, fn(self) {
+imgui.OnFrame(fn { return autoCompletion.condition() && config.root.windows.autoCompletion.use }, fn (self) {
     self.HideCursor = imguiAssets::getCursorStatus()
     self.flags      = imgui.WindowFlags.NoMove + imgui.WindowFlags.NoTitleBar
         + imgui.WindowFlags.NoResize + imgui.WindowFlags.AlwaysAutoResize

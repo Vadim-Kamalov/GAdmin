@@ -55,7 +55,7 @@
                         imgui.BeginGroup()
                             local baseCursorPos = imgui.GetCursorPos()
                             local id            = "##USER_INFORMATION_CUSTOM_WIDGET.indexN" .. index
-                            local moveItem      = fn(new) {
+                            local moveItem      = fn (new) {
                                 table.insert(
                                     config.root.windows.userInformation.display,
                                     new,
@@ -120,10 +120,10 @@ window::new("imgui.windows.UserInformation", {
             WindowBg            = imgui.ImVec4(0, 0, 0, 0)
         })
     }
-}, fn(self) {
+}, fn (self) {
     local strokeSize = config.root.windows.userInformation.strokeSize
 
-    self.setNextItemAligned = fn(text) {
+    self.setNextItemAligned = fn (text) {
         local pos   = imgui.GetCursorPos()
         local align = match config.root.windows.userInformation.textAlignMode {
             ALIGN_CENTER    => self.size.x / 2 - imgui.CalcTextSize(text).x / 2,

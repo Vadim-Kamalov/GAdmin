@@ -31,7 +31,7 @@ style::registerWindow("imgui.windows.GReport", "Окно /greport")
 
 greport.window.answerInput ??=imgui.new.char[65535]()
 
-addEventHandler("onWindowMessage", fn(event, wparam, lparam) {
+addEventHandler("onWindowMessage", fn (event, wparam, lparam) {
     if (event == wm.WM_KEYDOWN || event == wm.WM_SYSKEYDOWN) && !imgui.GetIO().WantTextInput {
         if wparam == VK_ESCAPE && greport.window.state {
             greport.window::close()
@@ -41,7 +41,7 @@ addEventHandler("onWindowMessage", fn(event, wparam, lparam) {
     }
 })
 
-imgui.OnFrame(fn { return greport.window.state && !isGamePaused() && config.root.windows.greport.use }, fn(self) {
+imgui.OnFrame(fn { return greport.window.state && !isGamePaused() && config.root.windows.greport.use }, fn (self) {
     self.flags      = imgui.WindowFlags.NoTitleBar + imgui.WindowFlags.NoResize + imgui.WindowFlags.NoScrollbar
     self.HideCursor = imguiAssets::getCursorStatus()
 
