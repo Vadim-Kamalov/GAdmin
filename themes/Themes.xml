@@ -28,4 +28,8 @@
     <theme author="defaultzone" version="1.0" title="TokyoNight"
         description="Темная тема на основе палитры TokyoNight"
         link="https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/main/themes/TokyoNight.xml" />
+    
+    <theme author="defaultzone" version="1.0" title="Nord"
+        description="Темная тема на основе палитры Nord"
+        link="https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/main/themes/Nord.xml" />
 </UserThemes>
