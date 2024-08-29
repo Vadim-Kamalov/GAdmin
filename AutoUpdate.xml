@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<AutoUpdate version="1.7.4">
-    <title>GAdmin v1.7.4</title>
+<AutoUpdate version="1.7.5">
+    <title>GAdmin v1.7.5</title>
     <buttons first="Установить" second="Пропустить" third="Позже"/>
     <body>
         <header>Изменения</header>
-        <ul>Исправлено что пропадали определенные сообщения в чате, что были изменены скриптом и имели длину больше 144 символов.</ul>
-        <ul>Выделение никнейма цветом теперь сделано только для самого никнейма отправителя.</ul>
-        <ul>Добавлен вывод ошибки в консоль SAMPFUNCS если сообщение вдруг пропало и имеет длину больше 144 символов.</ul>
+        <ul>Добавлена совместимость с обработчиком диалогов от <link>open.mp</link> .</ul>
+        <ul>Добавлена консольная команда <code>debug.runCommandRequesterFrame(id)</code> (только для debug сборок)</ul>
     </body>
     <links>
         <!-- Redirect links aren't allowed. -->
