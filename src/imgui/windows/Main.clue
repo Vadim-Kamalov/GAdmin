@@ -656,10 +656,10 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn (self) {
                                         time.wHour, time.wMinute, time.wSecond
                                     ), bold10)
 
-                                    local welcomePostfix = (time.wHour <= 10) ? "Доброе утро, " : (
+                                    local welcomePrefix = (time.wHour <= 10) ? "Доброе утро, " : (
                                                         (time.wHour >= 10 && time.wHour <= 17) ? "Добрый день, " : "Добрый вечер, ")
 
-                                    imguiAssets::textWithFont(welcomePostfix .. user::getOOCNickname() .. "!", regular9)
+                                    imguiAssets::textWithFont(welcomePrefix .. user::getOOCNickname() .. "!", regular9)
                                     imguiAssets::textWithFont("Уровень администрирования - " .. user::getAdminLvl(), regular9)
 
                                     if local pos = imgui.GetCursorPos() { // imgui.SameLine() with different fonts.

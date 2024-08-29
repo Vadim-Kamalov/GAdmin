@@ -51,7 +51,7 @@ method sampev.onShowDialog(id, style, title, firstButton, secondButton, text) {
        && user::getOOCNickname() != "Technical Admin"
        && string.find(text, "Авторизация.*Введите логин:")
     {
-        sampSendDialogResponse(id, 1, 0, user::getOOCNickname())
+        sampSendDialogResponse(id, 1, -1, user::getOOCNickname())
         return false
     }
     
@@ -62,7 +62,7 @@ method sampev.onShowDialog(id, style, title, firstButton, secondButton, text) {
             config.root.additions.autoLogin.accountPassword = ""
             common::sendScriptMessage("Вы ввели неверный пароль в настройках для авто-ввода. Пароль был сброшен.")
         } else {
-            sampSendDialogResponse(id, 1, 0, config.root.additions.autoLogin.accountPassword)
+            sampSendDialogResponse(id, 1, -1, config.root.additions.autoLogin.accountPassword)
             return false
         }
     }
@@ -72,7 +72,7 @@ method sampev.onShowDialog(id, style, title, firstButton, secondButton, text) {
        && #config.root.additions.autoLogin.aloginPassword >= 3
        && config.root.additions.autoLogin.use
     {
-        sampSendDialogResponse(id, 1, 0, config.root.additions.autoLogin.aloginPassword)
+        sampSendDialogResponse(id, 1, -1, config.root.additions.autoLogin.aloginPassword)
         return false
     }
 
@@ -137,7 +137,7 @@ method sampev.onShowDialog(id, style, title, firstButton, secondButton, text) {
         
         spectator.stats.checking = false
 
-        sampSendDialogResponse(id, 0, 0, "")
+        sampSendDialogResponse(id, 0, -1, "")
         
         return false
     }
@@ -149,7 +149,7 @@ method sampev.onShowDialog(id, style, title, firstButton, secondButton, text) {
 
         if style == DIALOG_STYLE_INPUT {
             if greport.dialog.awaiting.input[1] {
-                sampSendDialogResponse(id, 1, 0, greport.dialog.awaiting.input[2])
+                sampSendDialogResponse(id, 1, -1, greport.dialog.awaiting.input[2])
                 greport.dialog.awaiting.inputs  = { false, nil }
                 greport.dialog.state            = false
                 

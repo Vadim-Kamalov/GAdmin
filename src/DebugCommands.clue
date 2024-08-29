@@ -21,9 +21,10 @@
 @ifdef __GADMIN_DEBUG__
 {
 
-@import "AutoUpdate"    => autoUpdate
-@import "Assets"        => assets
-@import "game.GReport"  => greport
+@import "AutoUpdate"        => autoUpdate
+@import "Assets"            => assets
+@import "game.GReport"      => greport
+@import "CommandRequester"  => commandRequester
 
 local commands = {}
 
@@ -70,6 +71,13 @@ method commands.fillFarChatMessages(times) {
 
 method commands.switchGreportWindow() {
     greport.window::switch()
+}
+
+method commands.runCommandRequesterFrame(id) {
+    commandRequester.states.frame             = true
+    commandRequester.current.id.from          = tonumber(id)
+    commandRequester.current.clock            = os.clock()
+    commandRequester.current.command.splitted = { name = "debug", args = "debug" }
 }
 
 return commands
