@@ -155,7 +155,7 @@ method sampev.onShowDialog(id, style, title, firstButton, secondButton, text) {
                 
                 greport.player::reset()
 
-                return false
+                // return false
             }
         }
 
