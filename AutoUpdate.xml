@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<AutoUpdate version="1.7.5">
-    <title>GAdmin v1.7.5</title>
+<AutoUpdate version="1.7.5-1">
+    <title>GAdmin v1.7.5-1</title>
     <buttons first="Установить" second="Пропустить" third="Позже"/>
     <body>
         <header>Изменения</header>
-        <ul>Добавлена совместимость с обработчиком диалогов от <link>open.mp</link> .</ul>
-        <ul>Добавлена консольная команда <code>debug.runCommandRequesterFrame(id)</code> (только для debug сборок)</ul>
+        <ul>Исправлено что текстдравы с информацией об игроке в /sp не скрывались.</ul>
     </body>
     <links>
         <!-- Redirect links aren't allowed. -->
