@@ -210,7 +210,7 @@ method __greport__.dialog::call() {
  * @return void
  */
 method __greport__.dialog::callOptionAt(listItemIndex) {
-    sampSendDialogResponse(sampGetCurrentDialogId(), 0, -1, "")
+    sampSendDialogResponse(self.id, 0, -1, "")
     self.awaiting.options = { true, listItemIndex }
 }
 
@@ -329,7 +329,7 @@ method __greport__.player::answer(answer) {
  */
 method __greport__.player::closeDialogIfPresent() {
     if __greport__.dialog.state {
-        sampSendDialogResponse(sampGetCurrentDialogId(), 1, -1, nil)
+        sampSendDialogResponse(self.id, 1, -1, "")
     }
 }
 

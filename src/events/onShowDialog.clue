@@ -146,6 +146,7 @@ method sampev.onShowDialog(id, style, title, firstButton, secondButton, text) {
         text                  = string.gsub($, "{......}", "")
         greport.player.active = true
         greport.dialog.state  = true
+        greport.dialog.id     = id
 
         if style == DIALOG_STYLE_INPUT {
             if greport.dialog.awaiting.input[1] {
