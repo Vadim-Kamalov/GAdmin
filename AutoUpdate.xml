@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<AutoUpdate version="1.7.5-2-1">
-    <title>GAdmin v1.7.5-2-1</title>
+<AutoUpdate version="1.7.5-2-2">
+    <title>GAdmin v1.7.5-2-2</title>
     <buttons first="Установить" second="Пропустить" third="Позже"/>
     <body>
         <header>Исправления</header>
-        <ul>Исправлено что /greport не отправлял ответы (?).</ul>
+        <ul>Исправлено что /greport не отправлял ответы (v1.7.5-2-1).</ul>
+        <ul>Исправлен вылет скрипта после его первого и единственного запуска и захода в /sp за игроком с телефона.</ul>
     </body>
     <links>
         <!-- Redirect links aren't allowed. -->
