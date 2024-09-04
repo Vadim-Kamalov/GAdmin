@@ -143,11 +143,12 @@ method windows::new(id, configuration, render) {
 
         if local pos = config.root.movableWindows[id] {
             imgui.SetNextWindowPos(imgui.ImVec2(pos.x, pos.y))
-            self.pos = pos
         } else {
             config.root.movableWindows[id] = (self.defaultPos == WIN_DEFAULT_POS_CENTER) ?
                 { x = (self.resolution.x - self.size.x) / 2, y = (self.resolution.y - self.size.y) / 2 } : self.defaultPos
         }
+        
+        self.pos = config.root.movableWindows[id]
 
         render(self)
 
