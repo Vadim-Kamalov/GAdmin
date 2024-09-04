@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<AutoUpdate version="1.7.5-2">
-    <title>GAdmin v1.7.5-2</title>
+<AutoUpdate version="1.7.5-2-1">
+    <title>GAdmin v1.7.5-2-1</title>
     <buttons first="Установить" second="Пропустить" third="Позже"/>
     <body>
-        <header>Исправления, обязательно для установки</header>
-        <ul>Исправлено что /greport не отправлял ответы.</ul>
+        <header>Исправления</header>
+        <ul>Исправлено что /greport не отправлял ответы (?).</ul>
     </body>
     <links>
         <!-- Redirect links aren't allowed. -->
