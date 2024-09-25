@@ -22,6 +22,7 @@
 @import "imgui.Assets"          => imguiAssets
 @import "imgui.StyleChanger"    => StyleChanger
 @import "imgui.Animations"      => animations
+@import "imgui.drawList.Text"   => text
 
 @import "Config" => config
 @import "Common" => common
@@ -86,17 +87,15 @@ method __playerNotes__::renderNote(note) {
     }, fn (this) {
         this.var.style::apply()
         this::begin(this.id, fn {
-            imgui.BeginGroup()
-                imgui.PushFont(bold14)
-                    imguiAssets::addStrokedText(note.title, (imgui.GetStyle().Colors[imgui.Col.WindowBg].w <= 0.4) ? 1 : 0)
-                imgui.PopFont()
+            local strokeWidth = (imgui.GetStyle().Colors[imgui.Col.WindowBg].w <= 0.4) ? 1 : 0
+            local drawList    = imgui.GetWindowDrawList()
+            local color       = imgui.ColorConvertFloat4ToU32(imgui.GetStyle().Colors[imgui.Col.Text])
 
-                imgui.PushFont(regular12)
-                    imguiAssets::addStrokedText(
-                        binder::preprocess(note.body),
-                        (imgui.GetStyle().Colors[imgui.Col.WindowBg].w <= 0.4) ? 1 : 0
-                    )
-                imgui.PopFont()
+            imgui.BeginGroup()
+                text::addStroke(drawList, note.title, color, imgui.GetCursorScreenPos(), bold, note.titleSize, strokeWidth)
+                imgui.Dummy(bold::CalcTextSizeA(note.titleSize, math.huge, 0.0, note.title))
+                text::addStroke(drawList, note.body, color, imgui.GetCursorScreenPos(), regular, note.descriptionSize, strokeWidth)
+                imgui.Dummy(regular::CalcTextSizeA(note.descriptionSize, math.huge, 0.0, note.body))
             imgui.EndGroup()
 
             if !this.isChangingWindowsPositions {
@@ -128,26 +127,24 @@ method __playerNotes__::renderNote(note) {
                 }
             }
 
-            if local drawList = imgui.GetWindowDrawList() {
-                drawList::AddRectFilled(
-                    imgui.GetWindowPos(),
-                    imgui.GetWindowPos() + imgui.GetWindowSize(),
-                    imgui.ColorConvertFloat4ToU32(imgui.ImVec4(
-                        common::convertHex2ImVec4($IMVEC4_TO_RGB!(imgui.GetStyle().Colors[imgui.Col.ChildBg]), this.var.fade.alpha.window * 255)
-                    )),
-                    imgui.GetStyle().WindowRounding
-                )
+            drawList::AddRectFilled(
+                imgui.GetWindowPos(),
+                imgui.GetWindowPos() + imgui.GetWindowSize(),
+                imgui.ColorConvertFloat4ToU32(imgui.ImVec4(
+                    common::convertHex2ImVec4($IMVEC4_TO_RGB!(imgui.GetStyle().Colors[imgui.Col.ChildBg]), this.var.fade.alpha.window * 255)
+                )),
+                imgui.GetStyle().WindowRounding
+            )
 
-                local text = "Закрыть"
-                local size = imgui.CalcTextSize(text)
+            local text = "Закрыть"
+            local size = imgui.CalcTextSize(text)
 
-                drawList::AddTextFontPtr(bold, 18, imgui.ImVec2(
-                    (imgui.GetWindowWidth() - size.x) / 2,
-                    (imgui.GetWindowHeight() - size.y) / 2
-                ) + imgui.GetWindowPos(), imgui.ColorConvertFloat4ToU32(
-                    common::convertHex2ImVec4($IMVEC4_TO_RGB!(imgui.GetStyle().Colors[imgui.Col.Text]), this.var.fade.alpha.text * 255)
-                ), text)
-            }
+            drawList::AddTextFontPtr(bold, 18, imgui.ImVec2(
+                (imgui.GetWindowWidth() - size.x) / 2,
+                (imgui.GetWindowHeight() - size.y) / 2
+            ) + imgui.GetWindowPos(), imgui.ColorConvertFloat4ToU32(
+                common::convertHex2ImVec4($IMVEC4_TO_RGB!(imgui.GetStyle().Colors[imgui.Col.Text]), this.var.fade.alpha.text * 255)
+            ), text)
         })
         this.var.style::reset()
     })
@@ -161,6 +158,7 @@ method __playerNotes__::renderNote(note) {
  */
 method __playerNotes__::initializeNotes() {
     for _, note in config.root.playerNotes {
+        note.titleSize, note.descriptionSize ??= 20, 16
         self::renderNote(note)
     }
 }

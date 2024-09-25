@@ -148,11 +148,13 @@ local window = {
     },
 
     notes = {
-        selected    = 1,
-        voidQuote   = assets.voidQuotes[math.random(#assets.voidQuotes)],
-        title       = imgui.new.char[144](config.root.playerNotes[1]?.title || ""),
-        body        = imgui.new.char[65535](config.root.playerNotes[1]?.body || ""),
-        display     = imgui.new.bool(config.root.playerNotes[1]?.display || false)
+        selected        = 1,
+        voidQuote       = assets.voidQuotes[math.random(#assets.voidQuotes)],
+        title           = imgui.new.char[144](config.root.playerNotes[1]?.title || ""),
+        body            = imgui.new.char[65535](config.root.playerNotes[1]?.body || ""),
+        display         = imgui.new.bool(config.root.playerNotes[1]?.display || false),
+        titleSize       = imgui.new.int(config.root.playerNotes[1]?.titleSize || 14),
+        descriptionSize = imgui.new.int(config.root.playerNotes[1]?.descriptionSize || 14) 
     },
 
     popupModal = {
@@ -2165,9 +2167,11 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn (self) {
                             imgui.PushFont(bold10)
                                 if animations::button("Добавить##imgui.windows.main.notes.add", imgui.ImVec2(imgui.GetWindowWidth() - 12, 30)) {
                                     playerNotes::new({
-                                        title   = "Заметка " .. #config.root.playerNotes + 1,
-                                        body    = "",
-                                        display = false
+                                        title           = "Заметка " .. #config.root.playerNotes + 1,
+                                        body            = "",
+                                        display         = false,
+                                        titleSize       = 20,
+                                        descriptionSize = 16
                                     })
 
                                     if local this = window.notes {
@@ -2222,13 +2226,33 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn (self) {
 
                                 imgui.PushFont(bold12)
                                     animations::hint("Ваша заметка будет также как и остальные окна:\nеё можно кастомизировать и изменять ее положение.")
+                                   
+                                    imgui.BeginGroup()
+                                        local sliderWidth = (imgui.GetWindowWidth() - 18) / 2
+
+                                        imgui.Text("Размер заголовка")
+                                        imgui.SameLine(nil, sliderWidth / 2 - imgui.GetItemRectSize().x + imgui.GetStyle().ItemSpacing.x)
+                                        imgui.Text("Размер описания")
+                                        imgui.PushItemWidth(sliderWidth)
+                                            if imgui.SliderInt("##imgui.windows.Main.notes.titleSize", this.titleSize, 0, 255) {
+                                                config.root.playerNotes[this.selected].titleSize = this.titleSize[0]
+                                            }
+
+                                            imgui.SameLine()
+
+                                            if imgui.SliderInt("##imgui.windows.Main.notes.descriptionSize", this.descriptionSize, 0, 255) {
+                                                config.root.playerNotes[this.selected].descriptionSize= this.descriptionSize[0]
+                                            }
+                                        imgui.PopItemWidth()
+                                    imgui.EndGroup()
+
                                     imgui.Text("Описание заметки")
                                     
                                     if animations::button("Вставить переменную##imgui.windows.Main.notes.insertVariables", imgui.ImVec2(
                                         imgui.GetWindowWidth() - 12 /* padding * 2 */,
                                         25
                                     )) {
-                                        window.popupModal.body  = binder::getPopupRenderer(this.body, window.popupModal, fn (value) {
+                                        window.popupModal.body = binder::getPopupRenderer(this.body, window.popupModal, fn (value) {
                                             config.root.playerNotes[this.selected].body = value
                                         })
                                         window.binder.callPopup = true
