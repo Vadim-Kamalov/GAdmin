@@ -23,10 +23,6 @@
 
 local animations = {}
 
-method animations::limit(v, min = 0.0, max = 1.0) {
-    return (v < min) ? min : ((v > max) ? max : v)
-}
-
 method animations::getContrastColor(
     backgroundColor,
     colorA = imgui.ImVec4(0, 0, 0, 1),
@@ -200,12 +196,12 @@ method animations::button(
 
         local timer = os.clock() - this.clock[2]
         if timer <= duration[2] {
-            alpha = self::limit(1.00 - ((1.00 / duration[2]) * timer), 0.0, 1.0)
+            alpha = common::clamp(1.00 - ((1.00 / duration[2]) * timer), 0.0, 1.0)
         }
 
         local timer = os.clock() - this.clock[1]
         if timer <= duration[1] {
-            alpha = self::limit((1.00 / duration[1]) * timer, 0.0, 1.0)
+            alpha = common::clamp((1.00 / duration[1]) * timer, 0.0, 1.0)
             this.radius = (size.x * 1.5 / duration[1]) * timer
         }
 
@@ -343,7 +339,7 @@ method animations::hint(
         if show {
             local between = os.clock() - this.timer
             if between <= duration {
-                render((hovered) ? self::limit(between / duration, 0.00, 1.00) : self::limit(1.00 - between / duration, 0.00, 1.00))
+                render((hovered) ? common::clamp(between / duration, 0.00, 1.00) : common::clamp(1.00 - between / duration, 0.00, 1.00))
             } elseif hovered {
                 render(1.00)
             }

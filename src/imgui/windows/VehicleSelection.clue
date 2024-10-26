@@ -88,7 +88,7 @@ imgui.OnFrame(fn { return vehicleSelectionPanel.active && !isGamePaused()) }, fn
 
             this.colors[1][0], this.colors[2][0] = 0, 0
 
-            imgui.StrCopy(this.filter.buffer, "")
+            this.filter::clear()
         }
     }
 

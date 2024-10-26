@@ -47,8 +47,7 @@ local enum /* WINDOW_SELECTED_FRAME */ {
     WINDOW_SELECTED_FRAME_BINDER,
     WINDOW_SELECTED_FRAME_LOGS,
     WINDOW_SELECTED_FRAME_SERVER_TABLES,
-    WINDOW_SELECTED_FRAME_NOTES,
-    WINDOW_SELECTED_FRAME_STATISTICS
+    WINDOW_SELECTED_FRAME_NOTES
 }
 
 local enum /* WINDOW_WIDGET */ {
@@ -2231,7 +2230,8 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn (self) {
                                         local sliderWidth = (imgui.GetWindowWidth() - 18) / 2
 
                                         imgui.Text("Размер заголовка")
-                                        imgui.SameLine(nil, sliderWidth / 2 - imgui.GetItemRectSize().x + imgui.GetStyle().ItemSpacing.x)
+                                        imgui.SameLine()
+                                        imgui.SetCursorPosX(sliderWidth + 6 + imgui.GetStyle().ItemSpacing.x)
                                         imgui.Text("Размер описания")
                                         imgui.PushItemWidth(sliderWidth)
                                             if imgui.SliderInt("##imgui.windows.Main.notes.titleSize", this.titleSize, 0, 255) {
@@ -2299,14 +2299,6 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn (self) {
                             }
                         imgui.EndGroup()
                     imgui.EndChild()
-                } elseif window.menu.selectedFrame == WINDOW_SELECTED_FRAME_STATISTICS {
-                    local text = "Вкладка со статистикой будет реализована когда рак на горе свистнет."
-                    local size = regular12::CalcTextSizeA(regular12.FontSize, math.huge, 0.0, text)
-
-                    imguiAssets::textWithFont(text, regular12, imgui.ImVec2(
-                        ((imgui.GetWindowWidth()) - size.x) / 2,
-                        ((imgui.GetWindowHeight() - size.y) - size.y) / 2
-                    ), imgui.GetStyle().Colors[imgui.Col.TextDisabled])
                 }
             imgui.EndGroup()
             imgui.PopStyleVar()
@@ -2369,7 +2361,6 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn (self) {
                         window.menu::item("imgui.windows.Main.menu.logs", icons.ICON_BOOK_OPEN, "Логи", 7)
                         window.menu::item("imgui.windows.Main.menu.serverTables", icons.ICON_VERTICAL_BAR_CHART, "Серверные таблицы", 8)
                         window.menu::item("imgui.windows.Main.menu.notes", icons.ICON_BOOKMARK_FILLED, "Заметки", 9)
-                        window.menu::item("imgui.windows.Main.menu.statistics", icons.ICON_TREE_MAP, "Статистика", 10)
                     imgui.EndGroup()
                 imgui.EndChild()
             imgui.PopStyleVar(2)

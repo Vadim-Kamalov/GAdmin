@@ -66,7 +66,6 @@ static __config__ = {
 
             spectatorInformation = {
                 use                 = true,
-                reset               = true, // FIXME: remove it; see TODO below
                 type                = 1,
                 showedHintFirstTime = false,
                 columns             = {
@@ -497,15 +496,6 @@ method __config__::initialize() {
     }
 
     mergeTables(self.root, self.def)
-
-    //! Sometimes we need to reset some sections of the configuration,
-    //! but, we can't do it right now. TODO: implement this.
-    //!
-    //! This code below will be only exist for the GAdmin v1.7.* versions.
-    if self.root.windows.spectatorInformation.reset {
-        self.root.windows.spectatorInformation.columns  = self.def.windows.spectatorInformation.columns
-        self.root.windows.spectatorInformation.reset    = false
-    }
 }
 
 if local this = __config__ {

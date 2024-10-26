@@ -206,7 +206,8 @@ local commands = {
     { "/pk", "Выдать Player Kill игроку", COMMAND_ARGUMENT_PLAYER_ID },
     { "/ban", "Заблокировать аккаунт игрока", COMMAND_ARGUMENT_PLAYER_ID, COMMAND_ARGUMENT_ANY, COMMAND_ARGUMENT_REASON },
     { "/alogin", "Зайти на админ-дежурство" },
-    { "/alogout", "Покинуть админ-дежурство" }
+    { "/alogout", "Покинуть админ-дежурство" },
+    { "/cflip", "Перевернуть машину", COMMAND_ARGUMENT_CVEHID }
 }
 
 static autoCompletion = {

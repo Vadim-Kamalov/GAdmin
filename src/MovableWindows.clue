@@ -145,42 +145,67 @@ method __movableWindows__::setupThisWindow(window) {
 
             local centerX = posX + window.size.x / 2
             local centerY = posY + window.size.y / 2
-            
+
             if math.abs(centerX - (sw / 2)) < 5 {
                 posX = math.floor(sw / 2) - window.size.x / 2
             }
-            
+
             if math.abs(centerY - (sh / 2)) < 5 {
                 posY = math.floor(sh / 2) - window.size.y / 2
             }
 
-            // Screen Exit Checks ( for sides )
-            if posX > sw - sizeX {
-                posX = sw - sizeX
-            } elseif posX <= 0 {
+            // Magnetize to the sides and corners
+            if math.abs(posX - 0) < 3 {
                 posX = 0
-            } elseif posY >= sh - sizeY {
-                posY = sh - sizeY
-            } elseif posY <= 0 {
-                posY = 0
+            } elseif math.abs(posX - (sw - sizeX)) < 3 {
+                posX = sw - sizeX
             }
 
-            // Screen Exit Checks ( for corners )
-            if posX + sizeX > sw {
-                posX = sw - sizeX
-            } elseif posX <= 0 {
-                posX = 0
+            if math.abs(posY - 0) < 3 {
+                posY = 0
+            } elseif math.abs(posY - (sh - sizeY)) < 3 {
+                posY = sh - sizeY
             }
 
-            if posY + sizeY > sh {
-                posY = sh - sizeY
-            } elseif posY <= 0 {
-                posY = 0
+            // Magnetize to other windows
+            for _, otherWindow in registeredWindows {
+                if otherWindow.id != window.id && otherWindow.pos && otherWindow.size {
+                    local otherPosX  = otherWindow.pos.x
+                    local otherPosY  = otherWindow.pos.y
+                    local otherSizeX = otherWindow.size.x
+                    local otherSizeY = otherWindow.size.y
+
+                    // Check proximity to other window's edges
+                    if math.abs(posX - (otherPosX + otherSizeX)) < 3 {
+                        posX = otherPosX + otherSizeX
+                    } elseif math.abs((posX + sizeX) - otherPosX) < 3 {
+                        posX = otherPosX - sizeX
+                    }
+
+                    if math.abs(posY - (otherPosY + otherSizeY)) < 3 {
+                        posY = otherPosY + otherSizeY
+                    } elseif math.abs((posY + sizeY) - otherPosY) < 3 {
+                        posY = otherPosY - sizeY
+                    }
+                }
+            }
+
+            // Allow moving off the screen
+            if posX < -sizeX {
+                posX = -sizeX
+            } elseif posX > sw {
+                posX = sw
+            }
+
+            if posY < -sizeY {
+                posY = -sizeY
+            } elseif posY > sh {
+                posY = sh
             }
 
             config.root.movableWindows[window.id].x = posX
             config.root.movableWindows[window.id].y = posY
-        } // if imgui.IsMouseDown(0) && window.isFocused
+        }
     }
 }
 
