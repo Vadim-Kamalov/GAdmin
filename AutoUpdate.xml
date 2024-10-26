@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<AutoUpdate version="1.7.6">
-    <title>GAdmin v1.7.6</title>
+<AutoUpdate version="1.7.6-1">
+    <title>GAdmin v1.7.6-1</title>
     <buttons first="Установить" second="Пропустить" third="Позже"/>
     <body>
         <header>Изменения/новые функции</header>
@@ -9,6 +9,7 @@
         <ul>Добавлено примагничивание (3px) перемещаемого окна к краям и углам экрана.</ul>
         <ul>Добавлено примагничивание (3px) перемещаемого окна к другим окнам.</ul>
         <ul>Разрешен выход перемещаемого окна за пределы экрана.</ul>
+        <ul>requests::asyncHttpRequest теперь поддерживает перенаправления.</ul>        
     </body>
     <links>
         <!-- Redirect links aren't allowed. -->
