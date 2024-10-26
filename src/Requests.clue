@@ -50,7 +50,21 @@ method requests::asyncHttpRequest(type, url, args = {}, resolve = fn {}, reject 
         if !err {
             if status == "completed" {
                 local result, response = thread::get()
-                return (result) ? resolve(response) : reject(response)
+
+                if result {
+                    local must = match response.status_code {
+                        301 || 302 || 303 || 307 || 308 => true
+                        default => false
+                    }
+
+                    if must && response.headers.location {
+                        return self::asyncHttpRequest(type, response.headers.location, args, resolve, reject)
+                    }
+
+                    return resolve(response)
+                }
+
+                return reject(response)
             }
         } elseif status == "canceled" {
             return reject(status)
