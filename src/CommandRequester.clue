@@ -85,7 +85,8 @@ static __commandRequester__ = {
         { "iban",       COMMAND_REQUEST_TYPE_COMMENTARY,    4 },
         { "jail",       COMMAND_REQUEST_TYPE_COMMENTARY,    2 },
         { "vspawn",     COMMAND_REQUEST_TYPE_NO_COMMENTARY, 2 },
-        { "vfuel",      COMMAND_REQUEST_TYPE_NO_COMMENTARY, 3 }
+        { "vfuel",      COMMAND_REQUEST_TYPE_NO_COMMENTARY, 3 },
+        { "dvehid",     COMMAND_REQUEST_TYPE_NO_COMMENTARY, 4 }
     } 
 }
 
