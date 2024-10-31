@@ -1,20 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<AutoUpdate version="1.7.6-1">
-    <title>GAdmin v1.7.6-1</title>
+<AutoUpdate version="1.7.6-2">
+    <title>GAdmin v1.7.6-2</title>
     <buttons first="Установить" second="Пропустить" third="Позже"/>
     <body>
-        <header>Изменения/новые функции</header>
-        <ul>Теперь можно изменять размер шрифта заголовка и описания заметок.</ul>
-        <ul>Добавлена команда /cflip в окно автозаполнения. При вводе команды предложит ID (из /dl) машин рядом.</ul>
-        <ul>Добавлено примагничивание (3px) перемещаемого окна к краям и углам экрана.</ul>
-        <ul>Добавлено примагничивание (3px) перемещаемого окна к другим окнам.</ul>
-        <ul>Разрешен выход перемещаемого окна за пределы экрана.</ul>
-        <ul>requests::asyncHttpRequest теперь поддерживает перенаправления.</ul>        
+        <header>Изменения</header>
+        <ul>Значения кнопок SHIFT и SPACE в окне нажатых клавиш игрока поменены местами.</ul>
     </body>
     <links>
-        <!-- Redirect links aren't allowed. -->
         <!-- Notice that `link` with `destination="GAdmin-Release.lua"` should be last element in this section. -->
-
-        <link destination="GAdmin-Release.lua">https://gist.githubusercontent.com/defaultzone/269775a7e3cf6a9f1cbf58b69033d7a3/raw</link>
+        <link destination="GAdmin-Release.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/latest/download/GAdmin-Release.lua</link>
     </links>
 </AutoUpdate>

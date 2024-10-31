@@ -11,7 +11,7 @@
 ]>
 
 <UserThemes>
-    <theme author="defaultzone" version="1.1" title="Стандартная тема" 
+    <theme author="defaultzone" version="1.1" title="Стандартная тема (Nord)" 
         description="Темная тема на основе палитры Nord"
         link="https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/main/themes/Nord.xml" />
     
