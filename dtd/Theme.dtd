@@ -18,7 +18,8 @@
                        | FarChat
                        | Notifications
                        | SAChess
-                       | VehicleSelectionPanel) #REQUIRED>
+                       | VehicleSelectionPanel
+                       | ChatActions) #REQUIRED>
 
 <!ELEMENT colors (color+)>
 <!ELEMENT color (#PCDATA)>

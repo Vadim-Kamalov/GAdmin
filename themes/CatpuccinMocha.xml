@@ -4,33 +4,33 @@
 <UserTheme>
     <global>
         <colors>
-            <color name="Text">#CDD6F4</color>
+            <color name="Text">#BAC2DE</color>
             <color name="TextDisabled">#A6ADC8</color>
-            <color name="WindowBg">#313244</color>
-            <color name="ChildBg">#45475A</color>
-            <color name="PopupBg">#585B70</color>
-            <color name="Border">#6C7086</color>
+            <color name="WindowBg">#171724</color>
+            <color name="ChildBg">#1D1D2E</color>
+            <color name="PopupBg">#1D1D2E</color>
+            <color name="Border">#3C3E4E</color>
             <color name="BorderShadow">{ 0.00, 0.00, 0.00, 0.00 }</color>
-            <color name="FrameBg">#6C7086</color>
-            <color name="FrameBgHovered">#7F849C</color>
-            <color name="FrameBgActive">#9399B2</color>
-            <color name="ScrollbarBg">#585B70</color>
-            <color name="ScrollbarGrab">#6C7086</color>
-            <color name="ScrollbarGrabHovered">#7F849C</color>
-            <color name="ScrollbarGrabActive">#9399B2</color>
-            <color name="Button">#6C7086</color>
-            <color name="ButtonHovered">#7F849C</color>
-            <color name="ButtonActive">#9399B2</color>
-            <color name="Header">#6C7086</color>
-            <color name="HeaderHovered">#7F849C</color>
-            <color name="HeaderActive">#9399B2</color>
-            <color name="Separator">#CDD6F4</color>
-            <color name="SeparatorHovered">#CDD6F4</color>
-            <color name="SeparatorActive">#9399B2</color>
+            <color name="FrameBg">#2F303F</color>
+            <color name="FrameBgHovered">#3C3E4E</color>
+            <color name="FrameBgActive">#2A2A37</color>
+            <color name="ScrollbarBg">#171724</color>
+            <color name="ScrollbarGrab">#2F303F</color>
+            <color name="ScrollbarGrabHovered">#3C3E4E</color>
+            <color name="ScrollbarGrabActive">#2A2A37</color>
+            <color name="Button">#2F303F</color>
+            <color name="ButtonHovered">#3C3E4E</color>
+            <color name="ButtonActive">#2A2A37</color>
+            <color name="Header">#2F303F</color>
+            <color name="HeaderHovered">#3C3E4E</color>
+            <color name="HeaderActive">#2A2A37</color>
+            <color name="Separator">#3C3E4E</color>
+            <color name="SeparatorHovered">#3C3E4E</color>
+            <color name="SeparatorActive">#3C3E4E</color>
             <color name="TextSelectedBg">#BAC2DE</color>
-            <color name="Tab">#6C7086</color>
-            <color name="TabHovered">#7F849C</color>
-            <color name="TabActive">#9399B2</color>
+            <color name="Tab">#2F303F</color>
+            <color name="TabHovered">#3C3E4E</color>
+            <color name="TabActive">#2A2A37</color>
             <color name="TabUnfocused">{ 0.07, 0.10, 0.15, 0.97 }</color>
             <color name="TabUnfocusedActive">{ 0.14, 0.26, 0.42, 1.00 }</color>
             <color name="DragDropTarget">{ 1.00, 1.00, 0.00, 0.20 }</color>
@@ -38,13 +38,13 @@
             <color name="NavWindowingHighlight">{ 1.00, 1.00, 1.00, 0.70 }</color>
             <color name="NavWindowingDimBg">{ 0.80, 0.80, 0.80, 0.20 }</color>
             <color name="ModalWindowDimBg">{ 0.00, 0.00, 0.00, 0.70 }</color>
-            <color name="TitleBg">#6C7086</color>
-            <color name="TitleBgActive">#9399B2</color>
+            <color name="TitleBg">#2F303F</color>
+            <color name="TitleBgActive">#3C3E4E</color>
             <color name="TitleBgCollapsed">#6C7086</color>
             <color name="MenuBarBg">{ 0.12, 0.12, 0.12, 1.00 }</color>
             <color name="CheckMark">{ 1.00, 1.00, 1.00, 1.00 }</color>
-            <color name="SliderGrab">#5C5F77</color>
-            <color name="SliderGrabActive">#5C5F77</color>
+            <color name="SliderGrab">#1D1D2E</color>
+            <color name="SliderGrabActive">#1D1D2E</color>
         </colors>
         <values>
             <value name="IndentSpacing">0</value>
@@ -72,15 +72,14 @@
         </values>
     </global>
     <windows>
-        <window name="SpectatorInformation">
+        <window name="SpectatorKeys">
             <colors>
-                <color name="Separator">{ 0.00, 0.00, 0.00, 0.00 }</color>
-                <color name="SeparatorHovered">{ 0.00, 0.00, 0.00, 0.00 }</color>
-                <color name="SeparatorActive">{ 0.00, 0.00, 0.00, 0.00 }</color>
+                <!-- approximately 0x2F303F80 -->
+                <color name="Button">{ 0.184, 0.188, 0.247, 0.501 }</color>
             </colors>
             <values>
                 <!-- See FIXME in $ROOT/src/imgui/Style.clue:235 -->
-                <value name="WindowBorderSize">1</value>
+                <value name="WindowBorderSize">0</value>
             </values>
         </window>
     </windows>
