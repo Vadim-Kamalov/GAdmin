@@ -135,7 +135,7 @@ imgui.OnFrame(fn { return isSampAvailable() }, fn (self) {
     local sizeX, sizeY = getScreenResolution()
     
     if !isGamePaused() {
-        if config.root.additions.carInfo.use && ((config.root.additions.carInfo.onlyInSpectator) ? user::getAloginStatus() : true) {
+        if config.root.additions.carInfo.use && ((config.root.additions.carInfo.onlyInSpectator) ? spectator.status : true) {
             for _, car in getAllVehicles() {
                 local x, y, z = getCarCoordinates(car)
                 local myx, myy, myz = getCharCoordinates(PLAYER_PED)
