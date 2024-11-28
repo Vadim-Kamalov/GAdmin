@@ -346,7 +346,7 @@ global fn main() {
         }
 
         for index, admin in admins {
-            if !sampIsPlayerConnected(admin.id) {
+            if !sampIsPlayerConnected(admin.id) && admin.id != user::getId() {
                 admins::remove(index)
             }
         }
