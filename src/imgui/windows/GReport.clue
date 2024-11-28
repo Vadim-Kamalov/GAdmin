@@ -91,15 +91,22 @@ imgui.OnFrame(fn { return greport.window.state && !isGamePaused() && config.root
                         greport.window.focusKeyboard = false
                     }
 
-                    imgui.InputTextWithHint(
+                    if imgui.InputTextWithHint(
                         "##imgui.windows.GReport.greport.window.answerInput",
                         "Ответ на репорт / причина блокировки репорта / причина удаления репорта",
                         greport.window.answerInput,
-                        ffi.sizeof(greport.window.answerInput)
-                    )
+                        ffi.sizeof(greport.window.answerInput),
+                        imgui.InputTextFlags.EnterReturnsTrue
+                    ) {
+                        if #ffi.string(greport.window.answerInput) == 0 {
+                            greport.window.noInputClock = os.clock()
+                        } else {
+                            greport.player::answer(ffi.string(greport.window.answerInput))
+                        }
+                    }
 
                     animations::hint(
-                        "Это поле не должно быть пустым.",
+                        "Поле ответа не должно быть пустым",
                         fn { return greport.window.noInputClock && (os.clock() - greport.window.noInputClock <= 1) && #ffi.string(greport.window.answerInput) == 0 },
                         nil,
                         common::convertHex2ImVec4("E46876")
