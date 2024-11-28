@@ -86,6 +86,7 @@ local messageContinuation = {
 }
 
 method sampev.onServerMessage(color, text) {
+    local baseText = text
     local text     = u8($)
     local pureText = string.gsub(text, "{%x%x%x%x%x%x}", "")
     
@@ -459,7 +460,10 @@ method sampev.onServerMessage(color, text) {
         text = string.gsub($, "%d+%.%d+%.%d+%.%d+", "XXX.XXX.XXX.XXX")
     }
 
-    if string.len(u8::decode(text)) > 144 { $debugError!("onServerMessage->(if #text > 144)", "text: " .. u8::decode(text)) }
+    if string.len(u8::decode(text)) > 144 {
+        $debugError!("onServerMessage->(if #text > 144)", "text: " .. u8::decode(text))
+        return { color, baseText }
+    }
 
     return { color, u8::decode(text) }
 }

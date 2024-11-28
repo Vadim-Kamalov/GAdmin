@@ -35,7 +35,11 @@ method sampev.onTextDrawSetString(id, text) {
         spectator::setInformation({ world = string.match(text, "~n~Android: .+~n~Mo.+: (%d+)$") })
     }
 
-    if string.find(text, "~n~Android: .+~n~") {
-        spectator.platform = (string.match(text, "~n~Android: (.+)~n~") == "He\166") ? PLATFORM_PC : PLATFORM_ANDROID
+    if local state = string.match(text, "~n~Android: (.+)~n~") {
+        spectator.platform = match state {
+            "\131a"  => PLATFORM_ANDROID,
+            "He\166" => PLATFORM_PC,
+            default  => PLATFORM_AWAITING_OR_NONE
+        }
     }
 }

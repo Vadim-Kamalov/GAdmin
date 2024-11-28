@@ -38,6 +38,6 @@ method sampev.onTogglePlayerControllable(controllable) {
 		restoreCameraJumpcut()
 		clearCharTasksImmediately(PLAYER_PED)
 
-        sendedCommand = true;
+        sendedCommand = true
     }
 }
