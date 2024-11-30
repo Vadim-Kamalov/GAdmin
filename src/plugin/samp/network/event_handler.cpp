@@ -1,6 +1,7 @@
 #include "plugin/samp/network/event_handler.h"
 #include "plugin/samp/samp.h"
 #include "plugin/samp/network/address.h"
+#include "plugin/log.h"
 #include <cstdint>
 
 std::uintptr_t
@@ -29,6 +30,8 @@ plugin::samp::EventHandler::rak_client_interface_constructor_hooked(const declty
         outgoing_rpc_handler_hook.set_dest(v_table[25]);
         outgoing_rpc_handler_hook.set_cb(std::bind(&EventHandler::outgoing_rpc_handler_hooked, this, _1, _2, _3, _4, _5, _6, _7, _8));
         outgoing_rpc_handler_hook.install();
+
+        log::info("installed hooks on the next handlers: IncomingRPC, OutgoingRPC, IncomingPacket, OutgoingPacket");
     }
 
     return rak_client_interface;
@@ -177,9 +180,14 @@ plugin::samp::EventHandler::initialize() {
     if (get_version() == Version::Unknown)
         return false;
 
+    log::info("SA:MP {} loaded", get_version());
+    log::info("samp::EventHandler initialized");
+
     rak_client_interface_constructor_hook.set_dest(address::rak_client_interface_constructor());
     rak_client_interface_constructor_hook.set_cb(std::bind(&EventHandler::rak_client_interface_constructor_hooked, this, std::placeholders::_1));
     rak_client_interface_constructor_hook.install();
+
+    log::info("hook \"RakClientInterface::RakClientInterface()\" installed");
 
     initialized = true;
 

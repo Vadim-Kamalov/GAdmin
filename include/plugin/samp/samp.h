@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <utility>
+#include <format>
 #include <windows.h>
 
 namespace plugin::samp {
@@ -53,6 +54,9 @@ get_version() noexcept {
             case 0xCBC90:
                 version = Version::V037R51;
                 break;
+            case 0xFDB60:
+                version = Version::V037DL1;
+                break;
             default:
                 version = Version::Unknown;
                 break;
@@ -63,5 +67,13 @@ get_version() noexcept {
 }
 
 } // namespace plugin::samp
+
+template<>
+struct std::formatter<plugin::samp::Version> : std::formatter<std::string_view> {
+    auto format(const plugin::samp::Version& version, std::format_context& ctx) const {
+        static constexpr const char* const versions[] = { "not loaded", "unknown", "v0.3.7-R1", "v0.3.7-R3-1", "v0.3.7-R5-1", "v0.3.7-DL-1" };
+        return std::formatter<std::string_view>::format(versions[std::to_underlying(version)], ctx);
+    }
+}; // struct std::formatter<plugin::samp::Version> : std::formatter<std::string_view>
 
 #endif // GADMIN_PLUGIN_SAMP_SAMP_H
