@@ -53,25 +53,25 @@ write(const std::string_view& tag, const std::string_view& text) noexcept {
 }
 
 template<typename... Args>
-static inline void
+static void
 info(std::format_string<Args...> fmt, Args&&... args) noexcept {
     write("INFO", std::format(fmt, std::forward<Args>(args)...));
 }
 
 template<typename... Args>
-static inline void
+static void
 warn(std::format_string<Args...> fmt, Args&&... args) noexcept {
     write("WARN", std::format(fmt, std::forward<Args>(args)...));
 }
 
 template<typename... Args>
-static inline void
+static void
 error(std::format_string<Args...> fmt, Args&&... args) noexcept {
     write("ERROR", std::format(fmt, std::forward<Args>(args)...));
 }
 
 template<typename... Args>
-static inline void
+static void
 fatal(std::format_string<Args...> fmt, Args&&... args) noexcept {
     write("FATAL", std::format(fmt, std::forward<Args>(args)...));
 }
