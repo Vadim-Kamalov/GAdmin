@@ -1,8 +1,9 @@
 #ifndef GADMIN_PLUGIN_UTILS_H
 #define GADMIN_PLUGIN_UTILS_H
 
+#include <cassert>
 #include <memory>
-#include <print>
+#include <minwindef.h>
 
 namespace plugin::utils {
 
@@ -30,10 +31,7 @@ public:
 
     template <typename U> requires std::convertible_to<U, T>
     constexpr not_null(U&& u) noexcept(std::is_nothrow_move_constructible_v<T>) : ptr(std::forward<U>(u)) {
-        if (ptr == nullptr) {
-            std::println(stderr, "not_null: nullptr is not allowed");
-            std::exit(EXIT_FAILURE);
-        }
+        assert(ptr != nullptr && "not_null: nullptr is not allowed");
     }
 
     template <typename U> requires std::convertible_to<U, T>

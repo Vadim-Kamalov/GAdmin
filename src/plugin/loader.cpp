@@ -41,8 +41,19 @@ public:
 void
 game_loop_hooked(const decltype(game_loop_hook)& hook) {
     static bool initialized = false;
+    
+    hook.call_trampoline();
 
-    hook.get_trampoline()();
+    if (!plugin_to_load->active()) {
+        plugin_to_load.reset(nullptr);
+        game_loop_hook.remove();
+        wndproc_hook.remove();
+        d3d9_present_hook.remove();
+        d3d9_reset_hook.remove();
+    
+        return;
+    }
+
     plugin_to_load->main_loop();
 
     if (initialized)

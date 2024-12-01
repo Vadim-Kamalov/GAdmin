@@ -6,11 +6,14 @@
 #include <optional>
 #include <format>
 #include <chrono>
-#include <windows.h>
+#include <utility>
 
 namespace plugin::log {
 
-inline std::optional<std::function<void(std::string_view)>> handler;
+enum class Type { Info, Warn, Error, Fatal };
+
+static constexpr const char* const types[] = { "INFO", "WARN", "ERROR", "FATAL" };
+inline std::optional<std::function<void(Type, std::string_view)>> handler;
 
 static std::string
 get_current_time() noexcept {
@@ -40,40 +43,41 @@ get_current_time() noexcept {
 }
 
 inline void
-set_handler(const std::function<void(std::string_view)>& new_handler) noexcept {
+set_handler(const std::function<void(Type, std::string_view)>& new_handler) noexcept {
     handler = new_handler;
 }
 
+template<Type MessageType>
 static void
-write(const std::string_view& tag, const std::string_view& text) noexcept {
+write(const std::string_view& text) noexcept {
     if (!handler.has_value())
         return;
 
-    (*handler)(std::format("{} [{}] {}", get_current_time(), tag, text));
+    (*handler)(MessageType, std::format("{} [{}] {}", get_current_time(), types[std::to_underlying(MessageType)], text));
 }
 
 template<typename... Args>
 static void
 info(std::format_string<Args...> fmt, Args&&... args) noexcept {
-    write("INFO", std::format(fmt, std::forward<Args>(args)...));
+    write<Type::Info>(std::format(fmt, std::forward<Args>(args)...));
 }
 
 template<typename... Args>
 static void
 warn(std::format_string<Args...> fmt, Args&&... args) noexcept {
-    write("WARN", std::format(fmt, std::forward<Args>(args)...));
+    write<Type::Warn>(std::format(fmt, std::forward<Args>(args)...));
 }
 
 template<typename... Args>
 static void
 error(std::format_string<Args...> fmt, Args&&... args) noexcept {
-    write("ERROR", std::format(fmt, std::forward<Args>(args)...));
+    write<Type::Error>(std::format(fmt, std::forward<Args>(args)...));
 }
 
 template<typename... Args>
 static void
 fatal(std::format_string<Args...> fmt, Args&&... args) noexcept {
-    write("FATAL", std::format(fmt, std::forward<Args>(args)...));
+    write<Type::Fatal>(std::format(fmt, std::forward<Args>(args)...));
 }
 
 } // namespace plugin::log

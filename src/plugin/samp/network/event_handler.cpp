@@ -180,7 +180,6 @@ plugin::samp::EventHandler::initialize() {
     if (get_version() == Version::Unknown)
         return false;
 
-    log::info("SA:MP {} loaded", get_version());
     log::info("samp::EventHandler initialized");
 
     rak_client_interface_constructor_hook.set_dest(address::rak_client_interface_constructor());
