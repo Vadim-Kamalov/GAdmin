@@ -9,10 +9,10 @@
 
 namespace plugin::signatures {
 
-using GameLoop = void(*)();
+using GameLoop = void(__cdecl*)();
 using D3D9Present = HRESULT(__stdcall*)(IDirect3DDevice9*, const RECT*, const RECT*, HWND, const RGNDATA*);
 using D3D9Reset = HRESULT(__stdcall*)(IDirect3DDevice9*, D3DPRESENT_PARAMETERS*);
-using WndProc = LRESULT(CALLBACK*)(HWND, UINT, WPARAM, LPARAM);
+using WndProc = LRESULT(__stdcall*)(HWND, UINT, WPARAM, LPARAM);
 
 using RakClientInterfaceConstructor = std::uintptr_t(*)();
 using IncomingRpcHandler = bool(__thiscall*)(void*, const char*, int, PlayerID);

@@ -1,7 +1,8 @@
 #include "plugin/gui/windows/main.h"
-#include "plugin/samp/core/chat.h"
+#include "plugin/game/game.h"
 #include "plugin/log.h"
 #include <imgui.h>
+#include <windows.h>
 
 constexpr const char*
 plugin::gui::windows::Main::get_id() const {
@@ -10,24 +11,32 @@ plugin::gui::windows::Main::get_id() const {
 
 void
 plugin::gui::windows::Main::render() {
-    ImGui::Begin(get_id());
+    auto [size_x, size_y] = game::get_screen_resolution();
+
+    ImGui::SetNextWindowPos(ImVec2(size_x / 2, size_y / 2), ImGuiCond_FirstUseEver, ImVec2(0.5, 0.5));
+    ImGui::SetNextWindowSize(ImVec2(700, 455));
+    ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoDecoration);
     {
-        if (ImGui::Button("Send") && samp::chat::instance())
-            samp::chat::add_message(0xFFFFFFFF, "Привет, {}", "мир");
+        ImGui::Text("Hello, world!");
     }
     ImGui::End();
 }
 
 bool
 plugin::gui::windows::Main::on_event(unsigned int message, WPARAM wparam, LPARAM lparam) {
+    if (message == WM_KEYUP && wparam == 0x5A /* VK_Z */) {
+        child->switch_cursor();
+        return false;
+    }
+
     return true;
 }
 
-plugin::gui::windows::Main::Main() {
+plugin::gui::windows::Main::Main(utils::not_null<GraphicalUserInterface*> child) : child(child) {
     log::info("window \"{}\" initialized", get_id());
 }
 
-plugin::utils::not_null<plugin::gui::WindowRef>
-plugin::gui::windows::main() noexcept {
-    return std::make_shared<Main>();
+plugin::gui::WindowRef
+plugin::gui::windows::main(utils::not_null<GraphicalUserInterface*> child) noexcept {
+    return std::make_unique<Main>(child);
 }

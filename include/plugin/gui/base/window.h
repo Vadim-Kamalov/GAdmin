@@ -17,7 +17,7 @@ public:
     virtual bool on_event(const samp::EventType& event, std::uint8_t id, samp::BitStream* bit_stream) { return true; }
 }; // class Window
 
-using WindowRef = std::shared_ptr<Window>;
+using WindowRef = std::unique_ptr<Window>;
 
 } // namespace plugin::gui
 
