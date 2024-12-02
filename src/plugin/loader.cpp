@@ -78,15 +78,18 @@ game_loop_hooked(const decltype(game_loop_hook)& hook) {
 
 LRESULT
 wndproc_hooked(const decltype(wndproc_hook)& hook, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
-    if (plugin_to_load) {
-        if (!plugin_to_load->on_message(message, wparam, lparam))
-            return true;
+    LRESULT result = hook.call_trampoline(hwnd, message, wparam, lparam);
 
-        if (ImGui_ImplWin32_WndProcHandler(hwnd, message, wparam, lparam))
-            return true;
-    }
+    if (!plugin_to_load)
+        return result;
 
-    return hook.call_trampoline(hwnd, message, wparam, lparam);
+    if (!plugin_to_load->on_message(message, wparam, lparam))
+        return true;
+
+    if (ImGui_ImplWin32_WndProcHandler(hwnd, message, wparam, lparam))
+        return true;
+
+    return result;
 }
 
 std::optional<HRESULT>
