@@ -36,6 +36,12 @@ public:
         wndproc_hook.set_cb(&wndproc_hooked);
         wndproc_hook.install();
     }
+
+    ~Loader() {
+        ImGui::DestroyContext();
+	    ImGui_ImplDX9_Shutdown();
+	    ImGui_ImplWin32_Shutdown();
+    }
 } loader;
 
 void
@@ -67,7 +73,7 @@ game_loop_hooked(const decltype(game_loop_hook)& hook) {
 
     d3d9_reset_hook.set_dest(v_table[16]);
     d3d9_reset_hook.before.connect(&d3d9_reset_hooked);
-    d3d9_present_hook.install();
+    d3d9_reset_hook.install();
 
     initialized = true;
 }
