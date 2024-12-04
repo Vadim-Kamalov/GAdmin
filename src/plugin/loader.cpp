@@ -38,6 +38,7 @@ public:
     }
 
     ~Loader() {
+        plugin_to_load.reset(nullptr);
         ImGui::DestroyContext();
 	    ImGui_ImplDX9_Shutdown();
 	    ImGui_ImplWin32_Shutdown();

@@ -1,4 +1,5 @@
 #include "plugin/gui/gui.h"
+#include "plugin/game/game.h"
 #include "plugin/gui/windows/main.h"
 #include "plugin/memory.h"
 #include <windows.h>
@@ -32,8 +33,14 @@ plugin::GraphicalUserInterface::on_samp_initialize() const {
 
 void
 plugin::GraphicalUserInterface::render() const {
-    for (const auto& window : registered_windows)
+    bool game_paused = game::is_menu_opened();
+    
+    for (const auto& window : registered_windows) {
+        if (game_paused && !window->render_on_game_paused())
+            continue;
+
         window->render();
+    }
 }
 
 void

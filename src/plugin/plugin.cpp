@@ -2,7 +2,6 @@
 #include "plugin/samp/core/net_game.h"
 #include "plugin/filesystem.h"
 #include "plugin/samp/samp.h"
-#include "plugin/configuration.h"
 #include <cstring>
 #include <imgui.h>
 #include <format>
@@ -53,7 +52,7 @@ void
 plugin::Plugin::on_samp_initialize() {
     log::info("samp::net_game::instance() != nullptr: SA:MP {} initialized", samp::get_version());
 
-    if (strcmp(samp::net_game::get_host_address(), configuration::server_host_name) != 0) {
+    if (strcmp(samp::net_game::get_host_address(), PLUGIN_HOST_ADDRESS) != 0) {
         log::fatal("plugin works only on \"sa.gambit-rp.ru:7777\" server");
         return;
     }
@@ -71,6 +70,7 @@ plugin::Plugin::main_loop() {
     static bool samp_initialized = false;
     
     event_handler->initialize();
+    configuration->save(std::chrono::minutes(5));
     
     if (samp::get_base() && samp::net_game::instance() && !samp_initialized) {
         on_samp_initialize();
@@ -87,17 +87,20 @@ plugin::Plugin::Plugin() {
         log_file_stream.open(log_path, std::ios::app);
         log::set_handler(std::bind(&Plugin::on_log_message, this, _1, _2));
     }
-
-    event_handler = std::make_unique<samp::EventHandler>();
-    event_handler->attach(std::bind(&Plugin::on_event, this, _1, _2, _3));
-
+    
     log::info("GAdmin v" PROJECT_VERSION " loaded. Copyright (C) 2023-2024 The Contributors");
+
+    configuration = std::make_unique<Configuration>(filesystem::get_path("GAdmin", ".json"));
+    event_handler = std::make_unique<samp::EventHandler>();
+
+    event_handler->attach(std::bind(&Plugin::on_event, this, _1, _2, _3));
 }
 
 plugin::Plugin::~Plugin() {
     log::info("plugin terminated");
 
     event_handler.reset(nullptr);
+    configuration.reset(nullptr);
 
     if (log_file_stream.is_open())
         log_file_stream.close();

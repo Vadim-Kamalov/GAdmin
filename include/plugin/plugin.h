@@ -1,6 +1,7 @@
 #ifndef GADMIN_PLUGIN_PLUGIN_H
 #define GADMIN_PLUGIN_PLUGIN_H
 
+#include "plugin/configuration.h"
 #include "plugin/log.h"
 #include "plugin/gui/gui.h"
 #include "plugin/samp/network/event_handler.h"
@@ -10,6 +11,7 @@
 namespace plugin {
 
 inline std::unique_ptr<samp::EventHandler> event_handler;
+inline std::unique_ptr<Configuration> configuration;
 
 class Plugin {
 private:
