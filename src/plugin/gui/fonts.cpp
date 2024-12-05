@@ -1,15 +1,15 @@
 #include "plugin/gui/fonts.h"
+#include "plugin/gui/icon.h"
 #include "plugin/log.h"
 #include "plugin/network.h"
 #include <filesystem>
 
 std::unordered_map<float, ImFont*>
-plugin::gui::fonts::Font::create() const {
+plugin::gui::fonts::Font::create(const ImWchar* glyphs) const {
     std::unordered_map<float, ImFont*> fonts;
 
     std::filesystem::path path = std::filesystem::current_path() / "gadmin" / "resources" / get_filename();
     ImFontAtlas* font_atlas = ImGui::GetIO().Fonts;
-    const ImWchar* glyphs = font_atlas->GetGlyphRangesCyrillic();
 
     for (const auto& size : get_sizes())
         fonts.emplace(size, font_atlas->AddFontFromFileTTF(path.string().c_str(), size, nullptr, glyphs));
@@ -27,11 +27,12 @@ plugin::gui::Fonts::make() {
     light = std::make_unique<fonts::Light>();
     regular = std::make_unique<fonts::Regular>();
     bold = std::make_unique<fonts::Bold>();
+    icon = std::make_unique<fonts::Icon>();
 }
 
 plugin::gui::Fonts::Fonts() {
     std::filesystem::path resources_directory = std::filesystem::current_path() / "gadmin" / "resources";
-    std::vector<std::string> fonts = { fonts::files::light, fonts::files::regular, fonts::files::bold };
+    std::vector<std::string> fonts = { fonts::files::light, fonts::files::regular, fonts::files::bold, fonts::files::icon };
 
     try {
         for (auto it = fonts.begin(); it != fonts.end();) {

@@ -12,7 +12,7 @@ class GraphicalUserInterface {
 private:
     std::vector<gui::WindowRef> registered_windows;
 
-    bool cursor_active = true;
+    bool cursor_active = false;
 public:
     std::unique_ptr<gui::Fonts> fonts;
 
