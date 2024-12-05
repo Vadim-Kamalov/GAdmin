@@ -40,8 +40,8 @@ public:
     ~Loader() {
         plugin_to_load.reset(nullptr);
         ImGui::DestroyContext();
-	    ImGui_ImplDX9_Shutdown();
-	    ImGui_ImplWin32_Shutdown();
+        ImGui_ImplDX9_Shutdown();
+        ImGui_ImplWin32_Shutdown();
     }
 } loader;
 
@@ -98,6 +98,9 @@ d3d9_present_hooked(const decltype(d3d9_present_hook)&, IDirect3DDevice9* device
     static bool imgui_initialized = false;
 
     if (!plugin_to_load)
+        return {};
+
+    if (!plugin_to_load->can_initialize_render())
         return {};
 
     if (!imgui_initialized) {

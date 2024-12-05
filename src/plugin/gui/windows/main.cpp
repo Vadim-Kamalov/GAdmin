@@ -17,7 +17,12 @@ plugin::gui::windows::Main::render() {
     ImGui::SetNextWindowSize(ImVec2(700, 455));
     ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoDecoration);
     {
-        ImGui::Text("Hello, world!");
+        child->fonts->bold->push(18);
+        {
+            ImGui::Text("Hello, world!");
+            ImGui::Text("Привет, мир!");
+        }
+        child->fonts->pop();
     }
     ImGui::End();
 }

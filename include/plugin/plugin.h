@@ -23,11 +23,17 @@ private:
 
     void on_samp_initialize();
     void on_log_message(const log::Type& type, const std::string_view& message);
+
+    void initialize_logging();
+    void initialize_event_handler();
+    void create_and_initialize_files();
+    void create_directories();
 public:
     inline void unload() { plugin_working = false; }
     inline bool active() { return plugin_working; }
 
     bool on_event(const samp::EventType& type, std::uint8_t id, samp::BitStream* bit_stream);
+    bool can_initialize_render() const;
     void on_render_initialize();
     void on_frame();
     bool on_message(unsigned int message, WPARAM wparam, LPARAM lparam);

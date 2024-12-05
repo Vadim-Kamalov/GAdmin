@@ -180,8 +180,6 @@ plugin::samp::EventHandler::initialize() {
     if (get_version() == Version::Unknown)
         return false;
 
-    log::info("samp::EventHandler initialized");
-
     rak_client_interface_constructor_hook.set_dest(address::rak_client_interface_constructor());
     rak_client_interface_constructor_hook.set_cb(std::bind(&EventHandler::rak_client_interface_constructor_hooked, this, std::placeholders::_1));
     rak_client_interface_constructor_hook.install();

@@ -1,7 +1,7 @@
 #include "plugin/gui/gui.h"
+#include "plugin/game/cursor.h"
 #include "plugin/game/game.h"
 #include "plugin/gui/windows/main.h"
-#include "plugin/memory.h"
 #include <windows.h>
 #include <imgui.h>
 
@@ -31,6 +31,21 @@ plugin::GraphicalUserInterface::on_samp_initialize() const {
         window->on_samp_initialize();
 }
 
+bool
+plugin::GraphicalUserInterface::can_initialize_render() const {
+    return fonts->available();
+}
+
+void
+plugin::GraphicalUserInterface::on_initialize() {
+    using namespace gui;
+    
+    ImGui::GetIO().IniFilename = nullptr; 
+    fonts->make();
+
+    registered_windows.push_back(windows::main(this));
+}
+
 void
 plugin::GraphicalUserInterface::render() const {
     bool game_paused = game::is_menu_opened();
@@ -45,30 +60,14 @@ plugin::GraphicalUserInterface::render() const {
 
 void
 plugin::GraphicalUserInterface::enable_cursor() {
-	memory::set(0x53F417, 0x90, 5);
-	memory::copy(0x53F41F, { 0x33, 0xC0, 0x0F, 0x84 });
-	memory::write<byte>(0x6194A0, 0xC3);
-	memory::set(0xB73424, 0x0, 8);
-	memory::set(0xB7342C, 0x0, 8);
-	
-    SetCursor(LoadCursor(nullptr, IDC_ARROW));
-
+    game::cursor::set_status(true);
     cursor_active = true;
 }
 
 void
 plugin::GraphicalUserInterface::disable_cursor() {
-	memory::copy(0x53F417, { 0xE8, 0xB4, 0x7A, 0x20, 0x00 });
-	memory::copy(0x53F41F, { 0x85, 0xC0, 0x0F, 0x8C });
-	memory::write<byte>(0x6194A0, 0xE9);
-	memory::set(0xB73424, 0x0, 8);
-	memory::set(0xB7342C, 0x0, 8);
-
-	reinterpret_cast<void(__cdecl*)()>(0x541BD0)();
-	reinterpret_cast<void(__cdecl*)()>(0x541DD0)();
-	SetCursor(LoadCursor(nullptr, nullptr));
-
-    cursor_active = false;
+    game::cursor::set_status(false);
+	cursor_active = false;
 }
 
 void
@@ -80,7 +79,9 @@ plugin::GraphicalUserInterface::switch_cursor() {
 }
 
 plugin::GraphicalUserInterface::GraphicalUserInterface() {
-    using namespace gui;
+    fonts = std::make_unique<gui::Fonts>();
+}
 
-    registered_windows.push_back(windows::main(this));
+plugin::GraphicalUserInterface::~GraphicalUserInterface() {
+    fonts.reset(nullptr);
 }
