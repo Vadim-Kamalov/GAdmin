@@ -29,8 +29,8 @@ private:
     void create_and_initialize_files();
     void create_directories();
 public:
-    inline void unload() { plugin_working = false; }
-    inline bool active() { return plugin_working; }
+    constexpr void unload() { plugin_working = false; }
+    constexpr bool active() const { return plugin_working; }
 
     bool on_event(const samp::EventType& type, std::uint8_t id, samp::BitStream* bit_stream);
     bool can_initialize_render() const;

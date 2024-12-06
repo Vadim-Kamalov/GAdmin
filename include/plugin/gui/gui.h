@@ -13,11 +13,12 @@ private:
     std::vector<gui::WindowRef> registered_windows;
 
     bool cursor_active = false;
+    int cursor_last_x = -1, cursor_last_y = 1;
 public:
     std::unique_ptr<gui::Fonts> fonts;
 
     bool on_event(const samp::EventType& type, std::uint8_t id, samp::BitStream* bit_stream) const;
-    bool on_event(unsigned int message, WPARAM wparam, LPARAM lparam) const;
+    bool on_event(unsigned int message, WPARAM wparam, LPARAM lparam);
     
     void on_samp_initialize() const;
     bool can_initialize_render() const;

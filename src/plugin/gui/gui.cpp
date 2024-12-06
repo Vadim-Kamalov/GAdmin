@@ -1,4 +1,5 @@
 #include "plugin/gui/gui.h"
+#include "plugin/gui/style.h"
 #include "plugin/game/cursor.h"
 #include "plugin/game/game.h"
 #include "plugin/gui/windows/main.h"
@@ -17,7 +18,12 @@ plugin::GraphicalUserInterface::on_event(const samp::EventType& type, std::uint8
 }
 
 bool
-plugin::GraphicalUserInterface::on_event(unsigned int message, WPARAM wparam, LPARAM lparam) const {
+plugin::GraphicalUserInterface::on_event(unsigned int message, WPARAM wparam, LPARAM lparam) {
+    if (message == WM_KEYDOWN && wparam == VK_ESCAPE && is_cursor_active()) {
+        disable_cursor();
+        return false;
+    }
+
     for (const auto& window : registered_windows)
         if (!window->on_event(message, wparam, lparam))
             return false;
@@ -42,6 +48,7 @@ plugin::GraphicalUserInterface::on_initialize() {
     
     ImGui::GetIO().IniFilename = nullptr; 
     fonts->make();
+    Style::apply();
 
     registered_windows.push_back(windows::main(this));
 }
@@ -61,12 +68,24 @@ plugin::GraphicalUserInterface::render() const {
 void
 plugin::GraphicalUserInterface::enable_cursor() {
     game::cursor::set_status(true);
+    
+    if (cursor_last_x != -1 && cursor_last_y != -1)
+        SetCursorPos(cursor_last_x, cursor_last_y);
+
     cursor_active = true;
 }
 
 void
 plugin::GraphicalUserInterface::disable_cursor() {
     game::cursor::set_status(false);
+
+    POINT cursor_pos;
+    {
+        GetCursorPos(&cursor_pos);
+        cursor_last_x = cursor_pos.x;
+        cursor_last_y = cursor_pos.y;
+    }
+
 	cursor_active = false;
 }
 
