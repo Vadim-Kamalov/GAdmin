@@ -10,7 +10,7 @@ namespace plugin {
 class Configuration {
 private:
     std::filesystem::path configuration_file;
-    mutable std::chrono::time_point<std::chrono::steady_clock> last_time_saved;
+    mutable std::chrono::steady_clock::time_point last_time_saved;
 
     static void write(const std::filesystem::path& path, const nlohmann::json& json);
     static nlohmann::json get(const std::filesystem::path& path);

@@ -41,13 +41,18 @@ public:
 
     void push(std::size_t size) const { ImGui::PushFont((*this)[size]); }
     ImFont* operator[](float size) const { return get_fonts().at(size); }
+    void text(std::size_t size, const char* text) const {
+        push(size);
+        ImGui::Text("%s", text);
+        ImGui::PopFont();
+    }
 }; // class Font
 
 static constexpr const ImWchar icons_glyph_ranges[] = { ICON_MIN, ICON_MAX, 0 };
 
-CREATE_FONT(Light, files::light, ImGui::GetIO().Fonts->GetGlyphRangesCyrillic(), 10);
-CREATE_FONT(Regular, files::regular, ImGui::GetIO().Fonts->GetGlyphRangesCyrillic(), 10);
-CREATE_FONT(Bold, files::bold, ImGui::GetIO().Fonts->GetGlyphRangesCyrillic(), 18);
+CREATE_FONT(Light, files::light, ImGui::GetIO().Fonts->GetGlyphRangesCyrillic(), 18, 24);
+CREATE_FONT(Regular, files::regular, ImGui::GetIO().Fonts->GetGlyphRangesCyrillic(), 10, 24);
+CREATE_FONT(Bold, files::bold, ImGui::GetIO().Fonts->GetGlyphRangesCyrillic(), 18, 24);
 CREATE_FONT(Icon, files::icon, icons_glyph_ranges, 24);
 
 } // namespace fonts
