@@ -26,7 +26,10 @@ public:
 private:
     inline static nlohmann::json json = R"(
         {
-            "key": "value"
+            "user": {
+                "nickname": "Администратор",
+                "level": 0
+            }
         }
     )"_json;
 }; // class Configuration

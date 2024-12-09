@@ -42,6 +42,9 @@ public:
     template<typename T>
     void write(T value) { bit_stream->Write(value); }
 
+    template<typename T>
+    std::string read_string() { return read_string(read<T>()); }
+
     std::string read_string(std::int32_t length);
     std::string read_encoded(int length);
     bool read_buffer(std::uintptr_t destination, int size);

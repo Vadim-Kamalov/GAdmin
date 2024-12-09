@@ -1,23 +1,22 @@
 #ifndef GADMIN_PLUGIN_SAMP_CORE_NET_GAME_H
 #define GADMIN_PLUGIN_SAMP_CORE_NET_GAME_H
 
-#include "plugin/samp/samp.h"
-#include <cstring>
+#include <cstdint>
 
-namespace plugin::samp::net_game {
+namespace plugin {
+namespace signatures {
 
-static inline std::uintptr_t
-instance() noexcept {
-    static constexpr std::uintptr_t offsets[] = { 0x0, 0x0, 0x21A0F8, 0x26E8DC, 0x26EB94, 0x2ACA24 };
-    return *reinterpret_cast<std::uintptr_t*>(base(offsets[std::to_underlying(get_version())]));
-}
+using GetPlayerPool = std::uintptr_t(__thiscall*)(std::uintptr_t);
 
-static inline const char*
-get_host_address() noexcept {
-    static constexpr std::uintptr_t offsets[] = { 0x0, 0x0, 0x20, 0x34, 0x34, 0x34 };
-    return reinterpret_cast<char*>(instance() + offsets[std::to_underlying(get_version())]);
-}
+} // namespace signatures
 
-} // namespace plugin::samp::net_game
+namespace samp::net_game {
+
+std::uintptr_t instance() noexcept;
+const char* get_host_address() noexcept;
+std::uintptr_t get_player_pool() noexcept;
+
+} // namespace samp::net_game
+} // namespace plugin
 
 #endif // GADMIN_PLUGIN_SAMP_CORE_NET_GAME_H

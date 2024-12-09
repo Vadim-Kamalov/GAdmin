@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.27)
 project(GAdmin VERSION 0.0 LANGUAGES CXX)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(PLUGIN_HOST_ADDRESS           "46.174.48.194")
+set(SERVER_HOST_ADDRESS           "46.174.48.194")
+set(SERVER_COMMAND_DELAY_MS       "600")
 set(PROJECT_REPOSITORY            "https://github.com/Vadim-Kamalov/GAdmin/tree/plugin")
 set(PROJECT_DATABASE              "https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/refs/heads/plugin")
 
@@ -20,5 +21,6 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     PROJECT_REPOSITORY="${PROJECT_REPOSITORY}"
     PROJECT_DATABASE="${PROJECT_DATABASE}"
     PROJECT_VERSION="${PROJECT_VERSION}"
-    PLUGIN_HOST_ADDRESS="${PLUGIN_HOST_ADDRESS}"
+    SERVER_HOST_ADDRESS="${SERVER_HOST_ADDRESS}"
+    SERVER_COMMAND_DELAY_MS=${SERVER_COMMAND_DELAY_MS}
 )

@@ -14,7 +14,7 @@ enum class Version {
     V037R1,
     V037R31,
     V037R51,
-    V037DL1
+    V03DL1
 }; // enum class Version
 
 inline std::uintptr_t
@@ -55,7 +55,7 @@ get_version() noexcept {
                 version = Version::V037R51;
                 break;
             case 0xFDB60:
-                version = Version::V037DL1;
+                version = Version::V03DL1;
                 break;
             default:
                 version = Version::Unknown;
@@ -71,7 +71,7 @@ get_version() noexcept {
 template<>
 struct std::formatter<plugin::samp::Version> : std::formatter<std::string_view> {
     auto format(const plugin::samp::Version& version, std::format_context& ctx) const {
-        static constexpr const char* const versions[] = { "not loaded", "unknown", "v0.3.7-R1", "v0.3.7-R3-1", "v0.3.7-R5-1", "v0.3.7-DL-1" };
+        static constexpr const char* const versions[] = { "not loaded", "unknown", "v0.3.7-R1", "v0.3.7-R3-1", "v0.3.7-R5-1", "v0.3-DL-1" };
         return std::formatter<std::string_view>::format(versions[std::to_underlying(version)], ctx);
     }
 }; // struct std::formatter<plugin::samp::Version> : std::formatter<std::string_view>

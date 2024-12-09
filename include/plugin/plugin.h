@@ -27,7 +27,6 @@ private:
     void initialize_logging();
     void initialize_event_handler();
     void create_and_initialize_files();
-    void create_directories();
 public:
     constexpr void unload() { plugin_working = false; }
     constexpr bool active() const { return plugin_working; }

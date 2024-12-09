@@ -34,11 +34,13 @@ plugin::gui::Fonts::Fonts() {
     std::vector<std::string> fonts = { fonts::files::light, fonts::files::regular, fonts::files::bold, fonts::files::icon };
 
     try {
-        for (auto it = fonts.begin(); it != fonts.end();)
-            if (std::filesystem::exists(resources_directory / *it))
+        for (auto it = fonts.begin(); it != fonts.end();) {
+            if (std::filesystem::exists(resources_directory / *it)) {
                 it = fonts.erase(it);
-            else
+            } else {
                 it++;
+            }
+        }
 
         if (!fonts.empty()) {
             downloader_thread = std::jthread(([this, resources_directory, fonts](std::stop_token stop_token) {

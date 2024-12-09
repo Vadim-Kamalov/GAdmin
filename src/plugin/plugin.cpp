@@ -1,6 +1,8 @@
 #include "plugin/plugin.h"
 #include "plugin/samp/core/net_game.h"
 #include "plugin/samp/samp.h"
+#include "plugin/server/admins.h"
+#include "plugin/server/user.h"
 #include <cstring>
 #include <imgui.h>
 #include <format>
@@ -17,8 +19,18 @@ plugin::Plugin::on_log_message(const log::Type& type, const std::string_view& me
 
 bool
 plugin::Plugin::on_event(const samp::EventType& type, std::uint8_t id, samp::BitStream* bit_stream) {
+    if (!server::Admins::on_event(type, id, bit_stream))
+        return false;
+    
     if (gui && !gui->on_event(type, id, bit_stream))
         return false;
+    
+    bit_stream->reset_read_pointer();
+
+    if (!server::User::on_event(type, id, bit_stream))
+        return false;
+
+    bit_stream->reset_read_pointer();
 
     return true;
 }
@@ -51,7 +63,7 @@ void
 plugin::Plugin::on_samp_initialize() {
     log::info("samp::net_game::instance() != nullptr: SA:MP {} initialized", samp::get_version());
 
-    if (strcmp(samp::net_game::get_host_address(), PLUGIN_HOST_ADDRESS) != 0) {
+    if (strcmp(samp::net_game::get_host_address(), SERVER_HOST_ADDRESS) != 0) {
         log::fatal("plugin works only on \"sa.gambit-rp.ru:7777\" server");
         return;
     }
@@ -71,6 +83,8 @@ plugin::Plugin::main_loop() {
     event_handler->initialize();
     configuration->save(std::chrono::minutes(5));
     
+    server::User::main_loop();
+
     if (samp::get_base() && samp::net_game::instance() && !samp_initialized) {
         on_samp_initialize();
         samp_initialized = true;
