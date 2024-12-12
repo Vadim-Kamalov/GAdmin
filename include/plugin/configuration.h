@@ -29,6 +29,18 @@ private:
             "user": {
                 "nickname": "Администратор",
                 "level": 0
+            },
+
+            "windows": {
+                "admins": {
+                    "show_title": true,
+                    "show_count": false,
+                    "show_id": true,
+                    "show_level": true,
+                    "show_scrollbar_on": 10,
+                    "sort_by": "level",
+                    "align": "left"
+                }
             }
         }
     )"_json;

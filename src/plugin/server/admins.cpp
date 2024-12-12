@@ -1,9 +1,46 @@
 #include "plugin/server/admins.h"
 #include "plugin/server/user.h"
 #include "plugin/samp/core/user.h"
+#include "plugin/log.h"
 #include "plugin/plugin.h"
 #include <algorithm>
 #include <regex>
+
+void
+plugin::server::Admin::sort(std::vector<Admin>& admins, const SortOption& sort_option) {
+    switch (sort_option) {
+        case SortOption::Disabled:
+            break;
+        case SortOption::Length:
+            std::ranges::sort(admins, [](const Admin& a, const Admin& b) { return a.nickname.length() < b.nickname.length(); });
+            break;
+        case SortOption::Id:
+            std::ranges::sort(admins, {}, &Admin::id);
+            break;
+        case SortOption::Level:
+            std::ranges::sort(admins, {}, &Admin::level);
+            break;
+    }
+}
+
+bool
+plugin::server::Admin::sort(std::vector<Admin>& admins, const std::string_view& option) {
+    static std::unordered_map<std::string_view, SortOption> options = {
+        { "default", SortOption::Disabled },
+        { "length", SortOption::Length },
+        { "id", SortOption::Id },
+        { "level", SortOption::Level }
+    };
+
+    if (!options.contains(option)) {
+        log::warn("failed to Admin::sort(std::vector<Admins>&, (const std::string_view&) \"{}\"): invalid option", option);
+        return false;
+    }
+
+    sort(admins, options[option]);
+    
+    return true;
+}
 
 bool
 plugin::server::Admins::on_show_dialog(const samp::Dialog& dialog) {
@@ -58,7 +95,7 @@ plugin::server::Admins::on_server_message(const samp::ServerMessage& message) {
 
         if (std::find_if(list.begin(), list.end(), [&nickname](Admin admin) {
             return admin.nickname == nickname;
-        }) != std::end(list)) {
+        }) == std::end(list)) {
             std::uint16_t id = static_cast<std::uint16_t>(std::stoul(matches[2].str()));
             std::uint8_t level = static_cast<std::uint8_t>(std::stoul(matches[3].str()));
 
@@ -87,15 +124,6 @@ plugin::server::Admins::on_server_message(const samp::ServerMessage& message) {
     }
 
     return true;
-}
-
-std::optional<plugin::server::Admin>
-plugin::server::Admins::find(const std::string_view& nickname) {
-    for (const auto& admin : list)
-        if (admin.nickname == nickname)
-            return admin;
-
-    return {};
 }
 
 void

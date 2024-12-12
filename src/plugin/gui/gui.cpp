@@ -2,6 +2,7 @@
 #include "plugin/gui/style.h"
 #include "plugin/game/cursor.h"
 #include "plugin/game/game.h"
+#include "plugin/gui/windows/admins.h"
 #include "plugin/gui/windows/main.h"
 #include <windows.h>
 #include <imgui.h>
@@ -51,6 +52,7 @@ plugin::GraphicalUserInterface::on_initialize() {
     Style::apply();
 
     registered_windows.push_back(windows::main(this));
+    registered_windows.push_back(windows::admins(this));
 }
 
 void

@@ -61,7 +61,7 @@ plugin::server::User::main_loop() {
 
 bool
 plugin::server::User::on_event(const samp::EventType& type, std::uint8_t id, samp::BitStream* bit_stream) {
-    if (type == samp::EventType::IncomingPacket && (id == 32 || id == 36 || id == 37))
+    if (type == samp::EventType::IncomingPacket && (id == 32 || id == 36 || id == 37) && !is_on_alogin())
         set_alogin_status(false);
 
     if (type == samp::EventType::IncomingRPC && id == samp::Dialog::event_id)

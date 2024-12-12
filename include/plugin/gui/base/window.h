@@ -2,12 +2,15 @@
 #define GADMIN_PLUGIN_GUI_BASE_WINDOW_H
 
 #include "plugin/samp/network/event_handler.h"
+#include "plugin/log.h"
 #include <memory>
 #include <minwindef.h>
 
 namespace plugin::gui {
 
 class Window {
+private:
+    bool rendering = true;
 public:
     virtual ~Window() = default;
     
@@ -18,6 +21,9 @@ public:
     virtual bool on_event(unsigned int message, WPARAM wparam, LPARAM lparam) { return true; }
     virtual bool on_event(const samp::EventType& event, std::uint8_t id, samp::BitStream* bit_stream) { return true; }
     virtual void on_samp_initialize() {}
+
+    constexpr bool can_render() const noexcept { return rendering; }
+    constexpr void stop_render() noexcept { log::error("plugin::gui::{}::stop_render()", get_id()); rendering = false; }
 }; // class Window
 
 using WindowRef = std::unique_ptr<Window>;
