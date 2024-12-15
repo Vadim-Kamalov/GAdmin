@@ -1,57 +1,18 @@
 #ifndef GADMIN_PLUGIN_SAMP_NETWORK_ADDRESS_H
 #define GADMIN_PLUGIN_SAMP_NETWORK_ADDRESS_H
 
-#include "plugin/samp/samp.h"
+#include <cstdint>
 
 namespace plugin::samp::address {
 
-inline std::uintptr_t
-rak_client_interface_constructor(const Version& version = get_version()) noexcept {
-    static constexpr std::uintptr_t offsets[] = { 0x0, 0x0, 0x33DC0, 0x37170, 0x378B0, 0x37370 };
-    return base(offsets[std::to_underlying(version)]);
-}
-
-inline std::uintptr_t
-incoming_rpc_handler(const Version& version = get_version()) noexcept {
-    static constexpr std::uintptr_t offsets[] = { 0x0, 0x0, 0x372F0, 0x3A6A0, 0x3ADE0, 0x3A8A0 };
-    return base(offsets[std::to_underlying(version)]);
-}
-
-inline std::uintptr_t
-encoded_reader(const Version& version = get_version()) noexcept {
-    static constexpr std::uintptr_t offsets[] = { 0x0, 0x0, 0x507E0, 0x53B90, 0x542D0, 0x53D90 };
-    return base(offsets[std::to_underlying(version)]);
-}
-
-inline std::uintptr_t
-encoded_writer(const Version& version = get_version()) noexcept {
-    static constexpr std::uintptr_t offsets[] = { 0x0, 0x0, 0x506B0, 0x53A60, 0x541A0, 0x53C60 };
-    return base(offsets[std::to_underlying(version)]);
-}
-
-inline std::uintptr_t
-encode_decode_base(const Version& version = get_version()) noexcept {
-    static constexpr std::uintptr_t offsets[] = { 0x0, 0x0, 0x10D894, 0x121914, 0x121A3C, 0x15FA54 };
-    return *reinterpret_cast<std::uintptr_t*>(base(offsets[std::to_underlying(version)]));
-}
-
-inline std::uintptr_t
-allocate_packet(const Version& version = get_version()) noexcept {
-    static constexpr std::uintptr_t offsets[] = { 0x0, 0x0, 0x347E0, 0x37B90, 0x382D0, 0x37D90 };
-    return base(offsets[std::to_underlying(version)]);
-}
-
-inline std::uintptr_t
-write_lock(const Version& version = get_version()) noexcept {
-    static constexpr std::uintptr_t offsets[] = { 0x0, 0x0, 0x35B10, 0x38EC0, 0x39600, 0x390C0 };
-    return base(offsets[std::to_underlying(version)]);
-}
-
-inline std::uintptr_t
-write_unlock(const Version& version = get_version()) noexcept {
-    static constexpr std::uintptr_t offsets[] = { 0x0, 0x0, 0x35B50, 0x38F00, 0x39640, 0x39100 };
-    return base(offsets[std::to_underlying(version)]);
-}
+std::uintptr_t rak_client_interface_constructor() noexcept;
+std::uintptr_t incoming_rpc_handler() noexcept;
+std::uintptr_t encoded_reader() noexcept;
+std::uintptr_t encoded_writer() noexcept;
+std::uintptr_t encode_decode_base() noexcept;
+std::uintptr_t allocate_packet() noexcept;
+std::uintptr_t write_lock() noexcept;
+std::uintptr_t write_unlock() noexcept;
 
 } // namespace plugin::samp::address
 

@@ -5,7 +5,7 @@
 
 void*
 plugin::memory::copy(void* dest, const void* src, std::size_t length) {
-    if (!dest || !src || length == 0) return nullptr;
+    if (dest == nullptr || src == nullptr || length == 0) return nullptr;
 
     MEMORY_BASIC_INFORMATION mbi;
     VirtualQuery(dest, &mbi, sizeof(mbi));

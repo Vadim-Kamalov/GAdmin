@@ -8,72 +8,67 @@
 #include <vector>
 #include <unordered_map>
 
-#define CREATE_FONT(name, filename, glyphs, ...)                                                    \
-    class name : public Font {                                                                      \
+#define CREATE_FONT(NAME, FILENAME, GLYPHS, ...)                                                    \
+    class NAME : public basic_font {                                                                \
     private:                                                                                        \
         std::unordered_map<float, ImFont*> fonts;                                                   \
     public:                                                                                         \
+        static constexpr const char* filename = FILENAME;                                           \
+                                                                                                    \
         constexpr const char* get_filename() const override { return filename; }                    \
         constexpr std::vector<float> get_sizes() const override { return { __VA_ARGS__ }; }         \
         std::unordered_map<float, ImFont*> get_fonts() const override { return fonts; }             \
-        explicit name() : fonts(create(glyphs)) {}                                                  \
+        explicit NAME() : fonts(create(GLYPHS)) {}                                                  \
     }
 
+#define CREATE_SIMPLE_FONT(NAME, FILENAME, ...) \
+    CREATE_FONT(NAME, FILENAME, ImGui::GetIO().Fonts->GetGlyphRangesCyrillic(), __VA_ARGS__)
+
+#define CREATE_RANGED_FONT(NAME, FILENAME, RANGE_MIN, RANGE_MAX, ...)               \
+    static constexpr const ImWchar ranges_##NAME[] = { RANGE_MIN, RANGE_MAX, 0 };   \
+    CREATE_FONT(NAME, FILENAME, ranges_##NAME, __VA_ARGS__)
+
 namespace plugin::gui {
-namespace fonts {
-namespace files {
 
-static constexpr const char* light = "notosans-light.ttf";
-static constexpr const char* regular = "notosans-regular.ttf";
-static constexpr const char* bold = "notosans-bold.ttf";
-static constexpr const char* icon = "icon.ttf";
-
-} // namespace files
-
-class Font {
+class basic_font {
 protected:
     std::unordered_map<float, ImFont*> create(const ImWchar* glyphs) const;
 public:
-    virtual ~Font() = default;
+    virtual ~basic_font() = default;
     virtual constexpr const char* get_filename() const = 0;
     virtual constexpr std::vector<float> get_sizes() const = 0;
     virtual std::unordered_map<float, ImFont*> get_fonts() const = 0;
 
-    void push(std::size_t size) const { ImGui::PushFont((*this)[size]); }
-    ImFont* operator[](std::size_t size) const { return get_fonts().at(size); }
-    void text(std::size_t size, const char* text) const {
-        push(size);
-        ImGui::Text("%s", text);
-        ImGui::PopFont();
-    }
-}; // class Font
+    void push(std::size_t size) const;
+    ImFont* operator[](std::size_t size) const;
+    void text(std::size_t size, const char* text) const;
+}; // class basic_font
 
-static constexpr const ImWchar icons_glyph_ranges[] = { ICON_MIN, ICON_MAX, 0 };
+namespace fonts {
 
-CREATE_FONT(Light, files::light, ImGui::GetIO().Fonts->GetGlyphRangesCyrillic(), 18, 24);
-CREATE_FONT(Regular, files::regular, ImGui::GetIO().Fonts->GetGlyphRangesCyrillic(), 10, 16, 24);
-CREATE_FONT(Bold, files::bold, ImGui::GetIO().Fonts->GetGlyphRangesCyrillic(), 18, 24);
-CREATE_FONT(Icon, files::icon, icons_glyph_ranges, 24);
+CREATE_SIMPLE_FONT(light, "notosans-light.ttf", 18, 24);
+CREATE_SIMPLE_FONT(regular, "notosans-regular.ttf", 10, 16, 24);
+CREATE_SIMPLE_FONT(bold, "notosans-bold.ttf", 18, 24);
+CREATE_RANGED_FONT(icon, "icon.ttf", ICON_MIN, ICON_MAX, 24);
 
 } // namespace fonts
 
-class Fonts {
+using font = std::unique_ptr<basic_font>;
+
+class fonts_initializer {
 private:
     bool fonts_available = false;
     std::jthread downloader_thread;
 public:
-    std::unique_ptr<fonts::Font> light, regular, bold, icon;
+    font light, regular, bold, icon;
 
     constexpr bool available() const { return fonts_available; };
-    
-    void pop();
-    void make();
+    void initialize();
 
-    explicit Fonts();
-    ~Fonts();
-}; // class Fonts
+    explicit fonts_initializer();
+    ~fonts_initializer() noexcept;
+}; // class fonts_initializer
 
 } // namespace plugin::gui
 
-#undef CREATE_FONT
 #endif // GADMIN_PLUGIN_GUI_FONTS_H

@@ -7,7 +7,7 @@
 namespace plugin {
 namespace signatures {
 
-using GetLocalPlayerPing = int(__thiscall*)(std::uintptr_t);
+using get_local_player_ping_t = int(__thiscall*)(std::uintptr_t);
 
 } // namespace signatures
 

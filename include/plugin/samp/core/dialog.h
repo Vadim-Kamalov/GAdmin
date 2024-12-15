@@ -5,13 +5,8 @@
 #include <cstdint>
 
 namespace plugin::samp {
-namespace dialog {
 
-void send_response(std::uint16_t id, std::uint8_t button_id, std::uint16_t list_item = 65535, const std::string_view& input = "") noexcept;
-
-} // namespace dialog
-
-class Dialog {
+class dialog {
 public:
     static constexpr std::uint8_t event_id = 61;
 
@@ -21,13 +16,14 @@ public:
     std::pair<std::string, std::string> buttons;
     bool valid = true;
 
-    template<std::uint8_t ButtonId, std::uint16_t ListItem = 65535>
-    void send_response(const std::string_view& input = "") const {
-        dialog::send_response(id, ButtonId, ListItem, input);
-    }
+    static void send_response_to(std::uint16_t id, std::uint8_t button_id, std::uint16_t list_item = 65535,
+                                 const std::string_view& input = "") noexcept;
 
-    explicit Dialog(samp::BitStream* bit_stream);
-}; // class Dialog
+    void send_response(std::uint8_t button_id, std::uint16_t list_item = 65535,
+                       const std::string_view& input = "") const;
+
+    explicit dialog(samp::bit_stream* bit_stream);
+}; // class dialog
 
 } // namespace plugin::samp
 

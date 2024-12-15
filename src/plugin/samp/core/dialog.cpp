@@ -2,20 +2,25 @@
 #include "plugin/encoding.h"
 
 void
-plugin::samp::dialog::send_response(std::uint16_t id, std::uint8_t button_id,
-                                    std::uint16_t list_item, const std::string_view& input) noexcept
+plugin::samp::dialog::send_response_to(std::uint16_t id, std::uint8_t button_id,
+                                       std::uint16_t list_item, const std::string_view& input) noexcept
 {
-    BitStream bit_stream;
-    bit_stream.write(id);
-    bit_stream.write(button_id);
-    bit_stream.write(list_item);
-    bit_stream.write<std::uint8_t>(static_cast<std::uint8_t>(input.size()));
-    bit_stream.write(input);
-    bit_stream.send_rpc(62);
+    bit_stream stream;
+    stream.write(id);
+    stream.write(button_id);
+    stream.write(list_item);
+    stream.write<std::uint8_t>(static_cast<std::uint8_t>(input.size()));
+    stream.write(input);
+    stream.send_rpc(event_id);
 }
 
-plugin::samp::Dialog::Dialog(BitStream* bit_stream) {
-    std::uint16_t dialog_id = bit_stream->read<std::uint16_t>();
+void
+plugin::samp::dialog::send_response(std::uint8_t button_id, std::uint16_t list_item, const std::string_view& input) const {
+    send_response_to(id, button_id, list_item, input);
+}
+
+plugin::samp::dialog::dialog(bit_stream* stream) {
+    std::uint16_t dialog_id = stream->read<std::uint16_t>();
 
     if (dialog_id == 65535) {
         valid = false;
@@ -23,11 +28,11 @@ plugin::samp::Dialog::Dialog(BitStream* bit_stream) {
     }
 
     id = dialog_id;
-    style = bit_stream->read<std::uint8_t>();
-    title = encoding::to_utf8(bit_stream->read_string<std::uint8_t>());
+    style = stream->read<std::uint8_t>();
+    title = encoding::to_utf8(stream->read_string<std::uint8_t>());
 
-    buttons = std::make_pair(encoding::to_utf8(bit_stream->read_string<std::uint8_t>()),
-                             encoding::to_utf8(bit_stream->read_string<std::uint8_t>()));
+    buttons = std::make_pair(encoding::to_utf8(stream->read_string<std::uint8_t>()),
+                             encoding::to_utf8(stream->read_string<std::uint8_t>()));
     
-    text = encoding::to_utf8(bit_stream->read_encoded(4096));
+    text = encoding::to_utf8(stream->read_encoded(4096));
 }

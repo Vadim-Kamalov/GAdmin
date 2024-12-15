@@ -1,24 +1,29 @@
 #include "plugin/plugin.h"
-#include "plugin/signatures.h"
 #include "plugin/game/game.h"
+#include <d3d9types.h>
 #include <kthook/kthook.hpp>
 #include <backends/imgui_impl_dx9.h>
 #include <backends/imgui_impl_win32.h>
 #include <imgui.h>
 
-std::unique_ptr<plugin::Plugin> plugin_to_load;
+using game_loop_t = void(__cdecl*)();
+using d3d9_present_t = HRESULT(__stdcall*)(IDirect3DDevice9*, const RECT*, const RECT*, HWND, const RGNDATA*);
+using d3d9_reset_t = HRESULT(__stdcall*)(IDirect3DDevice9*, D3DPRESENT_PARAMETERS*);
+using wnd_proc_t = LRESULT(__stdcall*)(HWND, UINT, WPARAM, LPARAM);
 
-kthook::kthook_simple<plugin::signatures::GameLoop> game_loop_hook;
+std::unique_ptr<plugin::plugin_initializer> plugin_to_load;
+
+kthook::kthook_simple<game_loop_t> game_loop_hook;
 static void game_loop_hooked(const decltype(game_loop_hook)& hook);
 
-kthook::kthook_simple<plugin::signatures::WndProc> wndproc_hook;
+kthook::kthook_simple<wnd_proc_t> wndproc_hook;
 static LRESULT wndproc_hooked(const decltype(wndproc_hook)& hook, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
 
-kthook::kthook_signal<plugin::signatures::D3D9Present> d3d9_present_hook;
+kthook::kthook_signal<d3d9_present_t> d3d9_present_hook;
 static std::optional<HRESULT> d3d9_present_hooked(const decltype(d3d9_present_hook)&, IDirect3DDevice9* device,
                                                   const RECT*, const RECT*, HWND, const RGNDATA*);
 
-kthook::kthook_signal<plugin::signatures::D3D9Reset> d3d9_reset_hook;
+kthook::kthook_signal<d3d9_reset_t> d3d9_reset_hook;
 static std::optional<HRESULT> d3d9_reset_hooked(const decltype(d3d9_reset_hook)&, IDirect3DDevice9*, D3DPRESENT_PARAMETERS*);
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
@@ -26,7 +31,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg
 class Loader {
 public:
     Loader() {
-        plugin_to_load = std::make_unique<plugin::Plugin>();
+        plugin_to_load = std::make_unique<plugin::plugin_initializer>();
 
         game_loop_hook.set_dest(0x53BEE0);
         game_loop_hook.set_cb(&game_loop_hooked);

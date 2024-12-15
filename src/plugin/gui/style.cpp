@@ -3,7 +3,7 @@
 #include <cstdlib>
 
 void
-plugin::gui::Style::apply() noexcept {
+plugin::gui::style::apply() noexcept {
     ImGuiStyle& style = ImGui::GetStyle();
 
     style.AntiAliasedLines = true;

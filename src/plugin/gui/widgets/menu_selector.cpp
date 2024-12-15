@@ -1,22 +1,25 @@
 #include "plugin/gui/widgets/menu_selector.h"
 #include "plugin/gui/animation.h"
 
-void
-plugin::gui::widgets::menu_selector(utils::not_null<windows::Main*> child) noexcept {
-    ImVec4 default_color = ImGui::GetStyle().Colors[ImGuiCol_ChildBg],
-           hovered_color = ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered];
+using namespace plugin::gui;
+using namespace std::literals;
 
-    static MenuSelectorAnimation it = { .color = default_color };
-    
-    ImVec2 size = { child->menu_min_width, child->menu_min_width };
-    ImVec2 cursor = ImGui::GetCursorScreenPos();
-    float rounding = ImGui::GetStyle().ChildRounding;
+struct menu_selector_animation {
+    ImVec4 color;
+
+    bool hovered_state_current = false, hovered_state_previous = false;
+    std::chrono::steady_clock::time_point hovered_time, click_time;
+    std::chrono::milliseconds duration = 500ms;
+
+    struct colors {
+        ImVec4 background = ImGui::GetStyle().Colors[ImGuiCol_ChildBg];
+        ImVec4 hovered = ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered];
+    }; // struct colors
+}; // struct menu_selector_animation
+
+static void
+update_color(menu_selector_animation& it, const menu_selector_animation::colors& colors) noexcept {
     auto now = std::chrono::steady_clock::now();
-
-    if (ImGui::InvisibleButton("widgets::menu_selector", { child->menu_width, size.y })) {
-        child->menu_opened ^= true;
-        it.click_time = now;
-    }
 
     it.hovered_state_current = ImGui::IsItemHovered();
 
@@ -25,22 +28,36 @@ plugin::gui::widgets::menu_selector(utils::not_null<windows::Main*> child) noexc
         it.hovered_time = now;
     }
 
-    if (animation::time_available(it.hovered_time)) {
-        if (now - it.hovered_time <= it.duration)
-            it.color = animation::bring_to(it.color, (it.hovered_state_current) ? hovered_color : default_color, it.hovered_time, it.duration);
-        else
-            it.color = (it.hovered_state_current) ? hovered_color : default_color;
+    if (!animation::time_available(it.hovered_time))
+        return;
+
+    if (now - it.hovered_time <= it.duration) {
+        ImVec4 to = (it.hovered_state_current) ? colors.hovered : colors.background;
+        it.color = animation::bring_to(it.color, to, it.hovered_time, it.duration);
+        
+        return;
     }
 
-    if (animation::time_available(it.click_time)) {
-        float to = (child->menu_opened) ? child->menu_max_width : child->menu_min_width;
-        child->menu_width = animation::bring_to(child->menu_width, to, it.click_time, child->menu_open_duration);
-    }
+    it.color = (it.hovered_state_current) ? colors.hovered : colors.background;
+}
+
+static void
+update_menu_width(menu_selector_animation& it, plugin::utils::not_null<windows::main*> child) noexcept {
+    if (!animation::time_available(it.click_time))
+        return;
+
+    float to = (child->menu_opened) ? child->menu_max_width : child->menu_min_width;
+    child->menu_width = animation::bring_to(child->menu_width, to, it.click_time, child->menu_open_duration);
+}
+
+static void
+draw_frame(const ImVec2& size, const ImVec4& color, plugin::utils::not_null<windows::main*> child) noexcept {
+    plugin::gui_initializer* gui = child->child;
+    ImVec2 cursor = ImGui::GetCursorScreenPos();
+    float rounding = ImGui::GetStyle().ChildRounding;
 
     ImGui::GetWindowDrawList()->AddRectFilled(cursor, { cursor.x + child->menu_width, cursor.y + size.y },
-                                              ImGui::GetColorU32(it.color), rounding, ImDrawFlags_RoundCornersTopLeft);
-
-    GraphicalUserInterface* gui = child->child;
+                                              ImGui::GetColorU32(color), rounding, ImDrawFlags_RoundCornersTopLeft);
 
     gui->fonts->icon->push(24);
     {
@@ -48,5 +65,20 @@ plugin::gui::widgets::menu_selector(utils::not_null<windows::Main*> child) noexc
         ImGui::SetCursorPos({ (size.x - icon_size.x) / 2, (size.y - icon_size.y) / 2 });
         ImGui::Text(ICON_HAMBURGER_M_D);
     }
-    gui->fonts->pop();
+    ImGui::PopFont();
+}
+
+void
+plugin::gui::widgets::menu_selector(utils::not_null<windows::main*> child) noexcept {
+    static menu_selector_animation::colors colors;
+    static menu_selector_animation it = { colors.background };
+    
+    if (ImGui::InvisibleButton("widgets::menu_selector", { child->menu_width, child->menu_min_width })) {
+        it.click_time = std::chrono::steady_clock::now();
+        child->menu_opened ^= true;
+    }
+
+    update_color(it, colors);
+    update_menu_width(it, child);
+    draw_frame({ child->menu_min_width, child->menu_min_width }, it.color, child);
 }

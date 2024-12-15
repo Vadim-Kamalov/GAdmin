@@ -5,19 +5,19 @@
 #include <regex>
 
 void
-plugin::server::User::set_alogin_status(bool status) {
+plugin::server::user::set_alogin_status(bool status) {
     on_alogin = status;
 
-    log::info("User::set_alogin_status({})", status);
+    log::info("user::set_alogin_status({})", status);
 
     if (status)
         return;
 
-    Admins::on_alogout();
+    admins::on_alogout();
 }
 
 bool
-plugin::server::User::on_show_dialog(const samp::Dialog& dialog) {
+plugin::server::user::on_show_dialog(const samp::dialog& dialog) {
     if (dialog.title == "Выбор персонажа" && is_on_alogin())
         set_alogin_status(false);
 
@@ -25,7 +25,7 @@ plugin::server::User::on_show_dialog(const samp::Dialog& dialog) {
 }
 
 bool
-plugin::server::User::on_server_message(const samp::ServerMessage& message) {
+plugin::server::user::on_server_message(const samp::server_message& message) {
     static constexpr const char* authorization_pattern = 
         "Вы успешно авторизовались как администратор|"
         "Вы уже авторизировались|"
@@ -52,7 +52,7 @@ plugin::server::User::on_server_message(const samp::ServerMessage& message) {
 }
 
 void
-plugin::server::User::main_loop() {
+plugin::server::user::main_loop() {
     if (can_send_command) {
         samp::input::send_command("/adm");
         can_send_command = false;
@@ -60,16 +60,16 @@ plugin::server::User::main_loop() {
 }
 
 bool
-plugin::server::User::on_event(const samp::EventType& type, std::uint8_t id, samp::BitStream* bit_stream) {
-    if (type == samp::EventType::IncomingPacket && (id == 32 || id == 36 || id == 37) && !is_on_alogin())
+plugin::server::user::on_event(const samp::event_type& type, std::uint8_t id, samp::bit_stream* stream) {
+    if (type == samp::event_type::incoming_packet && (id == 32 || id == 36 || id == 37) && !is_on_alogin())
         set_alogin_status(false);
 
-    if (type == samp::EventType::IncomingRPC && id == samp::Dialog::event_id)
-        if (samp::Dialog dialog = samp::Dialog(bit_stream); dialog.valid)
+    if (type == samp::event_type::incoming_rpc && id == samp::dialog::event_id)
+        if (samp::dialog dialog = samp::dialog(stream); dialog.valid)
             return on_show_dialog(dialog);
 
-    if (type == samp::EventType::IncomingRPC && id == samp::ServerMessage::event_id)
-        return on_server_message(samp::ServerMessage(bit_stream));
+    if (type == samp::event_type::incoming_rpc && id == samp::server_message::event_id)
+        return on_server_message(samp::server_message(stream));
 
     return true;
 }

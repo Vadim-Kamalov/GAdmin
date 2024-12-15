@@ -5,22 +5,17 @@
 #include "plugin/plugin.h"
 #include "plugin/log.h"
 
-constexpr const char*
-plugin::gui::windows::Admins::get_id() const {
-    return "windows::Admins";
-}
-
 void
-plugin::gui::windows::Admins::render() {
-    if (!server::User::is_on_alogin() || server::Admins::list.empty())
+plugin::gui::windows::admins::render() {
+    if (!server::user::is_on_alogin())
         return;
 
     auto window_configuration = (*configuration)["windows"]["admins"];
     
     std::string sort_option = window_configuration["sort_by"];
-    std::vector<server::Admin> admins_sorted = server::Admins::list;
+    std::vector<server::admin> admins_sorted = server::admins::list;
 
-    if (!server::Admin::sort(admins_sorted, sort_option)) {
+    if (!server::admin::sort(admins_sorted, sort_option)) {
         stop_render();
         return;
     }
@@ -73,7 +68,7 @@ plugin::gui::windows::Admins::render() {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, 0 });
         ImGui::SetNextWindowBgAlpha(0);
         ImGui::SetCursorPosX(0);
-        ImGui::BeginChild("windows::Admins::content", { ImGui::GetWindowWidth(), content_height }, false);
+        ImGui::BeginChild("windows::admins::content", { ImGui::GetWindowWidth(), content_height }, false);
         {
             for (const auto& [width, text] : admins) {
                 float pos_x = window_padding.x;
@@ -94,11 +89,11 @@ plugin::gui::windows::Admins::render() {
     ImGui::PopStyleVar();
 }
 
-plugin::gui::windows::Admins::Admins(utils::not_null<GraphicalUserInterface*> child) : child(child) {
-    log::info("window \"windows::Admins\" initialized");
+plugin::gui::windows::admins::admins(utils::not_null<gui_initializer*> child) : child(child) {
+    log::info("window \"windows::admins\" initialized");
 }
 
-plugin::gui::WindowRef
-plugin::gui::windows::admins(utils::not_null<GraphicalUserInterface*> child) noexcept {
-    return std::make_unique<Admins>(child);
+plugin::gui::window_ptr
+plugin::gui::windows::admins::create(utils::not_null<gui_initializer*> child) noexcept {
+    return std::make_unique<admins>(child);
 }

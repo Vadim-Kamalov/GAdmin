@@ -7,7 +7,7 @@
 
 namespace plugin {
 
-class Configuration {
+class configuration_initializer {
 private:
     std::filesystem::path configuration_file;
     mutable std::chrono::steady_clock::time_point last_time_saved;
@@ -21,8 +21,8 @@ public:
     void save() const;
     void save(std::chrono::milliseconds after) const;
 
-    explicit Configuration(const std::filesystem::path& configuration_file);
-    ~Configuration();
+    explicit configuration_initializer(const std::filesystem::path& configuration_file);
+    ~configuration_initializer() noexcept;
 private:
     inline static nlohmann::json json = R"(
         {
@@ -44,7 +44,7 @@ private:
             }
         }
     )"_json;
-}; // class Configuration
+}; // class configuration_initializer
 
 } // namespace plugin
 

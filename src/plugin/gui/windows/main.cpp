@@ -7,13 +7,8 @@
 #include <imgui.h>
 #include <windows.h>
 
-constexpr const char*
-plugin::gui::windows::Main::get_id() const {
-    return "windows::Main";
-}
-
 void
-plugin::gui::windows::Main::render_menu() {
+plugin::gui::windows::main::render_menu() {
     ImGui::SetCursorPos({ 0, 0 });
     ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 0);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 10, 10 });
@@ -46,17 +41,8 @@ plugin::gui::windows::Main::render_menu() {
             ImGui::SetCursorPos({ 0, menu_min_width + ImGui::GetStyle().ItemSpacing.x });
             ImGui::BeginGroup();
             {
-                widgets::frame_switcher<SelectedFrame::Home>(this);
-                widgets::frame_switcher<SelectedFrame::Settings>(this);
-                widgets::frame_switcher<SelectedFrame::KeyBinds>(this);
-                widgets::frame_switcher<SelectedFrame::PlayerChecker>(this);
-                widgets::frame_switcher<SelectedFrame::WindowsCustomization>(this);
-                widgets::frame_switcher<SelectedFrame::Logs>(this);
-                widgets::frame_switcher<SelectedFrame::ServerInformation>(this);
-                widgets::frame_switcher<SelectedFrame::Binder>(this);
-                widgets::frame_switcher<SelectedFrame::Notes>(this);
-                widgets::frame_switcher<SelectedFrame::Statistics>(this);
-                widgets::frame_switcher<SelectedFrame::PluginInformation>(this);
+                for (std::uint8_t i = 0; i < std::to_underlying(frame::plugin_information); i++)
+                    widgets::frame_switcher(static_cast<frame>(i), this);
             }
             ImGui::EndGroup();
             ImGui::PopStyleVar();
@@ -78,7 +64,7 @@ plugin::gui::windows::Main::render_menu() {
 }
 
 void
-plugin::gui::windows::Main::render() {
+plugin::gui::windows::main::render() {
     auto [size_x, size_y] = game::get_screen_resolution();
     auto flags = ImGuiWindowFlags_NoTitleBar;
 
@@ -94,7 +80,7 @@ plugin::gui::windows::Main::render() {
             {
                 ImGui::Text("menu_opened = %i", menu_opened);
             }
-            child->fonts->pop();
+            ImGui::PopFont();
         }
         ImGui::EndGroup();
         render_menu();
@@ -104,7 +90,7 @@ plugin::gui::windows::Main::render() {
 }
 
 bool
-plugin::gui::windows::Main::on_event(unsigned int message, WPARAM wparam, LPARAM lparam) {
+plugin::gui::windows::main::on_event(unsigned int message, WPARAM wparam, LPARAM lparam) {
     if (message == WM_KEYUP && wparam == 0x5A /* VK_Z */) {
         child->switch_cursor();
         return false;
@@ -113,11 +99,11 @@ plugin::gui::windows::Main::on_event(unsigned int message, WPARAM wparam, LPARAM
     return true;
 }
 
-plugin::gui::windows::Main::Main(utils::not_null<GraphicalUserInterface*> child) : child(child) {
+plugin::gui::windows::main::main(utils::not_null<gui_initializer*> child) : child(child) {
     log::info("window \"{}\" initialized", get_id());
 }
 
-plugin::gui::WindowRef
-plugin::gui::windows::main(utils::not_null<GraphicalUserInterface*> child) noexcept {
-    return std::make_unique<Main>(child);
+plugin::gui::window_ptr
+plugin::gui::windows::main::create(utils::not_null<gui_initializer*> child) noexcept {
+    return std::make_unique<main>(child);
 }

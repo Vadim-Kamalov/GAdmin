@@ -8,10 +8,10 @@
 #include <imgui.h>
 
 bool
-plugin::GraphicalUserInterface::on_event(const samp::EventType& type, std::uint8_t id, samp::BitStream* bit_stream) const {
+plugin::gui_initializer::on_event(const samp::event_type& type, std::uint8_t id, samp::bit_stream* stream) const {
     for (const auto& window : registered_windows) {
-        bit_stream->reset_read_pointer();
-        if (!window->on_event(type, id, bit_stream))
+        stream->reset_read_pointer();
+        if (!window->on_event(type, id, stream))
             return false;
     }
 
@@ -19,7 +19,7 @@ plugin::GraphicalUserInterface::on_event(const samp::EventType& type, std::uint8
 }
 
 bool
-plugin::GraphicalUserInterface::on_event(unsigned int message, WPARAM wparam, LPARAM lparam) {
+plugin::gui_initializer::on_event(unsigned int message, WPARAM wparam, LPARAM lparam) {
     if (message == WM_KEYDOWN && wparam == VK_ESCAPE && is_cursor_active()) {
         disable_cursor();
         return false;
@@ -33,34 +33,32 @@ plugin::GraphicalUserInterface::on_event(unsigned int message, WPARAM wparam, LP
 }
 
 void
-plugin::GraphicalUserInterface::on_samp_initialize() const {
+plugin::gui_initializer::on_samp_initialize() const {
     for (const auto& window : registered_windows)
         window->on_samp_initialize();
 }
 
 bool
-plugin::GraphicalUserInterface::can_initialize_render() const {
+plugin::gui_initializer::can_initialize_render() const {
     return fonts->available();
 }
 
 void
-plugin::GraphicalUserInterface::on_initialize() {
+plugin::gui_initializer::on_initialize() {
     using namespace gui;
     
     ImGui::GetIO().IniFilename = nullptr; 
-    fonts->make();
-    Style::apply();
+    fonts->initialize();
+    style::apply();
 
-    registered_windows.push_back(windows::main(this));
-    registered_windows.push_back(windows::admins(this));
+    registered_windows.push_back(windows::main::create(this));
+    registered_windows.push_back(windows::admins::create(this));
 }
 
 void
-plugin::GraphicalUserInterface::render() const {
-    bool game_paused = game::is_menu_opened();
-    
+plugin::gui_initializer::render() const {
     for (const auto& window : registered_windows) {
-        if (game_paused && !window->render_on_game_paused())
+        if (!window->can_render() || (game::is_menu_opened() && !window->render_on_game_paused()))
             continue;
 
         window->render();
@@ -68,7 +66,7 @@ plugin::GraphicalUserInterface::render() const {
 }
 
 void
-plugin::GraphicalUserInterface::enable_cursor() {
+plugin::gui_initializer::enable_cursor() {
     game::cursor::set_status(true);
     
     if (cursor_last_x != -1 && cursor_last_y != -1)
@@ -78,7 +76,7 @@ plugin::GraphicalUserInterface::enable_cursor() {
 }
 
 void
-plugin::GraphicalUserInterface::disable_cursor() {
+plugin::gui_initializer::disable_cursor() {
     game::cursor::set_status(false);
 
     POINT cursor_pos;
@@ -92,17 +90,17 @@ plugin::GraphicalUserInterface::disable_cursor() {
 }
 
 void
-plugin::GraphicalUserInterface::switch_cursor() {
+plugin::gui_initializer::switch_cursor() {
     if (cursor_active)
         disable_cursor();
     else
         enable_cursor();
 }
 
-plugin::GraphicalUserInterface::GraphicalUserInterface() {
-    fonts = std::make_unique<gui::Fonts>();
+plugin::gui_initializer::gui_initializer() {
+    fonts = std::make_unique<gui::fonts_initializer>();
 }
 
-plugin::GraphicalUserInterface::~GraphicalUserInterface() {
+plugin::gui_initializer::~gui_initializer() noexcept {
     fonts.reset(nullptr);
 }

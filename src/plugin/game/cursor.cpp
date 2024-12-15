@@ -13,8 +13,8 @@ plugin::game::cursor::set_status(bool status) noexcept {
 	    memory::copy(0x53F41F, { 0x85, 0xC0, 0x0F, 0x8C });
 	    memory::write<std::uint8_t>(0x6194A0, 0xE9);
 
-        reinterpret_cast<signatures::ClearMouseHistory>(0x541BD0)();
-        reinterpret_cast<signatures::UpdatePads>(0x541DD0)();
+        reinterpret_cast<signatures::clear_mouse_history_t>(0x541BD0)();
+        reinterpret_cast<signatures::update_pads_t>(0x541DD0)();
     }
 
     SetCursor(LoadCursor(nullptr, (status) ? IDC_ARROW : nullptr));

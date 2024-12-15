@@ -17,6 +17,5 @@ plugin::samp::user::get_name() noexcept {
 int
 plugin::samp::user::get_ping() noexcept {
     static constexpr std::uintptr_t offsets[] = { 0x0, 0x0, 0x6A200, 0x6E150, 0x6E8C0, 0x6E2F0 };
-    return reinterpret_cast<signatures::GetLocalPlayerPing>(base(offsets[std::to_underlying(get_version())]))
-        (net_game::get_player_pool());
+    return reinterpret_cast<signatures::get_local_player_ping_t>(base(offsets))(net_game::get_player_pool());
 }

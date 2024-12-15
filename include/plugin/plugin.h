@@ -10,19 +10,19 @@
 
 namespace plugin {
 
-inline std::unique_ptr<samp::EventHandler> event_handler;
-inline std::unique_ptr<Configuration> configuration;
+inline std::unique_ptr<samp::event_handler> event_handler;
+inline std::unique_ptr<configuration_initializer> configuration;
 
-class Plugin {
+class plugin_initializer {
 private:
     std::mutex log_mutex;
     std::ofstream log_file_stream;
-    std::unique_ptr<GraphicalUserInterface> gui;
+    std::unique_ptr<gui_initializer> gui;
     
     bool plugin_working = true;
 
     void on_samp_initialize();
-    void on_log_message(const log::Type& type, const std::string_view& message);
+    void on_log_message(const log::type& type, const std::string_view& message);
 
     void initialize_logging();
     void initialize_event_handler();
@@ -31,16 +31,16 @@ public:
     constexpr void unload() { plugin_working = false; }
     constexpr bool active() const { return plugin_working; }
 
-    bool on_event(const samp::EventType& type, std::uint8_t id, samp::BitStream* bit_stream);
+    bool on_event(const samp::event_type& type, std::uint8_t id, samp::bit_stream* stream);
     bool can_initialize_render() const;
     void on_render_initialize();
     void on_frame();
     bool on_message(unsigned int message, WPARAM wparam, LPARAM lparam);
     void main_loop();
 
-    explicit Plugin();
-    ~Plugin();
-}; // class Plugin
+    explicit plugin_initializer();
+    ~plugin_initializer() noexcept;
+}; // class plugin_initializer
 
 } // namespace plugin
 

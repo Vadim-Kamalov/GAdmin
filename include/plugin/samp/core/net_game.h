@@ -6,7 +6,7 @@
 namespace plugin {
 namespace signatures {
 
-using GetPlayerPool = std::uintptr_t(__thiscall*)(std::uintptr_t);
+using get_player_pool_t = std::uintptr_t(__thiscall*)(std::uintptr_t);
 
 } // namespace signatures
 

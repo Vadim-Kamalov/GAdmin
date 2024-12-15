@@ -6,28 +6,26 @@
 
 namespace plugin::game {
 
-static inline HWND
-get_window() noexcept {
+static inline HWND get_window() noexcept;
+static inline DWORD get_device() noexcept;
+static inline bool is_menu_opened() noexcept;
+std::pair<float, float> get_screen_resolution() noexcept;
+
+} // namespace plugin::game
+
+inline HWND
+plugin::game::get_window() noexcept {
     return **reinterpret_cast<HWND**>(0xC17054);
 }
 
-static inline DWORD
-get_device() noexcept {
+inline DWORD
+plugin::game::get_device() noexcept {
     return *reinterpret_cast<DWORD*>(0xC97C28);
 }
 
-static inline bool
-is_menu_opened() noexcept {
+inline bool
+plugin::game::is_menu_opened() noexcept {
     return *reinterpret_cast<bool*>(0xBA67A4);
 }
-
-static std::pair<float, float>
-get_screen_resolution() noexcept {
-    auto x = *reinterpret_cast<int*>(0xC9C040);
-    auto y = *reinterpret_cast<int*>(0xC9C044);
-    return std::make_pair(static_cast<float>(x), static_cast<float>(y));
-}
-
-} // namespace plugin::game
 
 #endif // GADMIN_PLUGIN_GAME_H

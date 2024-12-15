@@ -7,17 +7,17 @@
 
 namespace plugin::gui::windows {
 
-class Admins : public Window {
+class admins : public window {
 private:
-    GraphicalUserInterface* child;
+    utils::not_null<gui_initializer*> child;
 public:
-    constexpr const char* get_id() const override;
+    constexpr const char* get_id() const override { return "windows::admins"; }
+    
     void render() override;
+    static window_ptr create(utils::not_null<gui_initializer*> child) noexcept;
 
-    explicit Admins(utils::not_null<GraphicalUserInterface*> child);
-}; // class Admins : public Window
-
-WindowRef admins(utils::not_null<GraphicalUserInterface*> child) noexcept;
+    explicit admins(utils::not_null<gui_initializer*> child);
+}; // class admins : public window
 
 } // namespace plugin::gui::windows
 

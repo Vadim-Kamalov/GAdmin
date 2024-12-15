@@ -8,16 +8,16 @@
 
 namespace plugin {
 
-class GraphicalUserInterface {
+class gui_initializer {
 private:
-    std::vector<gui::WindowRef> registered_windows;
+    std::vector<gui::window_ptr> registered_windows;
 
     bool cursor_active = false;
     int cursor_last_x = -1, cursor_last_y = 1;
 public:
-    std::unique_ptr<gui::Fonts> fonts;
+    std::unique_ptr<gui::fonts_initializer> fonts;
 
-    bool on_event(const samp::EventType& type, std::uint8_t id, samp::BitStream* bit_stream) const;
+    bool on_event(const samp::event_type& type, std::uint8_t id, samp::bit_stream* stream) const;
     bool on_event(unsigned int message, WPARAM wparam, LPARAM lparam);
     
     void on_samp_initialize() const;
@@ -30,9 +30,9 @@ public:
     void disable_cursor();
     void switch_cursor();
 
-    explicit GraphicalUserInterface();
-    ~GraphicalUserInterface();
-}; // class GraphicalUserInterface
+    explicit gui_initializer();
+    ~gui_initializer() noexcept;
+}; // class gui_initializer
 
 } // namespace plugin
 

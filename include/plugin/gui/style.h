@@ -3,10 +3,10 @@
 
 namespace plugin::gui {
 
-class Style {
+class style {
 public:
     static void apply() noexcept;
-}; // class Style
+}; // class style
 
 } // namespace plugin::gui
 

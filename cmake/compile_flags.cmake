@@ -9,6 +9,6 @@ if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL
 		target_compile_options(${PROJECT_NAME} PRIVATE -flto=thin)
 		target_link_options(${PROJECT_NAME} PRIVATE -Wl,--thinlto-cache-dir=lto_cache)
 	endif()
-elseif (MSVC)
-    message(FATAL_ERROR "MSVC compiler has no support for core C++23 language features")
 endif()
+
+# TODO: MSVC support?

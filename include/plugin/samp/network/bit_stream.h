@@ -8,9 +8,9 @@
 
 namespace plugin::samp {
 
-class BitStream {
+class bit_stream {
 private:
-    ::BitStream* bit_stream;
+    BitStream* bit_stream_ptr;
     bool delete_bit_stream = true;
 public:
     int get_number_of_bits_used();
@@ -33,17 +33,13 @@ public:
     void ignore_bytes(int count);
 
     template<typename T>
-    T read() {
-        T result;
-        bit_stream->Read(result);
-        return result;
-    }
+    T read();
     
     template<typename T>
-    void write(T value) { bit_stream->Write(value); }
+    void write(T value);
 
     template<typename T>
-    std::string read_string() { return read_string(read<T>()); }
+    std::string read_string();
 
     std::string read_string(std::int32_t length);
     std::string read_encoded(int length);
@@ -60,21 +56,41 @@ public:
     bool send_packet();
     bool send_packet(PacketPriority priority, PacketReliability reliability, std::uint8_t channel);
 
-    ::BitStream* get_original_bit_stream();
+    BitStream* get_original_bit_stream();
     std::uintptr_t get_data_ptr();
 
-    explicit BitStream()
-        : bit_stream(new ::BitStream) {}
+    explicit bit_stream()
+        : bit_stream(new BitStream) {}
 
-    explicit BitStream(::BitStream* bit_stream)
-        : bit_stream(bit_stream), delete_bit_stream(false) {}
+    explicit bit_stream(BitStream* bit_stream)
+        : bit_stream_ptr(bit_stream), delete_bit_stream(false) {}
 
-    BitStream(unsigned char* data, unsigned int length, bool copy_data)
-        : bit_stream(new ::BitStream(data, BITS_TO_BYTES(length), copy_data)) {}
+    bit_stream(unsigned char* data, unsigned int length, bool copy_data)
+        : bit_stream(new BitStream(data, BITS_TO_BYTES(length), copy_data)) {}
 
-    ~BitStream();
-}; // class BitStream
+    ~bit_stream() noexcept;
+}; // class bit_stream
 
 } // namespace plugin::samp
+
+template<typename T>
+T
+plugin::samp::bit_stream::read() {
+    T result;
+    bit_stream_ptr->Read(result);
+    return result;
+}
+    
+template<typename T>
+void
+plugin::samp::bit_stream::write(T value) {
+    bit_stream_ptr->Write(value);
+}
+
+template<typename T>
+std::string
+plugin::samp::bit_stream::read_string() {
+    return read_string(read<T>());
+}
 
 #endif // GADMIN_PLUGIN_SAMP_NETWORK_BIT_STREAM_H

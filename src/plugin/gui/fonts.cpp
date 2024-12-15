@@ -4,7 +4,7 @@
 #include <filesystem>
 
 std::unordered_map<float, ImFont*>
-plugin::gui::fonts::Font::create(const ImWchar* glyphs) const {
+plugin::gui::basic_font::create(const ImWchar* glyphs) const {
     std::unordered_map<float, ImFont*> fonts;
 
     std::filesystem::path path = std::filesystem::current_path() / "gadmin" / "resources" / get_filename();
@@ -17,21 +17,34 @@ plugin::gui::fonts::Font::create(const ImWchar* glyphs) const {
 }
 
 void
-plugin::gui::Fonts::pop() {
+plugin::gui::basic_font::push(std::size_t size) const {
+    ImGui::PushFont((*this)[size]);
+}
+
+ImFont*
+plugin::gui::basic_font::operator[](std::size_t size) const {
+    return get_fonts().at(size);
+}
+
+void
+plugin::gui::basic_font::text(std::size_t size, const char* text) const {
+    push(size);
+    ImGui::Text("%s", text);
     ImGui::PopFont();
 }
 
 void
-plugin::gui::Fonts::make() {
-    light = std::make_unique<fonts::Light>();
-    regular = std::make_unique<fonts::Regular>();
-    bold = std::make_unique<fonts::Bold>();
-    icon = std::make_unique<fonts::Icon>();
+plugin::gui::fonts_initializer::initialize() {
+    light = std::make_unique<fonts::light>();
+    regular = std::make_unique<fonts::regular>();
+    bold = std::make_unique<fonts::bold>();
+    icon = std::make_unique<fonts::icon>();
 }
 
-plugin::gui::Fonts::Fonts() {
+plugin::gui::fonts_initializer::fonts_initializer() {
     std::filesystem::path resources_directory = std::filesystem::current_path() / "gadmin" / "resources";
-    std::vector<std::string> fonts = { fonts::files::light, fonts::files::regular, fonts::files::bold, fonts::files::icon };
+    std::vector<std::string> fonts = { fonts::light::filename, fonts::regular::filename,
+                                       fonts::bold::filename, fonts::icon::filename };
 
     try {
         for (auto it = fonts.begin(); it != fonts.end();) {
@@ -43,7 +56,7 @@ plugin::gui::Fonts::Fonts() {
         }
 
         if (!fonts.empty()) {
-            downloader_thread = std::jthread(([this, resources_directory, fonts](std::stop_token stop_token) {
+            downloader_thread = std::jthread([this, resources_directory, fonts](std::stop_token stop_token) {
                 for (const auto& font : fonts) {
                     if (stop_token.stop_requested()) {
                         log::info("font download cancelled");
@@ -59,10 +72,10 @@ plugin::gui::Fonts::Fonts() {
                     }
                 }
     
-                log::info("plugin::gui::Fonts::Fonts() initialized (after downloader_thread)");
+                log::info("plugin::gui::fonts_initializer initialized (after downloader_thread)");
 
                 fonts_available = true;
-            }));
+            });
             
             return;
         }
@@ -72,10 +85,10 @@ plugin::gui::Fonts::Fonts() {
         log::fatal("failed to initialize fonts: {}", e.what());
     }
 
-    log::info("plugin::gui::Fonts::Fonts() initialized");
+    log::info("plugin::gui::fonts_initializer initialized");
 }
 
-plugin::gui::Fonts::~Fonts() {
+plugin::gui::fonts_initializer::~fonts_initializer() noexcept {
     if (downloader_thread.joinable()) {
         downloader_thread.request_stop();
         downloader_thread.join();

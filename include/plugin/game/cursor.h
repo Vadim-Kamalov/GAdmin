@@ -4,8 +4,8 @@
 namespace plugin {
 namespace signatures {
 
-using ClearMouseHistory = void(__cdecl*)();
-using UpdatePads = void(__cdecl*)();
+using clear_mouse_history_t = void(__cdecl*)();
+using update_pads_t = void(__cdecl*)();
 
 } // namespace signatures
 
