@@ -53,10 +53,10 @@ update_menu_width(menu_selector_animation& it, plugin::utils::not_null<windows::
 static void
 draw_frame(const ImVec2& size, const ImVec4& color, plugin::utils::not_null<windows::main*> child) noexcept {
     plugin::gui_initializer* gui = child->child;
-    ImVec2 cursor = ImGui::GetCursorScreenPos();
+    ImVec2 pos = ImGui::GetWindowPos();
     float rounding = ImGui::GetStyle().ChildRounding;
 
-    ImGui::GetWindowDrawList()->AddRectFilled(cursor, { cursor.x + child->menu_width, cursor.y + size.y },
+    ImGui::GetWindowDrawList()->AddRectFilled(pos, { pos.x + child->menu_width, pos.y + size.y },
                                               ImGui::GetColorU32(color), rounding, ImDrawFlags_RoundCornersTopLeft);
 
     gui->fonts->icon->push(24);

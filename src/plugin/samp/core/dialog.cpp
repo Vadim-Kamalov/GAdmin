@@ -2,21 +2,16 @@
 #include "plugin/encoding.h"
 
 void
-plugin::samp::dialog::send_response_to(std::uint16_t id, std::uint8_t button_id,
-                                       std::uint16_t list_item, const std::string_view& input) noexcept
+plugin::samp::dialog::send_response(std::uint16_t id, std::uint8_t button_id,
+                                    std::uint16_t list_item, const std::string_view& input) noexcept
 {
     bit_stream stream;
     stream.write(id);
     stream.write(button_id);
     stream.write(list_item);
-    stream.write<std::uint8_t>(static_cast<std::uint8_t>(input.size()));
+    stream.write(static_cast<std::uint8_t>(input.size()));
     stream.write(input);
-    stream.send_rpc(event_id);
-}
-
-void
-plugin::samp::dialog::send_response(std::uint8_t button_id, std::uint16_t list_item, const std::string_view& input) const {
-    send_response_to(id, button_id, list_item, input);
+    stream.send_rpc(62);
 }
 
 plugin::samp::dialog::dialog(bit_stream* stream) {

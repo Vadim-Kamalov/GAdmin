@@ -48,7 +48,7 @@ plugin::server::admins::on_show_dialog(const samp::dialog& dialog) {
         return true;
 
     if (std::regex_search(dialog.text, std::regex("Лог отключений"))) {
-        dialog.send_response(1, 0);
+        dialog.send_response<samp::dialog::button::right>(0);
         return false;
     }
 
