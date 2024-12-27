@@ -9,7 +9,7 @@ plugin::gui::windows::notify::on_send_notification(notification& notification) {
     auto window_configuration = (*configuration)["windows"]["notify"];
     std::size_t max_count = window_configuration["max_count"];
 
-    if (gui::notify::notifications_count() > max_count)
+    if (gui::notify::notifications_count() >= max_count)
         return false;
 
     float start_pos_x = (window_configuration["align"] == "left") ? -notification_size[0] : notification_size[0];
