@@ -35,12 +35,12 @@ plugin::gui::style::apply() noexcept {
    
     ImVec4 surface[2] = { ImGui::ColorConvertU32ToFloat4(0xFF241717), ImGui::ColorConvertU32ToFloat4(0xFF2E1D1D) };
     ImVec4 none = { 0, 0, 0, 0 };
-    ImVec4 text[1] = { ImGui::ColorConvertU32ToFloat4(0xFFDEC2BA) };
+    ImVec4 text[2] = { ImGui::ColorConvertU32ToFloat4(0xFFDEC2BA), ImGui::ColorConvertU32ToFloat4(0xFF5A4745) };
     ImVec4 overlay[3] = { ImGui::ColorConvertU32ToFloat4(0xFF3F302F), ImGui::ColorConvertU32ToFloat4(0xFF4E3E3C),
                           ImGui::ColorConvertU32ToFloat4(0xFF372A2A) };
 
     style.Colors[ImGuiCol_Text] = text[0];
-    style.Colors[ImGuiCol_TextDisabled] = text[0];
+    style.Colors[ImGuiCol_TextDisabled] = text[1];
     style.Colors[ImGuiCol_WindowBg] = surface[0];
     style.Colors[ImGuiCol_ChildBg] = surface[1];
     style.Colors[ImGuiCol_PopupBg] = surface[0];

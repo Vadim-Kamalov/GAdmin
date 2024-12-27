@@ -4,6 +4,7 @@
 #include "plugin/game/game.h"
 #include "plugin/gui/windows/admins.h"
 #include "plugin/gui/windows/main.h"
+#include "plugin/gui/windows/notify.h"
 #include <windows.h>
 #include <imgui.h>
 
@@ -53,6 +54,7 @@ plugin::gui_initializer::on_initialize() {
 
     registered_windows.push_back(windows::main::create(this));
     registered_windows.push_back(windows::admins::create(this));
+    registered_windows.push_back(windows::notify::create(this));
 }
 
 void

@@ -29,6 +29,6 @@ plugin::log::get_current_time() noexcept {
 }
 
 void
-plugin::log::set_handler(std::function<void(type, std::string_view)> new_handler) noexcept {
+plugin::log::set_handler(handler_t new_handler) noexcept {
     handler = new_handler;
 }

@@ -33,6 +33,7 @@ private:
 
             "windows": {
                 "admins": {
+                    "use": true,
                     "show_title": true,
                     "show_count": false,
                     "show_id": true,
@@ -40,6 +41,12 @@ private:
                     "show_scrollbar_on": 10,
                     "sort_by": "level",
                     "align": "left"
+                },
+
+                "notify": {
+                    "use": true,
+                    "max_count": 5,
+                    "align": "right"
                 }
             }
         }

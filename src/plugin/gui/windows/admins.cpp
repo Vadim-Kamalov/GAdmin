@@ -7,11 +7,11 @@
 
 void
 plugin::gui::windows::admins::render() {
-    if (!server::user::is_on_alogin())
-        return;
-
     auto window_configuration = (*configuration)["windows"]["admins"];
-    
+
+    if (!server::user::is_on_alogin() || !window_configuration["use"])
+        return;
+   
     std::string sort_option = window_configuration["sort_by"];
     std::vector<server::admin> admins_sorted = server::admins::list;
 

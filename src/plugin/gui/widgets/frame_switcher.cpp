@@ -5,12 +5,12 @@ using namespace plugin::gui;
 using namespace std::literals;
 
 struct frame_switcher_settings {
-    ImVec4 color;
-    bool hovered_state_previous, hovered_state_current = false;
+    static inline std::chrono::milliseconds clicked_duration = 200ms;
+    static inline std::chrono::milliseconds hovered_duration = 400ms;
     
+    ImVec4 color;
+    bool hovered_state_previous = false, hovered_state_current = false;
     std::chrono::steady_clock::time_point time[2], hovered_time, clicked_time;
-    std::chrono::milliseconds clicked_duration = 200ms;
-    std::chrono::milliseconds hovered_duration = 400ms;
 
     struct colors_t {
         ImVec4 background = ImGui::GetStyle().Colors[ImGuiCol_ChildBg];
@@ -26,9 +26,7 @@ get_settings(const std::string_view& id, const windows::main::frame& current_fra
 
     if (entries.find(id) == entries.end()) {
         frame_switcher_settings settings;
-
         settings.color = (current_frame == frame) ? settings.colors.clicked : settings.colors.background;
-
         entries.emplace(id, settings);
     }
 
@@ -44,7 +42,7 @@ update_color(frame_switcher_settings& it, plugin::utils::not_null<windows::main*
     
     auto now = std::chrono::steady_clock::now();
 
-    it.hovered_state_current = ImGui::IsItemHovered() || now - it.time[1] < std::chrono::milliseconds(0);
+    it.hovered_state_current = ImGui::IsItemHovered() || now - it.time[1] < 0ms;
 
     if (it.hovered_state_current != it.hovered_state_previous) {
         it.hovered_state_previous = it.hovered_state_current;

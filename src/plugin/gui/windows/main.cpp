@@ -12,7 +12,7 @@ plugin::gui::windows::main::render_menu() {
     ImGui::SetCursorPos({ 0, 0 });
     ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 0);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 10, 10 });
-    ImGui::BeginChild("windows::Main::menu", { menu_width, ImGui::GetWindowHeight() }, true);
+    ImGui::BeginChild("windows::main::menu", { menu_width, ImGui::GetWindowHeight() }, true);
     {
         ImGui::SetCursorPos({ 0, 0 });
         ImGui::BeginGroup();

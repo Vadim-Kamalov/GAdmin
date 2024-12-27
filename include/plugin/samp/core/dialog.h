@@ -22,7 +22,7 @@ public:
     static void send_response(std::uint16_t id, std::uint8_t button_id, std::uint16_t list_item = 65535,
                               const std::string_view& input = "") noexcept;
 
-    template<button Button>
+    template<button button>
     void send_response(std::uint16_t list_item = 65535, const std::string_view& input = "") const;
 
     explicit dialog(samp::bit_stream* bit_stream);
@@ -30,10 +30,10 @@ public:
 
 } // namespace plugin::samp
 
-template<plugin::samp::dialog::button Button>
+template<plugin::samp::dialog::button button>
 void
 plugin::samp::dialog::send_response(std::uint16_t list_item, const std::string_view& input) const {
-    send_response(id, std::to_underlying(Button), list_item, input);
+    send_response(id, std::to_underlying(button), list_item, input);
 }
 
 #endif // GADMIN_PLUGIN_SAMP_CORE_DIALOG_H

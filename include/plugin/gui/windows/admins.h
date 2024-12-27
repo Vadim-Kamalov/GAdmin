@@ -14,8 +14,8 @@ public:
     constexpr const char* get_id() const override { return "windows::admins"; }
     
     void render() override;
+    
     static window_ptr create(utils::not_null<gui_initializer*> child) noexcept;
-
     explicit admins(utils::not_null<gui_initializer*> child);
 }; // class admins : public window
 

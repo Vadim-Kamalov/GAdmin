@@ -5,11 +5,11 @@ using namespace plugin::gui;
 using namespace std::literals;
 
 struct menu_selector_animation {
+    static inline std::chrono::milliseconds duration = 500ms;
+    
     ImVec4 color;
-
     bool hovered_state_current = false, hovered_state_previous = false;
     std::chrono::steady_clock::time_point hovered_time, click_time;
-    std::chrono::milliseconds duration = 500ms;
 
     struct colors {
         ImVec4 background = ImGui::GetStyle().Colors[ImGuiCol_ChildBg];

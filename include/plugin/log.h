@@ -3,7 +3,6 @@
 
 #include <functional>
 #include <string_view>
-#include <optional>
 #include <format>
 #include <utility>
 
@@ -12,8 +11,9 @@ namespace plugin {
 class log {
 public:
     enum class type { info, warn, error, fatal };
+    using handler_t = std::function<void(type, std::string_view)>;
 private:
-    static inline std::optional<std::function<void(type, std::string_view)>> handler;
+    static inline std::optional<handler_t> handler;
     static constexpr const char* types[] = { "INFO", "WARN", "ERROR", "FATAL" };
 
     static std::string get_current_time() noexcept;
@@ -21,7 +21,7 @@ private:
     template<type message_type>
     static void write(const std::string_view& text) noexcept;
 public:
-    static void set_handler(std::function<void(type, std::string_view)>) noexcept;
+    static void set_handler(handler_t new_handler) noexcept;
 
     template<typename... Args>
     static void info(std::format_string<Args...> fmt, Args&&... args) noexcept;
