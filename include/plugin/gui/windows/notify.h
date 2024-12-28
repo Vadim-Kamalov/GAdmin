@@ -15,8 +15,8 @@ private:
 
     bool on_send_notification(notification& notification);
     ImVec2 get_buttons_max_size(ImFont* font, const notification::buttons_t& buttons) const;
-    void render_notification(const char* id, notification& item) const;
-    void render_button(const char* id, const ImVec2& pos, ImFont* font, notification& notification, notification::button& button) const;
+    void render_notification(notification& item) const;
+    void render_button(const ImVec2& pos, ImFont* font, notification& notification, notification::button& button) const;
 public:
     constexpr const char* get_id() const override { return "windows::notify"; }
 

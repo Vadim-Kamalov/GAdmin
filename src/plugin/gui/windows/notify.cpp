@@ -32,7 +32,7 @@ plugin::gui::windows::notify::get_buttons_max_size(ImFont* font, const notificat
 }
 
 void
-plugin::gui::windows::notify::render_notification(const char* id, notification& item) const {
+plugin::gui::windows::notify::render_notification(notification& item) const {
     ImVec2 cursor_pos = ImGui::GetCursorScreenPos();
     ImU32 text_color = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_Text]);
     ImFont *icon = (*child->fonts->icon)[24], *bold = (*child->fonts->bold)[18], *regular = (*child->fonts->regular)[16];
@@ -67,18 +67,15 @@ plugin::gui::windows::notify::render_notification(const char* id, notification& 
         ImVec2 start = { cursor_pos.x + notification_size[0] - item_spacing.x - buttons_size.x - 10, 
                          cursor_pos.y + (notification_size[1] - buttons_size.y * 2) / 2 - item_spacing.y };
         
-        std::string first_id = std::format("{}.buttons.first", id);
-        std::string second_id = std::format("{}.buttons.second", id);
-
-        render_button(first_id.c_str(), start, regular, item, item.buttons->first);
-        render_button(second_id.c_str(), { start.x, start.y + buttons_size.y + item_spacing.y }, regular, item, item.buttons->second);
+        render_button(start, regular, item, item.buttons->first);
+        render_button({ start.x, start.y + buttons_size.y + item_spacing.y }, regular, item, item.buttons->second);
     }
 
     ImGui::Dummy({ notification_size[0], notification_size[1] });
 }
 
 void
-plugin::gui::windows::notify::render_button(const char* id, const ImVec2& pos, ImFont* font, notification& notification, notification::button& button) const {
+plugin::gui::windows::notify::render_button(const ImVec2& pos, ImFont* font, notification& notification, notification::button& button) const {
     if (!button.backend.has_value()) {
         notification::button::backend_t backend;
         backend.color = backend.colors.text;
@@ -134,9 +131,6 @@ plugin::gui::windows::notify::render() {
     {
         std::vector<notification>& notifications = gui::notify::get_notifications();
         for (auto it = notifications.rbegin(); it != notifications.rend();) {
-            std::size_t index = std::distance(notifications.rbegin(), it);
-            std::string id = std::format("windows::notify::item[{}]", index);
-
             float start_pos_x = (align == "left") ? -notification_size[0] : notification_size[0];
             float end_pos_x = (align == "left") ? padding * 2 : 0;
             auto now = std::chrono::steady_clock::now();
@@ -165,7 +159,7 @@ plugin::gui::windows::notify::render() {
             }
 
             ImGui::SetCursorPos({ it->backend->cursor_pos_x, ImGui::GetCursorPosY() - ImGui::GetStyle().ItemSpacing.y + padding });
-            render_notification(id.c_str(), *it);
+            render_notification(*it);
         
             it++;
         }
