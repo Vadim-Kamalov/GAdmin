@@ -1,6 +1,6 @@
 /**
  * GAdmin - Script simplifying the work of administrators on the Gambit-RP
- * Copyright (C) 2023-2024 The Contributors.
+ * Copyright (C) 2023-2025 The Contributors.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -63,7 +63,7 @@
 @define SERVER_ADDRESS              "46.174.48.194"
 @define SERVER_MAX_PLAYERS          600
 
-@define COPYRIGHT_YEARS "2023-2024"
+@define COPYRIGHT_YEARS "2023-2025"
 
 @define IS_ANY_MOUSE_BUTTON_CLICKED (imgui.IsMouseClicked(0) || imgui.IsMouseClicked(1) || imgui.IsMouseClicked(2))
 

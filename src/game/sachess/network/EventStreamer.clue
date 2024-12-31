@@ -2,7 +2,7 @@
  * This file is a part of the SAChess project: see `src/sachess/README.md` for more details.
  *
  * GAdmin - Script simplifying the work of administrators on the Gambit-RP
- * Copyright (C) 2023-2024 The Contributors.
+ * Copyright (C) 2023-2025 The Contributors.
  *
  * SAChess - MoonLoader script that implements Lichess API.
  * Copyright (C) 2024 defaultzone.

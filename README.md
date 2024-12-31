@@ -40,7 +40,7 @@ TARGET:
 
 # Лицензия
 
-Copyright (C) 2023-2024 The Contributors\*.
+Copyright (C) 2023-2025 The Contributors\*.
 *Licensed under the GNU General Public License v3 (GPLv3)*.
 
 > [The Contributors\*](https://github.com/Vadim-Kamalov/GAdmin/blob/main/CONTRIBUTORS)
