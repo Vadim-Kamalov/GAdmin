@@ -76,11 +76,7 @@ plugin::gui::windows::main::render() {
         ImGui::SetCursorPosX(menu_min_width + ImGui::GetStyle().ItemSpacing.x);
         ImGui::BeginGroup();
         {
-            child->fonts->light->push(18);
-            {
-                ImGui::Text("menu_opened = %i", menu_opened);
-            }
-            ImGui::PopFont();
+            // ...
         }
         ImGui::EndGroup();
         render_menu();

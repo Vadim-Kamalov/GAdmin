@@ -1,5 +1,12 @@
 #include "plugin/samp/core/dialog.h"
+#include "plugin/samp/samp.h"
 #include "plugin/encoding.h"
+
+std::uintptr_t
+plugin::samp::dialog::instance() noexcept {
+    static constexpr std::uintptr_t offsets[] = { 0x0, 0x0, 0x21A0B8, 0x26E898, 0x26EB50, 0x2AC9E0 };
+    return *reinterpret_cast<std::uintptr_t*>(base(offsets));
+}
 
 void
 plugin::samp::dialog::send_response(std::uint16_t id, std::uint8_t button_id,
@@ -11,7 +18,12 @@ plugin::samp::dialog::send_response(std::uint16_t id, std::uint8_t button_id,
     stream.write(list_item);
     stream.write(static_cast<std::uint8_t>(input.size()));
     stream.write(input);
-    stream.send_rpc(62);
+    stream.send_rpc(send_response_id);
+}
+
+bool
+plugin::samp::dialog::is_active() noexcept {
+    return *reinterpret_cast<int*>(instance() + 0x50) != 0;
 }
 
 plugin::samp::dialog::dialog(bit_stream* stream) {

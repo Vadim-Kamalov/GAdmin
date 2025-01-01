@@ -17,13 +17,17 @@ private:
     static bool on_show_dialog(const samp::dialog& dialog);
     static bool on_server_message(const samp::server_message& message);
 public:
-    static constexpr bool is_on_alogin() noexcept { return on_alogin; }
-
+    static inline bool is_on_alogin() noexcept;
     static void main_loop();
     static void set_alogin_status(bool status);
     static bool on_event(const samp::event_type& type, std::uint8_t id, samp::bit_stream* stream);
 }; // class user
 
 } // namespace plugin::server
+
+inline bool
+plugin::server::user::is_on_alogin() noexcept {
+    return on_alogin;
+}
 
 #endif // GADMIN_PLUGIN_SERVER_USER_H

@@ -48,6 +48,11 @@ private:
                     "max_count": 5,
                     "align": "right"
                 }
+            },
+
+            "additions": {
+                "hide_spectator_text_draws": true,
+                "hide_spectator_menu": true
             }
         }
     )"_json;

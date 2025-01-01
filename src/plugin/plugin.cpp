@@ -1,7 +1,9 @@
 #include "plugin/plugin.h"
+#include "plugin/gui/notify.h"
 #include "plugin/samp/core/net_game.h"
 #include "plugin/samp/samp.h"
 #include "plugin/server/admins.h"
+#include "plugin/server/spectator.h"
 #include "plugin/server/user.h"
 #include <cstring>
 #include <imgui.h>
@@ -28,6 +30,11 @@ plugin::plugin_initializer::on_event(const samp::event_type& type, std::uint8_t 
     stream->reset_read_pointer();
 
     if (!server::user::on_event(type, id, stream))
+        return false;
+
+    stream->reset_read_pointer();
+
+    if (!server::spectator::on_event(type, id, stream))
         return false;
 
     stream->reset_read_pointer();
@@ -61,6 +68,8 @@ plugin::plugin_initializer::on_message(unsigned int message, WPARAM wparam, LPAR
 
 void
 plugin::plugin_initializer::on_samp_initialize() {
+    using namespace plugin::gui;
+
     log::info("samp::net_game::instance() != nullptr: SA:MP {} initialized", samp::get_version());
 
     if (strcmp(samp::net_game::get_host_address(), SERVER_HOST_ADDRESS) != 0) {
@@ -74,6 +83,10 @@ plugin::plugin_initializer::on_samp_initialize() {
     }
 
     gui->on_samp_initialize();
+
+    notify::send(notification("GAdmin v" PROJECT_VERSION " успешно запущен!",
+                              "Плагин инициализирован и готов для использования.",
+                              ICON_INFO));
 }
 
 void
@@ -84,6 +97,7 @@ plugin::plugin_initializer::main_loop() {
     configuration->save(std::chrono::minutes(5));
     
     server::user::main_loop();
+    server::spectator::main_loop();
 
     if (samp::get_base() && samp::net_game::instance() && !samp_initialized) {
         on_samp_initialize();

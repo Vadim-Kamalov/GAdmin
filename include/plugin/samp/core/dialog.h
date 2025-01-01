@@ -8,10 +8,13 @@
 namespace plugin::samp {
 
 class dialog {
+private:
+    static std::uintptr_t instance() noexcept;
 public:
     enum class button { left, right };
 public:
     static constexpr std::uint8_t event_id = 61;
+    static constexpr std::uint8_t send_response_id = 62;
 
     std::uint16_t id;
     std::uint8_t style;
@@ -21,6 +24,8 @@ public:
 
     static void send_response(std::uint16_t id, std::uint8_t button_id, std::uint16_t list_item = 65535,
                               const std::string_view& input = "") noexcept;
+
+    static bool is_active() noexcept;
 
     template<button button>
     void send_response(std::uint16_t list_item = 65535, const std::string_view& input = "") const;

@@ -9,12 +9,11 @@ plugin::samp::net_game::instance() noexcept {
 
 const char*
 plugin::samp::net_game::get_host_address() noexcept {
-    static constexpr std::uintptr_t offsets[] = { 0x0, 0x0, 0x20, 0x34, 0x34, 0x34 };
-    return reinterpret_cast<char*>(instance() + offsets[std::to_underlying(get_version())]);
+    return reinterpret_cast<char*>(instance() + ((get_version() == samp::version::v037R1) ? 0x20 : 0x30));
 }
 
-std::uintptr_t
-plugin::samp::net_game::get_player_pool() noexcept {
-    static constexpr std::uintptr_t offsets[] = { 0x0, 0x0, 0x1160, 0x1160, 0x1170, 0x1170 };
-    return reinterpret_cast<signatures::get_player_pool_t>(base(offsets))(instance());
+void
+plugin::samp::net_game::update_players() noexcept {
+    static constexpr std::uintptr_t offsets[] = { 0x0, 0x0, 0x8A10, 0x8BA0, 0x8F10, 0x8C00 };
+    return reinterpret_cast<signatures::update_players_t>(base(offsets))(instance());
 }

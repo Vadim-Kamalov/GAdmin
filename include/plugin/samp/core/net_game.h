@@ -7,6 +7,7 @@ namespace plugin {
 namespace signatures {
 
 using get_player_pool_t = std::uintptr_t(__thiscall*)(std::uintptr_t);
+using update_players_t = void(__thiscall*)(std::uintptr_t);
 
 } // namespace signatures
 
@@ -14,7 +15,8 @@ namespace samp::net_game {
 
 std::uintptr_t instance() noexcept;
 const char* get_host_address() noexcept;
-std::uintptr_t get_player_pool() noexcept;
+
+void update_players() noexcept;
 
 } // namespace samp::net_game
 } // namespace plugin

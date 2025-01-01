@@ -15,6 +15,7 @@ using send_command_t = void(__thiscall*)(std::uintptr_t, const char*);
 namespace samp::input {
 
 std::uintptr_t instance() noexcept;
+bool is_active() noexcept;
 
 template<typename... Args>
 void send_command(std::format_string<Args...> fmt, Args&&... args) noexcept;
