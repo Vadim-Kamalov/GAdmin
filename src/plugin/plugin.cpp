@@ -143,7 +143,7 @@ plugin::plugin_initializer::create_and_initialize_files() {
 plugin::plugin_initializer::plugin_initializer() {
     initialize_logging();
 
-    log::info("GAdmin v" PROJECT_VERSION " loaded. Copyright (C) 2023-2024 The Contributors");
+    log::info("GAdmin v" PROJECT_VERSION " loaded. Copyright (C) 2023-2025 The Contributors");
     std::filesystem::create_directories(std::filesystem::current_path() / "gadmin" / "resources");
 
     create_and_initialize_files();
