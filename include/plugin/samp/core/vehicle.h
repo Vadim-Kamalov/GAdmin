@@ -14,7 +14,6 @@ namespace samp {
 
 class vehicle : public entity {
 public:
-    bool is_exist() const;
     using entity::entity;
 }; // class vehicle : public entity
 
