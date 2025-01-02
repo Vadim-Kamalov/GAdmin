@@ -1,7 +1,6 @@
 #ifndef GADMIN_PLUGIN_SAMP_CORE_PLAYER_POOL_H
 #define GADMIN_PLUGIN_SAMP_CORE_PLAYER_POOL_H
 
-#include "plugin/samp/core/ped.h"
 #include "plugin/samp/core/remote_player.h"
 #include <cstdint>
 #include <string_view>
@@ -22,7 +21,7 @@ namespace samp {
 
 class player_pool {
 public:
-    enum class error { player_not_connected, player_not_found, ped_null_pointer };
+    enum class error { player_not_connected, player_not_found };
 public:
     static std::uintptr_t get() noexcept;
 
@@ -31,9 +30,6 @@ public:
 
     static std::expected<remote_player, error> get_remote_player(std::uint16_t id, bool check_connection = true) noexcept;
     static std::expected<remote_player, error> get_remote_player(const std::string_view& nickname) noexcept;
-
-    static std::expected<ped, error> get_ped(std::uint16_t id) noexcept;
-    static std::expected<ped, error> get_ped(const std::string_view& nickname) noexcept;
 
     static std::expected<std::int32_t, error> get_ping(std::uint16_t id) noexcept;
     static bool is_connected(std::uint16_t id) noexcept;

@@ -3,21 +3,13 @@
 
 #include "plugin/samp/core/entity.h"
 
-namespace plugin {
-namespace signatures {
-
-using is_exist_t = int(__thiscall*)(std::uintptr_t);
-
-} // namespace signatures
-
-namespace samp {
+namespace plugin::samp {
 
 class vehicle : public entity {
 public:
     using entity::entity;
 }; // class vehicle : public entity
 
-} // namespace samp
-} // namespace plugin
+} // namespace plugin::samp
 
 #endif // GADMIN_PLUGIN_SAMP_CORE_VEHICLE_H

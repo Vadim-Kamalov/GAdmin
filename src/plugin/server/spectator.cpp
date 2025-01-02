@@ -58,7 +58,7 @@ plugin::server::spectator::on_text_draw_set_string(const samp::text_draw_string_
         information.health = std::stoul(matches[4].str());
         information.world = std::stoul(matches[6].str());
        
-        if (ped.is_available() && ped.get_vehicle().is_available())
+        if (player.get_vehicle().is_available())
             information.move_speed_current = std::stoul(matches[3].str());
 
         if (matches[5].str() == "\x48\x65\xA6")
@@ -290,11 +290,13 @@ plugin::server::spectator::on_bullet_synchronization(const samp::bullet_synchron
 
 void
 plugin::server::spectator::update_available_information() noexcept {
+    samp::ped ped = player.get_ped();
+    
     if (!active || !ped.is_available())
         return;
 
     information.ping = *samp::player_pool::get_ping(id);
-    information.armor = ped.get_armor();
+    information.armor = player.get_armor();
     information.weapon = game::weapon_names[ped.get_current_weapon()];
 }
 
@@ -337,14 +339,14 @@ plugin::server::spectator::assign(std::uint16_t new_id) noexcept {
         return;
     }
     
-    auto new_ped = samp::player_pool::get_ped(new_id);
+    auto new_player = samp::player_pool::get_remote_player(new_id);
 
-    if (!new_ped)
+    if (!new_player || (new_player && !new_player->get_ped().is_available()))
         return; // No need to report that because it occurs very often (server-related problems?).
 
     id = new_id;
     nickname = *new_nickname;
-    ped = *new_ped;
+    player = *new_player;
     active = true;
 
     send_menu_option<menu_option::statistics>();
@@ -406,13 +408,17 @@ plugin::server::spectator::main_loop() {
     if (!active)
         return;
 
-    if (auto new_ped = samp::player_pool::get_ped(id)) {
-        ped = *new_ped;
+    auto new_player = samp::player_pool::get_remote_player(id);
 
-        if (samp::vehicle vehicle = ped.get_vehicle(); vehicle.is_available()) {
+    if (new_player && new_player->get_ped().is_available()) {
+        player = *new_player;
+
+        if (samp::vehicle vehicle = player.get_vehicle(); vehicle.is_available()) {
             information.move_speed_max = game::get_max_vehicle_model_speed(vehicle.get_model_index());
             return;
         }
+
+        samp::ped ped = player.get_ped();
 
         information.move_speed_current = ped.get_speed();
         information.move_speed_max = game::get_max_ped_model_speed(ped.get_model_index());

@@ -53,27 +53,6 @@ plugin::samp::player_pool::get_remote_player(const std::string_view& nickname) n
         return std::unexpected(id.error());
 }
 
-std::expected<plugin::samp::ped, plugin::samp::player_pool::error>
-plugin::samp::player_pool::get_ped(std::uint16_t id) noexcept {
-    if (auto remote_player = get_remote_player(id)) {
-        ped ped = remote_player->get_ped();
-
-        if (!ped.is_available())
-            return std::unexpected(error::ped_null_pointer);
-
-        return ped;
-    } else
-        return std::unexpected(remote_player.error());
-}
-
-std::expected<plugin::samp::ped, plugin::samp::player_pool::error>
-plugin::samp::player_pool::get_ped(const std::string_view& nickname) noexcept {
-    if (auto id = get_id(nickname))
-        return get_ped(*id);
-    else
-        return std::unexpected(id.error());
-}
-
 std::expected<std::int32_t, plugin::samp::player_pool::error>
 plugin::samp::player_pool::get_ping(std::uint16_t id) noexcept {
     static constexpr std::uintptr_t offsets[] = { 0x0, 0x0, 0x6A1C0, 0x6E110, 0x6E880, 0x6E2B0 };

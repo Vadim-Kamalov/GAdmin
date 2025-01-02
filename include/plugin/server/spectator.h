@@ -2,17 +2,13 @@
 #define GADMIN_PLUGIN_SERVER_SPECTATOR_H
 
 #include "plugin/gui/widgets/joystick.h"
+#include "plugin/samp/core/remote_player.h"
 #include "plugin/samp/core/synchronization.h"
 #include "plugin/samp/network/event_handler.h"
 #include "plugin/samp/core/text_draw.h"
 #include "plugin/samp/core/3d_text.h"
 #include "plugin/samp/core/dialog.h"
 #include "plugin/samp/core/menu.h"
-#include "plugin/samp/core/ped.h"
-#include <string>
-#include <cstdint>
-#include <chrono>
-#include <utility>
 
 namespace plugin::server {
 
@@ -79,7 +75,7 @@ public:
 public:
     static inline std::string nickname = "";
     static inline std::uint16_t id = SERVER_MAX_PLAYERS + 1;
-    static inline samp::ped ped = samp::ped(0, 0);
+    static inline samp::remote_player player = samp::remote_player(0);
     static inline bool keys_down[std::to_underlying(samp::synchronization_key::count)];
 
     static inline camera_switch_state_t camera_switch_state = camera_switch_state_t::none;
