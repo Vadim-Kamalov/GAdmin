@@ -22,6 +22,8 @@
 @import "imgui.drawList.Text"   => imguiText
 @import "imgui.HotKey"          => HotKey
 
+@import "game.samp.Chat"    => chat
+@import "game.samp.Fonts"   => fonts
 @import "game.sa.Vehicle"   => vehicle
 @import "game.sa.Ped"       => ped
 @import "game.Admins"       => admins
