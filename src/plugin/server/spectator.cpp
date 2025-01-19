@@ -380,9 +380,10 @@ plugin::server::spectator::on_event(const samp::event_type& type, std::uint8_t i
                     return on_remove_3d_text(samp::remover_3d_text(stream));
                 case samp::dialog::event_id:
                     return on_show_dialog(samp::dialog(stream));
-                case samp::menu::event_id:
-                    return !(*configuration)["additions"]["hide_spectator_menu"];
-                default:
+                case samp::menu::event_id: {
+                    bool hide = (*configuration)["additions"]["hide_spectator_menu"];
+                    return !hide;
+                } default:
                     return true;
             }
         case samp::event_type::incoming_packet:
