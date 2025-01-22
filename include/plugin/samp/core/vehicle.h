@@ -7,6 +7,9 @@ namespace plugin::samp {
 
 class vehicle : public entity {
 public:
+    bool is_engine_active() const;
+    bool is_locked() const;
+
     using entity::entity;
 }; // class vehicle : public entity
 

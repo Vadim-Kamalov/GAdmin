@@ -93,7 +93,7 @@ plugin::gui::windows::admins::admins(utils::not_null<gui_initializer*> child) : 
     log::info("window \"windows::admins\" initialized");
 }
 
-plugin::gui::window_ptr
+plugin::gui::window_ptr_t
 plugin::gui::windows::admins::create(utils::not_null<gui_initializer*> child) noexcept {
     return std::make_unique<admins>(child);
 }

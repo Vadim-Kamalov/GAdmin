@@ -148,6 +148,7 @@ plugin::server::spectator::on_show_dialog(const samp::dialog& dialog) {
     
     checking_statistics = false;
     
+    std::replace(information.vehicle.begin(), information.vehicle.end(), ',', ' ');
     dialog.send_response<samp::dialog::button::left>();
     
     return false;
@@ -290,9 +291,12 @@ plugin::server::spectator::on_bullet_synchronization(const samp::bullet_synchron
 
 void
 plugin::server::spectator::update_available_information() noexcept {
+    if (!active)
+        return;
+
     samp::ped ped = player.get_ped();
     
-    if (!active || !ped.is_available())
+    if (!ped.is_available())
         return;
 
     information.ping = *samp::player_pool::get_ping(id);

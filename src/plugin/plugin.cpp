@@ -10,6 +10,8 @@
 #include <format>
 #include <windows.h>
 
+using namespace std::chrono_literals;
+
 void
 plugin::plugin_initializer::on_log_message(const log::type& type, const std::string_view& message) {
     std::lock_guard<std::mutex> lock(log_mutex);
@@ -94,7 +96,7 @@ plugin::plugin_initializer::main_loop() {
     static bool samp_initialized = false;
     
     event_handler->initialize();
-    configuration->save(std::chrono::minutes(5));
+    configuration->save(5min);
     
     server::user::main_loop();
     server::spectator::main_loop();
@@ -144,7 +146,7 @@ plugin::plugin_initializer::plugin_initializer() {
     initialize_logging();
 
     log::info("GAdmin v" PROJECT_VERSION " loaded. Copyright (C) 2023-2025 The Contributors");
-    std::filesystem::create_directories(std::filesystem::current_path() / "gadmin" / "resources");
+    log::info("samp.dll base address: 0x{:x}", samp::get_base());
 
     create_and_initialize_files();
     initialize_event_handler();

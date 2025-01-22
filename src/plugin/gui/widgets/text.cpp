@@ -2,16 +2,20 @@
 
 static void
 render_border(const ImVec2& pos, const ImVec4& border_color, std::uint8_t border_size, const char* text) noexcept {
-    for (std::uint8_t i = 1; i <= border_size; i++) {
-        ImGui::SetCursorPos({ pos.x + i, pos.y });
-        ImGui::TextColored(border_color, "%s", text);
-        ImGui::SetCursorPos({ pos.x - i, pos.y });
-        ImGui::TextColored(border_color, "%s", text);
-        ImGui::SetCursorPos({ pos.x, pos.y + i });
-        ImGui::TextColored(border_color, "%s", text);
-        ImGui::SetCursorPos({ pos.x, pos.y - i });
-        ImGui::TextColored(border_color, "%s", text);
+    ImGui::PushStyleColor(ImGuiCol_Text, border_color);
+    {
+        for (std::uint8_t i = 1; i <= border_size; i++) {
+            ImGui::SetCursorPos({ pos.x + i, pos.y });
+            ImGui::TextUnformatted(text);
+            ImGui::SetCursorPos({ pos.x - i, pos.y });
+            ImGui::TextUnformatted(text);
+            ImGui::SetCursorPos({ pos.x, pos.y + i });
+            ImGui::TextUnformatted(text);
+            ImGui::SetCursorPos({ pos.x, pos.y - i });
+            ImGui::TextUnformatted(text);
+        }
     }
+    ImGui::PopStyleColor();
 }
 
 void

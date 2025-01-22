@@ -168,7 +168,7 @@ plugin::gui::windows::notify::render() {
     ImGui::PopStyleVar();
 }
 
-plugin::gui::window_ptr
+plugin::gui::window_ptr_t
 plugin::gui::windows::notify::create(utils::not_null<gui_initializer*> child) noexcept {
     return std::make_unique<notify>(child);
 }

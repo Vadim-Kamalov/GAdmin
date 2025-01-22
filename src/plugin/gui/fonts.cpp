@@ -29,7 +29,7 @@ plugin::gui::basic_font::operator[](std::size_t size) const {
 void
 plugin::gui::basic_font::text(std::size_t size, const char* text) const {
     push(size);
-    ImGui::Text("%s", text);
+    ImGui::TextUnformatted(text);
     ImGui::PopFont();
 }
 

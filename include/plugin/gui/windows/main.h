@@ -36,7 +36,7 @@ public:
     void render() override;
     bool on_event(unsigned int message, WPARAM wparam, LPARAM lparam) override;
     
-    static window_ptr create(utils::not_null<gui_initializer*> child) noexcept;
+    static window_ptr_t create(utils::not_null<gui_initializer*> child) noexcept;
     explicit main(utils::not_null<gui_initializer*> child);
 public:
     static constexpr const char* frame_icons[] = {

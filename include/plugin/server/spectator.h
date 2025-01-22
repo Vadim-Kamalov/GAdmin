@@ -9,6 +9,7 @@
 #include "plugin/samp/core/3d_text.h"
 #include "plugin/samp/core/dialog.h"
 #include "plugin/samp/core/menu.h"
+#include <format>
 
 namespace plugin::server {
 
@@ -38,7 +39,6 @@ private:
     static inline spectator_information information;
 
     static inline bool checking_statistics = false;
-    static inline std::chrono::steady_clock::time_point last_checked;
     static inline std::chrono::steady_clock::time_point last_reload;
 
     static bool on_show_text_draw(const samp::text_draw& text_draw);
@@ -82,6 +82,7 @@ public:
     static inline platform_t platform = platform_t::none;
 
     static inline gui::widgets::joystick joystick;
+    static inline std::chrono::steady_clock::time_point last_checked;
 
     static inline bool is_active() noexcept;
     static inline void set_status(bool status) noexcept;
@@ -120,5 +121,13 @@ inline bool&
 plugin::server::spectator::get_key_state(const samp::synchronization_key& key) noexcept {
     return keys_down[std::to_underlying(key)];
 }
+
+template<>
+struct std::formatter<plugin::server::spectator::platform_t> : std::formatter<std::string_view> {
+    auto format(const plugin::server::spectator::platform_t& platform, std::format_context& ctx) const {
+        static constexpr const char* platforms[] = { "Неизвестно", "Desktop", "Mobile" };
+        return std::formatter<std::string_view>::format(platforms[std::to_underlying(platform)], ctx);
+    }
+}; // struct std::formatter<plugin::server::spectator::platform_t> : std::formatter<std::string_view>
 
 #endif // GADMIN_PLUGIN_SERVER_SPECTATOR_H

@@ -47,6 +47,11 @@ private:
                     "use": true,
                     "max_count": 5,
                     "align": "right"
+                },
+                
+                "spectator_information": {
+                    "use": true,
+                    "columns_count": 2
                 }
             },
 

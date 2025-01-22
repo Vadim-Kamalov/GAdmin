@@ -29,13 +29,49 @@ static constexpr std::uint16_t max_vehicle_speeds[vehicle_count + 1] = {
     60, 0, 0
 }; // static constexpr std::uint16_t max_vehicle_speeds[]
 
+static constexpr const char* vehicle_names[vehicle_count + 1] = {
+    "Landstalker", "Bravura", "Buffalo", "Linerunner", "Perennial", "Sentinel",
+    "Dumper", "Firetruck", "Trashmaster", "Stretch", "Manana", "Infernus",
+    "Voodoo", "Pony", "Mule", "Cheetah", "Ambulance", "Leviathan", "Moonbeam",
+    "Esperanto", "Taxi", "Washington", "Bobcat", "Mr. Whoopee", "BF Injection",
+    "Hunter", "Premier", "Enforcer", "Securicar", "Banshee", "Predator", "Bus",
+    "Rhino", "Barracks", "Hotknife", "Trailer", "Previon", "Coach", "Cabbie",
+    "Stallion", "Rumpo", "RC Bandit", "Romero", "Packer", "Monster", "Admiral",
+    "Squalo", "Seasparrow", "Pizzaboy", "Tram", "Trailer", "Turismo", "Speeder",
+    "Reefer", "Tropic", "Flatbed", "Yankee", "Caddy", "Solair", "Berkley's RC Van",
+    "Skimmer", "PCJ-600", "Faggio", "Freeway", "RC Baron", "RC Raider", "Glendale",
+    "Oceanic", "Sanchez", "Sparrow", "Patriot", "Quad", "Coastguard", "Dinghy", "Hermes",
+    "Sabre", "Rustler", "ZR-350", "Walton", "Regina", "Comet", "BMX", "Burrito", "Camper",
+    "Marquis", "Baggage", "Dozer", "Maverick", "SAN News Maverick", "Rancher", "FBI Rancher",
+    "Virgo", "Greenwood", "Jetmax", "Hotring Racer", "Sandking", "Blista Compact", "Police Maverick",
+    "Boxville", "Benson", "Mesa", "RC Goblin", "Hotring Racer", "Hotring Racer", "Bloodring Banger",
+    "Rancher", "Super GT", "Elegant", "Journey", "Bike", "Mountain Bike", "Beagle", "Cropduster", "Stuntplane",
+    "Tanker", "Roadtrain", "Nebula", "Majestic", "Buccaneer", "Shamal", "Hydra", "FCR-900", "NRG-500", "HPV1000",
+    "Cement Truck", "Towtruck", "Fortune", "Cadrona", "FBI Truck", "Willard", "Forklift", "Tractor",
+    "Combine Harvester", "Feltzer", "Remington", "Slamvan", "Blade", "Freight", "Brown Streak", "Vortex", "Vincent",
+    "Bullet", "Clover", "Sadler", "Firetruck LA", "Hustler", "Intruder", "Primo", "Cargobob", "Tampa", "Sunrise",
+    "Merit", "Utility Van", "Nevada", "Yosemite", "Windsor", "Monster", "Monster", "Uranus", "Jester", "Sultan",
+    "Stratum", "Elegy", "Raindance", "RC Tiger", "Flash", "Tahoma", "Savanna", "Bandito", "Freight", "Brown Streak",
+    "Kart", "Mower", "Dune", "Sweeper", "Broadway", "Tornado", "AT-400", "DFT-30", "Huntley", "Stafford", "BF-400",
+    "Newsvan", "Tug", "Petrol Truck", "Emperor", "Wayfarer", "Euros", "Hotdog", "Club", "Freight Box", "Trailer",
+    "Andromada", "Dodo", "RC Cam", "Launch", "Police Car (LSPD)", "Police Car (SFPD)", "Police Car (LVPD)", "Ranger",
+    "Picador", "S.W.A.T.", "Alpha", "Phoenix", "Glendale", "Sadler", "Luggage A", "Luggage B", "Stairs", "Boxville",
+    "Tiller", "Utility Trailer"
+}; // static constexpr const char* vehicle_names[vehicle_count + 1]
+
 constexpr std::uint16_t get_max_vehicle_model_speed(std::uint16_t vehicle_model_index) noexcept;
+constexpr const char* get_vehicle_name(std::uint16_t vehicle_model_index) noexcept;
 
 } // namespace plugin::game
 
 constexpr std::uint16_t
 plugin::game::get_max_vehicle_model_speed(std::uint16_t vehicle_model_index) noexcept {
     return max_vehicle_speeds[vehicle_model_index - min_vehicle_id];
+}
+
+constexpr const char*
+plugin::game::get_vehicle_name(std::uint16_t vehicle_model_index) noexcept {
+    return vehicle_names[vehicle_model_index - min_vehicle_id];
 }
 
 #endif // GADMIN_PLUGIN_GAME_VEHICLE_H

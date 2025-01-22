@@ -15,7 +15,7 @@ public:
     
     void render() override;
     
-    static window_ptr create(utils::not_null<gui_initializer*> child) noexcept;
+    static window_ptr_t create(utils::not_null<gui_initializer*> child) noexcept;
     explicit admins(utils::not_null<gui_initializer*> child);
 }; // class admins : public window
 

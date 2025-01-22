@@ -25,9 +25,9 @@ public:
 
     constexpr bool can_render() const noexcept { return rendering; }
     constexpr void stop_render() noexcept { log::error("plugin::gui::{}::stop_render()", get_id()); rendering = false; }
-}; // class Window
+}; // class window
 
-using window_ptr = std::unique_ptr<window>;
+using window_ptr_t = std::unique_ptr<window>;
 
 } // namespace plugin::gui
 

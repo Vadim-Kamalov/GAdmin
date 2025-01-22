@@ -68,6 +68,9 @@ plugin::gui::windows::main::render() {
     auto [size_x, size_y] = game::get_screen_resolution();
     auto flags = ImGuiWindowFlags_NoTitleBar;
 
+    ImGui::ShowDebugLogWindow();
+    ImGui::ShowMetricsWindow();
+
     ImGui::SetNextWindowPos({ size_x / 2, size_y / 2 }, ImGuiCond_FirstUseEver, { 0.5, 0.5 });
     ImGui::SetNextWindowSize({ 700, 455 }, ImGuiCond_FirstUseEver);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, 0 });
@@ -99,7 +102,7 @@ plugin::gui::windows::main::main(utils::not_null<gui_initializer*> child) : chil
     log::info("window \"{}\" initialized", get_id());
 }
 
-plugin::gui::window_ptr
+plugin::gui::window_ptr_t
 plugin::gui::windows::main::create(utils::not_null<gui_initializer*> child) noexcept {
     return std::make_unique<main>(child);
 }

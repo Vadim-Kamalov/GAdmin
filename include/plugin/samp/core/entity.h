@@ -19,6 +19,8 @@ public:
     bool is_available() const;
     int get_model_index() const;
     
+    bool operator==(const entity& other) const;
+
     explicit entity(std::uintptr_t handle) : handle(handle) {}
 }; // class entity
 
