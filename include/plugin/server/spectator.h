@@ -9,6 +9,7 @@
 #include "plugin/samp/core/3d_text.h"
 #include "plugin/samp/core/dialog.h"
 #include "plugin/samp/core/menu.h"
+#include "plugin/server/user.h"
 #include <format>
 
 namespace plugin::server {
@@ -103,7 +104,7 @@ public:
 
 inline bool
 plugin::server::spectator::is_active() noexcept {
-    return active;
+    return active && player.is_available() && user::is_on_alogin();
 }
 
 inline void

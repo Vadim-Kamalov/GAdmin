@@ -10,6 +10,7 @@ class remote_player {
 private:
     std::uintptr_t handle;
 public:
+    bool is_available() const;
     ped get_ped() const;
     vehicle get_vehicle() const;
     float get_armor() const;

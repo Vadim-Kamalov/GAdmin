@@ -58,7 +58,7 @@ plugin::server::spectator::on_text_draw_set_string(const samp::text_draw_string_
         information.health = std::stoul(matches[4].str());
         information.world = std::stoul(matches[6].str());
        
-        if (player.get_vehicle().is_available())
+        if (player.is_available() && player.get_vehicle().is_available())
             information.move_speed_current = std::stoul(matches[3].str());
 
         if (matches[5].str() == "\x48\x65\xA6")
@@ -291,7 +291,7 @@ plugin::server::spectator::on_bullet_synchronization(const samp::bullet_synchron
 
 void
 plugin::server::spectator::update_available_information() noexcept {
-    if (!active)
+    if (!is_active())
         return;
 
     samp::ped ped = player.get_ped();
@@ -410,14 +410,14 @@ plugin::server::spectator::on_event(const samp::event_type& type, std::uint8_t i
 
 void
 plugin::server::spectator::main_loop() {
-    if (!active)
+    if (!active || !user::is_on_alogin())
         return;
 
-    auto new_player = samp::player_pool::get_remote_player(id);
+    if (!player.is_available() || (player.is_available() && !player.get_ped().is_available()))
+        if (auto new_player = samp::player_pool::get_remote_player(id))
+            player = *new_player;
 
-    if (new_player && new_player->get_ped().is_available()) {
-        player = *new_player;
-
+    if (player.get_ped().is_available()) {
         if (samp::vehicle vehicle = player.get_vehicle(); vehicle.is_available()) {
             information.move_speed_max = game::get_max_vehicle_model_speed(vehicle.get_model_index());
             return;

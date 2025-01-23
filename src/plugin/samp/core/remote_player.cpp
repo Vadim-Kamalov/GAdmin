@@ -1,6 +1,11 @@
 #include "plugin/samp/core/remote_player.h"
 #include "plugin/samp/samp.h"
 
+bool
+plugin::samp::remote_player::is_available() const {
+    return handle != 0;
+}
+
 plugin::samp::ped
 plugin::samp::remote_player::get_ped() const {
     static constexpr std::uintptr_t offsets[] = { 0x0, 0x0, 0x0, 0x0, 0x1DD, 0x4 };
