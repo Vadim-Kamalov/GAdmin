@@ -206,7 +206,7 @@ plugin::gui::windows::spectator_information::render() {
         auto new_index = std::distance(row_order.begin(), user_ordered_row);
 
         if (user_ordered_row == row_order.end()) {
-            log::error("string-array in configuration[\"windows\"][\"spectator_information\"][\"row_order\"]"
+            log::error("string-array in configuration[\"windows\"][\"spectator_information\"][\"row_order\"] "
                        "is corrupted: value changing is prohibited");
 
             stop_render();
