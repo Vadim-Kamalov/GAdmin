@@ -55,7 +55,7 @@ plugin::configuration_initializer::configuration_initializer(const std::filesyst
     else if (nlohmann::json configuration = get(configuration_file); !configuration.is_null())
         json.merge_patch(configuration);
     
-    log::info("configuration initialized");
+    log::info("plugin::configuration_initializer initialized");
 }
 
 plugin::configuration_initializer::~configuration_initializer() noexcept {

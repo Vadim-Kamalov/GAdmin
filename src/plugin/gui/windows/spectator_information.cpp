@@ -6,6 +6,7 @@
 #include "plugin/samp/core/vehicle_pool.h"
 #include "plugin/server/spectator.h"
 #include "plugin/samp/core/input.h"
+#include <algorithm>
 #include <regex>
 #include <sstream>
 #include <string>
@@ -197,15 +198,32 @@ plugin::gui::windows::spectator_information::render() {
     if (!server::spectator::is_active() || !window_configuration["use"])
         return;
 
-    float columns_count = window_configuration["columns_count"];
-    
-    ImGui::SetNextWindowSize({ 150 * columns_count, 0 });
+    auto row_order = window_configuration["row_order"].get<std::vector<std::string>>();
+    std::vector<row> rows = get_rows();
+
+    for (std::size_t i = 0; i < rows.size(); i++) {
+        auto user_ordered_row = std::find(row_order.begin(), row_order.end(), rows[i].label);
+        auto new_index = std::distance(row_order.begin(), user_ordered_row);
+
+        if (user_ordered_row == row_order.end()) {
+            log::error("string-array in configuration[\"windows\"][\"spectator_information\"][\"row_order\"]"
+                       "is corrupted: value changing is prohibited");
+
+            stop_render();
+            
+            return;
+        }
+
+        std::swap(rows[new_index], rows[i]);
+    }
+
+    ImGui::SetNextWindowSize({ 300, 0 });
     ImGui::PushStyleVarX(ImGuiStyleVar_WindowPadding, 0);
     ImGui::PushStyleVarY(ImGuiStyleVar_ItemSpacing, ImGui::GetStyle().ItemSpacing.y * 2);
     ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoTitleBar);
     {
         if (ImGui::BeginTable("windows::spectator_information::table", 2)) {
-            for (const auto& [index, row] : get_rows() | std::views::enumerate) {
+            for (auto& row : rows) {
                 ImFont* label_font = (*child->fonts->bold)[16], *value_font = (*child->fonts->regular)[16];
 
                 ImGui::TableNextRow();
