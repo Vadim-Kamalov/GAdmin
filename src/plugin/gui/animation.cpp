@@ -34,3 +34,8 @@ plugin::gui::animation::bring_to(const ImVec4& from, const ImVec4& to, std::chro
 
     return (timer > duration.count()) ? to : from;
 }
+
+ImVec4
+plugin::gui::animation::get_contrast_color(const ImVec4& background, const ImVec4& a, const ImVec4& b) noexcept {
+    return ((1 - (0.299 * background.x + 0.587 * background.y + 0.114 * background.z)) < 0.5) ? a : b;
+}
