@@ -94,7 +94,7 @@ plugin::gui::widgets::hint::render() {
         auto between = std::chrono::duration_cast<std::chrono::milliseconds>(now - it.time).count();
         auto show_hide_duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(show_hide_duration).count();
         
-        if (pool[label].width == 0) {
+        if (it.width == 0) {
             render_hint(0);
             it.time = now;
         } else if (between <= show_hide_duration_ms) {
