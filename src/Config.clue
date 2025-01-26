@@ -206,7 +206,8 @@ static __config__ = {
 
             chess                 = { use = true },
             vehicleSelectionPanel = { use = true },
-            spectatorKeys         = { use = true }
+            spectatorKeys         = { use = true },
+            chatActions           = { use = true }
         },
 
         render = {
