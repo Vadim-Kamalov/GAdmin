@@ -48,6 +48,8 @@ private:
     void render_centered_text(const std::string_view& value, ImFont* font, const ImVec4& color = ImGui::GetStyle().Colors[ImGuiCol_Text]) const;
     std::string get_time_spectated() const;
 
+    void nickname_custom_renderer(const std::string_view& value, std::uint32_t color) const;
+
     std::vector<row> get_rows() const;
 public:
     static constexpr float min_wrap_width = 80;

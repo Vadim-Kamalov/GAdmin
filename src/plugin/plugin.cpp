@@ -136,7 +136,7 @@ plugin::plugin_initializer::create_and_initialize_files() {
         std::filesystem::create_directories(current_path / "gadmin" / "resources");
         std::filesystem::create_directory(current_path / "gadmin" / "configuration");
         
-        configuration = std::make_unique<configuration_initializer>(current_path / "gadmin" / "configuration" / "main.json");
+        configuration = std::make_unique<configuration_initializer>(current_path / "gadmin" / "configuration" / "main.mpk");
     } catch (const std::exception& e) {
         log::fatal("failed to create and initialize files: {}", e.what());
     }

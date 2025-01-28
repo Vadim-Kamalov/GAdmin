@@ -4,8 +4,9 @@
 
 void
 plugin::configuration_initializer::write(const std::filesystem::path& path, const nlohmann::json& json) {
-    if (std::ofstream file = std::ofstream(path)) {
-        file << std::setw(4) << json << std::endl;
+    if (std::ofstream file = std::ofstream(path, std::ios::out | std::ios::binary)) {
+        std::vector<std::uint8_t> bytes = nlohmann::json::to_msgpack(json);
+        file.write(reinterpret_cast<const char*>(bytes.data()), bytes.size());
         return;
     }
     
@@ -14,15 +15,20 @@ plugin::configuration_initializer::write(const std::filesystem::path& path, cons
 
 nlohmann::json
 plugin::configuration_initializer::get(const std::filesystem::path& path) {
-    std::ifstream file(path);
+    std::ifstream file(path, std::ios::binary | std::ios::ate);
+    std::ifstream::pos_type pos = file.tellg();
 
     if (!file) {
         log::fatal("failed to get plugin configuration from \"{}\"", path.string());
         return nullptr;
     }
+    
+    std::vector<char> bytes(pos);
 
-    nlohmann::json file_json;
-    file >> file_json;
+    file.seekg(0, std::ios::beg);
+    file.read(&bytes[0], pos);
+
+    auto file_json = nlohmann::json::from_msgpack(bytes);
 
     if (file_json.is_null()) {
         log::error("plugin configuration is corrupted in \"{}\"; default configuration is written", path.string());

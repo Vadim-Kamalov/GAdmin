@@ -1,5 +1,6 @@
 #include "plugin/gui/widgets/hint.h"
 #include "plugin/gui/animation.h"
+#include "plugin/plugin.h"
 #include <algorithm>
 #include <sstream>
 
@@ -71,17 +72,19 @@ plugin::gui::widgets::hint::render() {
     ImVec2 pos = ImGui::GetCursorPos();
     bool show = true;
 
-    for (const auto& [ id, hint ] : pool) {
-        if (id != label && now - hint.time <= show_hide_duration) {
-            show = false;
-            break;
+    if (!using_custom_condition) {
+        for (const auto& [ id, hint ] : pool) {
+            if (id != label && now - hint.time <= show_hide_duration) {
+                show = false;
+                break;
+            }
         }
     }
 
     if (!pool.contains(label))
         pool[label] = { 0, false, {} }; 
 
-    configuration& it = pool[label];
+    configuration_t& it = pool[label];
 
     ImGui::SameLine(0, 0);
 
@@ -94,16 +97,42 @@ plugin::gui::widgets::hint::render() {
         auto between = std::chrono::duration_cast<std::chrono::milliseconds>(now - it.time).count();
         auto show_hide_duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(show_hide_duration).count();
         
-        if (it.width == 0) {
-            render_hint(0);
-            it.time = now;
-        } else if (between <= show_hide_duration_ms) {
-            render_hint(std::clamp((hovered) ? static_cast<float>(between) / show_hide_duration_ms
-                        : 1.0f - static_cast<float>(between) / show_hide_duration_ms, 0.0f, 1.0f));
-        } else if (hovered) {
-            render_hint(1);
+        if (animation::time_available(it.time)) {
+            if (it.width == 0) {
+                render_hint(0);
+                it.time = now;
+            } else if (between <= show_hide_duration_ms) {
+                render_hint(std::clamp((hovered) ? static_cast<float>(between) / show_hide_duration_ms
+                            : 1.0f - static_cast<float>(between) / show_hide_duration_ms, 0.0f, 1.0f));
+            } else if (hovered) {
+                render_hint(1);
+            }
         }
     }
 
     ImGui::SetCursorPos(pos);
+}
+
+void
+plugin::gui::widgets::hint::render_as_guide(const std::string_view& label, bool optional_condition) noexcept {
+    static std::unordered_map<std::string_view, std::chrono::steady_clock::time_point> timers;
+
+    auto& deleted_hints = (*configuration)["internal"]["guide_hints"];
+    bool deleted = std::find(deleted_hints.begin(), deleted_hints.end(), label) != std::end(deleted_hints);
+    auto now = std::chrono::steady_clock::now();
+
+    if (!timers.contains(label) && !deleted && optional_condition)
+        timers[label] = now;
+
+    hint(label).with_condition([=, &deleted_hints] mutable {
+        if (deleted || !optional_condition)
+            return false;
+
+        if (now - timers[label] >= 5s) {
+            deleted_hints.push_back(label);
+            return false;
+        }
+
+        return true;
+    }).render();
 }

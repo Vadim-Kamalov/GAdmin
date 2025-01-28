@@ -24,23 +24,27 @@ private:
     std::chrono::milliseconds show_hide_duration = 200ms;
     std::uint32_t color = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_FrameBg]);
 
+    bool using_custom_condition = false;
+
     std::string get_text_before_hashtag() const;
     void default_renderer() const;
     void render_hint(float alpha) const;
 private:
-    struct configuration {
+    struct configuration_t {
         float width;
         bool opened;
         std::chrono::steady_clock::time_point time;
-    }; // struct configuration
+    }; // struct configuration_t
     
-    static inline std::unordered_map<std::string_view, configuration> pool;
+    static inline std::unordered_map<std::string_view, configuration_t> pool;
 public:
     inline hint& with_condition(condition_t new_condition) noexcept;
     inline hint& with_show_hide_duration(std::chrono::milliseconds duration) noexcept;
     inline hint& with_renderer(renderer_t new_renderer) noexcept;
 
     void render();
+
+    static void render_as_guide(const std::string_view& label, bool optional_condition = true) noexcept;
 
     explicit hint(const std::string_view& label)
         : label(std::move(label)) {}
@@ -54,6 +58,7 @@ public:
 inline plugin::gui::widgets::hint&
 plugin::gui::widgets::hint::with_condition(condition_t new_condition) noexcept {
     condition = new_condition;
+    using_custom_condition = true;
     return *this;
 }
 

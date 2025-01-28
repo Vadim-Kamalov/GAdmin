@@ -78,6 +78,10 @@ private:
             "additions": {
                 "hide_spectator_text_draws": true,
                 "hide_spectator_menu": true
+            },
+
+            "internal": {
+                "guide_hints": []
             }
         }
     )"_json;

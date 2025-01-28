@@ -1,6 +1,7 @@
 #include "plugin/gui/windows/main.h"
 #include "plugin/game/game.h"
 #include "plugin/gui/widgets/frame_switcher.h"
+#include "plugin/gui/widgets/hint.h"
 #include "plugin/gui/widgets/menu_selector.h"
 #include "plugin/log.h"
 #include <imgui_internal.h>
@@ -79,7 +80,10 @@ plugin::gui::windows::main::render() {
         ImGui::SetCursorPosX(menu_min_width + ImGui::GetStyle().ItemSpacing.x);
         ImGui::BeginGroup();
         {
-            // ...
+            if (ImGui::Button("run segfault")) {
+                int* p = nullptr;
+                *p = 1;
+            }
         }
         ImGui::EndGroup();
         render_menu();

@@ -1,9 +1,11 @@
 #include "plugin/gui/windows/spectator_information.h"
 #include "plugin/game/vehicle.h"
 #include "plugin/gui/style.h"
+#include "plugin/gui/widgets/hint.h"
 #include "plugin/plugin.h"
 #include "plugin/samp/core/vehicle.h"
 #include "plugin/samp/core/vehicle_pool.h"
+#include "plugin/server/admins.h"
 #include "plugin/server/spectator.h"
 #include "plugin/samp/core/input.h"
 #include <algorithm>
@@ -14,34 +16,39 @@
 void
 plugin::gui::windows::spectator_information::vehicles_custom_renderer(const std::string_view& value, std::uint32_t color) const {
     ImFont* font = (*child->fonts->regular)[16];
-
+    
     if (value == "Отсутствует")
         return render_centered_text(value, font, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
 
-    render_centered_text(value, font, ImGui::ColorConvertU32ToFloat4(color));
+    ImGui::BeginGroup();
+    {
+        render_centered_text(value, font, ImGui::ColorConvertU32ToFloat4(color));
 
-    ImVec2 start = ImGui::GetItemRectMin(), end = ImGui::GetItemRectMax();
-    ImDrawList* draw_list = ImGui::GetWindowDrawList();
-
-    std::string temp(value);
-    std::istringstream stream(temp);
-    std::string vehicle_id;
+        ImVec2 start = ImGui::GetItemRectMin(), end = ImGui::GetItemRectMax();
+        ImDrawList* draw_list = ImGui::GetWindowDrawList();
     
-    float current_pos_x = start.x;
-    float space_width = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0, " ").x;
+        std::string temp(value);
+        std::istringstream stream(temp);
+        std::string vehicle_id;
+    
+        float current_pos_x = start.x;
+        float space_width = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0, " ").x;
 
-    while (std::getline(stream, vehicle_id, ' ')) {
-        ImVec2 size = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0, vehicle_id.c_str());
-        ImVec2 line_start = { current_pos_x, end.y }, line_end = { current_pos_x + size.x, end.y + 2 };
+        while (std::getline(stream, vehicle_id, ' ')) {
+            ImVec2 size = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0, vehicle_id.c_str());
+            ImVec2 line_start = { current_pos_x, end.y }, line_end = { current_pos_x + size.x, end.y + 2 };
 
-        if (ImGui::IsMouseHoveringRect({ line_start.x, start.y }, line_end)) {
-            draw_list->AddRectFilled(line_start, line_end, color);
-            if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-                samp::input::send_command("/getbuycar {}", vehicle_id);
-        } 
+            if (ImGui::IsMouseHoveringRect({ line_start.x, start.y }, line_end)) {
+                draw_list->AddRectFilled(line_start, line_end, color);
+                if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                    samp::input::send_command("/getbuycar {}", vehicle_id);
+            } 
 
-        current_pos_x += size.x + space_width;
+            current_pos_x += size.x + space_width;
+        }
     }
+    ImGui::EndGroup();
+    widgets::hint::render_as_guide("Нажмите на ID машины чтобы телепортировать ее.");
 }
 
 void
@@ -116,6 +123,20 @@ plugin::gui::windows::spectator_information::render_centered_text(const std::str
     ImGui::PopFont();
 }
 
+void
+plugin::gui::windows::spectator_information::nickname_custom_renderer(const std::string_view& text, std::uint32_t color) const {
+    std::vector<server::admin>& admins = server::admins::list;
+
+    bool spectating_administrator = std::find_if(admins.begin(), admins.end(), [=](server::admin it) {
+        return it.id == server::spectator::id;
+    }) != admins.end();
+
+    render_centered_text(text, (*child->fonts->regular)[16], ImGui::ColorConvertU32ToFloat4(
+        (spectating_administrator) ? style::accent_colors.red : color));
+    
+    widgets::hint::render_as_guide("Красный цвет означает, что вы следите\nза администратором.", spectating_administrator);
+}
+
 std::string
 plugin::gui::windows::spectator_information::get_time_spectated() const {
     auto duration = std::chrono::steady_clock::now() - server::spectator::last_checked;
@@ -147,7 +168,9 @@ plugin::gui::windows::spectator_information::get_rows() const {
     }
 
     return {
-        row("Игрок", std::format("{}[{}]", server::spectator::nickname, server::spectator::id)),
+        row("Игрок", std::format("{}[{}]", server::spectator::nickname, server::spectator::id),
+            std::bind(&spectator_information::nickname_custom_renderer, this, _1, _2)),
+        
         row("Пинг", std::to_string(information.ping), [=] {
             if (information.ping >= 130)
                 return style::accent_colors.red;
@@ -198,7 +221,7 @@ plugin::gui::windows::spectator_information::render() {
     if (!server::spectator::is_active() || !window_configuration["use"])
         return;
 
-    auto row_order = window_configuration["row_order"].get<std::vector<std::string>>();
+    std::vector<std::string> row_order = window_configuration["row_order"];
     std::vector<row> rows = get_rows();
 
     for (std::size_t i = 0; i < rows.size(); i++) {
