@@ -6,9 +6,12 @@
 #include "plugin/server/spectator.h"
 #include "plugin/server/user.h"
 #include <cstring>
+#include <errhandlingapi.h>
 #include <imgui.h>
 #include <format>
+#include <minwindef.h>
 #include <windows.h>
+#include <psapi.h>
 
 using namespace std::chrono_literals;
 
@@ -142,14 +145,73 @@ plugin::plugin_initializer::create_and_initialize_files() {
     }
 }
 
+long __stdcall
+plugin::plugin_initializer::on_unhandled_exception(EXCEPTION_POINTERS* exception_info) noexcept {
+    DWORD code_exception = exception_info->ExceptionRecord->ExceptionCode;
+    PVOID address_exception = exception_info->ExceptionRecord->ExceptionAddress;
+
+    std::string module_name = "unknown module";
+    std::uintptr_t module_offset = 0;
+    {
+        MEMORY_BASIC_INFORMATION mbi;
+        if (VirtualQuery(address_exception, &mbi, sizeof(mbi))) {
+            char name[MAX_PATH];
+            if (GetModuleFileNameA(reinterpret_cast<HMODULE>(mbi.AllocationBase), name, sizeof(name))) {
+                module_name = name;
+                module_offset = reinterpret_cast<std::uintptr_t>(mbi.AllocationBase);
+            }
+        }
+    }
+
+    log::error("unhandled exception (code: 0x{:08X}) occured at 0x{:08X} (in {} + 0x{:X})",
+               code_exception,
+               reinterpret_cast<std::uintptr_t>(address_exception),
+               module_name,
+               reinterpret_cast<std::uintptr_t>(address_exception) - module_offset);
+    
+    log::error("registers:");
+    {
+        CONTEXT* context = exception_info->ContextRecord;
+        log::error("| eax: 0x{:08X} ebx: 0x{:08X} ecx: 0x{:08X}", context->Eax, context->Ebx, context->Ecx);
+        log::error("| edx: 0x{:08X} esi: 0x{:08X} edi: 0x{:08X}", context->Edx, context->Esi, context->Edi);
+        log::error("| esp: 0x{:08X} ebp: 0x{:08X} eip: 0x{:08X}", context->Esp, context->Ebp, context->Eip);
+        log::error("| eflags: 0x{:08X}", context->EFlags);
+    }
+    log::error("loaded modules:");
+
+    MODULEINFO module_info;
+    HMODULE modules[1024];
+    DWORD needed;
+
+    if (EnumProcessModules(GetCurrentProcess(), modules, sizeof(modules), &needed)) {
+        for (unsigned int i = 0; i < (needed / sizeof(HMODULE)); i++) {
+            char name[MAX_PATH];
+            if (GetModuleInformation(GetCurrentProcess(), modules[i], &module_info, sizeof(MODULEINFO))) {
+                GetModuleFileNameEx(GetCurrentProcess(), modules[i], name, sizeof(name));
+                log::error("| base: 0x{:08X} size: 0x{:08X} entrypoint: 0x{:08X} name: {}",
+                           reinterpret_cast<std::uintptr_t>(module_info.lpBaseOfDll),
+                           module_info.SizeOfImage,
+                           reinterpret_cast<unsigned long>(module_info.EntryPoint),
+                           name);
+            }
+        }
+    }
+
+    log::error("plugin and process are terminated (FATAL)");
+
+    return EXCEPTION_EXECUTE_HANDLER;
+}
+
 plugin::plugin_initializer::plugin_initializer() {
     initialize_logging();
 
     log::info("GAdmin v" PROJECT_VERSION " loaded. Copyright (C) 2023-2025 The Contributors");
-    log::info("samp.dll base address: 0x{:x}", samp::get_base());
+    log::info("samp.dll base address: 0x{:X}", samp::get_base());
 
     create_and_initialize_files();
     initialize_event_handler();
+    
+    SetUnhandledExceptionFilter(on_unhandled_exception);
 
     gui = std::make_unique<gui_initializer>();
 }

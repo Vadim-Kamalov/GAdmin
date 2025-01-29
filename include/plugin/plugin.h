@@ -7,6 +7,7 @@
 #include "plugin/samp/network/event_handler.h"
 #include <windows.h>
 #include <fstream>
+#include <winnt.h>
 
 namespace plugin {
 
@@ -37,6 +38,8 @@ public:
     void on_frame();
     bool on_message(unsigned int message, WPARAM wparam, LPARAM lparam);
     void main_loop();
+
+    static long __stdcall on_unhandled_exception(EXCEPTION_POINTERS* exception_info) noexcept;
 
     explicit plugin_initializer();
     ~plugin_initializer() noexcept;

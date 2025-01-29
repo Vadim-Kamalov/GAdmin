@@ -8,11 +8,16 @@ set(SERVER_MAX_PLAYERS            "600")
 set(PROJECT_REPOSITORY            "https://github.com/Vadim-Kamalov/GAdmin/tree/plugin")
 set(PROJECT_DATABASE              "https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/refs/heads/plugin")
 
+if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif()
+
 file(GLOB_RECURSE SOURCES src/*.cpp)
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
-include(cmake/libraries.cmake)
 
+include(cmake/libraries.cmake)
 include(cmake/compile_flags.cmake)
+
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(${PROJECT_NAME} PRIVATE -lstdc++exp ${LIBRARIES_LINKAGE})
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME ${PROJECT_NAME} SUFFIX ".asi")
