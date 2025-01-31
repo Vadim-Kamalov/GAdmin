@@ -7,7 +7,7 @@ plugin::samp::net_game::instance() noexcept {
     return *reinterpret_cast<std::uintptr_t*>(base(offsets));
 }
 
-const char*
+plugin::utils::zstring_t
 plugin::samp::net_game::get_host_address() noexcept {
     return reinterpret_cast<char*>(instance() + ((get_version() == samp::version::v037R1) ? 0x20 : 0x30));
 }

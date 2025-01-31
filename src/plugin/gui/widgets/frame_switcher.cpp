@@ -1,5 +1,6 @@
 #include "plugin/gui/widgets/frame_switcher.h"
 #include "plugin/gui/animation.h"
+#include <utility>
 
 using namespace plugin::gui;
 using namespace std::literals;
@@ -62,8 +63,8 @@ draw_frame(const ImVec2& pos, const ImVec2& size, const frame_switcher_settings&
 
     draw_list->AddRectFilled(pos, { pos.x + size.x, pos.y + size.y }, ImGui::GetColorU32(it.color));
 
-    const char* text = child->frame_labels[std::to_underlying(frame)];
-    const char* icon = child->frame_icons[std::to_underlying(frame)];
+    plugin::utils::zstring_t text = child->frame_labels[std::to_underlying(frame)];
+    plugin::utils::zstring_t icon = child->frame_icons[std::to_underlying(frame)];
     ImFont *icon_font = (*gui->fonts->icon)[24], *bold_font = (*gui->fonts->bold)[18];
     ImVec2 icon_size = icon_font->CalcTextSizeA(icon_font->FontSize, FLT_MAX, 0, icon);
     ImVec2 text_size = bold_font->CalcTextSizeA(bold_font->FontSize, FLT_MAX, 0, text);

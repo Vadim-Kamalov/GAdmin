@@ -28,7 +28,7 @@ update_color(menu_selector_animation& it, const menu_selector_animation::colors&
         it.hovered_time = now;
     }
 
-    if (!animation::time_available(it.hovered_time))
+    if (!animation::is_time_available(it.hovered_time))
         return;
 
     if (now - it.hovered_time <= it.duration) {
@@ -43,7 +43,7 @@ update_color(menu_selector_animation& it, const menu_selector_animation::colors&
 
 static void
 update_menu_width(menu_selector_animation& it, plugin::utils::not_null<windows::main*> child) noexcept {
-    if (!animation::time_available(it.click_time))
+    if (!animation::is_time_available(it.click_time))
         return;
 
     float to = (child->menu_opened) ? child->menu_max_width : child->menu_min_width;

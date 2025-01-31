@@ -4,7 +4,7 @@ if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL
 
     target_compile_options(${PROJECT_NAME} PRIVATE -ffunction-sections -fdata-sections -fmerge-all-constants)
     target_link_options(${PROJECT_NAME} PRIVATE -Wl,--gc-sections -ffast-math -static -fno-stack-protector -Wl,--no-insert-timestamp)
-	target_link_options(${PROJECT_NAME} PRIVATE -Wl,--disable-runtime-pseudo-reloc -Wl,--large-address-aware)
+    target_link_options(${PROJECT_NAME} PRIVATE -Wl,--disable-runtime-pseudo-reloc -Wl,--large-address-aware)
    
     if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
         target_link_options(${PROJECT_NAME} PRIVATE -Wl,--strip-all -Wl,--exclude-all-symbols)
@@ -14,10 +14,10 @@ if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL
 	
     if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
         target_link_options(${PROJECT_NAME} PRIVATE -static-libgcc -static-libstdc++ -lstdc++exp)
-	else()
-		target_compile_options(${PROJECT_NAME} PRIVATE -flto=thin)
-		target_link_options(${PROJECT_NAME} PRIVATE -Wl,--thinlto-cache-dir=lto_cache)
-	endif()
+    else()
+        target_compile_options(${PROJECT_NAME} PRIVATE -flto=thin)
+        target_link_options(${PROJECT_NAME} PRIVATE -Wl,--thinlto-cache-dir=lto_cache)
+    endif()
 endif()
 
 # TODO: MSVC support?

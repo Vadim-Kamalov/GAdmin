@@ -66,6 +66,8 @@ concept pointer_like = comparable_to_nullptr<T>
                        || smart_pointer<typename T::element_type> 
                        || std::is_same_v<T, not_null<typename T::element_type>>;
 
+using zstring_t = const char*;
+
 } // namespace plugin::utils
 
 #endif // GADMIN_PLUGIN_UTILS_H

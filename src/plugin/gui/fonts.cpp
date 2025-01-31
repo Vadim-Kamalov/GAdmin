@@ -27,7 +27,7 @@ plugin::gui::basic_font::operator[](std::size_t size) const {
 }
 
 void
-plugin::gui::basic_font::text(std::size_t size, const char* text) const {
+plugin::gui::basic_font::text(std::size_t size, utils::zstring_t text) const {
     push(size);
     ImGui::TextUnformatted(text);
     ImGui::PopFont();

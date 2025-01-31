@@ -3,6 +3,7 @@
 
 #include "plugin/samp/network/bit_stream.h"
 #include "plugin/samp/network/signatures.h"
+#include "plugin/utils.h"
 #include "raknet/rak_client.h"
 #include <kthook/kthook.hpp>
 #include <functional>
@@ -37,7 +38,7 @@ private:
 
     std::uintptr_t rak_client_interface_constructor_hooked(const decltype(rak_client_interface_constructor_hook)& hook);
 
-    bool incoming_rpc_handler_hooked(const decltype(incoming_rpc_handler_hook)& hook, void* ptr, const char* data,
+    bool incoming_rpc_handler_hooked(const decltype(incoming_rpc_handler_hook)& hook, void* ptr, utils::zstring_t data,
                                      int length, PlayerID player_id);
 
     bool outgoing_packet_handler_hooked(const decltype(outgoing_packet_handler_hook)& hook, void* ptr, BitStream* bit_stream,

@@ -2,6 +2,7 @@
 #define GADMIN_PLUGIN_GUI_FONTS_H
 
 #include "plugin/gui/icon.h"
+#include "plugin/utils.h"
 #include <imgui.h>
 #include <memory>
 #include <thread>
@@ -13,9 +14,9 @@
     private:                                                                                        \
         std::unordered_map<float, ImFont*> fonts;                                                   \
     public:                                                                                         \
-        static constexpr const char* filename = FILENAME;                                           \
+        static constexpr utils::zstring_t filename = FILENAME;                                      \
                                                                                                     \
-        constexpr const char* get_filename() const override { return filename; }                    \
+        constexpr utils::zstring_t get_filename() const override { return filename; }               \
         constexpr std::vector<float> get_sizes() const override { return { __VA_ARGS__ }; }         \
         std::unordered_map<float, ImFont*> get_fonts() const override { return fonts; }             \
         explicit NAME() : fonts(create(GLYPHS)) {}                                                  \
@@ -35,13 +36,13 @@ protected:
     std::unordered_map<float, ImFont*> create(const ImWchar* glyphs) const;
 public:
     virtual ~basic_font() = default;
-    virtual constexpr const char* get_filename() const = 0;
+    virtual constexpr utils::zstring_t get_filename() const = 0;
     virtual constexpr std::vector<float> get_sizes() const = 0;
     virtual std::unordered_map<float, ImFont*> get_fonts() const = 0;
 
     void push(std::size_t size) const;
     ImFont* operator[](std::size_t size) const;
-    void text(std::size_t size, const char* text) const;
+    void text(std::size_t size, utils::zstring_t text) const;
 }; // class basic_font
 
 namespace fonts {

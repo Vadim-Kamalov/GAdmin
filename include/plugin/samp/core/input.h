@@ -3,12 +3,13 @@
 
 #include "plugin/samp/samp.h"
 #include "plugin/encoding.h"
+#include "plugin/utils.h"
 #include <format>
 
 namespace plugin {
 namespace signatures {
 
-using send_command_t = void(__thiscall*)(std::uintptr_t, const char*);
+using send_command_t = void(__thiscall*)(std::uintptr_t, utils::zstring_t);
 
 } // namespace signatures
 

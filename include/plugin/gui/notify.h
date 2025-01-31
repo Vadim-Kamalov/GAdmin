@@ -1,6 +1,7 @@
 #ifndef GADMIN_PLUGIN_GUI_NOTIFY_H
 #define GADMIN_PLUGIN_GUI_NOTIFY_H
 
+#include "plugin/utils.h"
 #include <imgui.h>
 #include <chrono>
 #include <optional>
@@ -14,7 +15,7 @@ namespace plugin::gui {
 
 class notification {
 public:
-    using icon_t = const char*;
+    using icon_t = utils::zstring_t;
     using button_callback_t = std::function<void(notification&)>;
     using condition_t = std::function<bool()>;
 

@@ -6,7 +6,7 @@ void
 plugin::configuration_initializer::write(const std::filesystem::path& path, const nlohmann::json& json) {
     if (std::ofstream file = std::ofstream(path, std::ios::out | std::ios::binary)) {
         std::vector<std::uint8_t> bytes = nlohmann::json::to_msgpack(json);
-        file.write(reinterpret_cast<const char*>(bytes.data()), bytes.size());
+        file.write(reinterpret_cast<utils::zstring_t>(bytes.data()), bytes.size());
         return;
     }
     

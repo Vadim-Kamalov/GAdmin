@@ -18,7 +18,7 @@ private:
     void render_notification(notification& item) const;
     void render_button(const ImVec2& pos, ImFont* font, notification& notification, notification::button& button) const;
 public:
-    constexpr const char* get_id() const override { return "windows::notify"; }
+    constexpr utils::zstring_t get_id() const override;
 
     void render() override;
 
@@ -30,5 +30,10 @@ private:
 }; // class notify : public window
 
 } // namespace plugin::gui::windows
+
+constexpr plugin::utils::zstring_t
+plugin::gui::windows::notify::get_id() const {
+    return "windows::notify";
+}
 
 #endif // GADMIN_PLUGIN_GUI_WINDOWS_NOTIFY_H

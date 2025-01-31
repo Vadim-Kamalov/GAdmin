@@ -1,6 +1,7 @@
 #ifndef GADMIN_PLUGIN_GUI_WIDGETS_TEXT_H
 #define GADMIN_PLUGIN_GUI_WIDGETS_TEXT_H
 
+#include "plugin/utils.h"
 #include <cstdint>
 #include <format>
 #include <imgui.h>
@@ -8,7 +9,7 @@
 namespace plugin::gui::widgets {
 
 struct basic_text {
-    const char* text;
+    utils::zstring_t text;
     std::uint8_t border_size = 0;
     ImFont* font;
 

@@ -1,6 +1,7 @@
 #ifndef GADMIN_PLUGIN_GAME_WEAPON_H
 #define GADMIN_PLUGIN_GAME_WEAPON_H
 
+#include "plugin/utils.h"
 #include <utility>
 
 namespace plugin::game {
@@ -18,7 +19,7 @@ enum class weapon : char {
     night_vision, thermal_vision, parachute
 }; // enum class weapon
 
-static constexpr const char* weapon_names[std::to_underlying(weapon::parachute) + 1] = {
+static constexpr utils::zstring_t weapon_names[std::to_underlying(weapon::parachute) + 1] = {
 	"Fist", "Brass Knuckles", "Golf Club", "Nightstick", "Knife", "Baseball Bat",
 	"Shovel", "Pool Cue", "Katana", "Chainsaw", "Purple Dildo", "Dildo", "Vibrator",
 	"Silver Vibrator", "Flowers", "Cane", "Grenade", "Tear Gas", "Molotov Cocktail",
@@ -27,7 +28,7 @@ static constexpr const char* weapon_names[std::to_underlying(weapon::parachute) 
     "Sniper Rifle", "RPG", "HS Rocket", "Flamethrower", "Minigun", "Satchel Charge",
 	"Detonator", "Spraycan", "Fire Extinguisher", "Camera", "Night Vis Goggles",
 	"Thermal Goggles", "Parachute"
-}; // static constexpr const char* weapon_names[std::to_underlying(weapon::parachute) + 1]
+}; // static constexpr utils::zstring_t weapon_names[std::to_underlying(weapon::parachute) + 1]
 
 } // namespace plugin::game
 

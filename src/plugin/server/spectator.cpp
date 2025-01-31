@@ -14,8 +14,8 @@ using namespace std::chrono_literals;
 
 bool
 plugin::server::spectator::on_show_text_draw(const samp::text_draw& text_draw) {
-    static constexpr const char* dirty_title = "Adadadad_Dfghsadersasd(111)";
-    static constexpr const char* dirty_body = "2282282~n~$400000~n~90 MP/H~n~100/20~n~M4A1/Pustinniy Orel~n~999 ms~n~127.23.42.123";
+    static constexpr utils::zstring_t dirty_title = "Adadadad_Dfghsadersasd(111)";
+    static constexpr utils::zstring_t dirty_body = "2282282~n~$400000~n~90 MP/H~n~100/20~n~M4A1/Pustinniy Orel~n~999 ms~n~127.23.42.123";
 
     bool hide = (*configuration)["additions"]["hide_spectator_text_draws"];
 
@@ -40,7 +40,7 @@ plugin::server::spectator::on_show_text_draw(const samp::text_draw& text_draw) {
 
 bool
 plugin::server::spectator::on_text_draw_set_string(const samp::text_draw_string_setter& text_draw_setter) {
-    static constexpr const char* spectator_information =
+    static constexpr utils::zstring_t spectator_information =
         "ID Akkay.+a: (\\d+)~n~Ha.+e: (\\d+)~n~Ckopoc.+: (\\d+) / \\d+"
         "~n~Opy.+e: .+~n~Ping: \\d+ ms~n~HP: (.+)~n~Android: (.+)~n~Mo.+y.+p: (\\d+)";
 
@@ -82,8 +82,8 @@ plugin::server::spectator::on_text_draw_hide(const samp::text_draw_hider& hiden_
 
 bool
 plugin::server::spectator::on_show_3d_text(const samp::creator_3d_text& creator_3d_text) {
-    static constexpr const char* first_stage_pattern = R"(\(\( Данный персонаж ранен \d+ раз\(-а\) - /dm \d+ \)\))";
-    static constexpr const char* second_stage_pattern = R"(\(\( ДАННЫЙ ПЕРСОНАЖ .+ \)\))";
+    static constexpr utils::zstring_t first_stage_pattern = R"(\(\( Данный персонаж ранен \d+ раз\(-а\) - /dm \d+ \)\))";
+    static constexpr utils::zstring_t second_stage_pattern = R"(\(\( ДАННЫЙ ПЕРСОНАЖ .+ \)\))";
 
     if (!active)
         return true;
@@ -123,7 +123,7 @@ plugin::server::spectator::on_remove_3d_text(const samp::remover_3d_text& remove
 
 bool
 plugin::server::spectator::on_show_dialog(const samp::dialog& dialog) {
-    static constexpr const char* information_pattern =
+    static constexpr utils::zstring_t information_pattern =
         "Банк: \\$(.+)[^]+Фракция: (.+)[^]+Должность: (.+)[^]+Транспорт: (.+)[^]+"
         "Дом: (.+)[^]+Премиум аккаунт: (.+)[^]+Дата регистрации: (.+)[^]+";
 
