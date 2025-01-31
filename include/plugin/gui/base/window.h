@@ -41,5 +41,4 @@ plugin::gui::window::can_render() const {
     return rendering;
 }
 
-
 #endif // GADMIN_PLUGIN_GUI_BASE_WINDOW_H
