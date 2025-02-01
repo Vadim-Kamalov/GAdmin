@@ -240,7 +240,7 @@ plugin::gui::windows::spectator_information::render() {
         std::swap(rows[new_index], rows[i]);
     }
 
-    ImGui::SetNextWindowSize({ 300, 0 });
+    ImGui::SetNextWindowSize({ 320, 0 });
     ImGui::PushStyleVarX(ImGuiStyleVar_WindowPadding, 0);
     ImGui::PushStyleVarY(ImGuiStyleVar_ItemSpacing, ImGui::GetStyle().ItemSpacing.y * 2);
     ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoTitleBar);

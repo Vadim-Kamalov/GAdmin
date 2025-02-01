@@ -15,7 +15,6 @@ plugin::gui::widgets::hint::get_text_before_hashtag() const {
 void
 plugin::gui::widgets::hint::default_renderer() const {
     std::istringstream stream(get_text_before_hashtag());
-
     for (std::string line; std::getline(stream, line);) {
         ImGui::SetCursorPosX((ImGui::GetWindowWidth() - ImGui::CalcTextSize(line.c_str()).x) / 2);
         ImGui::TextUnformatted(line.c_str());
@@ -67,6 +66,8 @@ plugin::gui::widgets::hint::render_hint(float alpha) const {
 
 void
 plugin::gui::widgets::hint::render() {
+    ImGui::SameLine(0, 0);
+    
     bool hovered = condition();
     auto now = std::chrono::steady_clock::now();
     ImVec2 pos = ImGui::GetCursorPos();
@@ -85,8 +86,6 @@ plugin::gui::widgets::hint::render() {
         pool[label] = { 0, false, {} }; 
 
     configuration_t& it = pool[label];
-
-    ImGui::SameLine(0, 0);
 
     if (show) {
         if (it.opened != hovered) {

@@ -25,7 +25,7 @@ plugin::gui::style::apply() noexcept {
     style.GrabRounding = 5;
     style.TabRounding = 5;
 
-    style.WindowPadding = { 5, 5 };
+    style.WindowPadding = { 8, 8 };
     style.FramePadding = { 5, 5 };
     style.ItemSpacing = { 2, 2 };
     style.ItemInnerSpacing = { 0, 0 };
