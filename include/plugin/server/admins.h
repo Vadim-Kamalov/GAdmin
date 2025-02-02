@@ -22,7 +22,7 @@ class admins {
 private:
     static bool on_show_dialog(const samp::dialog& dialog);
     static bool on_server_message(const samp::server_message& message);
-    static void update_admins(const std::string& dialog_text);
+    static void update_admins(const std::string_view& dialog_text);
     static void add_connected_admin(const admin& connected_admin);
     static void remove_disconnected_admin(std::uint16_t id);
 public:

@@ -10,7 +10,7 @@
 #include "plugin/samp/core/input.h"
 #include <algorithm>
 #include <regex>
-#include <sstream>
+#include <spanstream>
 #include <string>
 
 void
@@ -27,8 +27,7 @@ plugin::gui::windows::spectator_information::vehicles_custom_renderer(const std:
         ImVec2 start = ImGui::GetItemRectMin(), end = ImGui::GetItemRectMax();
         ImDrawList* draw_list = ImGui::GetWindowDrawList();
     
-        std::string temp(value);
-        std::istringstream stream(temp);
+        std::ispanstream stream(value);
         std::string vehicle_id;
     
         float current_pos_x = start.x;
@@ -240,7 +239,7 @@ plugin::gui::windows::spectator_information::render() {
         std::swap(rows[new_index], rows[i]);
     }
 
-    ImGui::SetNextWindowSize({ 320, 0 });
+    ImGui::SetNextWindowSizeConstraints({ 320, 0 }, { FLT_MAX, FLT_MAX });
     ImGui::PushStyleVarX(ImGuiStyleVar_WindowPadding, 0);
     ImGui::PushStyleVarY(ImGuiStyleVar_ItemSpacing, ImGui::GetStyle().ItemSpacing.y * 2);
     ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoTitleBar);

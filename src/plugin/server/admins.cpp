@@ -5,6 +5,7 @@
 #include "plugin/plugin.h"
 #include <algorithm>
 #include <regex>
+#include <spanstream>
 
 void
 plugin::server::admin::sort(std::vector<admin>& admins, const sort_option& option) {
@@ -90,11 +91,9 @@ plugin::server::admins::on_server_message(const samp::server_message& message) {
 }
 
 void
-plugin::server::admins::update_admins(const std::string& dialog_text) {
-    std::istringstream stream(dialog_text);
-    std::string line;
-
-    while (std::getline(stream, line)) {
+plugin::server::admins::update_admins(const std::string_view& dialog_text) {
+    std::ispanstream stream(dialog_text);
+    for (std::string line; std::getline(stream, line);) {
         std::smatch matches;
         if (std::regex_search(line, matches, std::regex(R"(\{FFFFFF\}(.*)\[(\d+)\] - ([1-5]) уровень)"))) {
             std::string nickname = matches[1].str();
