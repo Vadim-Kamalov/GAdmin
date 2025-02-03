@@ -95,7 +95,7 @@ plugin::gui::windows::spectator_information::render_centered_text(const std::str
     ImVec2 size = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0, text.c_str());
     float column_width = ImGui::GetContentRegionAvail().x;
 
-    if (size.x >= column_width && column_width >= min_wrap_width && text.find(' ') != std::string::npos) {
+    if (size.x >= column_width && column_width >= min_wrap_width && text.contains(' ')) {
         std::string original(text);
 
         while (size.x >= column_width) {

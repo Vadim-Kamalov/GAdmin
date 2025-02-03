@@ -32,7 +32,7 @@ plugin::server::spectator::on_show_text_draw(const samp::text_draw& text_draw) {
         return !hide;
     }
 
-    if (text_draw.text.find("ID Akkay") != std::string::npos)
+    if (text_draw.text.contains("ID Akkay"))
         return !hide;
 
     return true;
@@ -127,7 +127,7 @@ plugin::server::spectator::on_show_dialog(const samp::dialog& dialog) {
         "Банк: \\$(.+)[^]+Фракция: (.+)[^]+Должность: (.+)[^]+Транспорт: (.+)[^]+"
         "Дом: (.+)[^]+Премиум аккаунт: (.+)[^]+Дата регистрации: (.+)[^]+";
 
-    if (!dialog.valid || dialog.text.find("Информация о игроке") == std::string::npos || !checking_statistics || !active)
+    if (!dialog.valid || !dialog.text.contains("Информация о игроке") || !checking_statistics || !active)
         return true;
 
     std::string text = std::regex_replace(dialog.text, std::regex("\\{[0-9A-Fa-f]{6}\\}"), "");
