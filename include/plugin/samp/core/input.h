@@ -10,13 +10,28 @@ namespace plugin {
 namespace signatures {
 
 using send_command_t = void(__thiscall*)(std::uintptr_t, utils::zstring_t);
+using get_text_t = utils::zstring_t(__thiscall*)(std::uintptr_t);
+using set_text_t = void(__thiscall*)(std::uintptr_t, utils::zstring_t, bool);
+using open_t = void(__thiscall*)(std::uintptr_t);
+using process_input_t = void(__thiscall*)(std::uintptr_t);
 
 } // namespace signatures
 
 namespace samp::input {
 
+static constexpr std::uint8_t max_commands_count = 144;
+static constexpr std::uint8_t max_command_length = 32;
+
 std::uintptr_t instance() noexcept;
+
 bool is_active() noexcept;
+bool is_command_defined(const std::string_view& command) noexcept;
+
+void open() noexcept;
+void process(const std::string_view& text) noexcept;
+void set_text(const std::string_view& text) noexcept;
+
+std::string get_text() noexcept;
 
 template<typename... Args>
 void send_command(std::format_string<Args...> fmt, Args&&... args) noexcept;

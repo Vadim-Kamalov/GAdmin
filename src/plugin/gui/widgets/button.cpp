@@ -1,6 +1,5 @@
 #include "plugin/gui/widgets/button.h"
 #include "plugin/gui/animation.h"
-#include "plugin/log.h"
 
 std::string
 plugin::gui::widgets::button::get_text_before_hashtag() const {
@@ -87,7 +86,6 @@ plugin::gui::widgets::button::render() {
     it.hovered_state_current = ImGui::IsItemHovered() || now - it.time[1] <= 0ms;
 
     if (it.hovered_state_current != it.hovered_state_before) {
-        log::info("now!");
         it.hovered_state_before = it.hovered_state_current;
         it.hovered_time = now;
     }

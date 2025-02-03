@@ -72,6 +72,29 @@ private:
                         "Машина",
                         "Двигатель/двери"
                     ]
+                },
+
+                "spectator_actions": {
+                    "use": true,
+                    "show_corner_buttons": true,
+                    "buttons": [
+                        { "use": true, "name": "*Вы тут?*", "action": "/ans ${{ SPECTATOR_ID }} Вы тут? Ответ в /b или /pm ${{ USER_ID }}" },
+                        { "use": true, "name": "AHEAL", "action": "/aheal ${{ SPECTATOR_ID }}" },
+                        { "use": true, "name": "ANS", "action": "^/ans ${{ SPECTATOR_ID }} " },
+                        { "use": true, "name": "STATS", "action": 3 },
+                        { "use": true, "name": "AFRISK", "action": 5 },
+                        { "use": true, "name": "PAME", "action": "/pame ${{ SPECTATOR_ID }}" },
+                        { "use": true, "name": "WARN", "action": "^/warn ${{ SPECTATOR_ID }}" },
+                        { "use": true, "name": "SLAP", "action": "/slap ${{ SPECTATOR_ID }}" },
+                        { "use": true, "name": "SWITCH", "action": 1 },
+                        { "use": true, "name": "GETBUYCAR", "action": "^/getbuycar " },
+                        { "use": true, "name": "BAN", "action": "^/ban ${{ SPECTATOR_ID }}" },
+                        { "use": true, "name": "KICK", "action": "^/kick ${{ SPECTATOR_ID }}" },
+                        { "use": true, "name": "BMUTE", "action": "^/bmute ${{ SPECTATOR_ID }}" },
+                        { "use": true, "name": "EXIT", "action": 6 },
+                        { "use": true, "name": "ASPAWN", "action": "/aspawn ${{ SPECTATOR_ID }}" },
+                        { "use": true, "name": "PK", "action": "/pk ${{ SPECTATOR_ID }}" }
+                    ]
                 }
             },
 

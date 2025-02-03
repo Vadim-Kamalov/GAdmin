@@ -6,6 +6,7 @@
 #include "plugin/gui/windows/main.h"
 #include "plugin/gui/windows/notify.h"
 #include "plugin/gui/windows/spectator_information.h"
+#include "plugin/gui/windows/spectator_actions.h"
 #include <windows.h>
 #include <imgui.h>
 
@@ -57,6 +58,7 @@ plugin::gui_initializer::on_initialize() {
     registered_windows.push_back(windows::admins::create(this));
     registered_windows.push_back(windows::notify::create(this));
     registered_windows.push_back(windows::spectator_information::create(this));
+    registered_windows.push_back(windows::spectator_actions::create(this));
 }
 
 void

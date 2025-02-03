@@ -3,6 +3,7 @@
 #include "plugin/samp/core/net_game.h"
 #include "plugin/samp/samp.h"
 #include "plugin/server/admins.h"
+#include "plugin/server/binder.h"
 #include "plugin/server/spectator.h"
 #include "plugin/server/user.h"
 #include <cstring>
@@ -103,6 +104,7 @@ plugin::plugin_initializer::main_loop() {
     
     server::user::main_loop();
     server::spectator::main_loop();
+    server::binder::main_loop();
 
     if (samp::get_base() && samp::net_game::instance() && !samp_initialized) {
         on_samp_initialize();

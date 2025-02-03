@@ -1,6 +1,4 @@
 #include "plugin/samp/core/user.h"
-#include "plugin/samp/core/player_pool.h"
-#include "plugin/samp/samp.h"
 
 std::uint16_t
 plugin::samp::user::get_id() noexcept {

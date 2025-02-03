@@ -72,7 +72,7 @@ plugin::gui::windows::main::render() {
     ImGui::ShowMetricsWindow();
 
     ImGui::SetNextWindowPos({ size_x / 2, size_y / 2 }, ImGuiCond_FirstUseEver, { 0.5, 0.5 });
-    ImGui::SetNextWindowSize({ 700, 455 }, ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSizeConstraints({ 700, 455 }, { FLT_MAX, FLT_MAX });
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, 0 });
     ImGui::Begin(get_id(), nullptr, flags);
     {

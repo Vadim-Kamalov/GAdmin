@@ -24,6 +24,9 @@ plugin::server::admin::sort(std::vector<admin>& admins, const sort_option& optio
     }
 }
 
+/// TODO: This function used only to convert raw string fom JSON to `enum class sort_option`.
+///       Can be refactored via `NLOHMANN_JSON_SERIALIZE_ENUM`. See:
+///       https://github.com/nlohmann/json?tab=readme-ov-file#specializing-enum-conversion
 bool
 plugin::server::admin::sort(std::vector<admin>& admins, const std::string_view& option) {
     static std::unordered_map<std::string_view, sort_option> options = {
