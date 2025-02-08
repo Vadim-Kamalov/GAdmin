@@ -12,13 +12,10 @@ plugin::gui::windows::admins::render() {
     if (!server::user::is_on_alogin() || !window_configuration["use"])
         return;
    
-    std::string sort_option = window_configuration["sort_by"];
+    server::admin::sort_option sort_option = window_configuration["sort_by"];
     std::vector<server::admin> admins_sorted = server::admins::list;
 
-    if (!server::admin::sort(admins_sorted, sort_option)) {
-        stop_render();
-        return;
-    }
+    server::admin::sort(admins_sorted, sort_option);
 
     std::string title = "Список администраторов";
     std::vector<std::pair<float, std::string>> admins(admins_sorted.size());

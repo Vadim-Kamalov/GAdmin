@@ -4,6 +4,7 @@
 #include "plugin/samp/core/chat.h"
 #include "plugin/samp/core/dialog.h"
 #include "plugin/samp/network/event_handler.h"
+#include <nlohmann/detail/macro_scope.hpp>
 
 namespace plugin::server {
 
@@ -15,7 +16,6 @@ struct admin {
     enum class sort_option { disabled, length, id, level };
 
     static void sort(std::vector<admin>& admins, const sort_option& option);
-    static bool sort(std::vector<admin>& admins, const std::string_view& option);
 }; // struct admin
 
 class admins {
@@ -31,6 +31,13 @@ public:
     static void on_alogout();
     static bool on_event(const samp::event_type& type, std::uint8_t id, samp::bit_stream* stream);
 }; // class admins
+
+NLOHMANN_JSON_SERIALIZE_ENUM(admin::sort_option, {
+    { admin::sort_option::disabled, "disabled" },
+    { admin::sort_option::length, "length" },
+    { admin::sort_option::id, "id" },
+    { admin::sort_option::level, "level" },
+})
 
 } // namespace plugin::server
 
