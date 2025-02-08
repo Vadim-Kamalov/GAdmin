@@ -22,7 +22,7 @@ private:
         std::string value = "";
         std::string label = "";
         
-        std::uint32_t color = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_Text]);
+        std::uint32_t color = ImGui::GetColorU32(ImGuiCol_Text);
         
         inline bool is_updater_available() const { return updater.has_value(); }
         inline void update_color() { color = (*updater)(); }

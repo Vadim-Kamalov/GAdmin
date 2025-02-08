@@ -1,6 +1,7 @@
 #ifndef GADMIN_PLUGIN_GUI_ANIMATION_H
 #define GADMIN_PLUGIN_GUI_ANIMATION_H
 
+#include <cstdint>
 #include <imgui.h>
 #include <chrono>
 
@@ -8,8 +9,17 @@ namespace plugin::gui::animation {
 
 constexpr bool is_time_available(std::chrono::steady_clock::time_point time) noexcept;
 
-float bring_to(float from, float to, std::chrono::steady_clock::time_point start_time, std::chrono::milliseconds duration) noexcept;
-ImVec4 bring_to(const ImVec4& from, const ImVec4& to, std::chrono::steady_clock::time_point start_time, std::chrono::milliseconds duration) noexcept;
+float bring_to(float from, float to,
+               std::chrono::steady_clock::time_point start_time,
+               std::chrono::milliseconds duration) noexcept;
+
+ImVec4 bring_to(const ImVec4& from, const ImVec4& to,
+                std::chrono::steady_clock::time_point start_time,
+                std::chrono::milliseconds duration) noexcept;
+
+std::uint32_t bring_to(std::uint32_t from, std::uint32_t to,
+                       std::chrono::steady_clock::time_point start_time,
+                       std::chrono::milliseconds duration) noexcept;
 
 ImVec4 get_contrast_color(const ImVec4& background,
                           const ImVec4& a = { 0, 0, 0, 1 },

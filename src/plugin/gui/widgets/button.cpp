@@ -26,9 +26,9 @@ plugin::gui::widgets::button::render() {
 
     float rounding = ImGui::GetStyle().FrameRounding;
 
-    std::uint32_t active_color = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_ButtonActive]);
-    std::uint32_t hovered_color = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered]);
-    std::uint32_t default_color = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_Button]);
+    std::uint32_t active_color = ImGui::GetColorU32(ImGuiCol_ButtonActive);
+    std::uint32_t hovered_color = ImGui::GetColorU32(ImGuiCol_ButtonHovered);
+    std::uint32_t default_color = ImGui::GetColorU32(ImGuiCol_Button);
     
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
     auto now = std::chrono::steady_clock::now();

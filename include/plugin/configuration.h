@@ -95,7 +95,9 @@ private:
                         { "use": true, "name": "ASPAWN", "action": "/aspawn ${{ SPECTATOR_ID }}" },
                         { "use": true, "name": "PK", "action": "/pk ${{ SPECTATOR_ID }}" }
                     ]
-                }
+                },
+
+                "spectator_keys": { "use": true }
             },
 
             "additions": {

@@ -34,12 +34,12 @@ plugin::gui::windows::notify::get_buttons_max_size(ImFont* font, const notificat
 void
 plugin::gui::windows::notify::render_notification(notification& item) const {
     ImVec2 cursor_pos = ImGui::GetCursorScreenPos();
-    ImU32 text_color = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_Text]);
+    ImU32 text_color = ImGui::GetColorU32(ImGuiCol_Text);
     ImFont *icon = (*child->fonts->icon)[24], *bold = (*child->fonts->bold)[18], *regular = (*child->fonts->regular)[16];
     ImDrawList* draw_list = ImGui::GetForegroundDrawList();
 
     draw_list->AddRectFilled(cursor_pos, { cursor_pos.x + notification_size[0], cursor_pos.y + notification_size[1] },
-        ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_WindowBg]), ImGui::GetStyle().ChildRounding);
+                             ImGui::GetColorU32(ImGuiCol_WindowBg), ImGui::GetStyle().ChildRounding);
 
     ImVec2 icon_size = icon->CalcTextSizeA(icon->FontSize, FLT_MAX, 0, item.icon);
     ImVec2 icon_pos = { cursor_pos.x + 12, cursor_pos.y + (notification_size[1] - icon_size.y) / 2 };

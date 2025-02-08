@@ -198,14 +198,14 @@ plugin::gui::windows::spectator_information::get_rows() const {
             if (server::spectator::player.get_vehicle().is_available() && information.move_speed_current > information.move_speed_max)
                 return style::accent_colors.red;
 
-            return ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_Text]);
+            return ImGui::GetColorU32(ImGuiCol_Text);
         }),
 
         row("Выстрелы/попадания", std::format("{} / {}", information.total_shots, information.hit_shots), [=] {
             if (information.total_shots != 0 && information.total_shots == information.hit_shots)
                 return style::accent_colors.red;
 
-            return ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_Text]);
+            return ImGui::GetColorU32(ImGuiCol_Text);
         }),
 
         row("Машина", vehicle_name),
@@ -260,7 +260,7 @@ plugin::gui::windows::spectator_information::render() {
                         row.update_color();
 
                     if (row.value == "Отсутствует")
-                        row.color = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
+                        row.color = ImGui::GetColorU32(ImGuiCol_TextDisabled);
 
                     render_centered_text(row.value, value_font, ImGui::ColorConvertU32ToFloat4(row.color));
                 }

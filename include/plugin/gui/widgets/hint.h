@@ -20,9 +20,9 @@ private:
 
     renderer_t renderer = std::bind(&hint::default_renderer, this);
     condition_t condition = []{ return ImGui::IsItemHovered(); };
-    
+
     std::chrono::milliseconds show_hide_duration = 200ms;
-    std::uint32_t color = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_FrameBg]);
+    std::uint32_t color = ImGui::GetColorU32(ImGuiCol_FrameBg);
 
     bool using_custom_condition = false;
 

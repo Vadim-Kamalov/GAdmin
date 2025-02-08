@@ -187,13 +187,14 @@ plugin::server::spectator::on_player_synchronization(const samp::player_synchron
             SET_KEY_STATE(jump_run, synchronization.keys_data & 0x8);
             SET_KEY_STATE(aim, synchronization.keys_data & 0x80);
 
-            update_joystick(synchronization.left_right_keys, synchronization.up_down_keys);
+            joystick.update(synchronization.left_right_keys, synchronization.up_down_keys);
 
             break;
         case platform_t::none:
             break;
     }
 
+    last_synchronization = samp::synchronization_type::player;
     camera_switch_state = camera_switch_state_t::player;
 
     return true;
@@ -233,13 +234,14 @@ plugin::server::spectator::on_vehicle_synchronization(const samp::vehicle_synchr
             SET_KEY_STATE(two, synchronization.keys_data & 0x200);
             SET_KEY_STATE(f, synchronization.keys_data & 0x10);
 
-            update_joystick(synchronization.left_right_keys, synchronization.up_down_keys);
+            joystick.update(synchronization.left_right_keys, synchronization.up_down_keys);
 
             break;
         case platform_t::none:
             break;
     }
 
+    last_synchronization = samp::synchronization_type::vehicle;
     camera_switch_state = camera_switch_state_t::vehicle;
 
     return true;
@@ -247,13 +249,16 @@ plugin::server::spectator::on_vehicle_synchronization(const samp::vehicle_synchr
 
 bool
 plugin::server::spectator::on_passenger_synchronization(const samp::passenger_synchronization& synchronization) {
-    if (synchronization.player_id != id || platform == platform_t::mobile)
+    if (synchronization.player_id != id)
         return true;
     
     if (camera_switch_state == camera_switch_state_t::player) {
         send_menu_option<menu_option::reload>();
         clear_keys_down();
     }
+
+    if (platform == platform_t::mobile)
+        return true;
 
     SET_KEY_STATE(w, synchronization.keys_data & 0x8);
     SET_KEY_STATE(a, synchronization.left_right_keys == 0xFF80);
@@ -269,6 +274,7 @@ plugin::server::spectator::on_passenger_synchronization(const samp::passenger_sy
     SET_KEY_STATE(up, synchronization.up_down_keys == 0xFF80);
     SET_KEY_STATE(down, synchronization.up_down_keys == 0x80);
 
+    last_synchronization = samp::synchronization_type::passenger;
     camera_switch_state = camera_switch_state_t::vehicle;
 
     return true;
@@ -302,19 +308,6 @@ plugin::server::spectator::update_available_information() noexcept {
     information.ping = *samp::player_pool::get_ping(id);
     information.armor = player.get_armor();
     information.weapon = game::weapon_names[ped.get_current_weapon()];
-}
-
-void
-plugin::server::spectator::update_joystick(std::uint16_t x, std::uint16_t y) noexcept {
-    auto now = std::chrono::steady_clock::now();
-
-    if (now - joystick.time < 100ms)
-        return;
-
-    joystick.time = now;
-    joystick.old = joystick.current;
-    joystick.current.x = (x == 0) ? 0 : ((x > 128) ? x - 0xFFFF : x);
-    joystick.current.y = (y == 0) ? 0 : ((y > 128) ? y - 0xFFFF : y);
 }
 
 std::string

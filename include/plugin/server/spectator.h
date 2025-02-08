@@ -39,6 +39,7 @@ private:
     static inline std::uint16_t text_draw_id = 0;
     static inline std::uint16_t stage_3d_text_id = 0;
     static inline spectator_information information;
+    static inline bool keys_down[std::to_underlying(samp::synchronization_key::count)];
 
     static inline bool checking_statistics = false;
     static inline std::chrono::steady_clock::time_point last_reload;
@@ -58,7 +59,6 @@ private:
     static bool on_bullet_synchronization(const samp::bullet_synchronization& synchronization);
 
     static void update_available_information() noexcept;
-    static void update_joystick(std::uint16_t x, std::uint16_t y) noexcept;
 
     static std::string convert_possible_absence_text(const std::string& text) noexcept;
     static void clear_keys_down() noexcept;
@@ -78,8 +78,8 @@ public:
     static inline std::string nickname = "";
     static inline std::uint16_t id = SERVER_MAX_PLAYERS + 1;
     static inline samp::remote_player player = samp::remote_player(0);
-    static inline bool keys_down[std::to_underlying(samp::synchronization_key::count)];
 
+    static inline samp::synchronization_type last_synchronization = samp::synchronization_type::player;
     static inline camera_switch_state_t camera_switch_state = camera_switch_state_t::none;
     static inline platform_t platform = platform_t::none;
 

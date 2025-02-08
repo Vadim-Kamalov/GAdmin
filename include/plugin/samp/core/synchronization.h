@@ -16,6 +16,8 @@ enum class synchronization_key {
     backward, count
 }; // enum class synchronization_key
 
+enum class synchronization_type { player, vehicle, passenger };
+
 static constexpr utils::zstring_t synchronization_key_names[std::to_underlying(synchronization_key::count)] = {
     "W", "A", "S", "D", "ALT", "SHIFT", "SPACE", "F", "C", "RMB", "LMB", "H", "CTRL", "Q", "E", "UP",
     "DOWN", "HIT", "JUMP / RUN", "AIM", "SIGNAL", "FORWARD", "BRAKING", "2", "BACKWARD"
