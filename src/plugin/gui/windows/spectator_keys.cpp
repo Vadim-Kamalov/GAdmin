@@ -15,7 +15,7 @@ plugin::gui::windows::spectator_keys::get_keycaps(const samp::synchronization_ty
         case spectator::platform_t::desktop: {
             switch (type) {
                 case synchronization_type::player:
-                    return { // TODO: return std::pair<int, std::vector<widgets::keycap>> with `int` as index of the new lining.
+                    return {
                         make_keycap<synchronization_key::lmb>(),
                         make_keycap<synchronization_key::w>(),
                         make_keycap<synchronization_key::rmb>(),
