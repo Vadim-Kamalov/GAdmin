@@ -1,5 +1,6 @@
 #include "plugin/gui/widgets/joystick.h"
 #include "plugin/gui/animation.h"
+#include "plugin/utils.h"
 
 using namespace std::chrono_literals;
 
@@ -20,8 +21,8 @@ void
 plugin::gui::widgets::joystick::render() const {
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
-    std::uint32_t color = ImGui::GetColorU32(ImGuiCol_FrameBg);
-    std::uint32_t background = animation::get_alpha_changed_color(color, 76);
+    utils::color_abgr_t color = ImGui::GetColorU32(ImGuiCol_FrameBg);
+    utils::color_abgr_t background = animation::get_alpha_changed_color(color, 76);
 
     ImVec2 pos = ImGui::GetCursorScreenPos();
     ImVec2 center = { pos.x + radius, pos.y + radius };

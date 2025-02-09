@@ -55,7 +55,7 @@ plugin::gui::widgets::hint::render_hint(float alpha) const {
 
     ImDrawList* draw_list = ImGui::GetForegroundDrawList();
     std::uint8_t normal_alpha = alpha * 255;
-    std::uint32_t border_color = animation::get_alpha_changed_color(ImGui::GetColorU32(ImGuiCol_Border), normal_alpha);
+    utils::color_abgr_t border_color = animation::get_alpha_changed_color(ImGui::GetColorU32(ImGuiCol_Border), normal_alpha);
     
     draw_list->Flags = ImDrawListFlags_AntiAliasedLines * 3;
     draw_list->AddTriangleFilled(a, b, c, animation::get_alpha_changed_color(color, normal_alpha));

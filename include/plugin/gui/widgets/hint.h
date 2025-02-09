@@ -6,6 +6,7 @@
 #include <chrono>
 #include <functional>
 #include <unordered_map>
+#include "plugin/utils.h"
 
 using namespace std::chrono_literals;
 
@@ -22,7 +23,7 @@ private:
     condition_t condition = []{ return ImGui::IsItemHovered(); };
 
     std::chrono::milliseconds show_hide_duration = 200ms;
-    std::uint32_t color = ImGui::GetColorU32(ImGuiCol_FrameBg);
+    utils::color_abgr_t color = ImGui::GetColorU32(ImGuiCol_FrameBg);
 
     bool using_custom_condition = false;
 
@@ -49,7 +50,7 @@ public:
     explicit hint(const std::string_view& label)
         : label(std::move(label)) {}
 
-    explicit hint(const std::string_view& label, std::uint32_t color)
+    explicit hint(const std::string_view& label, utils::color_abgr_t color)
         : label(std::move(label)), color(color) {}
 }; // class hint
 

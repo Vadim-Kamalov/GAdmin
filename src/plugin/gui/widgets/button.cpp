@@ -1,5 +1,6 @@
 #include "plugin/gui/widgets/button.h"
 #include "plugin/gui/animation.h"
+#include "plugin/utils.h"
 
 std::string
 plugin::gui::widgets::button::get_text_before_hashtag() const {
@@ -26,9 +27,9 @@ plugin::gui::widgets::button::render() {
 
     float rounding = ImGui::GetStyle().FrameRounding;
 
-    std::uint32_t active_color = ImGui::GetColorU32(ImGuiCol_ButtonActive);
-    std::uint32_t hovered_color = ImGui::GetColorU32(ImGuiCol_ButtonHovered);
-    std::uint32_t default_color = ImGui::GetColorU32(ImGuiCol_Button);
+    utils::color_abgr_t active_color = ImGui::GetColorU32(ImGuiCol_ButtonActive);
+    utils::color_abgr_t hovered_color = ImGui::GetColorU32(ImGuiCol_ButtonHovered);
+    utils::color_abgr_t default_color = ImGui::GetColorU32(ImGuiCol_Button);
     
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
     auto now = std::chrono::steady_clock::now();

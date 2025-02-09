@@ -14,7 +14,7 @@
 #include <string>
 
 void
-plugin::gui::windows::spectator_information::vehicles_custom_renderer(const std::string_view& value, std::uint32_t color) const {
+plugin::gui::windows::spectator_information::vehicles_custom_renderer(const std::string_view& value, utils::color_abgr_t color) const {
     ImFont* font = (*child->fonts->regular)[16];
     
     if (value == "Отсутствует")
@@ -51,7 +51,7 @@ plugin::gui::windows::spectator_information::vehicles_custom_renderer(const std:
 }
 
 void
-plugin::gui::windows::spectator_information::vehicle_information_custom_renderer(const std::string_view&, std::uint32_t) const {
+plugin::gui::windows::spectator_information::vehicle_information_custom_renderer(const std::string_view&, utils::color_abgr_t) const {
     ImFont* font = (*child->fonts->regular)[16];
     samp::vehicle vehicle = server::spectator::player.get_vehicle();
 
@@ -123,7 +123,7 @@ plugin::gui::windows::spectator_information::render_centered_text(const std::str
 }
 
 void
-plugin::gui::windows::spectator_information::nickname_custom_renderer(const std::string_view& text, std::uint32_t color) const {
+plugin::gui::windows::spectator_information::nickname_custom_renderer(const std::string_view& text, utils::color_abgr_t color) const {
     std::vector<server::admin>& admins = server::admins::list;
 
     bool spectating_administrator = std::find_if(admins.begin(), admins.end(), [=](server::admin it) {

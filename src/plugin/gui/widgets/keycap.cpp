@@ -5,8 +5,8 @@ using namespace std::chrono_literals;
 
 void
 plugin::gui::widgets::keycap::render() const {
-    std::uint32_t active_color = ImGui::GetColorU32(ImGuiCol_FrameBgActive);
-    std::uint32_t default_color = ImGui::GetColorU32(ImGuiCol_FrameBg);
+    utils::color_abgr_t active_color = ImGui::GetColorU32(ImGuiCol_FrameBgActive);
+    utils::color_abgr_t default_color = ImGui::GetColorU32(ImGuiCol_FrameBg);
 
     if (!pool.contains(label))
         pool[label] = { state, (state) ? active_color : default_color, {} };

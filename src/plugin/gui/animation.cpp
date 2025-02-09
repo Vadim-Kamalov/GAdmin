@@ -1,4 +1,5 @@
 #include "plugin/gui/animation.h"
+#include "plugin/utils.h"
 
 float
 plugin::gui::animation::bring_to(float from, float to,
@@ -37,8 +38,8 @@ plugin::gui::animation::bring_to(const ImVec4& from, const ImVec4& to,
     return (timer > duration.count()) ? to : from;
 }
 
-std::uint32_t
-plugin::gui::animation::bring_to(std::uint32_t from, std::uint32_t to,
+plugin::utils::color_abgr_t
+plugin::gui::animation::bring_to(utils::color_abgr_t from, utils::color_abgr_t to,
                                  std::chrono::steady_clock::time_point start_time,
                                  std::chrono::milliseconds duration) noexcept
 {
