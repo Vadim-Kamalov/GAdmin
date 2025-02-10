@@ -6,7 +6,7 @@
 #include <utility>
 #include <unordered_map>
 #include <imgui.h>
-#include "plugin/utils.h"
+#include "plugin/types/color.h"
 
 namespace plugin::gui::widgets {
 
@@ -18,7 +18,7 @@ private:
     
     struct configuration_t {
         bool state;
-        utils::color_abgr_t color;
+        types::color color;
         std::chrono::steady_clock::time_point time;
     }; // struct configuration_t
 

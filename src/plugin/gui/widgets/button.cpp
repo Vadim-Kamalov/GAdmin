@@ -1,6 +1,5 @@
 #include "plugin/gui/widgets/button.h"
 #include "plugin/gui/animation.h"
-#include "plugin/utils.h"
 
 std::string
 plugin::gui::widgets::button::get_text_before_hashtag() const {
@@ -27,9 +26,9 @@ plugin::gui::widgets::button::render() {
 
     float rounding = ImGui::GetStyle().FrameRounding;
 
-    utils::color_abgr_t active_color = ImGui::GetColorU32(ImGuiCol_ButtonActive);
-    utils::color_abgr_t hovered_color = ImGui::GetColorU32(ImGuiCol_ButtonHovered);
-    utils::color_abgr_t default_color = ImGui::GetColorU32(ImGuiCol_Button);
+    types::color active_color = ImGui::GetColorU32(ImGuiCol_ButtonActive);
+    types::color hovered_color = ImGui::GetColorU32(ImGuiCol_ButtonHovered);
+    types::color default_color = ImGui::GetColorU32(ImGuiCol_Button);
     
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
     auto now = std::chrono::steady_clock::now();
@@ -38,9 +37,9 @@ plugin::gui::widgets::button::render() {
         ? ImGui::GetStyle().Alpha * 255 : 0, it.hovered_time, durations[2]);
 
     draw_list->AddRectFilled({ pos.x - 1, pos.y - 1 }, { pos.x + size.x + 1, pos.y + size.y + 1 },
-                             animation::get_alpha_changed_color(hovered_color, it.hovered_alpha), rounding, draw_flags);
+                             *types::color(hovered_color, it.hovered_alpha), rounding, draw_flags);
 
-    draw_list->AddRectFilled(pos, { pos.x + size.x, pos.y + size.y }, default_color, rounding, draw_flags);
+    draw_list->AddRectFilled(pos, { pos.x + size.x, pos.y + size.y }, *default_color, rounding, draw_flags);
     draw_list->PushClipRect({ pos.x + 1, pos.y + 1 }, { pos.x + size.x - 1, pos.y + size.y - 1 });
     {
         if (it.pos.has_value()) {
@@ -60,7 +59,7 @@ plugin::gui::widgets::button::render() {
                 it.radius = (size.x * 1.5 / radius_duration) * radius_time;
             }
 
-            draw_list->AddCircleFilled(*it.pos, it.radius, animation::get_alpha_changed_color(active_color, alpha), 0xFF);
+            draw_list->AddCircleFilled(*it.pos, it.radius, *types::color(active_color, alpha), 0xFF);
 
             if (alpha <= 0)
                 it.pos = {};

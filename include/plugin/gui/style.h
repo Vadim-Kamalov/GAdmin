@@ -1,14 +1,14 @@
 #ifndef GADMIN_PLUGIN_GUI_STYLE_H
 #define GADMIN_PLUGIN_GUI_STYLE_H
 
-#include "plugin/utils.h"
+#include "plugin/types/color.h"
 
 namespace plugin::gui {
 
 struct accent_colors_t {
-    utils::color_abgr_t green = 0xFFA1E3A6;
-    utils::color_abgr_t red = 0xFFA88BF3;
-    utils::color_abgr_t yellow = 0xFFAEE2F9;
+    types::color green = 0xFFA1E3A6;
+    types::color red = 0xFFA88BF3;
+    types::color yellow = 0xFFAEE2F9;
 }; // struct accent_colors_t
 
 class style {

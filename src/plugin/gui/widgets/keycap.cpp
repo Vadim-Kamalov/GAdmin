@@ -5,8 +5,8 @@ using namespace std::chrono_literals;
 
 void
 plugin::gui::widgets::keycap::render() const {
-    utils::color_abgr_t active_color = ImGui::GetColorU32(ImGuiCol_FrameBgActive);
-    utils::color_abgr_t default_color = ImGui::GetColorU32(ImGuiCol_FrameBg);
+    types::color active_color = ImGui::GetColorU32(ImGuiCol_FrameBgActive);
+    types::color default_color = ImGui::GetColorU32(ImGuiCol_FrameBg);
 
     if (!pool.contains(label))
         pool[label] = { state, (state) ? active_color : default_color, {} };
@@ -32,10 +32,10 @@ plugin::gui::widgets::keycap::render() const {
 
     ImGui::Dummy(size);
     
-    draw_list->AddRectFilled(pos, { pos.x + size.x, pos.y + size.y }, it.color, rounding);
-    draw_list->AddRect(pos, { pos.x + size.x, pos.y + size.y }, it.color, rounding, 0, border_size);
+    draw_list->AddRectFilled(pos, { pos.x + size.x, pos.y + size.y }, *it.color, rounding);
+    draw_list->AddRect(pos, { pos.x + size.x, pos.y + size.y }, *it.color, rounding, 0, border_size);
 
-    if (((it.color >> 24) & 0xFF) <= 128) {
+    if (it.color.value.alpha <= 128) {
         draw_list->AddText({ text_pos.x + 1, text_pos.y + 1 }, 0xFF000000, label.c_str());
         draw_list->AddText({ text_pos.x - 1, text_pos.y - 1 }, 0xFF000000, label.c_str());
         draw_list->AddText({ text_pos.x + 1, text_pos.y - 1 }, 0xFF000000, label.c_str());

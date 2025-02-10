@@ -1,12 +1,12 @@
 #ifndef GADMIN_PLUGIN_GUI_WIDGETS_HINT_H
 #define GADMIN_PLUGIN_GUI_WIDGETS_HINT_H
 
+#include "plugin/types/color.h"
 #include <imgui.h>
 #include <string>
 #include <chrono>
 #include <functional>
 #include <unordered_map>
-#include "plugin/utils.h"
 
 using namespace std::chrono_literals;
 
@@ -23,7 +23,7 @@ private:
     condition_t condition = []{ return ImGui::IsItemHovered(); };
 
     std::chrono::milliseconds show_hide_duration = 200ms;
-    utils::color_abgr_t color = ImGui::GetColorU32(ImGuiCol_FrameBg);
+    types::color color = ImGui::GetColorU32(ImGuiCol_FrameBg);
 
     bool using_custom_condition = false;
 
@@ -50,7 +50,7 @@ public:
     explicit hint(const std::string_view& label)
         : label(std::move(label)) {}
 
-    explicit hint(const std::string_view& label, utils::color_abgr_t color)
+    explicit hint(const std::string_view& label, types::color color)
         : label(std::move(label)), color(color) {}
 }; // class hint
 

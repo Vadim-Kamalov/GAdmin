@@ -30,8 +30,8 @@ plugin::gui::widgets::hint::render_hint(float alpha) const {
     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 8, 8 });
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 6);
-    ImGui::PushStyleColor(ImGuiCol_PopupBg, color);
-    ImGui::PushStyleColor(ImGuiCol_Text, animation::get_contrast_color(ImGui::ColorConvertU32ToFloat4(color)));
+    ImGui::PushStyleColor(ImGuiCol_PopupBg, *color);
+    ImGui::PushStyleColor(ImGuiCol_Text, animation::get_contrast_color(ImGui::ColorConvertU32ToFloat4(*color)));
     {
         ImGui::SetNextWindowPos({ center.x, center.y - size.y - 3 }, ImGuiCond_Always, { 0.5, 1 });
         ImGui::SetNextWindowSize({ pool[label].width, -1 }, ImGuiCond_Always);
@@ -55,12 +55,12 @@ plugin::gui::widgets::hint::render_hint(float alpha) const {
 
     ImDrawList* draw_list = ImGui::GetForegroundDrawList();
     std::uint8_t normal_alpha = alpha * 255;
-    utils::color_abgr_t border_color = animation::get_alpha_changed_color(ImGui::GetColorU32(ImGuiCol_Border), normal_alpha);
+    types::color border_color = types::color(ImGui::GetColorU32(ImGuiCol_Border), normal_alpha);
     
     draw_list->Flags = ImDrawListFlags_AntiAliasedLines * 3;
-    draw_list->AddTriangleFilled(a, b, c, animation::get_alpha_changed_color(color, normal_alpha));
-    draw_list->AddLine(a, c, border_color);
-    draw_list->AddLine({ b.x - 1, b.y }, { c.x - 1, c.y }, border_color);
+    draw_list->AddTriangleFilled(a, b, c, *types::color(color, normal_alpha));
+    draw_list->AddLine(a, c, *types::color(border_color, normal_alpha));
+    draw_list->AddLine({ b.x - 1, b.y }, { c.x - 1, c.y }, *border_color);
 }
 
 void

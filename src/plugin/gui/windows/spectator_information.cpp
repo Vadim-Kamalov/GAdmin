@@ -14,7 +14,7 @@
 #include <string>
 
 void
-plugin::gui::windows::spectator_information::vehicles_custom_renderer(const std::string_view& value, utils::color_abgr_t color) const {
+plugin::gui::windows::spectator_information::vehicles_custom_renderer(const std::string_view& value, types::color color) const {
     ImFont* font = (*child->fonts->regular)[16];
     
     if (value == "Отсутствует")
@@ -22,7 +22,7 @@ plugin::gui::windows::spectator_information::vehicles_custom_renderer(const std:
 
     ImGui::BeginGroup();
     {
-        render_centered_text(value, font, ImGui::ColorConvertU32ToFloat4(color));
+        render_centered_text(value, font, ImGui::ColorConvertU32ToFloat4(*color));
 
         ImVec2 start = ImGui::GetItemRectMin(), end = ImGui::GetItemRectMax();
         ImDrawList* draw_list = ImGui::GetWindowDrawList();
@@ -38,7 +38,7 @@ plugin::gui::windows::spectator_information::vehicles_custom_renderer(const std:
             ImVec2 line_start = { current_pos_x, end.y }, line_end = { current_pos_x + size.x, end.y + 2 };
 
             if (ImGui::IsMouseHoveringRect({ line_start.x, start.y }, line_end)) {
-                draw_list->AddRectFilled(line_start, line_end, color);
+                draw_list->AddRectFilled(line_start, line_end, *color);
                 if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                     samp::input::send_command("/getbuycar {}", vehicle_id);
             } 
@@ -51,7 +51,7 @@ plugin::gui::windows::spectator_information::vehicles_custom_renderer(const std:
 }
 
 void
-plugin::gui::windows::spectator_information::vehicle_information_custom_renderer(const std::string_view&, utils::color_abgr_t) const {
+plugin::gui::windows::spectator_information::vehicle_information_custom_renderer(const std::string_view&, types::color) const {
     ImFont* font = (*child->fonts->regular)[16];
     samp::vehicle vehicle = server::spectator::player.get_vehicle();
 
@@ -59,18 +59,18 @@ plugin::gui::windows::spectator_information::vehicle_information_custom_renderer
         return render_centered_text("Недоступно", font, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
 
     std::string engine = "Заглушен", doors = "Открыты";
-    ImVec4 engine_color = ImGui::ColorConvertU32ToFloat4(style::accent_colors.red);
-    ImVec4 doors_color = ImGui::ColorConvertU32ToFloat4(style::accent_colors.green);
+    ImVec4 engine_color = ImGui::ColorConvertU32ToFloat4(*style::accent_colors.red);
+    ImVec4 doors_color = ImGui::ColorConvertU32ToFloat4(*style::accent_colors.green);
     ImVec2 text_size = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0, std::format("{} / {}", engine, doors).c_str());
 
     if (vehicle.is_engine_active()) {
         engine = "Заведен";
-        engine_color = ImGui::ColorConvertU32ToFloat4(style::accent_colors.green);
+        engine_color = ImGui::ColorConvertU32ToFloat4(*style::accent_colors.green);
     }
 
     if (vehicle.is_locked()) {
         doors = "Закрыты";
-        doors_color = ImGui::ColorConvertU32ToFloat4(style::accent_colors.red);
+        doors_color = ImGui::ColorConvertU32ToFloat4(*style::accent_colors.red);
     }
 
     ImGui::SetCursorPosX((ImGui::GetCursorPosX() + (ImGui::GetContentRegionAvail().x / 2)) - text_size.x / 2);
@@ -123,7 +123,7 @@ plugin::gui::windows::spectator_information::render_centered_text(const std::str
 }
 
 void
-plugin::gui::windows::spectator_information::nickname_custom_renderer(const std::string_view& text, utils::color_abgr_t color) const {
+plugin::gui::windows::spectator_information::nickname_custom_renderer(const std::string_view& text, types::color color) const {
     std::vector<server::admin>& admins = server::admins::list;
 
     bool spectating_administrator = std::find_if(admins.begin(), admins.end(), [=](server::admin it) {
@@ -131,7 +131,7 @@ plugin::gui::windows::spectator_information::nickname_custom_renderer(const std:
     }) != admins.end();
 
     render_centered_text(text, (*child->fonts->regular)[16], ImGui::ColorConvertU32ToFloat4(
-        (spectating_administrator) ? style::accent_colors.red : color));
+        (spectating_administrator) ? *style::accent_colors.red : *color));
     
     widgets::hint::render_as_guide("Красный цвет означает, что вы следите\nза администратором.", spectating_administrator);
 }
@@ -194,14 +194,14 @@ plugin::gui::windows::spectator_information::get_rows() const {
         row("Предупреждения", std::to_string(information.warnings)),
         row("Модульный мир", std::to_string(information.world)),
 
-        row("Тек./макс. скорость", std::format("{} / {}", information.move_speed_current, information.move_speed_max), [=] {
+        row("Тек./макс. скорость", std::format("{} / {}", information.move_speed_current, information.move_speed_max), [=] -> types::color {
             if (server::spectator::player.get_vehicle().is_available() && information.move_speed_current > information.move_speed_max)
                 return style::accent_colors.red;
 
             return ImGui::GetColorU32(ImGuiCol_Text);
         }),
 
-        row("Выстрелы/попадания", std::format("{} / {}", information.total_shots, information.hit_shots), [=] {
+        row("Выстрелы/попадания", std::format("{} / {}", information.total_shots, information.hit_shots), [=] -> types::color {
             if (information.total_shots != 0 && information.total_shots == information.hit_shots)
                 return style::accent_colors.red;
 
@@ -262,7 +262,7 @@ plugin::gui::windows::spectator_information::render() {
                     if (row.value == "Отсутствует")
                         row.color = ImGui::GetColorU32(ImGuiCol_TextDisabled);
 
-                    render_centered_text(row.value, value_font, ImGui::ColorConvertU32ToFloat4(row.color));
+                    render_centered_text(row.value, value_font, ImGui::ColorConvertU32ToFloat4(*row.color));
                 }
             }
             ImGui::EndTable();
