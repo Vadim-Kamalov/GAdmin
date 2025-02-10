@@ -95,6 +95,8 @@ public:
     
     constexpr color(abgr::joined_t color)
         : value(abgr(color)) {}
+
+    explicit constexpr color() noexcept = default;
 }; // class color
 
 } // namespace plugin::types

@@ -26,5 +26,5 @@ plugin::samp::remote_player::get_armor() const {
 plugin::types::color
 plugin::samp::remote_player::get_color() const {
     static constexpr std::uintptr_t offsets[] = { 0x0, 0x0, 0x12A00, 0x15C10, 0x16180, 0x15E30 };
-    return types::color_argb_t(reinterpret_cast<signatures::get_color_as_argb>(base(offsets))(handle));
+    return types::color::argb(reinterpret_cast<signatures::get_color_as_argb>(base(offsets))(handle));
 }

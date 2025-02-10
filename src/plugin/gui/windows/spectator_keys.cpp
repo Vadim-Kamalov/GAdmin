@@ -1,5 +1,4 @@
 #include "plugin/gui/windows/spectator_keys.h"
-#include "plugin/gui/animation.h"
 #include "plugin/server/spectator.h"
 #include "plugin/log.h"
 #include "plugin/plugin.h"
@@ -87,7 +86,7 @@ plugin::gui::windows::spectator_keys::render() {
 
     ImGui::SetNextWindowSize({ 0, 0 });
     ImGui::SetNextWindowBgAlpha(0);
-    ImGui::PushStyleColor(ImGuiCol_FrameBg, animation::get_alpha_changed_color(ImGui::GetColorU32(ImGuiCol_FrameBg), 160));
+    ImGui::PushStyleColor(ImGuiCol_FrameBg, *types::color(ImGui::GetColorU32(ImGuiCol_FrameBg), 160));
     ImGui::PushStyleColor(ImGuiCol_Border, 0);
     ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoTitleBar);
     {
