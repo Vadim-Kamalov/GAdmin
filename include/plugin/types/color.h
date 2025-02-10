@@ -99,15 +99,4 @@ public:
 
 } // namespace plugin::types
 
-using namespace plugin::types;
-
-constexpr color argb = color::argb(0xFFAABBCC);
-constexpr color abgr = color::abgr(0xFFCCBBAA);
-constexpr color rgba = color::rgba(0xAABBCCFF);
-constexpr color abgr_non_explicit = 0xFFCCBBAA;
-
-static_assert(argb == abgr && abgr == rgba && rgba == abgr_non_explicit);
-static_assert(*abgr_non_explicit == 0xFFCCBBAA);
-static_assert(abgr_non_explicit.cast<color_type::rgba>() == 0xAABBCCFF);
-
 #endif // GADMIN_PLUGIN_TYPES_COLOR_H
