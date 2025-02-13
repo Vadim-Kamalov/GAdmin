@@ -97,6 +97,14 @@ private:
                     ]
                 },
 
+                "kill_list": {
+                    "use": true,
+                    "show_time": true,
+                    "clist_color": true,
+                    "align": "left",
+                    "max_count": 5
+                },
+
                 "spectator_keys": { "use": true }
             },
 
