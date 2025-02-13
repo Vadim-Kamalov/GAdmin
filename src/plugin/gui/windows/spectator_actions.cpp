@@ -155,10 +155,10 @@ plugin::gui::windows::spectator_actions::render() {
 }
 
 plugin::gui::window_ptr_t
-plugin::gui::windows::spectator_actions::create(utils::not_null<gui_initializer*> child) noexcept {
+plugin::gui::windows::spectator_actions::create(types::not_null<gui_initializer*> child) noexcept {
     return std::make_unique<spectator_actions>(child);
 }
 
-plugin::gui::windows::spectator_actions::spectator_actions(utils::not_null<gui_initializer*> child) : child(child) {
+plugin::gui::windows::spectator_actions::spectator_actions(types::not_null<gui_initializer*> child) : child(child) {
     log::info("window \"windows::spectator_actions\" initialized");
 }

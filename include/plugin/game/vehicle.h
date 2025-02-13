@@ -1,7 +1,7 @@
 #ifndef GADMIN_PLUGIN_GAME_VEHICLE_H
 #define GADMIN_PLUGIN_GAME_VEHICLE_H
 
-#include "plugin/utils.h"
+#include "plugin/types/simple.h"
 #include <cstdint>
 
 namespace plugin::game {
@@ -30,7 +30,7 @@ static constexpr std::uint16_t max_vehicle_speeds[vehicle_count + 1] = {
     60, 0, 0
 }; // static constexpr std::uint16_t max_vehicle_speeds[]
 
-static constexpr utils::zstring_t vehicle_names[vehicle_count + 1] = {
+static constexpr types::zstring_t vehicle_names[vehicle_count + 1] = {
     "Landstalker", "Bravura", "Buffalo", "Linerunner", "Perennial", "Sentinel",
     "Dumper", "Firetruck", "Trashmaster", "Stretch", "Manana", "Infernus",
     "Voodoo", "Pony", "Mule", "Cheetah", "Ambulance", "Leviathan", "Moonbeam",
@@ -58,10 +58,10 @@ static constexpr utils::zstring_t vehicle_names[vehicle_count + 1] = {
     "Andromada", "Dodo", "RC Cam", "Launch", "Police Car (LSPD)", "Police Car (SFPD)", "Police Car (LVPD)", "Ranger",
     "Picador", "S.W.A.T.", "Alpha", "Phoenix", "Glendale", "Sadler", "Luggage A", "Luggage B", "Stairs", "Boxville",
     "Tiller", "Utility Trailer"
-}; // static constexpr utils::zstring_t vehicle_names[vehicle_count + 1]
+}; // static constexpr types::zstring_t vehicle_names[vehicle_count + 1]
 
 constexpr std::uint16_t get_max_vehicle_model_speed(std::uint16_t vehicle_model_index) noexcept;
-constexpr utils::zstring_t get_vehicle_name(std::uint16_t vehicle_model_index) noexcept;
+constexpr types::zstring_t get_vehicle_name(std::uint16_t vehicle_model_index) noexcept;
 
 } // namespace plugin::game
 
@@ -70,7 +70,7 @@ plugin::game::get_max_vehicle_model_speed(std::uint16_t vehicle_model_index) noe
     return max_vehicle_speeds[vehicle_model_index - min_vehicle_id];
 }
 
-constexpr plugin::utils::zstring_t
+constexpr plugin::types::zstring_t
 plugin::game::get_vehicle_name(std::uint16_t vehicle_model_index) noexcept {
     return vehicle_names[vehicle_model_index - min_vehicle_id];
 }

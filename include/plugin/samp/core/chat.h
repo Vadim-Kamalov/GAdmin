@@ -4,13 +4,13 @@
 #include "plugin/samp/network/bit_stream.h"
 #include "plugin/encoding.h"
 #include "plugin/samp/samp.h"
-#include "plugin/utils.h"
+#include "plugin/types/simple.h"
 #include <format>
 
 namespace plugin {
 namespace signatures {
 
-using add_message_t = void(__thiscall*)(std::uintptr_t, unsigned long, utils::zstring_t);
+using add_message_t = void(__thiscall*)(std::uintptr_t, unsigned long, types::zstring_t);
 
 } // namespace signatures
 

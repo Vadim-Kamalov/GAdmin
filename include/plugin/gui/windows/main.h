@@ -3,7 +3,8 @@
 
 #include "plugin/gui/base/window.h"
 #include "plugin/gui/gui.h"
-#include "plugin/utils.h"
+#include "plugin/types/not_null.h"
+#include "plugin/types/simple.h"
 
 namespace plugin::gui::windows {
 
@@ -25,30 +26,30 @@ public:
         plugin_information
     }; // enum class frame
 public:
-    utils::not_null<gui_initializer*> child;
+    types::not_null<gui_initializer*> child;
     
     frame current_frame = frame::home;
     float menu_width = menu_min_width;
     bool menu_opened = false;
 
-    constexpr utils::zstring_t get_id() const override;
+    constexpr types::zstring_t get_id() const override;
 
     void render() override;
     bool on_event(unsigned int message, WPARAM wparam, LPARAM lparam) override;
     
-    static window_ptr_t create(utils::not_null<gui_initializer*> child) noexcept;
-    explicit main(utils::not_null<gui_initializer*> child);
+    static window_ptr_t create(types::not_null<gui_initializer*> child) noexcept;
+    explicit main(types::not_null<gui_initializer*> child);
 public:
-    static constexpr utils::zstring_t frame_icons[] = {
+    static constexpr types::zstring_t frame_icons[] = {
         ICON_HOUSE01, ICON_SETTINGS, ICON_KEYBOARD, ICON_USERS,
         ICON_WINDOW, ICON_DATA, ICON_BOOK, ICON_NOTEBOOK, ICON_NOTE,
         ICON_CHART_BAR_VERTICAL01, ICON_INFO
-    }; // static constexpr utils::zstring_t const frame_icons[]
+    }; // static constexpr types::zstring_t const frame_icons[]
 
-    static constexpr utils::zstring_t frame_labels[] = {
+    static constexpr types::zstring_t frame_labels[] = {
         "Главная", "Настройки", "Горячие клавиши", "Чекер игроков", "Настройка окон",
         "Логи", "Таблицы", "Биндер", "Заметки", "Статистика", "Информация"
-    }; // static constexpr utils::zstring_t const frame_labels[]
+    }; // static constexpr types::zstring_t const frame_labels[]
 
     static constexpr float menu_min_width = 44;
     static constexpr float menu_max_width = 200;
@@ -57,7 +58,7 @@ public:
 
 } // namespace plugin::gui::windows
 
-constexpr plugin::utils::zstring_t
+constexpr plugin::types::zstring_t
 plugin::gui::windows::main::get_id() const {
     return "windows::main";
 }

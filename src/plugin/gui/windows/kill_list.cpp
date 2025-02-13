@@ -172,11 +172,11 @@ plugin::gui::windows::kill_list::render() {
 }
 
 plugin::gui::window_ptr_t
-plugin::gui::windows::kill_list::create(utils::not_null<gui_initializer*> child) noexcept {
+plugin::gui::windows::kill_list::create(types::not_null<gui_initializer*> child) noexcept {
     return std::make_unique<kill_list>(child);
 }
 
-plugin::gui::windows::kill_list::kill_list(utils::not_null<gui_initializer*> child)
+plugin::gui::windows::kill_list::kill_list(types::not_null<gui_initializer*> child)
     : child(child),
       bold_font((*child->fonts->bold)[18]),
       regular_font((*child->fonts->regular)[16])

@@ -10,7 +10,7 @@
 #include "plugin/samp/core/dialog.h"
 #include "plugin/samp/core/menu.h"
 #include "plugin/server/user.h"
-#include "plugin/utils.h"
+#include "plugin/types/simple.h"
 #include <format>
 
 namespace plugin::server {
@@ -127,7 +127,7 @@ plugin::server::spectator::get_key_state(const samp::synchronization_key& key) n
 template<>
 struct std::formatter<plugin::server::spectator::platform_t> : std::formatter<std::string_view> {
     auto format(const plugin::server::spectator::platform_t& platform, std::format_context& ctx) const {
-        static constexpr plugin::utils::zstring_t platforms[] = { "Неизвестно", "Desktop", "Mobile" };
+        static constexpr plugin::types::zstring_t platforms[] = { "Неизвестно", "Desktop", "Mobile" };
         return std::formatter<std::string_view>::format(platforms[std::to_underlying(platform)], ctx);
     }
 }; // struct std::formatter<plugin::server::spectator::platform_t> : std::formatter<std::string_view>

@@ -2,7 +2,7 @@
 #define GADMIN_PLUGIN_GUI_BASE_WINDOW_H
 
 #include "plugin/samp/network/event_handler.h"
-#include "plugin/utils.h"
+#include "plugin/types/simple.h"
 #include <memory>
 #include <minwindef.h>
 
@@ -14,7 +14,7 @@ private:
 public:
     virtual ~window() = default;
     
-    virtual constexpr utils::zstring_t get_id() const = 0;
+    virtual constexpr types::zstring_t get_id() const = 0;
     virtual constexpr bool render_on_game_paused() const;
     
     virtual void render() = 0;

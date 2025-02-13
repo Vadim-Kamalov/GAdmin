@@ -86,11 +86,11 @@ plugin::gui::windows::admins::render() {
     ImGui::PopStyleVar();
 }
 
-plugin::gui::windows::admins::admins(utils::not_null<gui_initializer*> child) : child(child) {
+plugin::gui::windows::admins::admins(types::not_null<gui_initializer*> child) : child(child) {
     log::info("window \"windows::admins\" initialized");
 }
 
 plugin::gui::window_ptr_t
-plugin::gui::windows::admins::create(utils::not_null<gui_initializer*> child) noexcept {
+plugin::gui::windows::admins::create(types::not_null<gui_initializer*> child) noexcept {
     return std::make_unique<admins>(child);
 }

@@ -2,7 +2,7 @@
 #define GADMIN_PLUGIN_SAMP_CORE_PLAYER_POOL_H
 
 #include "plugin/samp/core/remote_player.h"
-#include "plugin/utils.h"
+#include "plugin/types/simple.h"
 #include <cstdint>
 #include <string_view>
 #include <expected>
@@ -11,7 +11,7 @@ namespace plugin {
 namespace signatures {
 
 using get_player_pool_t = std::uintptr_t(__thiscall*)(std::uintptr_t);
-using get_nickname_t = utils::zstring_t(__thiscall*)(std::uintptr_t, std::uint16_t);
+using get_nickname_t = types::zstring_t(__thiscall*)(std::uintptr_t, std::uint16_t);
 using is_connected_t = bool(__thiscall*)(std::uintptr_t, std::uint16_t);
 using get_remote_player_t = std::uintptr_t(__thiscall*)(std::uintptr_t, std::uint16_t);
 using get_ping_t = std::int32_t(__thiscall*)(std::uintptr_t, std::uint16_t);

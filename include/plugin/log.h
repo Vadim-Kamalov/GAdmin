@@ -1,7 +1,7 @@
 #ifndef GADMIN_PLUGIN_LOG_H
 #define GADMIN_PLUGIN_LOG_H
 
-#include "plugin/utils.h"
+#include "plugin/types/simple.h"
 #include <functional>
 #include <string_view>
 #include <format>
@@ -12,10 +12,10 @@ namespace plugin {
 class log {
 public:
     enum class type { info, warn, error, fatal };
-    using handler_t = std::function<void(type, std::string_view)>;
+    using handler_t = std::function<void(const type&, const std::string_view&)>;
 private:
     static inline std::optional<handler_t> handler;
-    static constexpr utils::zstring_t types[] = { "INFO", "WARN", "ERROR", "FATAL" };
+    static constexpr types::zstring_t types[] = { "INFO", "WARN", "ERROR", "FATAL" };
 
     static std::string get_current_time() noexcept;
 

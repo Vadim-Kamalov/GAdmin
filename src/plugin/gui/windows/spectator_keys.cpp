@@ -118,10 +118,10 @@ plugin::gui::windows::spectator_keys::render() {
 }
 
 plugin::gui::window_ptr_t
-plugin::gui::windows::spectator_keys::create(utils::not_null<gui_initializer*> child) {
+plugin::gui::windows::spectator_keys::create(types::not_null<gui_initializer*> child) {
     return std::make_unique<spectator_keys>(child);
 }
 
-plugin::gui::windows::spectator_keys::spectator_keys(utils::not_null<gui_initializer*> child) : child(child) {
+plugin::gui::windows::spectator_keys::spectator_keys(types::not_null<gui_initializer*> child) : child(child) {
     log::info("window \"windows::spectator_keys\" initialized");
 }

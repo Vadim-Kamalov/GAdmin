@@ -39,7 +39,7 @@ plugin::samp::event_handler::rak_client_interface_constructor_hooked(const declt
 }
 
 bool
-plugin::samp::event_handler::incoming_rpc_handler_hooked(const decltype(incoming_rpc_handler_hook)& hook, void* ptr, utils::zstring_t data,
+plugin::samp::event_handler::incoming_rpc_handler_hooked(const decltype(incoming_rpc_handler_hook)& hook, void* ptr, types::zstring_t data,
                                                         int length, PlayerID player_id)
 {
     user_id = player_id;

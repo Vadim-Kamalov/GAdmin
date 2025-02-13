@@ -3,7 +3,7 @@
 
 #include "plugin/samp/network/bit_stream.h"
 #include "plugin/samp/network/signatures.h"
-#include "plugin/utils.h"
+#include "plugin/types/simple.h"
 #include "raknet/rak_client.h"
 #include <kthook/kthook.hpp>
 #include <functional>
@@ -28,7 +28,7 @@ private:
     PlayerID user_id;
     bool initialized = false;
 
-    std::optional<std::function<bool(event_type, std::uint8_t, bit_stream*)>> callback;
+    std::optional<std::function<bool(const event_type&, std::uint8_t, bit_stream*)>> callback;
 
     kthook::kthook_simple<signatures::rak_client_interface_constructor_t> rak_client_interface_constructor_hook;
     kthook::kthook_simple<signatures::incoming_rpc_handler_t> incoming_rpc_handler_hook;
@@ -38,7 +38,7 @@ private:
 
     std::uintptr_t rak_client_interface_constructor_hooked(const decltype(rak_client_interface_constructor_hook)& hook);
 
-    bool incoming_rpc_handler_hooked(const decltype(incoming_rpc_handler_hook)& hook, void* ptr, utils::zstring_t data,
+    bool incoming_rpc_handler_hooked(const decltype(incoming_rpc_handler_hook)& hook, void* ptr, types::zstring_t data,
                                      int length, PlayerID player_id);
 
     bool outgoing_packet_handler_hooked(const decltype(outgoing_packet_handler_hook)& hook, void* ptr, BitStream* bit_stream,

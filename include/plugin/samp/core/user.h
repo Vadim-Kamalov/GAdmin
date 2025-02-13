@@ -7,13 +7,13 @@
 #include "plugin/samp/core/player_pool.h"
 #include "plugin/samp/core/input.h"
 #include "plugin/samp/samp.h"
-#include "plugin/utils.h"
+#include "plugin/types/simple.h"
 
 namespace plugin {
 namespace signatures {
 
 using get_local_player_ping_t = int(__thiscall*)(std::uintptr_t);
-using local_player_chat_t = void(__thiscall*)(std::uintptr_t, utils::zstring_t);
+using local_player_chat_t = void(__thiscall*)(std::uintptr_t, types::zstring_t);
 
 } // namespace signatures
 

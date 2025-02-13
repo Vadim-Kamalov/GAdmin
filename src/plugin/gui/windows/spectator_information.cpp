@@ -273,11 +273,11 @@ plugin::gui::windows::spectator_information::render() {
 }
 
 plugin::gui::window_ptr_t
-plugin::gui::windows::spectator_information::create(utils::not_null<gui_initializer*> child) noexcept {
+plugin::gui::windows::spectator_information::create(types::not_null<gui_initializer*> child) noexcept {
     return std::make_unique<spectator_information>(child);
 }
 
-plugin::gui::windows::spectator_information::spectator_information(utils::not_null<gui_initializer*> child) 
+plugin::gui::windows::spectator_information::spectator_information(types::not_null<gui_initializer*> child) 
     : child(child)
 {
     log::info("window \"windows::spectator_information\" initialized");

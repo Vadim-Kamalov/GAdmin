@@ -42,7 +42,7 @@ update_color(menu_selector_animation& it, const menu_selector_animation::colors&
 }
 
 static void
-update_menu_width(menu_selector_animation& it, plugin::utils::not_null<windows::main*> child) noexcept {
+update_menu_width(menu_selector_animation& it, plugin::types::not_null<windows::main*> child) noexcept {
     if (!animation::is_time_available(it.click_time))
         return;
 
@@ -51,7 +51,7 @@ update_menu_width(menu_selector_animation& it, plugin::utils::not_null<windows::
 }
 
 static void
-draw_frame(const ImVec2& size, const ImVec4& color, plugin::utils::not_null<windows::main*> child) noexcept {
+draw_frame(const ImVec2& size, const ImVec4& color, plugin::types::not_null<windows::main*> child) noexcept {
     plugin::gui_initializer* gui = child->child;
     ImVec2 pos = ImGui::GetWindowPos();
     float rounding = ImGui::GetStyle().ChildRounding;
@@ -69,7 +69,7 @@ draw_frame(const ImVec2& size, const ImVec4& color, plugin::utils::not_null<wind
 }
 
 void
-plugin::gui::widgets::menu_selector(utils::not_null<windows::main*> child) noexcept {
+plugin::gui::widgets::menu_selector(types::not_null<windows::main*> child) noexcept {
     static menu_selector_animation::colors colors;
     static menu_selector_animation it = { colors.background };
     

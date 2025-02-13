@@ -35,7 +35,7 @@ get_settings(const std::string_view& id, const windows::main::frame& current_fra
 }
 
 static void
-update_color(frame_switcher_settings& it, plugin::utils::not_null<windows::main*> child, const windows::main::frame& frame) noexcept {
+update_color(frame_switcher_settings& it, plugin::types::not_null<windows::main*> child, const windows::main::frame& frame) noexcept {
     if (child->current_frame == frame) {
         it.color = animation::bring_to(it.color, it.colors.clicked, it.time[0], it.hovered_duration);
         return;
@@ -56,15 +56,15 @@ update_color(frame_switcher_settings& it, plugin::utils::not_null<windows::main*
 
 static void
 draw_frame(const ImVec2& pos, const ImVec2& size, const frame_switcher_settings& it,
-           plugin::utils::not_null<windows::main*> child, const windows::main::frame& frame) noexcept
+           plugin::types::not_null<windows::main*> child, const windows::main::frame& frame) noexcept
 {
     plugin::gui_initializer* gui = child->child;
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
     draw_list->AddRectFilled(pos, { pos.x + size.x, pos.y + size.y }, ImGui::GetColorU32(it.color));
 
-    plugin::utils::zstring_t text = child->frame_labels[std::to_underlying(frame)];
-    plugin::utils::zstring_t icon = child->frame_icons[std::to_underlying(frame)];
+    plugin::types::zstring_t text = child->frame_labels[std::to_underlying(frame)];
+    plugin::types::zstring_t icon = child->frame_icons[std::to_underlying(frame)];
     ImFont *icon_font = (*gui->fonts->icon)[24], *bold_font = (*gui->fonts->bold)[18];
     ImVec2 icon_size = icon_font->CalcTextSizeA(icon_font->FontSize, FLT_MAX, 0, icon);
     ImVec2 text_size = bold_font->CalcTextSizeA(bold_font->FontSize, FLT_MAX, 0, text);
@@ -78,7 +78,7 @@ draw_frame(const ImVec2& pos, const ImVec2& size, const frame_switcher_settings&
 }
 
 void
-plugin::gui::widgets::frame_switcher(const windows::main::frame& frame, utils::not_null<windows::main*> child) {
+plugin::gui::widgets::frame_switcher(const windows::main::frame& frame, types::not_null<windows::main*> child) {
     std::string id = std::format("widgets::frame_switcher::{}", std::to_underlying(frame));
     ImVec2 size = { child->menu_width, 30 }, pos = ImGui::GetCursorScreenPos();
     auto now = std::chrono::steady_clock::now();

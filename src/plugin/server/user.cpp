@@ -26,13 +26,13 @@ plugin::server::user::on_show_dialog(const samp::dialog& dialog) {
 
 bool
 plugin::server::user::on_server_message(const samp::server_message& message) {
-    static constexpr utils::zstring_t authorization_pattern = 
+    static constexpr types::zstring_t authorization_pattern = 
         "Вы успешно авторизовались как администратор|"
         "Вы уже авторизировались|"
         "Вы успешно авторизовались как ведущий администратор|"
         "Вы успешно авторизовались как разработчик";
 
-    static constexpr utils::zstring_t alogout_pattern =
+    static constexpr types::zstring_t alogout_pattern =
         "^\\{FFFF00\\}\\| \\{ffffff\\}За сессию администратирования вы заработали "
         "\\{4a86b6\\}\\d+ \\{FFFFFF\\}GMoney.$";
 

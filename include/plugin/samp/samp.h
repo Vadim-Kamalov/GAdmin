@@ -5,7 +5,7 @@
 #include <utility>
 #include <format>
 #include <windows.h>
-#include "plugin/utils.h"
+#include "plugin/types/simple.h"
 
 namespace plugin::samp {
 
@@ -84,7 +84,7 @@ plugin::samp::base(const std::uintptr_t offsets[std::to_underlying(version::coun
 template<>
 struct std::formatter<plugin::samp::version> : std::formatter<std::string_view> {
     auto format(const plugin::samp::version& version, std::format_context& ctx) const {
-        static constexpr plugin::utils::zstring_t versions[] = { "not loaded", "unknown", "v0.3.7-R1", "v0.3.7-R3-1", "v0.3.7-R5-1", "v0.3-DL-1" };
+        static constexpr plugin::types::zstring_t versions[] = { "not loaded", "unknown", "v0.3.7-R1", "v0.3.7-R3-1", "v0.3.7-R5-1", "v0.3-DL-1" };
         return std::formatter<std::string_view>::format(versions[std::to_underlying(version)], ctx);
     }
 }; // struct std::formatter<plugin::samp::version> : std::formatter<std::string_view>

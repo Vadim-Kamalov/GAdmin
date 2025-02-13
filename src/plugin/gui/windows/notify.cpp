@@ -169,11 +169,11 @@ plugin::gui::windows::notify::render() {
 }
 
 plugin::gui::window_ptr_t
-plugin::gui::windows::notify::create(utils::not_null<gui_initializer*> child) noexcept {
+plugin::gui::windows::notify::create(types::not_null<gui_initializer*> child) noexcept {
     return std::make_unique<notify>(child);
 }
 
-plugin::gui::windows::notify::notify(utils::not_null<gui_initializer*> child) : child(child) {
+plugin::gui::windows::notify::notify(types::not_null<gui_initializer*> child) : child(child) {
     log::info("window \"windows::notify\" initialized");
     gui::notify::set_callback(std::bind(&notify::on_send_notification, this, std::placeholders::_1));
 }

@@ -2,7 +2,7 @@
 #define GADMIN_PLUGIN_SAMP_CORE_SYNCHRONIZATION_H
 
 #include "plugin/samp/network/bit_stream.h"
-#include "plugin/utils.h"
+#include "plugin/types/simple.h"
 #include <utility>
 #include <format>
 
@@ -18,10 +18,10 @@ enum class synchronization_key {
 
 enum class synchronization_type { player, vehicle, passenger };
 
-static constexpr utils::zstring_t synchronization_key_names[std::to_underlying(synchronization_key::count)] = {
+static constexpr types::zstring_t synchronization_key_names[std::to_underlying(synchronization_key::count)] = {
     "W", "A", "S", "D", "ALT", "SHIFT", "SPACE", "F", "C", "RMB", "LMB", "H", "CTRL", "Q", "E", "UP",
     "DOWN", "HIT", "JUMP / RUN", "AIM", "SIGNAL", "FORWARD", "BRAKING", "2", "BACKWARD"
-}; // static constexpr utils::zstring_t synchronization_key_names[std::to_underlying(synchronization_key::count)]
+}; // static constexpr types::zstring_t synchronization_key_names[std::to_underlying(synchronization_key::count)]
 
 struct basic_synchronization {
     std::uint16_t player_id = 0;

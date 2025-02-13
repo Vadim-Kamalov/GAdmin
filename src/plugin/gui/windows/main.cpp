@@ -101,11 +101,11 @@ plugin::gui::windows::main::on_event(unsigned int message, WPARAM wparam, LPARAM
     return true;
 }
 
-plugin::gui::windows::main::main(utils::not_null<gui_initializer*> child) : child(child) {
+plugin::gui::windows::main::main(types::not_null<gui_initializer*> child) : child(child) {
     log::info("window \"{}\" initialized", get_id());
 }
 
 plugin::gui::window_ptr_t
-plugin::gui::windows::main::create(utils::not_null<gui_initializer*> child) noexcept {
+plugin::gui::windows::main::create(types::not_null<gui_initializer*> child) noexcept {
     return std::make_unique<main>(child);
 }

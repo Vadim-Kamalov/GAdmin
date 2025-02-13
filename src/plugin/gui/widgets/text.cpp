@@ -1,7 +1,7 @@
 #include "plugin/gui/widgets/text.h"
 
 static void
-render_border(const ImVec2& pos, const ImVec4& border_color, std::uint8_t border_size, plugin::utils::zstring_t text) noexcept {
+render_border(const ImVec2& pos, const ImVec4& border_color, std::uint8_t border_size, plugin::types::zstring_t text) noexcept {
     ImGui::PushStyleColor(ImGuiCol_Text, border_color);
     {
         for (std::uint8_t i = 1; i <= border_size; i++) {
