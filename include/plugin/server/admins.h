@@ -1,10 +1,10 @@
 #ifndef GADMIN_PLUGIN_SERVER_ADMINS_H
 #define GADMIN_PLUGIN_SERVER_ADMINS_H
 
-#include "plugin/samp/core/chat.h"
-#include "plugin/samp/core/dialog.h"
-#include "plugin/samp/network/event_handler.h"
+#include "plugin/samp/events/dialog.h"
+#include "plugin/samp/events/server_message.h"
 #include <nlohmann/detail/macro_scope.hpp>
+#include <vector>
 
 namespace plugin::server {
 
@@ -20,8 +20,8 @@ struct admin {
 
 class admins {
 private:
-    static bool on_show_dialog(const samp::dialog& dialog);
-    static bool on_server_message(const samp::server_message& message);
+    static bool on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog);
+    static bool on_server_message(const samp::event<samp::event_id::server_message>& message);
     static void update_admins(const std::string_view& dialog_text);
     static void add_connected_admin(const admin& connected_admin);
     static void remove_disconnected_admin(std::uint16_t id);
@@ -29,7 +29,7 @@ public:
     inline static std::vector<admin> list;
 
     static void on_alogout();
-    static bool on_event(const samp::event_type& type, std::uint8_t id, samp::bit_stream* stream);
+    static bool on_event(const samp::event_info& info);
 }; // class admins
 
 NLOHMANN_JSON_SERIALIZE_ENUM(admin::sort_option, {

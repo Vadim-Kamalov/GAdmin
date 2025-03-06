@@ -1,23 +1,15 @@
 #include "plugin/samp/core/vehicle_pool.h"
 #include "plugin/samp/core/net_game.h"
-#include "plugin/samp/samp.h"
 
-std::uintptr_t
-plugin::samp::vehicle_pool::get() noexcept {
-    static constexpr std::uintptr_t offsets[] = { 0x0, 0x0, 0x1170, 0x1170, 0x1180, 0x1180 };
-    return reinterpret_cast<signatures::get_vehicle_pool_t>(base(offsets))(net_game::instance());
-}
-
-std::uintptr_t*
-plugin::samp::vehicle_pool::get_objects() noexcept {
-    return reinterpret_cast<std::uintptr_t*>(get() + 0x1134);
-}
+plugin::types::versioned_address_container<plugin::signatures::get_vehicle_pool_t>
+plugin::samp::vehicle_pool::get_vehicle_pool_container = { 0x1170, 0x1170, 0x1180, 0x1180 };
 
 bool
 plugin::samp::vehicle_pool::is_available(std::uint16_t id) noexcept {
-    auto game_objects = reinterpret_cast<std::uintptr_t*>(get() + 0x4FB4);
-    auto objects = get_objects();
-    auto not_empty = reinterpret_cast<int*>(get() + 0x3074);
+    std::uintptr_t pool = get_vehicle_pool_container->invoke(net_game::instance_container->read());
+    std::uintptr_t* game_objects = game_objects_offset.read(pool);
+    std::uintptr_t* objects = objects_offset.read(pool);
+    int* not_empty = not_empty_offset.read(pool);
 
     return not_empty[id] == 1 && objects[id] != 0 && game_objects[id] != 0;
 }
@@ -27,7 +19,7 @@ plugin::samp::vehicle_pool::get_vehicle(std::uint16_t id) noexcept {
     if (!is_available(id))
         return std::unexpected(error::vehicle_not_available);
 
-    return vehicle(get_objects()[id]);
+    return vehicle(objects_offset.read(net_game::instance_container->read())[id]);
 }
 
 std::expected<std::uint16_t, plugin::samp::vehicle_pool::error>

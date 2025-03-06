@@ -41,6 +41,9 @@ public:
     template<typename T>
     std::string read_string();
 
+    template<typename... Args>
+    void read_into(Args&... args);
+
     std::string read_string(std::int32_t length);
     std::string read_encoded(int length);
     bool read_buffer(std::uintptr_t destination, int size);
@@ -91,6 +94,12 @@ template<typename T>
 std::string
 plugin::samp::bit_stream::read_string() {
     return read_string(read<T>());
+}
+
+template<typename... Args>
+void
+plugin::samp::bit_stream::read_into(Args&... args) {
+    ((args = read<std::decay_t<Args>>()), ...);
 }
 
 #endif // GADMIN_PLUGIN_SAMP_NETWORK_BIT_STREAM_H

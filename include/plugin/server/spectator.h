@@ -3,14 +3,14 @@
 
 #include "plugin/gui/widgets/joystick.h"
 #include "plugin/samp/core/remote_player.h"
-#include "plugin/samp/core/synchronization.h"
-#include "plugin/samp/network/event_handler.h"
-#include "plugin/samp/core/text_draw.h"
-#include "plugin/samp/core/3d_text.h"
-#include "plugin/samp/core/dialog.h"
 #include "plugin/samp/core/menu.h"
 #include "plugin/server/user.h"
 #include "plugin/types/simple.h"
+#include "plugin/samp/events/synchronization.h"
+#include "plugin/samp/events/dialog.h"
+#include "plugin/samp/events/3d_text.h"
+#include "plugin/samp/events/text_draw.h"
+#include "plugin/samp/events/event.h"
 #include <format>
 
 namespace plugin::server {
@@ -44,22 +44,21 @@ private:
     static inline bool checking_statistics = false;
     static inline std::chrono::steady_clock::time_point last_reload;
 
-    static bool on_show_text_draw(const samp::text_draw& text_draw);
-    static bool on_text_draw_set_string(const samp::text_draw_string_setter& text_draw_setter);
-    static bool on_text_draw_hide(const samp::text_draw_hider& text_draw);
+    static bool on_show_text_draw(const samp::event<samp::event_id::show_text_draw>& text_draw);
+    static bool on_text_draw_set_string(const samp::event<samp::event_id::set_text_draw_string>& text_draw);
+    static bool on_text_draw_hide(const samp::event<samp::event_id::hide_text_draw>& text_draw);
 
-    static bool on_show_3d_text(const samp::creator_3d_text& creator_3d_text);
-    static bool on_remove_3d_text(const samp::remover_3d_text& remover_3d_text);
+    static bool on_show_3d_text(const samp::event<samp::event_id::create_3d_text>& created_3d_text);
+    static bool on_remove_3d_text(const samp::event<samp::event_id::remove_3d_text>& removed_3d_text);
 
-    static bool on_show_dialog(const samp::dialog& dialog);
+    static bool on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog);
 
-    static bool on_player_synchronization(const samp::player_synchronization& synchronization);
-    static bool on_vehicle_synchronization(const samp::vehicle_synchronization& synchronization);
-    static bool on_passenger_synchronization(const samp::passenger_synchronization& synchronization);
-    static bool on_bullet_synchronization(const samp::bullet_synchronization& synchronization);
+    static bool on_player_synchronization(const samp::packet<samp::event_id::player_synchronization>& synchronization);
+    static bool on_vehicle_synchronization(const samp::packet<samp::event_id::vehicle_synchronization>& synchronization);
+    static bool on_passenger_synchronization(const samp::packet<samp::event_id::passenger_synchronization>& synchronization);
+    static bool on_bullet_synchronization(const samp::packet<samp::event_id::bullet_synchronization>& synchronization);
 
     static void update_available_information() noexcept;
-
     static std::string convert_possible_absence_text(const std::string& text) noexcept;
     static void clear_keys_down() noexcept;
 public:
@@ -77,7 +76,7 @@ public:
 public:
     static inline std::string nickname = "";
     static inline std::uint16_t id = SERVER_MAX_PLAYERS + 1;
-    static inline samp::remote_player player = samp::remote_player(0);
+    static inline samp::remote_player player;
 
     static inline samp::synchronization_type last_synchronization = samp::synchronization_type::player;
     static inline camera_switch_state_t camera_switch_state = camera_switch_state_t::none;
@@ -97,7 +96,7 @@ public:
 
     static inline bool& get_key_state(const samp::synchronization_key& key) noexcept;
 
-    static bool on_event(const samp::event_type& type, std::uint8_t id, samp::bit_stream* stream);
+    static bool on_event(const samp::event_info& event);
     static void main_loop();
 }; // class spectator
 

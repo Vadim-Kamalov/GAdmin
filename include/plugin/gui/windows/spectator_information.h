@@ -7,6 +7,7 @@
 #include "plugin/types/simple.h"
 #include "plugin/types/not_null.h"
 #include <imgui.h>
+#include <functional>
 
 namespace plugin::gui::windows {
 

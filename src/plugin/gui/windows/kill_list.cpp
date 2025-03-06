@@ -68,7 +68,7 @@ plugin::gui::windows::kill_list::get_window_size(bool with_time) const {
 }
 
 bool
-plugin::gui::windows::kill_list::on_player_death_notification(const samp::player_death_notification& notification) {
+plugin::gui::windows::kill_list::on_player_death_notification(const samp::event<samp::event_id::player_death_notification>& notification) {
     auto left_nickname = samp::player_pool::get_nickname(notification.killed_id);
     auto window_configuration = (*configuration)["windows"]["kill_list"];
     std::size_t max_count = window_configuration["max_count"];
@@ -106,9 +106,9 @@ plugin::gui::windows::kill_list::on_player_death_notification(const samp::player
 }
 
 bool
-plugin::gui::windows::kill_list::on_event(const samp::event_type& type, std::uint8_t id, samp::bit_stream* stream) {
-    if (type == samp::event_type::incoming_rpc && id == samp::player_death_notification::event_id)
-        return on_player_death_notification(samp::player_death_notification(stream));
+plugin::gui::windows::kill_list::on_event(const samp::event_info& event) {
+    if (event == samp::event_type::incoming_rpc && event == samp::event_id::player_death_notification)
+        return on_player_death_notification(event.create<samp::event_id::player_death_notification>());
 
     return true;
 }

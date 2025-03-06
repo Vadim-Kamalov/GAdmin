@@ -13,7 +13,7 @@
 using namespace std::chrono_literals;
 
 bool
-plugin::server::spectator::on_show_text_draw(const samp::text_draw& text_draw) {
+plugin::server::spectator::on_show_text_draw(const samp::event<samp::event_id::show_text_draw>& text_draw) {
     static constexpr types::zstring_t dirty_title = "Adadadad_Dfghsadersasd(111)";
     static constexpr types::zstring_t dirty_body = "2282282~n~$400000~n~90 MP/H~n~100/20~n~M4A1/Pustinniy Orel~n~999 ms~n~127.23.42.123";
 
@@ -39,20 +39,20 @@ plugin::server::spectator::on_show_text_draw(const samp::text_draw& text_draw) {
 }
 
 bool
-plugin::server::spectator::on_text_draw_set_string(const samp::text_draw_string_setter& text_draw_setter) {
+plugin::server::spectator::on_text_draw_set_string(const samp::event<samp::event_id::set_text_draw_string>& text_draw) {
     static constexpr types::zstring_t spectator_information =
         "ID Akkay.+a: (\\d+)~n~Ha.+e: (\\d+)~n~Ckopoc.+: (\\d+) / \\d+"
         "~n~Opy.+e: .+~n~Ping: \\d+ ms~n~HP: (.+)~n~Android: (.+)~n~Mo.+y.+p: (\\d+)";
 
     std::smatch matches;
     
-    if (std::regex_search(text_draw_setter.text, matches, std::regex(R"(~y~\((\d+)\))"))) {
-        text_draw_id = text_draw_setter.id;
+    if (std::regex_search(text_draw.text, matches, std::regex(R"(~y~\((\d+)\))"))) {
+        text_draw_id = text_draw.id;
         assign(std::stoul(matches[1].str()));
         return true;
     }
 
-    if (std::regex_search(text_draw_setter.text, matches, std::regex(spectator_information))) {
+    if (std::regex_search(text_draw.text, matches, std::regex(spectator_information))) {
         information.account_id = std::stoul(matches[1].str());
         information.money_hand = matches[2].str();
         information.health = std::stoul(matches[4].str());
@@ -73,38 +73,38 @@ plugin::server::spectator::on_text_draw_set_string(const samp::text_draw_string_
 }
 
 bool
-plugin::server::spectator::on_text_draw_hide(const samp::text_draw_hider& hiden_text_draw) {
-    if (hiden_text_draw.id == text_draw_id)
+plugin::server::spectator::on_text_draw_hide(const samp::event<samp::event_id::hide_text_draw>& text_draw) {
+    if (text_draw.id == text_draw_id)
         active = false;
     
     return true;
 }
 
 bool
-plugin::server::spectator::on_show_3d_text(const samp::creator_3d_text& creator_3d_text) {
+plugin::server::spectator::on_show_3d_text(const samp::event<samp::event_id::create_3d_text>& text_3d) {
     static constexpr types::zstring_t first_stage_pattern = R"(\(\( Данный персонаж ранен \d+ раз\(-а\) - /dm \d+ \)\))";
     static constexpr types::zstring_t second_stage_pattern = R"(\(\( ДАННЫЙ ПЕРСОНАЖ .+ \)\))";
 
     if (!active)
         return true;
 
-    if (creator_3d_text.attached_player_id == 0xFFFF)
+    if (text_3d.attached_player_id == 0xFFFF)
         return true;
 
-    if (creator_3d_text.attached_player_id != id)
+    if (text_3d.attached_player_id != id)
         return true;
 
     std::smatch matches;
 
-    if (std::regex_search(creator_3d_text.text, matches, std::regex(first_stage_pattern))) {
+    if (std::regex_search(text_3d.text, matches, std::regex(first_stage_pattern))) {
         information.stage = 1;
-        stage_3d_text_id = creator_3d_text.id;
+        stage_3d_text_id = text_3d.id;
         return true;
     }
 
-    if (std::regex_search(creator_3d_text.text, matches, std::regex(second_stage_pattern))) {
+    if (std::regex_search(text_3d.text, matches, std::regex(second_stage_pattern))) {
         information.stage = 2;
-        stage_3d_text_id = creator_3d_text.id;
+        stage_3d_text_id = text_3d.id;
         return true;
     }
 
@@ -114,20 +114,20 @@ plugin::server::spectator::on_show_3d_text(const samp::creator_3d_text& creator_
 }
 
 bool
-plugin::server::spectator::on_remove_3d_text(const samp::remover_3d_text& remover_3d_text) {
-    if (active && information.stage != 0 && remover_3d_text.id == stage_3d_text_id)
+plugin::server::spectator::on_remove_3d_text(const samp::event<samp::event_id::remove_3d_text>& text_3d) {
+    if (active && information.stage != 0 && text_3d.id == stage_3d_text_id)
         information.stage = 0;
 
     return true;
 }
 
 bool
-plugin::server::spectator::on_show_dialog(const samp::dialog& dialog) {
+plugin::server::spectator::on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog) {
     static constexpr types::zstring_t information_pattern =
         "Банк: \\$(.+)[^]+Фракция: (.+)[^]+Должность: (.+)[^]+Транспорт: (.+)[^]+"
         "Дом: (.+)[^]+Премиум аккаунт: (.+)[^]+Дата регистрации: (.+)[^]+";
 
-    if (!dialog.valid || !dialog.text.contains("Информация о игроке") || !checking_statistics || !active)
+    if (!dialog.text.contains("Информация о игроке") || !checking_statistics || !active)
         return true;
 
     std::string text = std::regex_replace(dialog.text, std::regex("\\{[0-9A-Fa-f]{6}\\}"), "");
@@ -149,7 +149,7 @@ plugin::server::spectator::on_show_dialog(const samp::dialog& dialog) {
     checking_statistics = false;
     
     std::replace(information.vehicle.begin(), information.vehicle.end(), ',', ' ');
-    dialog.send_response<samp::dialog::button::left>();
+    dialog.send_response(samp::dialog::button::left);
     
     return false;
 }
@@ -157,7 +157,7 @@ plugin::server::spectator::on_show_dialog(const samp::dialog& dialog) {
 #define SET_KEY_STATE(KEY, CONDITION) get_key_state(samp::synchronization_key::KEY) = CONDITION
 
 bool
-plugin::server::spectator::on_player_synchronization(const samp::player_synchronization& synchronization) {
+plugin::server::spectator::on_player_synchronization(const samp::packet<samp::event_id::player_synchronization>& synchronization) {
     if (synchronization.player_id != id)
         return true;
     
@@ -201,7 +201,7 @@ plugin::server::spectator::on_player_synchronization(const samp::player_synchron
 }
 
 bool
-plugin::server::spectator::on_vehicle_synchronization(const samp::vehicle_synchronization& synchronization) {
+plugin::server::spectator::on_vehicle_synchronization(const samp::packet<samp::event_id::vehicle_synchronization>& synchronization) {
     if (synchronization.player_id != id)
         return true;
     
@@ -248,7 +248,7 @@ plugin::server::spectator::on_vehicle_synchronization(const samp::vehicle_synchr
 }
 
 bool
-plugin::server::spectator::on_passenger_synchronization(const samp::passenger_synchronization& synchronization) {
+plugin::server::spectator::on_passenger_synchronization(const samp::packet<samp::event_id::passenger_synchronization>& synchronization) {
     if (synchronization.player_id != id)
         return true;
     
@@ -283,7 +283,7 @@ plugin::server::spectator::on_passenger_synchronization(const samp::passenger_sy
 #undef SET_KEY_STATE
 
 bool
-plugin::server::spectator::on_bullet_synchronization(const samp::bullet_synchronization& synchronization) {
+plugin::server::spectator::on_bullet_synchronization(const samp::packet<samp::event_id::bullet_synchronization>& synchronization) {
     if (synchronization.player_id != id)
         return true;
 
@@ -307,7 +307,7 @@ plugin::server::spectator::update_available_information() noexcept {
 
     information.ping = *samp::player_pool::get_ping(id);
     information.armor = player.get_armor();
-    information.weapon = game::weapon_names[ped.get_current_weapon()];
+    information.weapon = game::weapon_names[std::to_underlying(ped.get_current_weapon())];
 }
 
 std::string
@@ -361,44 +361,38 @@ plugin::server::spectator::get_information() noexcept {
 }
 
 bool
-plugin::server::spectator::on_event(const samp::event_type& type, std::uint8_t id, samp::bit_stream* stream) {
-    switch (type) {
-        case samp::event_type::incoming_rpc:
-            switch (id) {
-                case samp::text_draw::event_id:
-                    return on_show_text_draw(samp::text_draw(stream));
-                case samp::text_draw_string_setter::event_id:
-                    return on_text_draw_set_string(samp::text_draw_string_setter(stream));
-                case samp::text_draw_hider::event_id:
-                    return on_text_draw_hide(samp::text_draw_hider(stream));
-                case samp::creator_3d_text::event_id:
-                    return on_show_3d_text(samp::creator_3d_text(stream));
-                case samp::remover_3d_text::event_id:
-                    return on_remove_3d_text(samp::remover_3d_text(stream));
-                case samp::dialog::event_id:
-                    return on_show_dialog(samp::dialog(stream));
-                case samp::menu::event_id: {
-                    bool hide = (*configuration)["additions"]["hide_spectator_menu"];
-                    return !hide;
-                } default:
-                    return true;
+plugin::server::spectator::on_event(const samp::event_info& event) {
+    if (event == samp::event_type::incoming_rpc) {
+        if (event == samp::event_id::show_text_draw)
+            return on_show_text_draw(event.create<samp::event_id::show_text_draw>());
+        else if (event == samp::event_id::set_text_draw_string)
+            return on_text_draw_set_string(event.create<samp::event_id::set_text_draw_string>());
+        else if (event == samp::event_id::hide_text_draw)
+            return on_text_draw_hide(event.create<samp::event_id::hide_text_draw>());
+        else if (event == samp::event_id::create_3d_text)
+            return on_show_3d_text(event.create<samp::event_id::create_3d_text>());
+        else if (event == samp::event_id::remove_3d_text)
+            return on_remove_3d_text(event.create<samp::event_id::remove_3d_text>());
+        else if (event == samp::event_id::show_menu)
+            return !(*configuration)["additions"]["hide_spectator_menu"];
+        else if (event == samp::event_id::show_dialog) {
+            if (auto dialog_event = event.create<samp::event_id::show_dialog>()) {
+                return on_show_dialog(dialog_event);
             }
-        case samp::event_type::incoming_packet:
-            switch (id) {
-                case samp::player_synchronization::event_id:
-                    return on_player_synchronization(samp::player_synchronization(stream));
-                case samp::vehicle_synchronization::event_id:
-                    return on_vehicle_synchronization(samp::vehicle_synchronization(stream));
-                case samp::passenger_synchronization::event_id:
-                    return on_passenger_synchronization(samp::passenger_synchronization(stream));
-                case samp::bullet_synchronization::event_id:
-                    return on_bullet_synchronization(samp::bullet_synchronization(stream));
-                default:
-                    return true;
-            }
-        default:
-            return true;
+        }
+    } else if (event == samp::event_type::incoming_packet) {
+        if (event == samp::event_id::player_synchronization)
+            return on_player_synchronization(event.create<samp::event_id::player_synchronization, samp::event_type::incoming_packet>());
+        if (event == samp::event_id::vehicle_synchronization)
+            return on_vehicle_synchronization(event.create<samp::event_id::vehicle_synchronization, samp::event_type::incoming_packet>());
+        if (event == samp::event_id::passenger_synchronization)
+            return on_passenger_synchronization(event.create<samp::event_id::passenger_synchronization, samp::event_type::incoming_packet>());
+        if (event == samp::event_id::bullet_synchronization) {
+            return on_bullet_synchronization(event.create<samp::event_id::bullet_synchronization, samp::event_type::incoming_packet>());
+        }
     }
+
+    return true;
 }
 
 void

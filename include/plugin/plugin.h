@@ -29,10 +29,10 @@ private:
     void initialize_event_handler();
     void create_and_initialize_files();
 public:
-    constexpr void unload() { plugin_working = false; }
-    constexpr bool active() const { return plugin_working; }
+    void unload();
+    bool is_active() const;
 
-    bool on_event(const samp::event_type& type, std::uint8_t id, samp::bit_stream* stream);
+    bool on_event(const samp::event_info& event);
     bool can_initialize_render() const;
     void on_render_initialize();
     void on_frame();

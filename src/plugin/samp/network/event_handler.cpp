@@ -86,7 +86,7 @@ plugin::samp::event_handler::incoming_rpc_handler_hooked(const decltype(incoming
     bit_stream new_stream(callback_stream.get());
     new_stream.reset_read_pointer();
 
-    if (callback.has_value() && !(*callback)(event_type::incoming_rpc, id, &new_stream))
+    if (callback.has_value() && !(*callback)(event_info(event_type::incoming_rpc, id, &new_stream)))
         return false;
 
     stream.SetWriteOffset(offset);
@@ -111,7 +111,7 @@ plugin::samp::event_handler::outgoing_packet_handler_hooked(const decltype(outgo
 
     if (callback.has_value()) {
         new_stream.reset_read_pointer();
-        if (!(*callback)(event_type::outgoing_packet, event_id, &new_stream))
+        if (!(*callback)(event_info(event_type::outgoing_packet, event_id, &new_stream)))
             return false;
     }
 
@@ -132,7 +132,7 @@ plugin::samp::event_handler::incoming_packet_handler_hooked(const decltype(incom
 
     if (callback.has_value()) {
         while (packet) {
-            if ((*callback)(event_type::incoming_packet, id, &new_stream))
+            if ((*callback)(event_info(event_type::incoming_packet, id, &new_stream)))
                 break;
 
             reinterpret_cast<signatures::dealocate_packet_t>(v_table[9])(ptr, packet);
@@ -157,7 +157,7 @@ plugin::samp::event_handler::outgoing_rpc_handler_hooked(const decltype(outgoing
     bit_stream new_stream(stream);
     new_stream.reset_read_pointer();
 
-    if (callback.has_value() && !(*callback)(event_type::outgoing_rpc, *id, &new_stream))
+    if (callback.has_value() && !(*callback)(event_info(event_type::outgoing_rpc, *id, &new_stream)))
         return false;
 
     new_stream.reset_read_pointer();
@@ -165,8 +165,13 @@ plugin::samp::event_handler::outgoing_rpc_handler_hooked(const decltype(outgoing
     return hook.call_trampoline(ptr, id, stream, priority, reliability, ordering_channel, shift_timestamp);
 }
 
+plugin::signatures::incoming_rpc_handler_t
+plugin::samp::event_handler::get_incoming_rpc_trampoline() const {
+    return incoming_rpc_handler_hook.get_trampoline();
+}
+
 void
-plugin::samp::event_handler::attach(std::function<bool(event_type, std::uint8_t, bit_stream*)> new_callback) {
+plugin::samp::event_handler::attach(callback_t new_callback) {
     callback = new_callback;
 }
 

@@ -1,8 +1,8 @@
 #ifndef GADMIN_PLUGIN_SAMP_CORE_INPUT_H
 #define GADMIN_PLUGIN_SAMP_CORE_INPUT_H
 
-#include "plugin/samp/samp.h"
 #include "plugin/encoding.h"
+#include "plugin/types/address.h"
 #include "plugin/types/simple.h"
 #include <format>
 
@@ -17,33 +17,44 @@ using process_input_t = void(__thiscall*)(std::uintptr_t);
 
 } // namespace signatures
 
-namespace samp::input {
+namespace samp {
 
-static constexpr std::uint8_t max_commands_count = 144;
-static constexpr std::uint8_t max_command_length = 32;
+class input {
+public:
+    static constexpr std::uint8_t max_commands_count = 144;
+    static constexpr std::uint8_t max_command_length = 32;
+private:
+    static inline types::offset<int> active_offset = 0x14E0;
+    static inline types::offset<char(*)[max_command_length + 1]> commands_offset = 0x24C;
+    static inline types::offset<std::uintptr_t> dxut_input_offset = 0x8;
 
-std::uintptr_t instance() noexcept;
+    static types::versioned_address_container<std::uintptr_t> instance_container;
+    static types::versioned_address_container<signatures::send_command_t> send_command_container;
+    static types::versioned_address_container<signatures::open_t> open_container;
+    static types::versioned_address_container<signatures::process_input_t> process_input_container;
+    static types::versioned_address_container<signatures::set_text_t> set_text_container;
+    static types::versioned_address_container<signatures::get_text_t> get_text_container;
+public:
+    static bool is_active() noexcept;
+    static bool is_command_defined(const std::string_view& command) noexcept;
 
-bool is_active() noexcept;
-bool is_command_defined(const std::string_view& command) noexcept;
+    static void open() noexcept;
+    static void process(const std::string_view& text) noexcept;
+    static void set_text(const std::string_view& text) noexcept;
 
-void open() noexcept;
-void process(const std::string_view& text) noexcept;
-void set_text(const std::string_view& text) noexcept;
+    static std::string get_text() noexcept;
 
-std::string get_text() noexcept;
+    template<typename... Args>
+    static void send_command(std::format_string<Args...> fmt, Args&&... args) noexcept;
+}; // class input
 
-template<typename... Args>
-void send_command(std::format_string<Args...> fmt, Args&&... args) noexcept;
-
-} // namespace samp::input
+} // namespace samp
 } // namespace plugin
 
 template<typename... Args>
 void
 plugin::samp::input::send_command(std::format_string<Args...> fmt, Args&&... args) noexcept {
-    static constexpr std::uintptr_t offsets[] = { 0x0, 0x0, 0x65C60, 0x69190, 0x69900, 0x69340 };
-    reinterpret_cast<signatures::send_command_t>(base(offsets))(instance(), encoding::to_cp1251(
+    send_command_container->invoke(instance_container->read(), encoding::to_cp1251(
         std::format(fmt, std::forward<Args>(args)...)).c_str());
 }
 

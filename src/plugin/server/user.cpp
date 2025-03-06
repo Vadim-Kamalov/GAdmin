@@ -17,7 +17,7 @@ plugin::server::user::set_alogin_status(bool status) {
 }
 
 bool
-plugin::server::user::on_show_dialog(const samp::dialog& dialog) {
+plugin::server::user::on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog) {
     if (dialog.title == "Выбор персонажа" && is_on_alogin())
         set_alogin_status(false);
 
@@ -25,7 +25,7 @@ plugin::server::user::on_show_dialog(const samp::dialog& dialog) {
 }
 
 bool
-plugin::server::user::on_server_message(const samp::server_message& message) {
+plugin::server::user::on_server_message(const samp::event<samp::event_id::server_message>& message) {
     static constexpr types::zstring_t authorization_pattern = 
         "Вы успешно авторизовались как администратор|"
         "Вы уже авторизировались|"
@@ -60,16 +60,19 @@ plugin::server::user::main_loop() {
 }
 
 bool
-plugin::server::user::on_event(const samp::event_type& type, std::uint8_t id, samp::bit_stream* stream) {
-    if (type == samp::event_type::incoming_packet && (id == 32 || id == 36 || id == 37) && is_on_alogin())
+plugin::server::user::on_event(const samp::event_info& event) {
+    if (event == samp::event_type::incoming_packet && is_on_alogin() && (event.id == 32 || event.id == 36 || event.id == 37))
         set_alogin_status(false);
 
-    if (type == samp::event_type::incoming_rpc && id == samp::dialog::event_id)
-        if (samp::dialog dialog = samp::dialog(stream); dialog.valid)
-            return on_show_dialog(dialog);
-
-    if (type == samp::event_type::incoming_rpc && id == samp::server_message::event_id)
-        return on_server_message(samp::server_message(stream));
+    if (event == samp::event_type::incoming_rpc) {
+        if (event == samp::event_id::server_message)
+            return on_server_message(event.create<samp::event_id::server_message>());
+        else if (event == samp::event_type::incoming_rpc && event == samp::event_id::show_dialog) {
+            if (auto dialog_event = event.create<samp::event_id::show_dialog>()) {
+                return on_show_dialog(dialog_event);
+            }
+        }
+    }
 
     return true;
 }

@@ -1,44 +1,36 @@
 #ifndef GADMIN_PLUGIN_SAMP_CORE_DIALOG_H
 #define GADMIN_PLUGIN_SAMP_CORE_DIALOG_H
 
-#include "plugin/samp/network/bit_stream.h"
+#include "plugin/types/address.h"
 #include <cstdint>
-#include <utility>
 
 namespace plugin::samp {
 
 class dialog {
 private:
-    static std::uintptr_t instance() noexcept;
+    static types::versioned_address_container<std::uintptr_t> instance_container;
+    static inline types::offset<int> active_address = 0x50; 
 public:
-    enum class button { left, right };
+    enum class button : std::uint8_t { left, right };
+    enum class style : std::uint8_t {
+        message_box,
+        input,
+        list,
+        password,
+        tab_list,
+        tab_list_headers
+    }; // enum class style : std::uint8_t
 public:
-    static constexpr std::uint8_t event_id = 61;
+    static constexpr std::uint16_t list_item_none = 0xFFFF;
+    static constexpr std::uint16_t invalid_id = 0xFFFF;
     static constexpr std::uint8_t send_response_id = 62;
 
-    std::uint16_t id;
-    std::uint8_t style;
-    std::string title, text;
-    std::pair<std::string, std::string> buttons;
-    bool valid = true;
-
-    static void send_response(std::uint16_t id, std::uint8_t button_id, std::uint16_t list_item = 65535,
+    static void send_response(std::uint16_t id, const button& button, std::uint16_t list_item = list_item_none,
                               const std::string_view& input = "") noexcept;
 
     static bool is_active() noexcept;
-
-    template<button button>
-    void send_response(std::uint16_t list_item = 65535, const std::string_view& input = "") const;
-
-    explicit dialog(samp::bit_stream* bit_stream);
 }; // class dialog
 
 } // namespace plugin::samp
-
-template<plugin::samp::dialog::button button>
-void
-plugin::samp::dialog::send_response(std::uint16_t list_item, const std::string_view& input) const {
-    send_response(id, std::to_underlying(button), list_item, input);
-}
 
 #endif // GADMIN_PLUGIN_SAMP_CORE_DIALOG_H

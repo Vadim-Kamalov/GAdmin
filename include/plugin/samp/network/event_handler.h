@@ -1,6 +1,7 @@
 #ifndef GADMIN_PLUGIN_SAMP_NETWORK_EVENT_HANDLER_H
 #define GADMIN_PLUGIN_SAMP_NETWORK_EVENT_HANDLER_H
 
+#include "plugin/samp/events/event.h"
 #include "plugin/samp/network/bit_stream.h"
 #include "plugin/samp/network/signatures.h"
 #include "plugin/types/simple.h"
@@ -14,21 +15,11 @@
 
 namespace plugin::samp {
 
-enum class event_type {
-    incoming_rpc,
-    outgoing_rpc,
-    incoming_packet,
-    outgoing_packet
-}; // enum class event_type
-
 class event_handler {
+public:
+    using callback_t = std::function<bool(const event_info&)>;
 private:
-    void** v_table;
-    void* rak_peer;
-    PlayerID user_id;
-    bool initialized = false;
-
-    std::optional<std::function<bool(const event_type&, std::uint8_t, bit_stream*)>> callback;
+    std::optional<callback_t> callback;
 
     kthook::kthook_simple<signatures::rak_client_interface_constructor_t> rak_client_interface_constructor_hook;
     kthook::kthook_simple<signatures::incoming_rpc_handler_t> incoming_rpc_handler_hook;
@@ -50,13 +41,14 @@ private:
                                      BitStream* bit_stream, PacketPriority priority, PacketReliability reliability,
                                      char ordering_channel, bool shift_timestamp);
 public:
-    constexpr void** get_v_table() const { return v_table; }
-    constexpr void* get_rak_peer() const { return rak_peer; }
-    constexpr PlayerID get_player_id() const { return user_id; }
-    constexpr bool is_initialized() const { return initialized; }
-    constexpr signatures::incoming_rpc_handler_t get_incoming_rpc_trampoline() const { return incoming_rpc_handler_hook.get_trampoline(); }
+    void** v_table = nullptr;
+    void* rak_peer = nullptr;
+    bool initialized = false;
+    PlayerID user_id;
+    
+    signatures::incoming_rpc_handler_t get_incoming_rpc_trampoline() const;
 
-    void attach(std::function<bool(event_type, std::uint8_t, bit_stream*)> callback);
+    void attach(callback_t new_callback);
     bool initialize();
 }; // class event_handler
 

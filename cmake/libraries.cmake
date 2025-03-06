@@ -16,4 +16,4 @@ target_sources(${PROJECT_NAME} PUBLIC
     ${imgui_SOURCE_DIR}/backends/imgui_impl_dx9.cpp
 )
 
-set(LIBRARIES_LINKAGE d3d9 d3dx9 gdi32 dwmapi kthook wininet nlohmann_json::nlohmann_json)
+set(LIBRARIES_LINKAGE d3d9 d3dx9 gdi32 dwmapi kthook wininet dbghelp nlohmann_json::nlohmann_json)

@@ -4,16 +4,22 @@
 #include "plugin/samp/core/user.h"
 #include "plugin/samp/samp.h"
 
+plugin::types::versioned_address_container<plugin::signatures::get_player_pool_t>
+plugin::samp::player_pool::get_player_pool_container = { 0x1160, 0x1160, 0x1170, 0x1170 };
+
+plugin::types::versioned_address_container<plugin::signatures::get_nickname_t>
+plugin::samp::player_pool::get_nickname_container = { 0x13CE0, 0x16F00, 0x175C0, 0x170D0 };
+
+plugin::types::versioned_address_container<plugin::signatures::get_ping_t>
+plugin::samp::player_pool::get_ping_container = { 0x6A1C0, 0x6E110, 0x6E880, 0x6E2B0 };
+
 std::uintptr_t
-plugin::samp::player_pool::get() noexcept {
-    static constexpr std::uintptr_t offsets[] = { 0x0, 0x0, 0x1160, 0x1160, 0x1170, 0x1170 };
-    return reinterpret_cast<signatures::get_player_pool_t>(base(offsets))(net_game::instance());
+plugin::samp::player_pool::instance() noexcept {
+    return get_player_pool_container->invoke(net_game::instance_container->read());
 }
 
 std::expected<std::string, plugin::samp::player_pool::error>
 plugin::samp::player_pool::get_nickname(std::uint16_t id) noexcept {
-    static constexpr std::uintptr_t offsets[] = { 0x0, 0x0, 0x13CE0, 0x16F00, 0x175C0, 0x170D0 };
-    
     if (user::get_id() == id)
         return user::get_name();
 
@@ -22,7 +28,7 @@ plugin::samp::player_pool::get_nickname(std::uint16_t id) noexcept {
 
     net_game::update_players();
 
-    return std::string(reinterpret_cast<signatures::get_nickname_t>(base(offsets))(get(), id));
+    return get_nickname_container->invoke(instance(), id);
 }
 
 std::expected<std::uint16_t, plugin::samp::player_pool::error>
@@ -42,7 +48,7 @@ plugin::samp::player_pool::get_remote_player(std::uint16_t id, bool check_connec
     if (check_connection && !is_connected(id))
         return std::unexpected(error::player_not_connected);
 
-    return remote_player(reinterpret_cast<signatures::get_remote_player_t>(base(0x10F0))(get(), id));
+    return remote_player((get_remote_player_offset + get_base())(instance(), id));
 }
 
 std::expected<plugin::samp::remote_player, plugin::samp::player_pool::error>
@@ -55,15 +61,13 @@ plugin::samp::player_pool::get_remote_player(const std::string_view& nickname) n
 
 std::expected<std::int32_t, plugin::samp::player_pool::error>
 plugin::samp::player_pool::get_ping(std::uint16_t id) noexcept {
-    static constexpr std::uintptr_t offsets[] = { 0x0, 0x0, 0x6A1C0, 0x6E110, 0x6E880, 0x6E2B0 };
-
     if (!is_connected(id))
         return std::unexpected(error::player_not_connected);
 
-    return reinterpret_cast<signatures::get_ping_t>(base(offsets))(get(), id);
+    return get_ping_container->invoke(instance(), id);
 }
 
 bool
 plugin::samp::player_pool::is_connected(std::uint16_t id) noexcept {
-    return reinterpret_cast<signatures::is_connected_t>(base(0x10B0))(get(), id);
+    return (is_connected_offset + get_base())(instance(), id);
 }

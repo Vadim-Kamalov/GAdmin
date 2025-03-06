@@ -1,9 +1,9 @@
 #ifndef GADMIN_PLUGIN_GUI_WINDOWS_KILL_LIST_H
 #define GADMIN_PLUGIN_GUI_WINDOWS_KILL_LIST_H
 
+#include "plugin/samp/events/player_death_notification.h"
 #include "plugin/gui/base/window.h"
 #include "plugin/gui/gui.h"
-#include "plugin/samp/core/player_death_notification.h"
 #include "plugin/types/color.h"
 #include "plugin/types/not_null.h"
 #include <deque>
@@ -49,12 +49,12 @@ private:
     std::chrono::steady_clock::time_point time_pushed;
 
     ImVec2 get_window_size(bool with_time) const;
-    bool on_player_death_notification(const samp::player_death_notification& notification);
+    bool on_player_death_notification(const samp::event<samp::event_id::player_death_notification>& notification);
 public:
     constexpr types::zstring_t get_id() const override;
 
     void render() override;
-    bool on_event(const samp::event_type& type, std::uint8_t id, samp::bit_stream* stream) override;
+    bool on_event(const samp::event_info& event) override;
 
     static window_ptr_t create(types::not_null<gui_initializer*> child) noexcept;
     explicit kill_list(types::not_null<gui_initializer*> child);

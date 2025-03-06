@@ -1,25 +1,31 @@
 #ifndef GADMIN_PLUGIN_SAMP_CORE_NET_GAME_H
 #define GADMIN_PLUGIN_SAMP_CORE_NET_GAME_H
 
+#include "plugin/types/address.h"
 #include "plugin/types/simple.h"
 #include <cstdint>
 
 namespace plugin {
 namespace signatures {
 
-using get_player_pool_t = std::uintptr_t(__thiscall*)(std::uintptr_t);
 using update_players_t = void(__thiscall*)(std::uintptr_t);
 
 } // namespace signatures
 
-namespace samp::net_game {
+namespace samp {
 
-std::uintptr_t instance() noexcept;
-types::zstring_t get_host_address() noexcept;
+class net_game {
+private:
+    static types::versioned_address_container<types::zstring_t, types::version_container_option::offsets> host_address_offsets;
+    static types::versioned_address_container<signatures::update_players_t> update_players_container;
+public:
+    static types::versioned_address_container<std::uintptr_t> instance_container;
 
-void update_players() noexcept;
+    static std::string get_host_address() noexcept;
+    static void update_players() noexcept;
+}; // class net_game
 
-} // namespace samp::net_game
+} // namespace samp
 } // namespace plugin
 
 #endif // GADMIN_PLUGIN_SAMP_CORE_NET_GAME_H

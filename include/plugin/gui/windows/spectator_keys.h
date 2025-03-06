@@ -3,9 +3,9 @@
 
 #include "plugin/gui/base/window.h"
 #include "plugin/gui/widgets/keycap.h"
-#include "plugin/server/spectator.h"
-#include "plugin/samp/core/synchronization.h"
 #include "plugin/gui/gui.h"
+#include "plugin/server/spectator.h"
+#include "plugin/samp/events/synchronization.h"
 #include "plugin/types/simple.h"
 #include "plugin/types/not_null.h"
 #include <imgui.h>

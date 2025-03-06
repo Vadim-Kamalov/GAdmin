@@ -8,9 +8,11 @@
 #include "plugin/server/user.h"
 #include <cstring>
 #include <errhandlingapi.h>
+#include <dbghelp.h>
 #include <imgui.h>
 #include <format>
 #include <minwindef.h>
+#include <psdk_inc/_dbg_common.h>
 #include <windows.h>
 #include <psapi.h>
 
@@ -26,24 +28,24 @@ plugin::plugin_initializer::on_log_message(const log::type& type, const std::str
 }
 
 bool
-plugin::plugin_initializer::on_event(const samp::event_type& type, std::uint8_t id, samp::bit_stream* stream) {
-    if (!server::admins::on_event(type, id, stream))
+plugin::plugin_initializer::on_event(const samp::event_info& event) {
+    if (!server::admins::on_event(event))
         return false;
     
-    if (gui && !gui->on_event(type, id, stream))
+    if (gui && !gui->on_event(event))
         return false;
     
-    stream->reset_read_pointer();
+    event.stream->reset_read_pointer();
 
-    if (!server::user::on_event(type, id, stream))
+    if (!server::user::on_event(event))
         return false;
 
-    stream->reset_read_pointer();
+    event.stream->reset_read_pointer();
 
-    if (!server::spectator::on_event(type, id, stream))
+    if (!server::spectator::on_event(event))
         return false;
 
-    stream->reset_read_pointer();
+    event.stream->reset_read_pointer();
 
     return true;
 }
@@ -78,7 +80,7 @@ plugin::plugin_initializer::on_samp_initialize() {
 
     log::info("samp::net_game::instance() != nullptr: SA:MP {} initialized", samp::get_version());
 
-    if (strcmp(samp::net_game::get_host_address(), SERVER_HOST_ADDRESS) != 0) {
+    if (samp::net_game::get_host_address() != SERVER_HOST_ADDRESS) {
         log::fatal("plugin works only on \"sa.gambit-rp.ru:7777\" server");
         return;
     }
@@ -106,7 +108,7 @@ plugin::plugin_initializer::main_loop() {
     server::spectator::main_loop();
     server::binder::main_loop();
 
-    if (samp::get_base() && samp::net_game::instance() && !samp_initialized) {
+    if (!samp_initialized && samp::get_base() != 0 && samp::net_game::instance_container->read() != 0) {
         on_samp_initialize();
         samp_initialized = true;
     }
@@ -128,7 +130,7 @@ plugin::plugin_initializer::initialize_event_handler() {
     using namespace std::placeholders;
     
     event_handler = std::make_unique<samp::event_handler>();
-    event_handler->attach(std::bind(&plugin_initializer::on_event, this, _1, _2, _3));
+    event_handler->attach(std::bind(&plugin_initializer::on_event, this, _1));
 
     log::info("plugin::samp::event_handler initialized");
 }
@@ -147,8 +149,21 @@ plugin::plugin_initializer::create_and_initialize_files() {
     }
 }
 
+void
+plugin::plugin_initializer::unload() {
+    plugin_working = false;
+}
+
+bool
+plugin::plugin_initializer::is_active() const {
+    return plugin_working;
+}
+
 long __stdcall
 plugin::plugin_initializer::on_unhandled_exception(EXCEPTION_POINTERS* exception_info) noexcept {
+    auto process = GetCurrentProcess();
+    auto thread = GetCurrentThread();
+    
     DWORD code_exception = exception_info->ExceptionRecord->ExceptionCode;
     PVOID address_exception = exception_info->ExceptionRecord->ExceptionAddress;
 
@@ -165,12 +180,27 @@ plugin::plugin_initializer::on_unhandled_exception(EXCEPTION_POINTERS* exception
         }
     }
 
+    MODULEINFO module_info;
+    HMODULE modules[1024];
+    DWORD needed;
+    
+    if (EnumProcessModules(process, modules, sizeof(modules), &needed)) {
+        for (unsigned int i = 0; i < (needed / sizeof(HMODULE)); i++) {
+            char module_path[MAX_PATH];
+            if (GetModuleFileNameExA(process, modules[i], module_path, sizeof(module_path)) &&
+                GetModuleInformation(process, modules[i], &module_info, sizeof(MODULEINFO)))
+            {
+                SymLoadModuleEx(process, nullptr, module_path, nullptr, reinterpret_cast<DWORD64>(module_info.lpBaseOfDll), module_info.SizeOfImage, nullptr, 0);
+            }
+        }
+    }
+
     log::error("unhandled exception (code: 0x{:08X}) occured at 0x{:08X} (in {} + 0x{:X})",
                code_exception,
                reinterpret_cast<std::uintptr_t>(address_exception),
                module_name,
                reinterpret_cast<std::uintptr_t>(address_exception) - module_offset);
-    
+
     log::error("registers:");
     {
         CONTEXT* context = exception_info->ContextRecord;
@@ -179,17 +209,79 @@ plugin::plugin_initializer::on_unhandled_exception(EXCEPTION_POINTERS* exception
         log::error("| esp: 0x{:08X} ebp: 0x{:08X} eip: 0x{:08X}", context->Esp, context->Ebp, context->Eip);
         log::error("| eflags: 0x{:08X}", context->EFlags);
     }
-    log::error("loaded modules:");
 
-    MODULEINFO module_info;
-    HMODULE modules[1024];
-    DWORD needed;
+    log::error("call stack:");
+    {
+        STACKFRAME64 stack;
+        
+        auto symbol = std::make_unique<SYMBOL_INFO>();
+        symbol->MaxNameLen = 255;
+        symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
+
+        auto line = std::make_unique<IMAGEHLP_LINE64>();
+        line->SizeOfStruct = sizeof(IMAGEHLP_LINE64);
+
+        DWORD displacement;
+        DWORD64 address;
+
+        stack.AddrPC.Offset = exception_info->ContextRecord->Eip;
+        stack.AddrPC.Mode = AddrModeFlat;
+        stack.AddrFrame.Offset = exception_info->ContextRecord->Ebp;
+        stack.AddrFrame.Mode = AddrModeFlat;
+        stack.AddrStack.Offset = exception_info->ContextRecord->Esp;
+        stack.AddrStack.Mode = AddrModeFlat;
+
+        for (unsigned int frame = 0; ; frame++) {
+            if (!StackWalk64(IMAGE_FILE_MACHINE_I386, process, thread, &stack, exception_info->ContextRecord,
+                             nullptr, SymFunctionTableAccess64, SymGetModuleBase64, nullptr))
+                break;
+
+            if (stack.AddrPC.Offset == 0)
+                break;
+
+            address = stack.AddrPC.Offset;
+
+            std::string output = "| ";
+            {
+                if (SymFromAddr(process, address, 0, symbol.get())) {
+                    std::format_to(std::back_inserter(output), "0x{:08X} [name: {}", static_cast<std::uintptr_t>(address), symbol->Name);
+
+                    if (SymGetLineFromAddr64(process, address, &displacement, line.get()))
+                        std::format_to(std::back_inserter(output), " file: {} line: {}", line->FileName, line->LineNumber);
+
+                    output.push_back(']');
+                } else {
+                    std::format_to(std::back_inserter(output), "0x{:08X} [no symbol found]", static_cast<std::uintptr_t>(address));
+                }
+
+                MODULEINFO module_info;
+                HMODULE module_handle = nullptr;
+            
+                if (GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                                       reinterpret_cast<LPCSTR>(address), &module_handle))
+                {
+                    char module_name[MAX_PATH];
+                    
+                    GetModuleInformation(process, module_handle, &module_info, sizeof(module_info));
+                    GetModuleFileNameA(module_handle, module_name, sizeof(module_name));
+                    
+                    std::format_to(std::back_inserter(output), " (in {} + 0x{:X})", module_name,
+                                   address - reinterpret_cast<std::uintptr_t>(module_info.lpBaseOfDll));
+                }
+            }
+            log::error("{}", output);
+        }
+
+        SymCleanup(process);
+    }
+
+    log::error("loaded modules:");
 
     if (EnumProcessModules(GetCurrentProcess(), modules, sizeof(modules), &needed)) {
         for (unsigned int i = 0; i < (needed / sizeof(HMODULE)); i++) {
             char name[MAX_PATH];
-            if (GetModuleInformation(GetCurrentProcess(), modules[i], &module_info, sizeof(MODULEINFO))) {
-                GetModuleFileNameEx(GetCurrentProcess(), modules[i], name, sizeof(name));
+            if (GetModuleInformation(process, modules[i], &module_info, sizeof(MODULEINFO))) {
+                GetModuleFileNameEx(process, modules[i], name, sizeof(name));
                 log::error("| base: 0x{:08X} size: 0x{:08X} entrypoint: 0x{:08X} name: {}",
                            reinterpret_cast<std::uintptr_t>(module_info.lpBaseOfDll),
                            module_info.SizeOfImage,

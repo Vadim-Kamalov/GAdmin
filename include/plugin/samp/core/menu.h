@@ -7,7 +7,6 @@ namespace plugin::samp {
 
 class menu {
 public:
-    static constexpr std::uint8_t event_id = 77;
     static constexpr std::uint8_t select_id = 132;
     static void select(std::uint8_t id) noexcept;
 }; // class menu

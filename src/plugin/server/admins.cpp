@@ -25,12 +25,12 @@ plugin::server::admin::sort(std::vector<admin>& admins, const sort_option& optio
 }
 
 bool
-plugin::server::admins::on_show_dialog(const samp::dialog& dialog) {
+plugin::server::admins::on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog) {
     if (!list.empty() || user::is_on_alogin())
         return true;
 
     if (std::regex_search(dialog.text, std::regex("Лог отключений"))) {
-        dialog.send_response<samp::dialog::button::right>(0);
+        dialog.send_response(samp::dialog::button::right, 0);
         return false;
     }
 
@@ -52,7 +52,7 @@ plugin::server::admins::on_show_dialog(const samp::dialog& dialog) {
 }
 
 bool
-plugin::server::admins::on_server_message(const samp::server_message& message) {
+plugin::server::admins::on_server_message(const samp::event<samp::event_id::server_message>& message) {
     std::smatch matches;
     
     if (std::regex_search(message.text, matches, std::regex(R"(^\[A\] (\S+)\[(\d+)\] авторизовался как администратор (\d+) уровня.$)"))) {
@@ -124,13 +124,18 @@ plugin::server::admins::on_alogout() {
 }
 
 bool
-plugin::server::admins::on_event(const samp::event_type& type, std::uint8_t id, samp::bit_stream* stream) {
-    if (type == samp::event_type::incoming_rpc && id == samp::dialog::event_id)
-        if (samp::dialog dialog = samp::dialog(stream); dialog.valid)
-            return on_show_dialog(dialog);
+plugin::server::admins::on_event(const samp::event_info& event) {
+    if (event == samp::event_type::incoming_rpc) {
+        if (event == samp::event_id::show_dialog) {
+            if (auto dialog_event = event.create<samp::event_id::show_dialog>()) {
+                return on_show_dialog(dialog_event);
+            }
+        }
 
-    if (type == samp::event_type::incoming_rpc && id == samp::server_message::event_id)
-        return on_server_message(samp::server_message(stream));
+        if (event == samp::event_id::server_message) {
+            return on_server_message(event.create<samp::event_id::server_message>());
+        }
+    }
 
     return true;
 }

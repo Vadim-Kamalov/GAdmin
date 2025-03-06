@@ -7,7 +7,7 @@ plugin::gui::window::on_event(unsigned int, WPARAM, LPARAM) {
 }
 
 bool
-plugin::gui::window::on_event(const samp::event_type&, std::uint8_t, samp::bit_stream*) {
+plugin::gui::window::on_event(const samp::event_info&) {
     return true;
 }
 

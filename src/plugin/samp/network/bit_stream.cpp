@@ -104,7 +104,7 @@ plugin::samp::bit_stream::write_encoded(const std::string_view& value) {
 
 bool
 plugin::samp::bit_stream::emulate_incoming_rpc(std::uint8_t rpc_id) {
-    if (!plugin::event_handler || !plugin::event_handler->is_initialized() || !plugin::event_handler->get_rak_peer())
+    if (plugin::event_handler == nullptr || !plugin::event_handler->initialized || plugin::event_handler->rak_peer == nullptr)
         return false;
 
     BitStream send_bit_stream;
@@ -116,13 +116,13 @@ plugin::samp::bit_stream::emulate_incoming_rpc(std::uint8_t rpc_id) {
 
     auto call_trampoline = plugin::event_handler->get_incoming_rpc_trampoline();
 
-    return call_trampoline(plugin::event_handler->get_rak_peer(), std::bit_cast<char*>(send_bit_stream.GetData()),
-                           send_bit_stream.GetNumberOfBytesUsed(), plugin::event_handler->get_player_id());
+    return call_trampoline(plugin::event_handler->rak_peer, std::bit_cast<char*>(send_bit_stream.GetData()),
+                           send_bit_stream.GetNumberOfBytesUsed(), plugin::event_handler->user_id);
 }
 
 bool
 plugin::samp::bit_stream::emulate_incoming_packet(std::uint8_t packet_id) {
-    if (!plugin::event_handler || !plugin::event_handler->is_initialized() || !plugin::event_handler->get_rak_peer())
+    if (plugin::event_handler == nullptr || !plugin::event_handler->initialized || plugin::event_handler->rak_peer == nullptr)
         return false;
 
     BitStream send_bit_stream;
@@ -135,7 +135,7 @@ plugin::samp::bit_stream::emulate_incoming_packet(std::uint8_t packet_id) {
     
     memcpy(send_packet->data, send_bit_stream.GetData(), send_packet->length);
     
-    char* packets = static_cast<char*>(plugin::event_handler->get_rak_peer()) + 0xDB6;
+    char* packets = static_cast<char*>(plugin::event_handler->rak_peer) + 0xDB6;
     auto write_lock = reinterpret_cast<signatures::write_lock_t>(address::write_lock());
     auto write_unlock = reinterpret_cast<signatures::write_unlock_t>(address::write_unlock());
 
@@ -145,41 +145,41 @@ plugin::samp::bit_stream::emulate_incoming_packet(std::uint8_t packet_id) {
     return true;
 }
 
-#define RAKCLIENT_INTERFACE reinterpret_cast<std::uintptr_t>(plugin::event_handler->get_rak_peer()) + 0xDDE
+#define RAKCLIENT_INTERFACE reinterpret_cast<std::uintptr_t>(plugin::event_handler->rak_peer) + 0xDDE
 
 bool
 plugin::samp::bit_stream::send_rpc(int rpc_id) {
-    if (!plugin::event_handler || !plugin::event_handler->is_initialized())
+    if (plugin::event_handler == nullptr || !plugin::event_handler->initialized)
         return false;
 
-    return reinterpret_cast<signatures::send_rpc_t>(plugin::event_handler->get_v_table()[25])
+    return reinterpret_cast<signatures::send_rpc_t>(plugin::event_handler->v_table[25])
         (RAKCLIENT_INTERFACE, &rpc_id, bit_stream_ptr, HIGH_PRIORITY, RELIABLE_ORDERED, 0, false); 
 }
 
 bool
 plugin::samp::bit_stream::send_rpc(int rpc_id, PacketPriority priority, PacketReliability reliability, std::uint8_t channel, bool timestamp) {
-    if (!plugin::event_handler || !plugin::event_handler->is_initialized())
+    if (plugin::event_handler == nullptr || !plugin::event_handler->initialized)
         return false;
 
-    return reinterpret_cast<signatures::send_rpc_t>(plugin::event_handler->get_v_table()[25])
+    return reinterpret_cast<signatures::send_rpc_t>(plugin::event_handler->v_table[25])
         (RAKCLIENT_INTERFACE, &rpc_id, bit_stream_ptr, priority, reliability, channel, timestamp);
 }
 
 bool
 plugin::samp::bit_stream::send_packet() {
-    if (!plugin::event_handler || !plugin::event_handler->is_initialized())
+    if (plugin::event_handler == nullptr || !plugin::event_handler->initialized)
         return false;
 
-    return reinterpret_cast<signatures::send_packet_t>(plugin::event_handler->get_v_table()[6])
+    return reinterpret_cast<signatures::send_packet_t>(plugin::event_handler->v_table[6])
         (RAKCLIENT_INTERFACE, bit_stream_ptr, HIGH_PRIORITY, UNRELIABLE_SEQUENCED, 0);
 }
 
 bool
 plugin::samp::bit_stream::send_packet(PacketPriority priority, PacketReliability reliability, std::uint8_t channel) {
-    if (!plugin::event_handler || !plugin::event_handler->is_initialized())
+    if (plugin::event_handler == nullptr || !plugin::event_handler->initialized)
         return false;
 
-    return reinterpret_cast<signatures::send_packet_t>(plugin::event_handler->get_v_table()[6])
+    return reinterpret_cast<signatures::send_packet_t>(plugin::event_handler->v_table[6])
         (RAKCLIENT_INTERFACE, bit_stream_ptr, priority, reliability, channel);
 }
 

@@ -3,7 +3,7 @@
 
 void
 plugin::samp::menu::select(std::uint8_t id) noexcept {
-    samp::bit_stream stream;
+    bit_stream stream;
     stream.write(id);
     stream.send_rpc(select_id);
 }

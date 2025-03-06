@@ -59,7 +59,7 @@ game_loop_hooked(const decltype(game_loop_hook)& hook) {
     if (!plugin_to_load)
         return;
 
-    if (!plugin_to_load->active()) {
+    if (!plugin_to_load->is_active()) {
         plugin_to_load.reset(nullptr);
         return;
     }

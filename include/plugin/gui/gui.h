@@ -17,7 +17,7 @@ private:
 public:
     std::unique_ptr<gui::fonts_initializer> fonts;
 
-    bool on_event(const samp::event_type& type, std::uint8_t id, samp::bit_stream* stream) const;
+    bool on_event(const samp::event_info& event) const;
     bool on_event(unsigned int message, WPARAM wparam, LPARAM lparam);
     
     void on_samp_initialize() const;
@@ -25,7 +25,7 @@ public:
     void on_initialize();
     void render() const;
 
-    constexpr bool is_cursor_active() const noexcept { return cursor_active; }
+    inline bool is_cursor_active() const;
     void enable_cursor();
     void disable_cursor();
     void switch_cursor();
@@ -35,5 +35,10 @@ public:
 }; // class gui_initializer
 
 } // namespace plugin
+
+inline bool
+plugin::gui_initializer::is_cursor_active() const {
+    return cursor_active;
+}
 
 #endif // GADMIN_PLUGIN_GUI_H

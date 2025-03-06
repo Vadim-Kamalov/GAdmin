@@ -1,7 +1,7 @@
 #ifndef GADMIN_PLUGIN_GUI_BASE_WINDOW_H
 #define GADMIN_PLUGIN_GUI_BASE_WINDOW_H
 
-#include "plugin/samp/network/event_handler.h"
+#include "plugin/samp/events/event.h"
 #include "plugin/types/simple.h"
 #include <memory>
 #include <minwindef.h>
@@ -20,7 +20,7 @@ public:
     virtual void render() = 0;
     
     virtual bool on_event(unsigned int message, WPARAM wparam, LPARAM lparam);
-    virtual bool on_event(const samp::event_type& event, std::uint8_t id, samp::bit_stream* stream);
+    virtual bool on_event(const samp::event_info& event);
     virtual void on_samp_initialize() {}
 
     constexpr bool can_render() const;

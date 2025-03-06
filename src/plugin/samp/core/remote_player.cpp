@@ -1,30 +1,38 @@
 #include "plugin/samp/core/remote_player.h"
-#include "plugin/samp/samp.h"
+
+plugin::types::versioned_address_container<plugin::samp::ped, plugin::types::version_container_option::offsets>
+plugin::samp::remote_player::ped_container = { 0x0, 0x0, 0x1DD, 0x4 };
+
+plugin::types::versioned_address_container<plugin::samp::vehicle, plugin::types::version_container_option::offsets>
+plugin::samp::remote_player::vehicle_container = { 0x4, 0x4, 0x1E1, 0x8 };
+
+plugin::types::versioned_address_container<float, plugin::types::version_container_option::offsets>
+plugin::samp::remote_player::armor_container = { 0x1B8, 0x1AC, 0x1AC, 0x1AC };
+
+plugin::types::versioned_address_container<plugin::signatures::get_color_as_argb>
+plugin::samp::remote_player::get_color_container = { 0x12A00, 0x15C10, 0x16180, 0x15E30 };
 
 bool
 plugin::samp::remote_player::is_available() const {
-    return handle != 0;
+    return handle.is_available();
 }
 
 plugin::samp::ped
 plugin::samp::remote_player::get_ped() const {
-    static constexpr std::uintptr_t offsets[] = { 0x0, 0x0, 0x0, 0x0, 0x1DD, 0x4 };
-    return ped(*reinterpret_cast<std::uintptr_t*>(handle + offsets[std::to_underlying(get_version())]));
+    return ped_container->read(*handle);
 }
 
 plugin::samp::vehicle
 plugin::samp::remote_player::get_vehicle() const {
-    static constexpr std::uintptr_t offsets[] = { 0x0, 0x0, 0x4, 0x4, 0x1E1, 0x8 };
-    return vehicle(*reinterpret_cast<std::uintptr_t*>(handle + offsets[std::to_underlying(get_version())]));
+    return vehicle_container->read(*handle);
 }
 
 float
 plugin::samp::remote_player::get_armor() const {
-    return *reinterpret_cast<float*>(handle + ((get_version() == samp::version::v037R1) ? 0x1B8 : 0x1AC));
+    return armor_container->read(*handle);
 }
 
 plugin::types::color
 plugin::samp::remote_player::get_color() const {
-    static constexpr std::uintptr_t offsets[] = { 0x0, 0x0, 0x12A00, 0x15C10, 0x16180, 0x15E30 };
-    return types::color::argb(reinterpret_cast<signatures::get_color_as_argb>(base(offsets))(handle));
+    return types::color::argb(get_color_container->invoke(*handle));
 }

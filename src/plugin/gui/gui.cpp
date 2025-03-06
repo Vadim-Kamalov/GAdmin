@@ -13,10 +13,10 @@
 #include <imgui.h>
 
 bool
-plugin::gui_initializer::on_event(const samp::event_type& type, std::uint8_t id, samp::bit_stream* stream) const {
+plugin::gui_initializer::on_event(const samp::event_info& event) const {
     for (const auto& window : registered_windows) {
-        stream->reset_read_pointer();
-        if (!window->on_event(type, id, stream))
+        event.stream->reset_read_pointer();
+        if (!window->on_event(event))
             return false;
     }
 

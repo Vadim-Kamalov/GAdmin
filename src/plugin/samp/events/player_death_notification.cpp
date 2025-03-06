@@ -1,8 +1,8 @@
-#include "plugin/samp/core/player_death_notification.h"
+#include "plugin/samp/events/player_death_notification.h"
 #include "plugin/game/weapon.h"
 
 std::string
-plugin::samp::player_death_notification::get_reason() const {
+plugin::samp::event<plugin::samp::event_id::player_death_notification>::get_reason() const {
     switch (reason) {
         case special_reason_car: return "Vehicle";
         case special_reason_helicopter: return "Helicopter";
@@ -14,8 +14,6 @@ plugin::samp::player_death_notification::get_reason() const {
     }
 }
 
-plugin::samp::player_death_notification::player_death_notification(samp::bit_stream* stream) {
-    killer_id = stream->read<std::uint16_t>();
-    killed_id = stream->read<std::uint16_t>();
-    reason = stream->read<std::uint8_t>();
+plugin::samp::event<plugin::samp::event_id::player_death_notification>::event(bit_stream* stream) {
+    stream->read_into(killer_id, killed_id, reason);
 }

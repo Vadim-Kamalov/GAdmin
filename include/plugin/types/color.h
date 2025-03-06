@@ -63,9 +63,9 @@ public:
     using abgr = basic_color<color_type::abgr>;
 public:
     abgr value;
-   
+  
     template<color_type convert_type>
-    constexpr basic_color<convert_type>::joined_t cast() const noexcept {
+    [[nodiscard]] constexpr basic_color<convert_type>::joined_t cast() const noexcept {
         switch (convert_type) {
             case color_type::argb:
                 return (value.alpha << 24) | (value.red << 16) | (value.green << 8) | value.blue;
@@ -76,9 +76,9 @@ public:
         }
     }
 
-    constexpr abgr::joined_t get() const noexcept { return cast<color_type::abgr>(); }
-    
-    constexpr abgr::joined_t operator*() const noexcept { return get(); }
+    [[nodiscard]] constexpr abgr::joined_t get() const noexcept { return cast<color_type::abgr>(); }
+    [[nodiscard]] constexpr abgr::joined_t operator*() const noexcept { return get(); }
+
     constexpr bool operator==(const color& other) const noexcept { return value == other.value; }
 
     constexpr color(const color& other, std::uint8_t alpha)
