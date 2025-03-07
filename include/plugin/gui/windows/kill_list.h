@@ -4,6 +4,7 @@
 #include "plugin/samp/events/player_death_notification.h"
 #include "plugin/gui/base/window.h"
 #include "plugin/gui/gui.h"
+#include "plugin/samp/player.h"
 #include "plugin/types/color.h"
 #include "plugin/types/not_null.h"
 #include <deque>
@@ -16,16 +17,14 @@ namespace plugin::gui::windows {
 class kill_list : public window {
 private:
     struct entry {
-        struct player {
-            std::string nickname;
-            std::uint16_t id;
+        struct side {
+            samp::player player;
             std::optional<types::color> color;
-
             types::color get_color();
-        }; // struct player
+        }; // struct side
 
-        player left;
-        std::optional<player> right;
+        side left;
+        std::optional<side> right;
         std::chrono::system_clock::time_point time;
         std::string reason;
         

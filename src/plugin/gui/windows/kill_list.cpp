@@ -6,21 +6,16 @@
 #include "plugin/log.h"
 
 plugin::types::color
-plugin::gui::windows::kill_list::entry::player::get_color() {
+plugin::gui::windows::kill_list::entry::side::get_color() {
     if (color.has_value())
         return *color;
 
-    if ((*configuration)["windows"]["kill_list"]["clist_color"].get<bool>()) {
-        if (auto it = samp::player_pool::get_remote_player(id); it.has_value() && it->is_available()) {
-            types::color new_color = it->get_color();
-            if (new_color != 0 && new_color != 0xFFFFFFFF) {
-                color = new_color;
-                return *color;
-            }
-        }
-    }
+    auto window_configuration = (*configuration)["windows"]["kill_list"];
+    bool clist_color = window_configuration["clist_color"];
 
-    color = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_Text]);
+    color = (clist_color && player) 
+        ? player.get_color()
+        : ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_Text]);
 
     return *color;
 }
@@ -39,11 +34,11 @@ plugin::gui::windows::kill_list::entry::compute_width(ImFont* bold_font, ImFont*
     if (with_time)
         width = bold_font->CalcTextSizeA(bold_font->FontSize, FLT_MAX, 0, get_formatted_time().c_str()).x + 5;
 
-    width += bold_font->CalcTextSizeA(bold_font->FontSize, FLT_MAX, 0, std::format("{}[{}]", left.nickname, left.id).c_str()).x
+    width += bold_font->CalcTextSizeA(bold_font->FontSize, FLT_MAX, 0, std::format("{}[{}]", left.player.nickname, left.player.id).c_str()).x
         + regular_font->CalcTextSizeA(regular_font->FontSize, FLT_MAX, 0, reason.c_str()).x + 10;
 
     if (right.has_value())
-        width += bold_font->CalcTextSizeA(bold_font->FontSize, FLT_MAX, 0, std::format("{}[{}]", right->nickname, right->id).c_str()).x + 5;
+        width += bold_font->CalcTextSizeA(bold_font->FontSize, FLT_MAX, 0, std::format("{}[{}]", right->player.nickname, right->player.id).c_str()).x + 5;
 
     return width;
 }
@@ -76,14 +71,14 @@ plugin::gui::windows::kill_list::on_player_death_notification(const samp::event<
     if (!left_nickname)
         return true;
 
-    entry::player left = { *left_nickname, notification.killed_id };
-    std::optional<entry::player> right;
+    entry::side left = { samp::player(notification.killed_id) };
+    std::optional<entry::side> right;
 
     if (notification.killer_id != 0xFFFF) {
         if (auto right_nickname = samp::player_pool::get_nickname(notification.killer_id)) {
-            entry::player temp(left);
-            left = { *right_nickname, notification.killer_id };
-            right = temp; 
+            entry::side temp(left);
+            left = { samp::player(notification.killer_id) };
+            right = temp;
         } else
             return true;
     }
@@ -145,7 +140,7 @@ plugin::gui::windows::kill_list::render() {
                 ImGui::SameLine(0, 5);
                 ImGui::PushStyleColor(ImGuiCol_Text, *entry.left.get_color());
                 {
-                    widgets::text(bold_font, text_border_size, "{}[{}]", entry.left.nickname, entry.left.id);
+                    widgets::text(bold_font, text_border_size, "{}[{}]", entry.left.player.nickname, entry.left.player.id);
                 }
                 ImGui::PopStyleColor();
                 
@@ -158,7 +153,7 @@ plugin::gui::windows::kill_list::render() {
                     ImGui::SetCursorPosY(pos_y);
                     ImGui::PushStyleColor(ImGuiCol_Text, *entry.right->get_color());
                     {
-                        widgets::text(bold_font, text_border_size, "{}[{}]", entry.right->nickname, entry.right->id);
+                        widgets::text(bold_font, text_border_size, "{}[{}]", entry.right->player.nickname, entry.right->player.id);
                     }
                     ImGui::PopStyleColor();
                 }
