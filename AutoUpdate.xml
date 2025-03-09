@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<AutoUpdate version="1.7.8">
-    <title>GAdmin v1.7.8</title>
+<AutoUpdate version="1.7.9">
+    <title>GAdmin v1.7.9</title>
     <buttons first="Установить" second="Пропустить" third="Позже"/>
     <body>
         <header>Изменения</header>
-        <ul>Обновлены года авторского права.</ul>
+        <ul>Реализованы действия в чате при наведении и нажатие на что-либо: строку, никнейм администратора или игрока. Можно скопировать строку в чате (без/с переноса/ом), упомянуть администратора (при нажатии на никнейм), следить за игроком, открыть описание/cтатистику игрока. Функция взята из v1.8 (#34), до GAdmin.asi (#35).</ul>
     </body>
     <links>
         <!-- Notice that `link` with `destination="GAdmin-Release.lua"` should be last element in this section. -->
