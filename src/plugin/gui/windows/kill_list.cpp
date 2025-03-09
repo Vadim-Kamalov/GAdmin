@@ -13,9 +13,15 @@ plugin::gui::windows::kill_list::entry::side::get_color() {
     auto window_configuration = (*configuration)["windows"]["kill_list"];
     bool clist_color = window_configuration["clist_color"];
 
-    color = (clist_color && player) 
-        ? player.get_color()
-        : ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_Text]);
+    if (clist_color && player) {
+        types::color player_color = player.get_color();
+        if (player_color != 0xFFFFFFFF && player_color != 0) {
+            color = player_color;
+            return player_color;
+        }
+    }
+
+    color = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_Text]);
 
     return *color;
 }
@@ -130,7 +136,7 @@ plugin::gui::windows::kill_list::render() {
                 entry.alpha = animation::bring_to(entry.alpha, 1.0f, entry.alpha_time, alpha_change_duration);
 
             if (std::string align = window_configuration["align"]; align != "left")
-                pos_x = (align == "right") ? ImGui::GetWindowWidth() - width - pos_x: (ImGui::GetWindowWidth() - width) / 2;
+                pos_x = (align == "right") ? ImGui::GetWindowWidth() - width - pos_x : (ImGui::GetWindowWidth() - width) / 2;
 
             ImGui::SetCursorPosX(pos_x);
             ImGui::PushStyleVar(ImGuiStyleVar_Alpha, entry.alpha);

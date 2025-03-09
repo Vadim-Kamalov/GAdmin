@@ -12,7 +12,7 @@ plugin::samp::player::write_local_player(id_t new_id) {
 plugin::types::color
 plugin::samp::player::get_color() const {
     if (local_player)
-        return 0;
+        return user::get_color();
 
     if (auto remote_player = player_pool::get_remote_player(id, false))
         return remote_player->get_color();
@@ -46,7 +46,7 @@ plugin::samp::player::player(id_t new_id) {
         return;
     }
 
-    if (auto new_nickname = player_pool::get_nickname(id))
+    if (auto new_nickname = player_pool::get_nickname(new_id))
         nickname = *new_nickname;
     else
         return;

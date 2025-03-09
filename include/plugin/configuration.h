@@ -105,6 +105,15 @@ private:
                     "max_count": 5
                 },
 
+                "far_chat": {
+                    "use": true,
+                    "duplicates_delay_ms": 1200,
+                    "max_count": 5,
+                    "show_time": true,
+                    "clist_color": true,
+                    "align": "left"
+                },
+
                 "spectator_keys": { "use": true }
             },
 

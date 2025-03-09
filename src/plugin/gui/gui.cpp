@@ -3,6 +3,7 @@
 #include "plugin/game/cursor.h"
 #include "plugin/game/game.h"
 #include "plugin/gui/windows/admins.h"
+#include "plugin/gui/windows/far_chat.h"
 #include "plugin/gui/windows/kill_list.h"
 #include "plugin/gui/windows/main.h"
 #include "plugin/gui/windows/notify.h"
@@ -63,6 +64,7 @@ plugin::gui_initializer::on_initialize() {
     registered_windows.push_back(windows::spectator_actions::create(this));
     registered_windows.push_back(windows::spectator_keys::create(this));
     registered_windows.push_back(windows::kill_list::create(this));
+    registered_windows.push_back(windows::far_chat::create(this));
 }
 
 void

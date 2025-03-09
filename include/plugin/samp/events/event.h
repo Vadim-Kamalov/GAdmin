@@ -11,6 +11,7 @@ enum class event_id : std::uint8_t {
     create_3d_text = 36,
     player_death_notification = 55,
     remove_3d_text = 58,
+    player_chat_bubble = 59,
     show_dialog = 61,
     show_menu = 77,
     server_message = 93,
