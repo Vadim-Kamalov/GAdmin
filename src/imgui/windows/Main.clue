@@ -198,6 +198,10 @@ local window = {
                 { "windowSizeY", "Высота окна", WINDOW_WIDGET_SLIDER_INT, 50, 500, imgui.new.int(config.root.windows.spectatorActions.windowSizeY) },
                 { "buttons", "Кнопки", WINDOW_WIDGET_CUSTOM, $SPECTATOR_ACTIONS_CUSTOM_WIDGET!() }
             }, WINDOW_WIDGET_CONFIGURATION_IN_POPUP },
+
+            { "chatActions", "Действия в чате", {
+                { "use", "Действия при наведении на строку в чате:\nЛКМ - действия с выделенным текстом (игроком/админом)\nПКМ - действия с полной строкой (копирование)", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.chatActions.use) }
+            }},
             
             { "spectatorInformation", "Информация об игроке", {
                 { "use", "Работает только в режиме наблюдения", WINDOW_WIDGET_SWITCH, imgui.new.bool(config.root.windows.spectatorInformation.use) },
@@ -1001,7 +1005,7 @@ imgui.OnFrame(fn { return !isGamePaused() && window.state }, fn (self) {
                 } elseif window.menu.selectedFrame == WINDOW_SELECTED_FRAME_SETTINGS {
                     // forgive me for all of this code below (in current `window.menu.selectedFrame`).
                     for sectionIndex, section in window.configuration {
-                        if sectionIndex == 4 { imgui.NewLine() }
+                        if sectionIndex == 4 || sectionIndex == 2 { imgui.NewLine() }
                         imguiAssets::textWithFont(section[2], bold14)
 
                         for index, setting in section[3] {
