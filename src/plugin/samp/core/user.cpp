@@ -10,6 +10,9 @@ plugin::samp::user::name_offsets = { 0xA, 0x2F22, 0xA, 0x6 };
 plugin::types::versioned_address_container<std::uint16_t, plugin::types::version_container_option::offsets>
 plugin::samp::user::id_offsets = { 0x4, 0x2F1C, 0x4, 0x0 };
 
+plugin::types::versioned_address_container<plugin::samp::ped, plugin::types::version_container_option::offsets>
+plugin::samp::user::local_player_ped_offsets = { 0x0, 0x0, 0x104, 0x0 };
+
 plugin::types::versioned_address_container<plugin::signatures::local_player_chat_t>
 plugin::samp::user::local_player_chat_container = { 0x57F0, 0x5820, 0x5A10, 0x5860 };
 
@@ -42,4 +45,9 @@ plugin::samp::user::get_name() noexcept {
 int
 plugin::samp::user::get_ping() noexcept {
     return get_local_player_ping_container->invoke(player_pool::instance());
+}
+
+plugin::samp::ped
+plugin::samp::user::get_ped() noexcept {
+    return local_player_ped_offsets->read(get_local_player());
 }

@@ -93,9 +93,7 @@ plugin::server::admins::update_admins(const std::string_view& dialog_text) {
 
 void
 plugin::server::admins::add_connected_admin(const admin& connected_admin) {
-    if (std::find_if(list.begin(), list.end(), [connected_admin](admin admin) {
-        return admin.nickname == connected_admin.nickname;
-    }) != std::end(list))
+    if (get_admin(connected_admin.id).has_value())
         return;
 
     list.push_back(connected_admin);
@@ -116,6 +114,14 @@ plugin::server::admins::remove_disconnected_admin(std::uint16_t id) {
             it++;
         }
     }
+}
+
+std::optional<plugin::server::admin>
+plugin::server::admins::get_admin(std::uint16_t id) {
+    if (auto found = std::find_if(list.begin(), list.end(), [id](const admin& it) { return it.id == id; }); found != list.end())
+        return *found;
+    else
+        return {};
 }
 
 void

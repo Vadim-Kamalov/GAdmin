@@ -65,7 +65,7 @@ plugin::gui::windows::admins::render() {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, 0 });
         ImGui::SetNextWindowBgAlpha(0);
         ImGui::SetCursorPosX(0);
-        ImGui::BeginChild("windows::admins::content", { ImGui::GetWindowWidth(), content_height }, false);
+        ImGui::BeginChild("windows::admins::content", { ImGui::GetWindowWidth(), content_height });
         {
             for (const auto& [width, text] : admins) {
                 float pos_x = window_padding.x;

@@ -114,6 +114,16 @@ private:
                     "align": "left"
                 },
 
+                "players_nearby": {
+                    "use": true,
+                    "max_count": 10,
+                    "show_distance": true,
+                    "show_title": true,
+                    "clist_color": true,
+                    "align": "left",
+                    "sort_by": "distance"
+                },
+
                 "spectator_keys": { "use": true }
             },
 

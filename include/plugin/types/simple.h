@@ -9,6 +9,7 @@ struct vector_3d {
     float x, y, z;
 
     float magnitude() const;
+    float get_distance_to(const vector_3d& vector) const;
 }; // struct vector_3d
 
 } // namespace plugin::types

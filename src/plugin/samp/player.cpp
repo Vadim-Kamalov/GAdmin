@@ -36,6 +36,30 @@ plugin::samp::player::is_available() const {
     return valid;
 }
 
+std::vector<plugin::samp::player::stream_entry_t>
+plugin::samp::player::get_stream_players() {
+    std::vector<stream_entry_t> players;
+
+    for (id_t stream_id = 0; stream_id <= SERVER_MAX_PLAYERS; stream_id++) {
+        if (stream_id == user::get_id())
+            continue;
+
+        auto remote_player = player_pool::get_remote_player(stream_id);
+
+        if (!remote_player.has_value())
+            continue;
+
+        auto ped = remote_player->get_ped();
+
+        if (!ped.is_available())
+            continue;
+
+        players.emplace_back(player(stream_id), ped);
+    }
+
+    return players;
+}
+
 plugin::samp::player::operator bool() const {
     return is_available();
 }

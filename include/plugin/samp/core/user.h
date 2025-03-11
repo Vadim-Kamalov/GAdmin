@@ -5,6 +5,7 @@
 #include <format>
 #include <string>
 #include "plugin/samp/core/input.h"
+#include "plugin/samp/core/ped.h"
 #include "plugin/types/address.h"
 #include "plugin/types/color.h"
 #include "plugin/types/simple.h"
@@ -25,6 +26,7 @@ private:
     static types::versioned_address_container<std::uintptr_t, types::version_container_option::offsets> local_player_offsets;
     static types::versioned_address_container<types::zstring_t, types::version_container_option::offsets> name_offsets;
     static types::versioned_address_container<std::uint16_t, types::version_container_option::offsets> id_offsets;
+    static types::versioned_address_container<ped, types::version_container_option::offsets> local_player_ped_offsets;
     static types::versioned_address_container<signatures::local_player_chat_t> local_player_chat_container;
     static types::versioned_address_container<signatures::get_local_player_ping_t> get_local_player_ping_container;
     static types::versioned_address_container<signatures::get_local_player_color_as_argb> get_local_player_color_container;
@@ -33,6 +35,7 @@ public:
     static types::color get_color() noexcept;
     static std::uint16_t get_id() noexcept;
     static std::string get_name() noexcept;
+    static ped get_ped() noexcept;
     static int get_ping() noexcept;
 
     template<typename... Args>

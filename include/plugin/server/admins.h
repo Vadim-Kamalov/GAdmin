@@ -28,6 +28,7 @@ private:
 public:
     inline static std::vector<admin> list;
 
+    static std::optional<admin> get_admin(std::uint16_t id);
     static void on_alogout();
     static bool on_event(const samp::event_info& info);
 }; // class admins

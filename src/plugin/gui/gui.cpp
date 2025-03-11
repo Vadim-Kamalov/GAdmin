@@ -7,6 +7,7 @@
 #include "plugin/gui/windows/kill_list.h"
 #include "plugin/gui/windows/main.h"
 #include "plugin/gui/windows/notify.h"
+#include "plugin/gui/windows/players_nearby.h"
 #include "plugin/gui/windows/spectator_information.h"
 #include "plugin/gui/windows/spectator_actions.h"
 #include "plugin/gui/windows/spectator_keys.h"
@@ -65,6 +66,7 @@ plugin::gui_initializer::on_initialize() {
     registered_windows.push_back(windows::spectator_keys::create(this));
     registered_windows.push_back(windows::kill_list::create(this));
     registered_windows.push_back(windows::far_chat::create(this));
+    registered_windows.push_back(windows::players_nearby::create(this));
 }
 
 void

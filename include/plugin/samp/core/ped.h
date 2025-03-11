@@ -18,10 +18,13 @@ class ped : public entity {
 private:
     static inline types::offset<std::uintptr_t> game_ped = 0x2A4;
     static inline types::offset<types::vector_3d> game_ped_speed = 0x44;
+    static inline types::offset<std::uintptr_t> game_ped_position_rotation = 0x14;
+    static inline types::offset<types::vector_3d> game_ped_position = 0x30;
     static types::versioned_address_container<signatures::get_current_weapon_t> get_current_weapon_container;
 public:
     using meters_per_second = float;
 public:
+    types::vector_3d get_position() const;
     meters_per_second get_speed() const;
     game::weapon get_current_weapon() const;
     
