@@ -1,5 +1,16 @@
 #include "plugin/gui/animation.h"
 
+void
+plugin::gui::animation::hover_info::update() {
+    bool hovered = ImGui::IsItemHovered();
+
+    if (hovered == state)
+        return;
+
+    state = hovered;
+    time = std::chrono::steady_clock::now();
+}
+
 float
 plugin::gui::animation::bring_to(float from, float to,
                                  std::chrono::steady_clock::time_point start_time,

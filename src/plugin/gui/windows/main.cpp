@@ -1,5 +1,6 @@
 #include "plugin/gui/windows/main.h"
 #include "plugin/game/game.h"
+#include "plugin/gui/widgets/button.h"
 #include "plugin/gui/widgets/frame_switcher.h"
 #include "plugin/gui/widgets/menu_selector.h"
 #include "plugin/log.h"
@@ -83,6 +84,8 @@ plugin::gui::windows::main::render() {
                 int* p = nullptr;
                 *p = 1;
             }
+
+            widgets::button("Hello, world!").render();
         }
         ImGui::EndGroup();
         render_menu();

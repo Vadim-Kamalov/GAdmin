@@ -7,6 +7,13 @@
 
 namespace plugin::gui::animation {
 
+struct hover_info {
+    bool state = false;
+    std::chrono::steady_clock::time_point time;
+
+    void update();
+}; // struct hover_info
+
 constexpr bool is_time_available(std::chrono::steady_clock::time_point time) noexcept;
 
 float bring_to(float from, float to,

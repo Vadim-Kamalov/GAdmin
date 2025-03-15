@@ -1,13 +1,4 @@
 #include "plugin/gui/widgets/button.h"
-#include "plugin/gui/animation.h"
-
-std::string
-plugin::gui::widgets::button::get_text_before_hashtag() const {
-    if (std::size_t pos = label.find("##"); pos != std::string::npos)
-        return label.substr(0, pos);
-    
-    return label;
-}
 
 void
 plugin::gui::widgets::button::register_in_pool() const {
@@ -20,77 +11,89 @@ plugin::gui::widgets::button::register_in_pool() const {
 bool
 plugin::gui::widgets::button::render() {
     configuration_t& it = pool[label];
-    ImVec2 pos = ImGui::GetCursorScreenPos();
-    ImVec2 cursor_pos = ImGui::GetCursorPos();
-    bool clicked = false;
+    ImDrawList* draw_list = ImGui::GetWindowDrawList();
+
+    types::color button_color = ImGui::GetColorU32(ImGuiCol_Button);
+    types::color button_active = ImGui::GetColorU32(ImGuiCol_ButtonActive);
+    types::color hovered_color = ImGui::GetColorU32(ImGuiCol_ButtonHovered);
 
     float rounding = ImGui::GetStyle().FrameRounding;
+    float border_size = ImGui::GetStyle().FrameBorderSize;
 
-    types::color active_color = ImGui::GetColorU32(ImGuiCol_ButtonActive);
-    types::color hovered_color = ImGui::GetColorU32(ImGuiCol_ButtonHovered);
-    types::color default_color = ImGui::GetColorU32(ImGuiCol_Button);
-    
-    ImDrawList* draw_list = ImGui::GetWindowDrawList();
-    auto now = std::chrono::steady_clock::now();
+    ImVec2 start = ImGui::GetCursorScreenPos();
+    ImVec2 end = { start.x + size.x, start.y + size.y };
 
-    it.hovered_alpha = animation::bring_to(it.hovered_alpha, (it.hovered_state_current)
-        ? ImGui::GetStyle().Alpha * 255 : 0, it.hovered_time, durations[2]);
+    draw_list->AddRectFilled(start, end, *button_color, rounding, draw_flags);
 
-    draw_list->AddRectFilled({ pos.x - 1, pos.y - 1 }, { pos.x + size.x + 1, pos.y + size.y + 1 },
-                             *types::color(hovered_color, it.hovered_alpha), rounding, draw_flags);
+    ImVec2 border_start = { start.x - border_size, start.y - border_size };
+    ImVec2 border_end = { end.x + border_size, end.y + border_size };
 
-    draw_list->AddRectFilled(pos, { pos.x + size.x, pos.y + size.y }, *default_color, rounding, draw_flags);
-    draw_list->PushClipRect({ pos.x + 1, pos.y + 1 }, { pos.x + size.x - 1, pos.y + size.y - 1 });
-    {
-        if (it.pos.has_value()) {
-            std::uint8_t alpha = 0;
-            
-            auto alpha_time = std::chrono::duration_cast<std::chrono::milliseconds>(now - it.time[1]).count();
-            auto alpha_duration = std::chrono::duration_cast<std::chrono::milliseconds>(durations[1]).count();
+    draw_list->AddRect(border_start, border_end, *types::color(hovered_color, it.border_alpha), rounding, draw_flags, border_size);
 
-            if (alpha_time <= alpha_duration)
-                alpha = std::clamp(255.0f - ((255.0f / alpha_duration) * alpha_time), 0.0f, 255.0f);
+    it.border_alpha = animation::bring_to(it.border_alpha, (it.hovered.state) ? 255 : 0, it.hovered.time, durations[0]);
 
-            auto radius_time = std::chrono::duration_cast<std::chrono::milliseconds>(now - it.time[0]).count();
-            auto radius_duration = std::chrono::duration_cast<std::chrono::milliseconds>(durations[0]).count();
+    if (it.click_position.has_value()) {
+        ImVec2 clip_rect_min = { start.x + border_size, start.y + border_size };
+        ImVec2 clip_rect_max = { end.x - border_size, end.y - border_size };
+
+        // The current implementation of the circle rendering inside the rectangle
+        // is done using Push/PopClipRect functions. Note that parts of the circle that
+        // are within the rectangle (in the area where the rectangle is rounded) will still
+        // be drawn because region clipping is done (in Dear ImGui) using scissoring rectangles.
+        //
+        // There is currently no better implementation. However, if one is found, you would
+        // need to draw the intersection of a circle and a rounded rectangle manually.
+        //
+        // In the future, the following resources may help to draw the intersection:
+        //
+        //  https://mathworld.wolfram.com/Circle-CircleIntersection.html
+        //  https://mathworld.wolfram.com/Circle-LineIntersection.html
+        //
+        // Either way, the implementation will be extremely challenging.
+        draw_list->PushClipRect(clip_rect_min, clip_rect_max, true);
+        {
+            it.alpha = animation::bring_to(it.alpha, 1.00, it.click_time, durations[1]);
+            it.radius = animation::bring_to(it.radius, std::max(size.x, size.y), it.click_time, durations[1] + durations[2]);
+
+            if (std::chrono::steady_clock::now() >= it.click_time + durations[1])
+                it.alpha = animation::bring_to(it.alpha, 0.00, it.click_time + durations[1], durations[2]);
         
-            if (radius_time <= radius_duration) {
-                alpha = std::clamp((255.0f / radius_duration) * radius_time, 0.0f, 255.0f);
-                it.radius = (size.x * 1.5 / radius_duration) * radius_time;
-            }
+            draw_list->AddCircleFilled(*it.click_position, it.radius, *types::color(button_active, it.alpha * 255), 0xFF);
+        }
+        draw_list->PopClipRect();    
 
-            draw_list->AddCircleFilled(*it.pos, it.radius, *types::color(active_color, alpha), 0xFF);
-
-            if (alpha <= 0)
-                it.pos = {};
+        if (it.alpha == 0.00) {
+            it.click_position = {};
+            it.radius = 0;
         }
     }
-    draw_list->PopClipRect();
 
-    std::string text = get_text_before_hashtag();
+    std::string text = label;
+        
+    if (std::size_t pos = label.find("##"); pos != std::string::npos)
+        text = label.substr(0, pos);
+    
     ImVec2 text_size = ImGui::CalcTextSize(text.c_str());
     ImVec2 text_align = ImGui::GetStyle().ButtonTextAlign;
+    ImVec2 text_pos = { start.x + ((size.x - text_size.x) * text_align.x),
+                        start.y + ((size.y - text_size.y) * text_align.y) };
 
-    ImGui::SetCursorScreenPos({ pos.x + ((size.x - text_size.x) * text_align.x), pos.y + ((size.y - text_size.y) * text_align.y) });
+    ImGui::SetCursorScreenPos(text_pos);
     ImGui::TextUnformatted(text.c_str());
-    ImGui::SetCursorPos(cursor_pos);
+    ImGui::SetCursorScreenPos(start);
+
+    bool result = false;
 
     if (ImGui::InvisibleButton(label.c_str(), size)) {
         it.radius = 0;
-        it.pos = ImGui::GetMousePos();
-        it.time[0] = now;
-        it.time[1] = now + durations[0];
-        clicked = true;
+        it.click_time = std::chrono::steady_clock::now();
+        it.click_position = ImGui::GetMousePos();
+        result = true;
     }
 
-    it.hovered_state_current = ImGui::IsItemHovered() || now - it.time[1] <= 0ms;
+    it.hovered.update();
 
-    if (it.hovered_state_current != it.hovered_state_before) {
-        it.hovered_state_before = it.hovered_state_current;
-        it.hovered_time = now;
-    }
-
-    return clicked;
+    return result;
 }
 
 plugin::gui::widgets::button::button(const std::string_view& new_label) : label(std::move(new_label)) {
