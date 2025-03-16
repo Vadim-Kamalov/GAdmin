@@ -11,6 +11,7 @@
 #include "plugin/gui/windows/spectator_information.h"
 #include "plugin/gui/windows/spectator_actions.h"
 #include "plugin/gui/windows/spectator_keys.h"
+#include "plugin/gui/windows/vehicle_selection.h"
 #include <windows.h>
 #include <imgui.h>
 
@@ -35,12 +36,23 @@ plugin::gui_initializer::on_event(unsigned int message, WPARAM wparam, LPARAM lp
     for (const auto& window : registered_windows)
         if (!window->on_event(message, wparam, lparam))
             return false;
+    
+    // Events to the game or SA:MP will not be sent when the user is typing something in ImGui's inputs.
+    // Here, we only check `WantTextInput` and not `WantCaptureMouse || WantCaptureKeyboard`, because there
+    // are some cases when the game will not receive the release (of something, e.g. key or mouse button) event.
+    //
+    // The check for SA:MP initialization is needed for compatibility with MoonLoader versions below v027.
+    // It can lead to an assertion failure in `d3dhook::originalD3DDevice9` if this check is not present.
+    // See: https://www.blast.hk/threads/55883/post-504967
+    if (samp_initialized && ImGui::GetIO().WantTextInput)
+        return false;
 
     return true;
 }
 
 void
-plugin::gui_initializer::on_samp_initialize() const {
+plugin::gui_initializer::on_samp_initialize() {
+    samp_initialized = true;
     for (const auto& window : registered_windows)
         window->on_samp_initialize();
 }
@@ -67,6 +79,7 @@ plugin::gui_initializer::on_initialize() {
     registered_windows.push_back(windows::kill_list::create(this));
     registered_windows.push_back(windows::far_chat::create(this));
     registered_windows.push_back(windows::players_nearby::create(this));
+    registered_windows.push_back(windows::vehicle_selection::create(this));
 }
 
 void
