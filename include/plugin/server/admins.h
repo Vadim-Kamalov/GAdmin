@@ -3,6 +3,8 @@
 
 #include "plugin/samp/events/dialog.h"
 #include "plugin/samp/events/server_message.h"
+#include "plugin/samp/events/server_quit.h"
+#include "plugin/samp/events/set_player_name.h"
 #include <nlohmann/detail/macro_scope.hpp>
 #include <vector>
 
@@ -22,6 +24,9 @@ class admins {
 private:
     static bool on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog);
     static bool on_server_message(const samp::event<samp::event_id::server_message>& message);
+    static bool on_server_quit(const samp::event<samp::event_id::server_quit>& disconnected);
+    static bool on_set_player_name(const samp::event<samp::event_id::set_player_name>& player);
+
     static void update_admins(const std::string_view& dialog_text);
     static void add_connected_admin(const admin& connected_admin);
     static void remove_disconnected_admin(std::uint16_t id);

@@ -8,6 +8,7 @@
 namespace plugin::samp {
 
 enum class event_id : std::uint8_t {
+    set_player_name = 11,
     create_3d_text = 36,
     send_command = 50,
     player_death_notification = 55,
@@ -19,6 +20,7 @@ enum class event_id : std::uint8_t {
     set_text_draw_string = 105,
     show_text_draw = 134,
     hide_text_draw = 135,
+    server_quit = 138,
     vehicle_synchronization = 200,
     bullet_synchronization = 206,
     player_synchronization = 207,

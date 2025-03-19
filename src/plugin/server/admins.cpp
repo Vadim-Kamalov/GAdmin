@@ -71,6 +71,18 @@ plugin::server::admins::on_server_message(const samp::event<samp::event_id::serv
     return true;
 }
 
+bool
+plugin::server::admins::on_server_quit(const samp::event<samp::event_id::server_quit>& disconnected) {
+    remove_disconnected_admin(disconnected.id);
+    return true;
+}
+
+bool
+plugin::server::admins::on_set_player_name(const samp::event<samp::event_id::set_player_name>& player) {
+    remove_disconnected_admin(player.id);
+    return true;
+}
+
 void
 plugin::server::admins::update_admins(const std::string_view& dialog_text) {
     std::ispanstream stream(dialog_text);
@@ -132,15 +144,18 @@ plugin::server::admins::on_alogout() {
 bool
 plugin::server::admins::on_event(const samp::event_info& event) {
     if (event == samp::event_type::incoming_rpc) {
-        if (event == samp::event_id::show_dialog) {
-            if (auto dialog_event = event.create<samp::event_id::show_dialog>()) {
+        if (event == samp::event_id::show_dialog)
+            if (auto dialog_event = event.create<samp::event_id::show_dialog>())
                 return on_show_dialog(dialog_event);
-            }
-        }
 
-        if (event == samp::event_id::server_message) {
+        if (event == samp::event_id::server_message)
             return on_server_message(event.create<samp::event_id::server_message>());
-        }
+    
+        if (event == samp::event_id::server_quit)
+            return on_server_quit(event.create<samp::event_id::server_quit>());
+
+        if (event == samp::event_id::set_player_name)
+            return on_set_player_name(event.create<samp::event_id::set_player_name>());
     }
 
     return true;
