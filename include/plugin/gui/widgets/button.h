@@ -1,6 +1,7 @@
 #ifndef GADMIN_PLUGIN_GUI_WIDGETS_BUTTON_H
 #define GADMIN_PLUGIN_GUI_WIDGETS_BUTTON_H
 
+#include "plugin/gui/animation.h"
 #include <optional>
 #include <string>
 #include <utility>
@@ -15,11 +16,11 @@ namespace plugin::gui::widgets {
 class button {
 private:
     struct configuration_t {
-        float radius = 0;
-        std::uint8_t hovered_alpha = 0;
-        std::chrono::steady_clock::time_point time[2], hovered_time;
-        bool hovered_state_current = false, hovered_state_before = false;
-        std::optional<ImVec2> pos;
+        animation::hover_info hovered;
+        std::uint8_t border_alpha = 0;
+        float alpha = 0, radius = 0;
+        std::optional<ImVec2> click_position;
+        std::chrono::steady_clock::time_point click_time;
     }; // struct configuration_t
 private:
     std::array<std::chrono::milliseconds, 3> durations = { 200ms, 400ms, 300ms };
@@ -30,7 +31,6 @@ private:
 
     static inline std::unordered_map<std::string_view, configuration_t> pool;
    
-    std::string get_text_before_hashtag() const;
     void register_in_pool() const;
 public:
     inline button& with_draw_flags(ImDrawFlags new_draw_flags) noexcept;

@@ -11,6 +11,7 @@
 #include "plugin/gui/windows/spectator_information.h"
 #include "plugin/gui/windows/spectator_actions.h"
 #include "plugin/gui/windows/spectator_keys.h"
+#include "plugin/gui/windows/vehicle_selection.h"
 #include <windows.h>
 #include <imgui.h>
 
@@ -27,15 +28,6 @@ plugin::gui_initializer::on_event(const samp::event_info& event) const {
 
 bool
 plugin::gui_initializer::on_event(unsigned int message, WPARAM wparam, LPARAM lparam) {
-    if (message == WM_KEYDOWN && wparam == VK_ESCAPE && is_cursor_active()) {
-        disable_cursor();
-        return false;
-    }
-
-    for (const auto& window : registered_windows)
-        if (!window->on_event(message, wparam, lparam))
-            return false;
-    
     // Events to the game or SA:MP will not be sent when the user is typing something in ImGui's inputs.
     // Here, we only check `WantTextInput` and not `WantCaptureMouse || WantCaptureKeyboard`, because there
     // are some cases when the game will not receive the release (of something, e.g. key or mouse button) event.
@@ -45,7 +37,21 @@ plugin::gui_initializer::on_event(unsigned int message, WPARAM wparam, LPARAM lp
     // See: https://www.blast.hk/threads/55883/post-504967
     if (samp_initialized && ImGui::GetIO().WantTextInput)
         return false;
-
+    
+    for (const auto& window : registered_windows)
+        if (!window->on_event(message, wparam, lparam))
+            return false;
+    
+    if (message == WM_KEYUP && wparam == 0x5A /* VK_Z */) {
+        switch_cursor();
+        return false;
+    }
+    
+    if (message == WM_KEYDOWN && wparam == VK_ESCAPE && is_cursor_active()) {
+        disable_cursor();
+        return false;
+    }
+    
     return true;
 }
 
@@ -78,6 +84,7 @@ plugin::gui_initializer::on_initialize() {
     registered_windows.push_back(windows::kill_list::create(this));
     registered_windows.push_back(windows::far_chat::create(this));
     registered_windows.push_back(windows::players_nearby::create(this));
+    registered_windows.push_back(windows::vehicle_selection::create(this));
 }
 
 void
@@ -88,6 +95,11 @@ plugin::gui_initializer::render() const {
 
         window->render();
     }
+}
+
+bool
+plugin::gui_initializer::is_cursor_active() const {
+    return reinterpret_cast<std::uintptr_t>(GetCursor()) != 0;
 }
 
 void

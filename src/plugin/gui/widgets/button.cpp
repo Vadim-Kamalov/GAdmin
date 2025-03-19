@@ -72,15 +72,17 @@ plugin::gui::widgets::button::render() {
         
     if (std::size_t pos = label.find("##"); pos != std::string::npos)
         text = label.substr(0, pos);
-    
-    ImVec2 text_size = ImGui::CalcTextSize(text.c_str());
-    ImVec2 text_align = ImGui::GetStyle().ButtonTextAlign;
-    ImVec2 text_pos = { start.x + ((size.x - text_size.x) * text_align.x),
-                        start.y + ((size.y - text_size.y) * text_align.y) };
 
-    ImGui::SetCursorScreenPos(text_pos);
-    ImGui::TextUnformatted(text.c_str());
-    ImGui::SetCursorScreenPos(start);
+    if (!text.empty()) {
+        ImVec2 text_size = ImGui::CalcTextSize(text.c_str());
+        ImVec2 text_align = ImGui::GetStyle().ButtonTextAlign;
+        ImVec2 text_pos = { start.x + ((size.x - text_size.x) * text_align.x),
+                            start.y + ((size.y - text_size.y) * text_align.y) };
+
+        ImGui::SetCursorScreenPos(text_pos);
+        ImGui::TextUnformatted(text.c_str());
+        ImGui::SetCursorScreenPos(start);
+    }
 
     bool result = false;
 

@@ -94,16 +94,6 @@ plugin::gui::windows::main::render() {
     ImGui::PopStyleVar();
 }
 
-bool
-plugin::gui::windows::main::on_event(unsigned int message, WPARAM wparam, LPARAM lparam) {
-    if (message == WM_KEYUP && wparam == 0x5A /* VK_Z */) {
-        child->switch_cursor();
-        return false;
-    }
-
-    return true;
-}
-
 plugin::gui::windows::main::main(types::not_null<gui_initializer*> child) : child(child) {
     log::info("window \"{}\" initialized", get_id());
 }

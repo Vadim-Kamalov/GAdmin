@@ -1,7 +1,7 @@
 #ifndef GADMIN_PLUGIN_SAMP_CORE_CHAT_H
 #define GADMIN_PLUGIN_SAMP_CORE_CHAT_H
 
-#include "plugin/encoding.h"
+#include "plugin/string_utils.h"
 #include "plugin/types/address.h"
 #include "plugin/types/color.h"
 #include "plugin/types/simple.h"
@@ -32,7 +32,7 @@ template<typename... Args>
 void
 plugin::samp::chat::add_message(const types::color& color, std::format_string<Args...> fmt, Args&&... args) noexcept {
     add_message_container->invoke(instance_container->read(), color.cast<types::color_type::rgba>(),
-                                  encoding::to_cp1251(std::format(fmt, std::forward<Args>(args)...)).c_str());
+                                  string_utils::to_cp1251(std::format(fmt, std::forward<Args>(args)...)).c_str());
 }
 
 #endif // GADMIN_PLUGIN_SAMP_CORE_CHAT_H

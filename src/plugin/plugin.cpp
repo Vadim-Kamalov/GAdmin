@@ -297,6 +297,7 @@ plugin::plugin_initializer::on_unhandled_exception(EXCEPTION_POINTERS* exception
 }
 
 plugin::plugin_initializer::plugin_initializer() {
+    std::setlocale(LC_ALL, "Russian_Russia.UTF8");
     initialize_logging();
 
     log::info("GAdmin v" PROJECT_VERSION " loaded. Copyright (C) 2023-2025 The Contributors");

@@ -13,6 +13,7 @@ private:
     std::vector<gui::window_ptr_t> registered_windows;
 
     bool cursor_active = false;
+    bool samp_initialized = false;
     int cursor_last_x = -1, cursor_last_y = 1;
 public:
     std::unique_ptr<gui::fonts_initializer> fonts;
@@ -20,12 +21,12 @@ public:
     bool on_event(const samp::event_info& event) const;
     bool on_event(unsigned int message, WPARAM wparam, LPARAM lparam);
     
-    void on_samp_initialize() const;
+    void on_samp_initialize();
     bool can_initialize_render() const;
     void on_initialize();
     void render() const;
 
-    inline bool is_cursor_active() const;
+    bool is_cursor_active() const;
     void enable_cursor();
     void disable_cursor();
     void switch_cursor();
@@ -35,10 +36,5 @@ public:
 }; // class gui_initializer
 
 } // namespace plugin
-
-inline bool
-plugin::gui_initializer::is_cursor_active() const {
-    return cursor_active;
-}
 
 #endif // GADMIN_PLUGIN_GUI_H

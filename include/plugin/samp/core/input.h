@@ -1,7 +1,7 @@
 #ifndef GADMIN_PLUGIN_SAMP_CORE_INPUT_H
 #define GADMIN_PLUGIN_SAMP_CORE_INPUT_H
 
-#include "plugin/encoding.h"
+#include "plugin/string_utils.h"
 #include "plugin/types/address.h"
 #include "plugin/types/simple.h"
 #include <format>
@@ -54,7 +54,7 @@ public:
 template<typename... Args>
 void
 plugin::samp::input::send_command(std::format_string<Args...> fmt, Args&&... args) noexcept {
-    send_command_container->invoke(instance_container->read(), encoding::to_cp1251(
+    send_command_container->invoke(instance_container->read(), string_utils::to_cp1251(
         std::format(fmt, std::forward<Args>(args)...)).c_str());
 }
 

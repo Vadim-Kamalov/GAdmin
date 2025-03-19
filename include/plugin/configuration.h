@@ -24,7 +24,7 @@ public:
     explicit configuration_initializer(const std::filesystem::path& configuration_file);
     ~configuration_initializer() noexcept;
 private:
-    inline static nlohmann::json json = R"(
+    inline static nlohmann::json json = R"json(
         {
             "user": {
                 "nickname": "Администратор",
@@ -62,7 +62,7 @@ private:
                         "Здоровье/броня",
                         "Фракция",
                         "Должность",
-                        )" "\"Машина(-ы)\"," R"(
+                        "Машина(-ы)",
                         "Стадия",
                         "VIP статус",
                         "Предупреждения",
@@ -124,7 +124,8 @@ private:
                     "sort_by": "distance"
                 },
 
-                "spectator_keys": { "use": true }
+                "spectator_keys": { "use": true },
+                "vehicle_selection": { "use": true }
             },
 
             "additions": {
@@ -136,7 +137,7 @@ private:
                 "guide_hints": []
             }
         }
-    )"_json;
+    )json"_json;
 }; // class configuration_initializer
 
 } // namespace plugin

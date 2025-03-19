@@ -1,5 +1,5 @@
 #include "plugin/samp/events/dialog.h"
-#include "plugin/encoding.h"
+#include "plugin/string_utils.h"
 
 void
 plugin::samp::event<plugin::samp::event_id::show_dialog>::send_response(const dialog::button& button,
@@ -14,10 +14,10 @@ plugin::samp::event<plugin::samp::event_id::show_dialog>::event(bit_stream* stre
         return;
 
     style = static_cast<dialog::style>(stream->read<std::uint8_t>());
-    title = encoding::to_utf8(stream->read_string<std::uint8_t>());
+    title = string_utils::to_utf8(stream->read_string<std::uint8_t>());
 
-    buttons = std::make_pair(encoding::to_utf8(stream->read_string<std::uint8_t>()),
-                             encoding::to_utf8(stream->read_string<std::uint8_t>()));
+    buttons = std::make_pair(string_utils::to_utf8(stream->read_string<std::uint8_t>()),
+                             string_utils::to_utf8(stream->read_string<std::uint8_t>()));
 
-    text = encoding::to_utf8(stream->read_encoded(4096));
+    text = string_utils::to_utf8(stream->read_encoded(4096));
 }

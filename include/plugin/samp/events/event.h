@@ -9,6 +9,7 @@ namespace plugin::samp {
 
 enum class event_id : std::uint8_t {
     create_3d_text = 36,
+    send_command = 50,
     player_death_notification = 55,
     remove_3d_text = 58,
     player_chat_bubble = 59,
@@ -36,6 +37,9 @@ struct event {};
 
 template<event_id id>
 using packet = event<id, event_type::incoming_packet>;
+
+template<event_id id>
+using out_event = event<id, event_type::outgoing_rpc>;
 
 class event_info {
 public:

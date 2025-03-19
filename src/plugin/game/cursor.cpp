@@ -18,7 +18,7 @@ plugin::game::cursor::set_status(bool status) noexcept {
     }
 
     SetCursor(LoadCursor(nullptr, (status) ? IDC_ARROW : nullptr));
-	
+
     memory::set(0xB73424, 0x0, 8);
 	memory::set(0xB7342C, 0x0, 8);
 }

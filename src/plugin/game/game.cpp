@@ -1,8 +1,9 @@
 #include "plugin/game/game.h"
+#include "plugin/types/address.h"
 
 std::pair<float, float>
 plugin::game::get_screen_resolution() noexcept {
-    auto x = *reinterpret_cast<int*>(0xC9C040);
-    auto y = *reinterpret_cast<int*>(0xC9C044);
-    return std::make_pair(static_cast<float>(x), static_cast<float>(y));
+    static types::address<int> resolution_x = 0xC9C040;
+    static types::address<int> resolution_y = 0xC9C044;
+    return std::make_pair(resolution_x.read(), resolution_y.read());
 }

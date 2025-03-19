@@ -49,7 +49,7 @@ namespace fonts {
 
 CREATE_SIMPLE_FONT(light, "notosans-light.ttf", 18, 24);
 CREATE_SIMPLE_FONT(regular, "notosans-regular.ttf", 10, 12, 15, 16, 18, 24);
-CREATE_SIMPLE_FONT(bold, "notosans-bold.ttf", 15, 16, 18, 20, 24);
+CREATE_SIMPLE_FONT(bold, "notosans-bold.ttf", 10, 14, 15, 16, 18, 20, 24);
 CREATE_RANGED_FONT(icon, "coolicons.ttf", ICON_MIN, ICON_MAX, 24);
 
 } // namespace fonts

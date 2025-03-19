@@ -35,7 +35,6 @@ public:
     constexpr types::zstring_t get_id() const override;
 
     void render() override;
-    bool on_event(unsigned int message, WPARAM wparam, LPARAM lparam) override;
     
     static window_ptr_t create(types::not_null<gui_initializer*> child) noexcept;
     explicit main(types::not_null<gui_initializer*> child);
