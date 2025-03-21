@@ -24,8 +24,11 @@ plugin::samp::vehicle_pool::get_vehicle(std::uint16_t id) noexcept {
 
 std::expected<std::uint16_t, plugin::samp::vehicle_pool::error>
 plugin::samp::vehicle_pool::get_id(const vehicle& vehicle) noexcept {
+    std::uintptr_t pool = get_vehicle_pool_container->invoke(net_game::instance_container->read());
+    std::uintptr_t* objects = objects_offset.read(pool);
+
     for (std::uint16_t id = 0; id < max_vehicles; id++)
-        if (get_vehicle(id) == vehicle)
+        if (samp::vehicle(objects[id]) == vehicle)
             return id;
 
     return std::unexpected(error::vehicle_not_found);

@@ -15,5 +15,5 @@ plugin::samp::entity::get_model_index() const {
 
 bool
 plugin::samp::entity::operator==(const entity& other) const {
-    return handle == other.handle;
+    return *handle == *other.handle;
 }

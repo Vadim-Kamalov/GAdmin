@@ -216,7 +216,7 @@ plugin::gui::windows::spectator_information::get_rows() const {
 void
 plugin::gui::windows::spectator_information::render() {
     auto window_configuration = (*configuration)["windows"]["spectator_information"];
-    
+
     if (!server::spectator::is_active() || !window_configuration["use"])
         return;
 
