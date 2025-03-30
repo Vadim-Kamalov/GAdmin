@@ -28,6 +28,10 @@ plugin::gui::widgets::hint::render_hint(float alpha) const {
     {
         ImGui::SetNextWindowPos({ center.x, center.y - size.y - 3 }, ImGuiCond_Always, { 0.5, 1 });
         ImGui::SetNextWindowSize({ pool[label].width, -1 }, ImGuiCond_Always);
+        
+        if (using_custom_renderer)
+            ImGui::SetNextWindowFocus();
+        
         ImGui::Begin(label.c_str(), nullptr, ImGuiWindowFlags_Tooltip | ImGuiWindowFlags_NoDecoration);
         {
             ImGui::BeginGroup();

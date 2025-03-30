@@ -26,6 +26,7 @@ private:
     types::color color = ImGui::GetColorU32(ImGuiCol_FrameBg);
 
     bool using_custom_condition = false;
+    bool using_custom_renderer = false;
 
     void default_renderer() const;
     void render_hint(float alpha) const;
@@ -71,6 +72,7 @@ plugin::gui::widgets::hint::with_show_hide_duration(std::chrono::milliseconds du
 inline plugin::gui::widgets::hint&
 plugin::gui::widgets::hint::with_renderer(renderer_t new_renderer) noexcept {
     renderer = new_renderer;
+    using_custom_renderer = true;
     return *this;
 }
 
