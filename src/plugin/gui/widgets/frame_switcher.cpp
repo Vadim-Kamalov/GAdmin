@@ -22,8 +22,8 @@ struct frame_switcher_settings {
 }; // struct frame_switcher_settings
 
 static frame_switcher_settings&
-get_settings(const std::string_view& id, const windows::main::frame& current_frame, const windows::main::frame& frame) {
-    static std::unordered_map<std::string_view, frame_switcher_settings> entries;
+get_settings(const std::string& id, const windows::main::frame& current_frame, const windows::main::frame& frame) {
+    static std::unordered_map<std::string, frame_switcher_settings> entries;
 
     if (entries.find(id) == entries.end()) {
         frame_switcher_settings settings;

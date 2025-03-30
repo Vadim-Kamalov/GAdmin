@@ -134,7 +134,8 @@ private:
             },
 
             "internal": {
-                "guide_hints": []
+                "guide_hints": [],
+                "hotkeys": {}
             }
         }
     )json"_json;

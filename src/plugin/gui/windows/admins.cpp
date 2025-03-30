@@ -67,15 +67,23 @@ plugin::gui::windows::admins::render() {
         ImGui::SetCursorPosX(0);
         ImGui::BeginChild("windows::admins::content", { ImGui::GetWindowWidth(), content_height });
         {
-            for (const auto& [width, text] : admins) {
-                float pos_x = window_padding.x;
+            ImGuiListClipper clipper;
 
-                if (std::string align = window_configuration["align"]; align != "left")
-                    pos_x = (align == "right") ? ImGui::GetContentRegionAvail().x - width 
-                        : (ImGui::GetContentRegionAvail().x - width) / 2;
+            clipper.Begin(admins.size());
+
+            while (clipper.Step()) {
+                for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++) {
+                    auto [ width, text ] = admins[i];
+
+                    float pos_x = window_padding.x;
+
+                    if (std::string align = window_configuration["align"]; align != "left")
+                        pos_x = (align == "right") ? ImGui::GetContentRegionAvail().x - width 
+                            : (ImGui::GetContentRegionAvail().x - width) / 2;
                 
-                ImGui::SetCursorPosX(pos_x);
-                widgets::text(admin_entry_font, 1, "{}", text);
+                    ImGui::SetCursorPosX(pos_x);
+                    widgets::text(admin_entry_font, 1, "{}", text);
+                }
             }
         }
         ImGui::EndChild();

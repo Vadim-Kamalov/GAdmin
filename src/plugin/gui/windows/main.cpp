@@ -1,10 +1,11 @@
 #include "plugin/gui/windows/main.h"
 #include "plugin/game/game.h"
+#include "plugin/gui/hotkey.h"
 #include "plugin/gui/widgets/button.h"
 #include "plugin/gui/widgets/frame_switcher.h"
 #include "plugin/gui/widgets/menu_selector.h"
+#include "plugin/gui/widgets/toggle_button.h"
 #include "plugin/log.h"
-#include <imgui_internal.h>
 #include <imgui.h>
 #include <windows.h>
 
@@ -86,6 +87,9 @@ plugin::gui::windows::main::render() {
             }
 
             widgets::button("Hello, world!").render();
+
+            for (auto& hotkey : child->hotkey_handler->pool)
+                hotkey.render();
         }
         ImGui::EndGroup();
         render_menu();

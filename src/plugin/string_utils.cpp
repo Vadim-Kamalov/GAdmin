@@ -26,6 +26,14 @@ plugin::string_utils::to_lowercase(const std::string_view& string) {
 }
 
 std::string
+plugin::string_utils::truncate_until_hashtag(const std::string_view& text) {
+    if (std::size_t pos = text.find("##"); pos != std::string::npos)
+        return std::string(text.substr(0, pos));
+
+    return std::string(text);
+}
+
+std::string
 plugin::string_utils::to_utf8(const std::string& text) {
     return convert_encoding(text, 1251, CP_UTF8);
 }

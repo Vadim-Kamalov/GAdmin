@@ -27,7 +27,6 @@ private:
 
     bool using_custom_condition = false;
 
-    std::string get_text_before_hashtag() const;
     void default_renderer() const;
     void render_hint(float alpha) const;
 private:
@@ -37,7 +36,7 @@ private:
         std::chrono::steady_clock::time_point time;
     }; // struct configuration_t
     
-    static inline std::unordered_map<std::string_view, configuration_t> pool;
+    static inline std::unordered_map<std::string, configuration_t> pool;
 public:
     inline hint& with_condition(condition_t new_condition) noexcept;
     inline hint& with_show_hide_duration(std::chrono::milliseconds duration) noexcept;
@@ -45,7 +44,7 @@ public:
 
     void render();
 
-    static void render_as_guide(const std::string_view& label, bool optional_condition = true) noexcept;
+    static void render_as_guide(const std::string& label, bool optional_condition = true) noexcept;
 
     explicit hint(const std::string_view& label)
         : label(std::move(label)) {}

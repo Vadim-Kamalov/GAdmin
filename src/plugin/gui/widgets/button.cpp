@@ -1,16 +1,17 @@
 #include "plugin/gui/widgets/button.h"
+#include "plugin/string_utils.h"
 
 void
 plugin::gui::widgets::button::register_in_pool() const {
-    if (pool.contains(label))
+    if (pool.contains(id))
         return;
 
-    pool[label] = {};
+    pool[id] = {};
 }
 
 bool
 plugin::gui::widgets::button::render() {
-    configuration_t& it = pool[label];
+    configuration_t& it = pool[id];
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
     types::color button_color = ImGui::GetColorU32(ImGuiCol_Button);
@@ -68,10 +69,7 @@ plugin::gui::widgets::button::render() {
         }
     }
 
-    std::string text = label;
-        
-    if (std::size_t pos = label.find("##"); pos != std::string::npos)
-        text = label.substr(0, pos);
+    std::string text = string_utils::truncate_until_hashtag(label);
 
     if (!text.empty()) {
         ImVec2 text_size = ImGui::CalcTextSize(text.c_str());
@@ -86,7 +84,7 @@ plugin::gui::widgets::button::render() {
 
     bool result = false;
 
-    if (ImGui::InvisibleButton(label.c_str(), size)) {
+    if (ImGui::InvisibleButton((text + "##" + id).c_str(), size)) {
         it.radius = 0;
         it.click_time = std::chrono::steady_clock::now();
         it.click_position = ImGui::GetMousePos();
@@ -98,7 +96,10 @@ plugin::gui::widgets::button::render() {
     return result;
 }
 
-plugin::gui::widgets::button::button(const std::string_view& new_label) : label(std::move(new_label)) {
+plugin::gui::widgets::button::button(const std::string_view& new_label)
+    : label(std::move(new_label)),
+      id(std::move(new_label))
+{
     ImVec2 text_size = ImGui::CalcTextSize(label.c_str(), nullptr, true);
     ImVec2 frame_padding = ImGui::GetStyle().FramePadding;
     

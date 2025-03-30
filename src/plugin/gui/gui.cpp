@@ -12,6 +12,7 @@
 #include "plugin/gui/windows/spectator_actions.h"
 #include "plugin/gui/windows/spectator_keys.h"
 #include "plugin/gui/windows/vehicle_selection.h"
+#include "plugin/log.h"
 #include <windows.h>
 #include <imgui.h>
 
@@ -28,24 +29,21 @@ plugin::gui_initializer::on_event(const samp::event_info& event) const {
 
 bool
 plugin::gui_initializer::on_event(unsigned int message, WPARAM wparam, LPARAM lparam) {
+    if (ImGui::GetCurrentContext() == nullptr)
+        return true;
+
     // Events to the game or SA:MP will not be sent when the user is typing something in ImGui's inputs.
     // Here, we only check `WantTextInput` and not `WantCaptureMouse || WantCaptureKeyboard`, because there
     // are some cases when the game will not receive the release (of something, e.g. key or mouse button) event.
-    //
-    // The check for SA:MP initialization is needed for compatibility with MoonLoader versions below v027.
-    // It can lead to an assertion failure in `d3dhook::originalD3DDevice9` if this check is not present.
-    // See: https://www.blast.hk/threads/55883/post-504967
-    if (samp_initialized && ImGui::GetIO().WantTextInput)
+    if (ImGui::GetIO().WantTextInput)
         return false;
-    
+
+    if (!hotkey_handler->on_event(message, wparam, lparam))
+        return false;
+
     for (const auto& window : registered_windows)
         if (!window->on_event(message, wparam, lparam))
             return false;
-    
-    if (message == WM_KEYUP && wparam == 0x5A /* VK_Z */) {
-        switch_cursor();
-        return false;
-    }
     
     if (message == WM_KEYDOWN && wparam == VK_ESCAPE && is_cursor_active()) {
         disable_cursor();
@@ -57,7 +55,6 @@ plugin::gui_initializer::on_event(unsigned int message, WPARAM wparam, LPARAM lp
 
 void
 plugin::gui_initializer::on_samp_initialize() {
-    samp_initialized = true;
     for (const auto& window : registered_windows)
         window->on_samp_initialize();
 }
@@ -74,6 +71,9 @@ plugin::gui_initializer::on_initialize() {
     ImGui::GetIO().IniFilename = nullptr; 
     fonts->initialize();
     style::apply();
+
+    hotkey_handler->add(hotkey("Переключить курсор", key_bind({ 'B', 0 }))
+            .with_callback([&](hotkey&) { switch_cursor(); }));
 
     registered_windows.push_back(windows::main::create(this));
     registered_windows.push_back(windows::admins::create(this));
@@ -97,9 +97,14 @@ plugin::gui_initializer::render() const {
     }
 }
 
+void
+plugin::gui_initializer::main_loop() {
+    hotkey_handler->main_loop();
+}
+
 bool
 plugin::gui_initializer::is_cursor_active() const {
-    return reinterpret_cast<std::uintptr_t>(GetCursor()) != 0;
+    return GetCursor() != nullptr;
 }
 
 void
@@ -136,6 +141,7 @@ plugin::gui_initializer::switch_cursor() {
 
 plugin::gui_initializer::gui_initializer() {
     fonts = std::make_unique<gui::fonts_initializer>();
+    hotkey_handler = std::make_unique<gui::hotkey_handler>(this);
 }
 
 plugin::gui_initializer::~gui_initializer() noexcept {

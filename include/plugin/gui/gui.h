@@ -3,6 +3,7 @@
 
 #include "plugin/gui/base/window.h"
 #include "plugin/gui/fonts.h"
+#include "plugin/gui/hotkey.h"
 #include <minwindef.h>
 #include <vector>
 
@@ -13,10 +14,10 @@ private:
     std::vector<gui::window_ptr_t> registered_windows;
 
     bool cursor_active = false;
-    bool samp_initialized = false;
     int cursor_last_x = -1, cursor_last_y = 1;
 public:
     std::unique_ptr<gui::fonts_initializer> fonts;
+    std::unique_ptr<gui::hotkey_handler> hotkey_handler;
 
     bool on_event(const samp::event_info& event) const;
     bool on_event(unsigned int message, WPARAM wparam, LPARAM lparam);
@@ -25,6 +26,7 @@ public:
     bool can_initialize_render() const;
     void on_initialize();
     void render() const;
+    void main_loop();
 
     bool is_cursor_active() const;
     void enable_cursor();

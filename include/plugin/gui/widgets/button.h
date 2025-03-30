@@ -25,22 +25,29 @@ private:
 private:
     std::array<std::chrono::milliseconds, 3> durations = { 200ms, 400ms, 300ms };
 
-    std::string label;
+    std::string id;
+
     ImVec2 size;
     ImDrawFlags draw_flags = ImDrawFlags_RoundCornersAll;
 
-    static inline std::unordered_map<std::string_view, configuration_t> pool;
+    static inline std::unordered_map<std::string, configuration_t> pool;
    
     void register_in_pool() const;
 public:
+    std::string label;
+
     inline button& with_draw_flags(ImDrawFlags new_draw_flags) noexcept;
     inline button& with_durations(const std::array<std::chrono::milliseconds, 3>& durations) noexcept;
 
     bool render();
 
     explicit button(const std::string_view& label);
+
+    explicit button(const std::string_view& label, const std::string_view& id, const ImVec2& size)
+        : label(std::move(label)), size(std::move(size)), id(std::move(id)) { register_in_pool(); }
+
     explicit button(const std::string_view& label, const ImVec2& size)
-        : label(std::move(label)), size(std::move(size)) { register_in_pool(); }
+        : label(std::move(label)), size(std::move(size)), id(std::move(label)) { register_in_pool(); }
 }; // class button
 
 } // namespace plugin::gui::widgets

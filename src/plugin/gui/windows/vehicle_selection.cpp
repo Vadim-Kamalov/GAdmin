@@ -237,5 +237,5 @@ plugin::gui::windows::vehicle_selection::create(types::not_null<gui_initializer*
 }
 
 plugin::gui::windows::vehicle_selection::vehicle_selection(types::not_null<gui_initializer*> child) : child(child) {
-    log::info("windows \"windows::vehicle_selection\" initialized");
+    log::info("window \"windows::vehicle_selection\" initialized");
 }

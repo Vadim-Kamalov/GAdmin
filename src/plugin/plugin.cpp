@@ -32,7 +32,7 @@ plugin::plugin_initializer::on_event(const samp::event_info& event) {
     if (!server::admins::on_event(event))
         return false;
     
-    if (gui && !gui->on_event(event))
+    if (gui != nullptr && !gui->on_event(event))
         return false;
     
     event.stream->reset_read_pointer();
@@ -68,7 +68,7 @@ plugin::plugin_initializer::on_frame() {
 
 bool
 plugin::plugin_initializer::on_message(unsigned int message, WPARAM wparam, LPARAM lparam) {
-    if (gui && !gui->on_event(message, wparam, lparam))
+    if (gui != nullptr && !gui->on_event(message, wparam, lparam))
         return false;
     
     return true;
@@ -85,7 +85,7 @@ plugin::plugin_initializer::on_samp_initialize() {
         return;
     }
 
-    if (!gui) {
+    if (gui == nullptr) {
         log::fatal("failed to initialize gui->on_samp_initialize(): gui == nullptr");
         return;
     }
@@ -107,6 +107,9 @@ plugin::plugin_initializer::main_loop() {
     server::user::main_loop();
     server::spectator::main_loop();
     server::binder::main_loop();
+    
+    if (gui != nullptr)
+        gui->main_loop();
 
     if (!samp_initialized && samp::get_base() != 0 && samp::net_game::instance_container->read() != 0) {
         on_samp_initialize();
