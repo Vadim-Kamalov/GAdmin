@@ -50,7 +50,7 @@ public:
 public:
     std::string title, description;
     std::optional<buttons_t> buttons;
-    std::chrono::steady_clock::time_point time_sended;
+    std::chrono::steady_clock::time_point time_sent;
     icon_t icon;
 
     std::chrono::milliseconds duration = 5s;
@@ -64,7 +64,7 @@ public:
     void remove() noexcept;
 
     notification(const std::string_view& title, const std::string_view& description, icon_t icon)
-        : title(std::move(title)), description(std::move(description)), icon(icon), time_sended(std::chrono::steady_clock::now()) {}
+        : title(std::move(title)), description(std::move(description)), icon(icon), time_sent(std::chrono::steady_clock::now()) {}
 }; // class notification
 
 class notify {

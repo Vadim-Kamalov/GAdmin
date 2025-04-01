@@ -69,5 +69,5 @@ plugin::samp::player_pool::get_ping(std::uint16_t id) noexcept {
 
 bool
 plugin::samp::player_pool::is_connected(std::uint16_t id) noexcept {
-    return (is_connected_offset + get_base())(instance(), id);
+    return id == user::get_id() || (is_connected_offset + get_base())(instance(), id);
 }

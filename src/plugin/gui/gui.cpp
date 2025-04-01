@@ -12,7 +12,7 @@
 #include "plugin/gui/windows/spectator_actions.h"
 #include "plugin/gui/windows/spectator_keys.h"
 #include "plugin/gui/windows/vehicle_selection.h"
-#include "plugin/log.h"
+#include "plugin/gui/windows/command_requester.h"
 #include <windows.h>
 #include <imgui.h>
 
@@ -85,6 +85,7 @@ plugin::gui_initializer::on_initialize() {
     registered_windows.push_back(windows::far_chat::create(this));
     registered_windows.push_back(windows::players_nearby::create(this));
     registered_windows.push_back(windows::vehicle_selection::create(this));
+    registered_windows.push_back(windows::command_requester::create(this));
 }
 
 void

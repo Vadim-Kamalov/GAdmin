@@ -135,7 +135,7 @@ private:
 public:
     using callback_t = std::function<void(hotkey&)>;
 public: 
-    std::string label;
+    std::string label = "";
     key_bind bind;
     callback_t callback = [](hotkey&) {};
 
@@ -145,6 +145,8 @@ public:
     inline hotkey& with_handler(hotkey_handler* new_handler);
 
     explicit hotkey(const std::string_view& label, const key_bind& bind);
+
+    hotkey() = default;
 }; // class hotkey
 
 class hotkey_handler {

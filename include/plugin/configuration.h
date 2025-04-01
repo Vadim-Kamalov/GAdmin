@@ -130,7 +130,11 @@ private:
 
             "additions": {
                 "hide_spectator_text_draws": true,
-                "hide_spectator_menu": true
+                "hide_spectator_menu": true,
+                "command_requester": {
+                    "use": true,
+                    "notify_by_window": true
+                }
             },
 
             "internal": {

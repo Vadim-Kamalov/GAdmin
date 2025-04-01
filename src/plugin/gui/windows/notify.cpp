@@ -135,13 +135,13 @@ plugin::gui::windows::notify::render() {
             float end_pos_x = (align == "left") ? padding * 2 : 0;
             auto now = std::chrono::steady_clock::now();
             
-            it->backend->cursor_pos_x = animation::bring_to(it->backend->cursor_pos_x, end_pos_x, it->time_sended, it->backend->open_close_duration);
+            it->backend->cursor_pos_x = animation::bring_to(it->backend->cursor_pos_x, end_pos_x, it->time_sent, it->backend->open_close_duration);
             
-            if (!it->condition() && it->backend->cursor_pos_x == end_pos_x && now - it->time_sended <= it->duration)
-                it->time_sended = now - it->duration;
+            if (!it->condition() && it->backend->cursor_pos_x == end_pos_x && now - it->time_sent <= it->duration)
+                it->time_sent = now - it->duration;
 
-            if (now - it->time_sended >= it->duration) {
-                auto time = it->time_sended + it->duration; 
+            if (now - it->time_sent >= it->duration) {
+                auto time = it->time_sent + it->duration; 
                 
                 it->backend->cursor_pos_x = animation::bring_to(it->backend->cursor_pos_x, start_pos_x, time, it->backend->open_close_duration);
                 

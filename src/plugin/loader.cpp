@@ -28,9 +28,9 @@ static std::optional<HRESULT> d3d9_reset_hooked(const decltype(d3d9_reset_hook)&
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
-class Loader {
+class loader_t {
 public:
-    Loader() {
+    loader_t() {
         plugin_to_load = std::make_unique<plugin::plugin_initializer>();
 
         game_loop_hook.set_dest(0x53BEE0);
@@ -42,7 +42,7 @@ public:
         wndproc_hook.install();
     }
 
-    ~Loader() {
+    ~loader_t() {
         plugin_to_load.reset(nullptr);
         ImGui::DestroyContext();
         ImGui_ImplDX9_Shutdown();
