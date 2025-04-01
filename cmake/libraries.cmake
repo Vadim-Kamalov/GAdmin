@@ -2,7 +2,7 @@ include(FetchContent)
 
 FetchContent_Declare(json   URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz)
 FetchContent_Declare(imgui  GIT_REPOSITORY https://github.com/ocornut/imgui.git)
-FetchContent_Declare(kthook GIT_REPOSITORY https://github.com/kin4stat/kthook.git)
+FetchContent_Declare(kthook GIT_REPOSITORY https://github.com/defaultzone/kthook.git)
 FetchContent_MakeAvailable(json kthook imgui)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${imgui_SOURCE_DIR}/ ${kthook_SOURCE_DIR}/include/)
