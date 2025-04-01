@@ -3,7 +3,7 @@ project(GAdmin VERSION 0.0 LANGUAGES CXX)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(SERVER_HOST_ADDRESS           "46.174.48.194")
-set(SERVER_COMMAND_DELAY_MS       "600")
+set(SERVER_COMMAND_DELAY_MS       "700")
 set(SERVER_MAX_PLAYERS            "600")
 set(PROJECT_REPOSITORY            "https://github.com/Vadim-Kamalov/GAdmin/tree/plugin")
 set(PROJECT_DATABASE              "https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/refs/heads/plugin")
