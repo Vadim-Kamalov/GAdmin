@@ -37,15 +37,12 @@ const std::vector<plugin::gui::windows::command_requester::command_t> plugin::gu
 }; // const std::vector<plugin::gui::windows::command_requester::command_t> plugin::gui::windows::command_requester::commands
 
 std::optional<plugin::gui::windows::command_requester::parsed_request_t>
-plugin::gui::windows::command_requester::try_parse_request(const std::string_view& usage, bool check_user_lvl) const {
+plugin::gui::windows::command_requester::try_parse_request(const std::string_view& usage) const {
     std::optional<std::uint16_t> receiver_id;
 
     for (const auto& request_command : commands) {
         if (usage.substr(1, request_command.name.length()) != request_command.name)
             continue;
-
-        if (check_user_lvl && (*configuration)["user"]["level"].get<std::size_t>() < request_command.level)
-            return {};
 
         types::string_iterator iterator(usage, request_command.name.length() + 1 /* '/' sign */);
 
@@ -212,7 +209,9 @@ plugin::gui::windows::command_requester::try_handle_approved_request(const std::
 
 void
 plugin::gui::windows::command_requester::approve_request() {
-    if (!current_request.has_value())
+    auto user_level = (*configuration)["user"]["level"];
+
+    if (!current_request.has_value() || user_level < current_request->command.level)
         return;
 
     switch (current_request->command.type) {
@@ -258,10 +257,12 @@ plugin::gui::windows::command_requester::render() {
         current_request = {};
     
     auto command_requester_configuration = (*configuration)["additions"]["command_requester"];
+    auto user_level = (*configuration)["user"]["level"];
 
     if (!command_requester_configuration["use"] ||
         !command_requester_configuration["notify_by_window"] ||
         !current_request.has_value() ||
+        user_level < current_request->command.level ||
         !server::user::is_on_alogin())
     {
         return;

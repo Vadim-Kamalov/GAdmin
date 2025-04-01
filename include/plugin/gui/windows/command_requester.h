@@ -65,7 +65,7 @@ private:
     std::chrono::steady_clock::time_point time_to_send_command;
     hotkey approve_request_hotkey;
 
-    std::optional<parsed_request_t> try_parse_request(const std::string_view& usage, bool check_user_lvl = false) const;
+    std::optional<parsed_request_t> try_parse_request(const std::string_view& usage) const;
     bool try_handle_new_request(const std::string& text);
     bool try_handle_approved_request(const std::string& text, const types::color& color);
 
