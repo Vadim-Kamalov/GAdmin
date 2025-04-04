@@ -217,6 +217,7 @@ plugin::gui::windows::command_requester::approve_request() {
     switch (current_request->command.type) {
         case command_t::type_t::reason:
             samp::input::send_command("{} // {}", current_request->full_command, current_request->sender_nickname);
+            current_request = {};
             return;
         case command_t::type_t::none:
             samp::input::send_command("/a {}, +", current_request->sender_id);
