@@ -143,6 +143,9 @@ plugin::gui::windows::command_requester::try_handle_new_request(const std::strin
             return false;
 
         if (auto request_command = try_parse_request(command); request_command.has_value()) {
+            if ((*configuration)["user"]["level"].get<std::size_t>() < request_command->command.level)
+                return false;
+
             time_request_sent = std::chrono::steady_clock::now();
             current_request = { request_command->receiver_id, sender_nickname,
                                 sender_id, command, request_command->command };
@@ -209,9 +212,7 @@ plugin::gui::windows::command_requester::try_handle_approved_request(const std::
 
 void
 plugin::gui::windows::command_requester::approve_request() {
-    auto user_level = (*configuration)["user"]["level"];
-
-    if (!current_request.has_value() || user_level < current_request->command.level)
+    if (!current_request.has_value())
         return;
 
     switch (current_request->command.type) {
@@ -258,12 +259,10 @@ plugin::gui::windows::command_requester::render() {
         current_request = {};
     
     auto command_requester_configuration = (*configuration)["additions"]["command_requester"];
-    auto user_level = (*configuration)["user"]["level"];
 
     if (!command_requester_configuration["use"] ||
         !command_requester_configuration["notify_by_window"] ||
         !current_request.has_value() ||
-        user_level < current_request->command.level ||
         !server::user::is_on_alogin())
     {
         return;
