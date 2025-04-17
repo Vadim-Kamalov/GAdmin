@@ -14,7 +14,7 @@ plugin::samp::player::get_color() const {
     if (local_player)
         return user::get_color();
 
-    if (auto remote_player = player_pool::get_remote_player(id, false))
+    if (auto remote_player = player_pool::get_remote_player(id))
         return remote_player->get_color();
 
     return 0;
