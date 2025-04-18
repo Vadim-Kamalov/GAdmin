@@ -18,6 +18,11 @@ void
 plugin::gui::widgets::hint::render_hint(float alpha) const {
     ImVec2 size = ImGui::GetItemRectSize();
     ImVec2 pos = ImGui::GetCursorScreenPos();
+    {
+        ImVec2 spacing = ImGui::GetStyle().ItemSpacing;
+        pos.x += size.x;
+        pos.y -= size.y + spacing.y;
+    }
     ImVec2 center = { pos.x - size.x / 2, pos.y + size.y / 2 - alpha * 4 + 10 };
     
     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
@@ -62,10 +67,6 @@ plugin::gui::widgets::hint::render_hint(float alpha) const {
 
 void
 plugin::gui::widgets::hint::render() {
-    ImVec2 pos = ImGui::GetCursorPos();
-    
-    ImGui::SameLine(0, 0);
-    
     bool hovered = condition();
     auto now = std::chrono::steady_clock::now();
     bool show = true;
@@ -105,8 +106,6 @@ plugin::gui::widgets::hint::render() {
             }
         }
     }
-
-    ImGui::SetCursorPos(pos);
 }
 
 void

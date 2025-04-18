@@ -1,4 +1,5 @@
 #include "plugin/samp/core/input.h"
+#include "plugin/string_utils.h"
 
 plugin::types::versioned_address_container<std::uintptr_t>
 plugin::samp::input::instance_container = { 0x21A0E8, 0x26E8CC, 0x26EB84, 0x2ACA14 };
@@ -47,10 +48,11 @@ plugin::samp::input::process(const std::string_view& text) noexcept {
 
 void
 plugin::samp::input::set_text(const std::string_view& text) noexcept {
-    set_text_container->invoke(dxut_input_offset.read(instance_container->read()), std::string(text).c_str(), false);
+    set_text_container->invoke(dxut_input_offset.read(instance_container->read()),
+                               string_utils::to_cp1251(std::string(text)).c_str(), false);
 }
 
 std::string
 plugin::samp::input::get_text() noexcept {
-    return get_text_container->invoke(dxut_input_offset.read(instance_container->read()));
+    return string_utils::to_utf8(get_text_container->invoke(dxut_input_offset.read(instance_container->read())));
 }

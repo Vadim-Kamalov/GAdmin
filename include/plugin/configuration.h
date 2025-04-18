@@ -124,6 +124,20 @@ private:
                     "sort_by": "distance"
                 },
 
+                "report": {
+                    "use": true,
+                    "notify": true,
+                    "sound_notify": true,
+                    "insert_buttons": [
+                        { "name": "Приятной игры!", "insert": "Приятной игры!" },
+                        { "name": "Передал", "insert": "Передал." },
+                        { "name": "Нет тех.причины", "insert": "Нет технической причины." },
+                        { "name": "Пишите на форум", "insert": "Пишите жалобу на форум, туда со всеми доказательствами." },
+                        { "name": "Слежу", "insert": "Слежу за игроком." },
+                        { "name": "Следите за новостями", "insert": "Следите за новостями." }
+                    ]
+                },
+
                 "spectator_keys": { "use": true },
                 "vehicle_selection": { "use": true }
             },

@@ -50,7 +50,7 @@ public:
     explicit hint(const std::string_view& label)
         : label(std::move(label)) {}
 
-    explicit hint(const std::string_view& label, types::color color)
+    explicit hint(const std::string_view& label, const types::color& color)
         : label(std::move(label)), color(color) {}
 }; // class hint
 

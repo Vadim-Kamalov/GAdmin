@@ -317,9 +317,8 @@ plugin::gui::hotkey_handler::on_event(unsigned int message, WPARAM wparam, LPARA
                     if (bind.modifiers.internal_first_key_down && bind.modifiers.internal_second_key_down)
                         return true;
 
-                    if (((first_key == 0 && second_key != 0) ||
-                        (second_key == 0 && first_key != 0)) &&
-                        wparam == std::max(first_key, second_key))
+                    if ((first_key == 0 && second_key != 0 && wparam == second_key) ||
+                        (second_key == 0 && first_key != 0 && wparam == first_key))
                     {
                         bind.modifiers.internal_first_key_down = bind.modifiers.internal_second_key_down = true;
                         hotkey.callback(hotkey);

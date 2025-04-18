@@ -48,6 +48,8 @@ public:
 
     explicit button(const std::string_view& label, const ImVec2& size)
         : label(std::move(label)), size(std::move(size)), id(std::move(label)) { register_in_pool(); }
+
+    button() = default;
 }; // class button
 
 } // namespace plugin::gui::widgets

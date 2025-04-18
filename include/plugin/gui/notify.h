@@ -2,6 +2,7 @@
 #define GADMIN_PLUGIN_GUI_NOTIFY_H
 
 #include "plugin/types/simple.h"
+#include <deque>
 #include <imgui.h>
 #include <chrono>
 #include <optional>
@@ -71,10 +72,10 @@ class notify {
 public:
     using callback_t = std::function<bool(notification&)>;
 private:
-    static inline std::vector<notification> notifications;
+    static inline std::deque<notification> notifications;
     static inline callback_t on_send_callback = [](notification&) { return true; };
 public:
-    static std::vector<notification>& get_notifications() noexcept;
+    static std::deque<notification>& get_notifications() noexcept;
     
     static bool has_notifications() noexcept;
     static std::size_t notifications_count() noexcept;

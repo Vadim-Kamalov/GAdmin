@@ -42,6 +42,7 @@ plugin::gui::windows::spectator_actions::render() {
                                                  information.move_speed_current, information.move_speed_max,
                                                  information.weapon, information.health, information.ping);
 
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 2, 2 });
     ImGui::SetNextWindowSizeConstraints({ 700, 120 }, { FLT_MAX, FLT_MAX });
     ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoTitleBar);
     {
@@ -152,6 +153,7 @@ plugin::gui::windows::spectator_actions::render() {
         ImGui::EndGroup();
     }
     ImGui::End();
+    ImGui::PopStyleVar();
 }
 
 plugin::gui::window_ptr_t

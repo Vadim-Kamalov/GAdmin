@@ -20,7 +20,7 @@ plugin::server::spectator::on_show_text_draw(const samp::event<samp::event_id::s
     bool hide = (*configuration)["additions"]["hide_spectator_text_draws"];
 
     // These values of `text_draw.text` received only once after the user had entered the spectator mode; these texts
-    // don't visible for the user. (because the server immediately changes it in `samp::text_draw_string_setter`?)
+    // don't visible for the user. (because the server immediately changes it in `samp::event_id::set_text_draw_string`?)
     if (hide && (text_draw.text == dirty_title || text_draw.text == dirty_body))
         return false;
 

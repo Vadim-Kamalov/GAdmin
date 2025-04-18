@@ -13,6 +13,7 @@
 #include "plugin/gui/windows/spectator_keys.h"
 #include "plugin/gui/windows/vehicle_selection.h"
 #include "plugin/gui/windows/command_requester.h"
+#include "plugin/gui/windows/report.h"
 #include <windows.h>
 #include <imgui.h>
 
@@ -34,8 +35,8 @@ plugin::gui_initializer::on_event(unsigned int message, WPARAM wparam, LPARAM lp
 
     // Events to the game or SA:MP will not be sent when the user is typing something in ImGui's inputs.
     // Here, we only check `WantTextInput` and not `WantCaptureMouse || WantCaptureKeyboard`, because there
-    // are some cases when the game will not receive the release (of something, e.g. key or mouse button) event.
-    if (ImGui::GetIO().WantTextInput)
+    // are some cases when the game will not receive some event (e.g. release of key or mouse button) event.
+    if (ImGui::GetIO().WantTextInput && message != WM_KEYUP && message != WM_SYSKEYUP)
         return false;
 
     if (!hotkey_handler->on_event(message, wparam, lparam))
@@ -86,6 +87,7 @@ plugin::gui_initializer::on_initialize() {
     registered_windows.push_back(windows::players_nearby::create(this));
     registered_windows.push_back(windows::vehicle_selection::create(this));
     registered_windows.push_back(windows::command_requester::create(this));
+    registered_windows.push_back(windows::report::create(this));
 }
 
 void

@@ -6,6 +6,7 @@
 #include <string>
 #include "plugin/samp/core/input.h"
 #include "plugin/samp/core/ped.h"
+#include "plugin/string_utils.h"
 #include "plugin/types/address.h"
 #include "plugin/types/color.h"
 #include "plugin/types/simple.h"
@@ -51,7 +52,8 @@ public:
 template<typename... Args>
 void
 plugin::samp::user::chat(std::format_string<Args...> fmt, Args&&... args) noexcept {
-    local_player_chat_container->invoke(get_local_player(), std::format(fmt, std::forward<Args>(args)...).c_str());
+    local_player_chat_container->invoke(get_local_player(), string_utils::to_cp1251(
+        std::format(fmt, std::forward<Args>(args)...)).c_str());
 }
 
 template<typename... Args>

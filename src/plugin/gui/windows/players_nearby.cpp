@@ -66,7 +66,7 @@ plugin::gui::windows::players_nearby::get_window_information() const {
     }
 
     content_size.x += window_padding.x * 2 + ImGui::GetStyle().ScrollbarSize;
-    content_size.y = show_scrollbar_on * (entry_font->FontSize + spacing_y + text_border_size) - spacing_y + window_padding.y * 2;
+    content_size.y = show_scrollbar_on * (entry_font->FontSize + spacing_y + text_border_size) - spacing_y + window_padding.y;
 
     switch (sort_option) {
         case sort_option_t::length:

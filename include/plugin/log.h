@@ -14,7 +14,7 @@ public:
     enum class type { info, warn, error, fatal };
     using handler_t = std::function<void(const type&, const std::string_view&)>;
 private:
-    static inline std::optional<handler_t> handler;
+    static inline handler_t handler = [](const type&, const std::string_view) {};
     static constexpr types::zstring_t types[] = { "INFO", "WARN", "ERROR", "FATAL" };
 
     static std::string get_current_time() noexcept;
@@ -42,10 +42,8 @@ public:
 template<plugin::log::type message_type>
 void
 plugin::log::write(const std::string_view& text) noexcept {
-    if (!handler.has_value())
-        return;
-
-    (*handler)(message_type, std::format("{} [{}] {}", get_current_time(), types[std::to_underlying(message_type)], text));
+    handler(message_type, std::format("{} [{}] {}", get_current_time(),
+                                      types[std::to_underlying(message_type)], text));
 }
 
 template<typename... Args>

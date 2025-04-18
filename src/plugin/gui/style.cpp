@@ -27,7 +27,7 @@ plugin::gui::style::apply() noexcept {
 
     style.WindowPadding = { 8, 8 };
     style.FramePadding = { 5, 5 };
-    style.ItemSpacing = { 2, 2 };
+    style.ItemSpacing = { 5, 5 };
     style.ItemInnerSpacing = { 0, 0 };
     style.TouchExtraPadding = { 0, 0 };
     style.ButtonTextAlign = { 0.5, 0.5 };

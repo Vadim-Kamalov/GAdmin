@@ -23,7 +23,7 @@ plugin::gui::notification::remove() noexcept {
     condition = []{ return false; };
 }
 
-std::vector<plugin::gui::notification>&
+std::deque<plugin::gui::notification>&
 plugin::gui::notify::get_notifications() noexcept {
     return notifications;
 }
