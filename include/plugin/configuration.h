@@ -142,6 +142,13 @@ private:
                 "vehicle_selection": { "use": true }
             },
 
+            "cheats": {
+                "airbreak": {
+                    "use": true,
+                    "speed": 1.0
+                }
+            },
+
             "additions": {
                 "hide_spectator_text_draws": true,
                 "hide_spectator_menu": true,

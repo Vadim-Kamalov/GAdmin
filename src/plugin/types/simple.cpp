@@ -10,3 +10,13 @@ float
 plugin::types::vector_3d::get_distance_to(const vector_3d& vector) const {
     return std::hypot(x - vector.x, y - vector.y, z - vector.z);
 }
+
+plugin::types::vector_3d
+plugin::types::vector_3d::operator+(const vector_3d& other) const {
+    return { x + other.x, y + other.y, z + other.z };
+}
+
+plugin::types::vector_3d
+plugin::types::vector_3d::operator-(const vector_3d& other) const {
+    return { x - other.x, y - other.y, z - other.z };
+}

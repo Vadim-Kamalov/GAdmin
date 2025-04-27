@@ -1,10 +1,16 @@
 #ifndef GADMIN_PLUGIN_GAME_VEHICLE_H
 #define GADMIN_PLUGIN_GAME_VEHICLE_H
 
+#include "plugin/game/placeable.h"
 #include "plugin/types/simple.h"
 #include <cstdint>
 
 namespace plugin::game {
+
+class vehicle : public placeable {
+public:
+    using placeable::placeable;
+}; // class vehicle
 
 static constexpr std::uint16_t min_vehicle_id = 400;
 static constexpr std::uint16_t max_vehicle_id = 611;

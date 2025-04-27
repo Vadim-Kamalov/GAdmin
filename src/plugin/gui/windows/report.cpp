@@ -159,7 +159,7 @@ plugin::gui::windows::report::on_new_report_message(const std::string& nickname,
     current_report = { nickname, "", id };
 
     if (window_configuration["notify"]) {
-        std::string title = std::format("Пришел репорт от {}[{}]", nickname, id);
+        std::string title = std::format("Репорт от {}[{}]", nickname, id);
         std::string description = std::format("У вас есть 15 секунд принять. Введите /grep(ort) или нажмите на {}.",
                                               switch_window_hotkey.bind);
 

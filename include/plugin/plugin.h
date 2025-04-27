@@ -1,6 +1,7 @@
 #ifndef GADMIN_PLUGIN_PLUGIN_H
 #define GADMIN_PLUGIN_PLUGIN_H
 
+#include "plugin/cheats/initializer.h"
 #include "plugin/configuration.h"
 #include "plugin/log.h"
 #include "plugin/gui/gui.h"
@@ -18,8 +19,10 @@ class plugin_initializer {
 private:
     std::mutex log_mutex;
     std::ofstream log_file_stream;
+
     std::unique_ptr<gui_initializer> gui;
-    
+    std::unique_ptr<cheats::initializer> cheats_initializer;
+
     bool plugin_working = true;
 
     void on_samp_initialize();

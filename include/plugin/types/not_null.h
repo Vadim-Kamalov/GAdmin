@@ -40,7 +40,9 @@ public:
     not_null(const not_null& other) = default;
     not_null& operator=(const not_null& other) = default;
 
-    constexpr concepts::value_or_reference_return_t<T> get() const noexcept(noexcept(concepts::value_or_reference_return_t<T>{std::declval<T&>()})) {
+    constexpr concepts::value_or_reference_return_t<T> get() const
+        noexcept(noexcept(concepts::value_or_reference_return_t<T>(std::declval<T&>())))
+    {
         return ptr;
     }
 

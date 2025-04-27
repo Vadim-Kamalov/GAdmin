@@ -32,9 +32,12 @@ plugin::plugin_initializer::on_event(const samp::event_info& event) {
     if (!server::admins::on_event(event))
         return false;
     
-    if (gui != nullptr && !gui->on_event(event))
+    if (!gui->on_event(event))
         return false;
     
+    if (!cheats_initializer->on_event(event))
+        return false;
+
     event.stream->reset_read_pointer();
 
     if (!server::user::on_event(event))
@@ -64,13 +67,17 @@ plugin::plugin_initializer::on_render_initialize() {
 void
 plugin::plugin_initializer::on_frame() {
     gui->render();
+    cheats_initializer->render();
 }
 
 bool
 plugin::plugin_initializer::on_message(unsigned int message, WPARAM wparam, LPARAM lparam) {
-    if (gui != nullptr && !gui->on_event(message, wparam, lparam))
+    if (!gui->on_event(message, wparam, lparam))
         return false;
     
+    if (!cheats_initializer->on_event(message, wparam, lparam))
+        return false;
+
     return true;
 }
 
@@ -82,11 +89,6 @@ plugin::plugin_initializer::on_samp_initialize() {
 
     if (samp::net_game::get_host_address() != SERVER_HOST_ADDRESS) {
         log::fatal("plugin works only on \"sa.gambit-rp.ru:7777\" server");
-        return;
-    }
-
-    if (gui == nullptr) {
-        log::fatal("failed to initialize gui->on_samp_initialize(): gui == nullptr");
         return;
     }
 
@@ -108,8 +110,8 @@ plugin::plugin_initializer::main_loop() {
     server::spectator::main_loop();
     server::binder::main_loop();
     
-    if (gui != nullptr)
-        gui->main_loop();
+    gui->main_loop();
+    cheats_initializer->main_loop();
 
     if (!samp_initialized && samp::get_base() != 0 && samp::net_game::instance_container->read() != 0) {
         on_samp_initialize();
@@ -312,6 +314,7 @@ plugin::plugin_initializer::plugin_initializer() {
     SetUnhandledExceptionFilter(on_unhandled_exception);
 
     gui = std::make_unique<gui_initializer>();
+    cheats_initializer = std::make_unique<cheats::initializer>(gui.get());
 }
 
 plugin::plugin_initializer::~plugin_initializer() noexcept {
