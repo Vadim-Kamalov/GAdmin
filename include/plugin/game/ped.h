@@ -9,7 +9,6 @@ namespace plugin {
 namespace signatures {
 
 using teleport = void(__thiscall*)(std::uintptr_t, types::vector_3d, bool);
-using get_distance_from_centre_of_mass = void(__thiscall*)(std::uintptr_t);
 
 } // namespace signatures
 

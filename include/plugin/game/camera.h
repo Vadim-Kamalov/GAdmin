@@ -5,14 +5,7 @@
 #include "plugin/types/address.h"
 #include <cstdint>
 
-namespace plugin {
-namespace signatures {
-
-using get_active_camera_coordinates = types::vector_3d*(__thiscall*)(std::uintptr_t);
-
-} // namespace signatures
-
-namespace game {
+namespace plugin::game {
 
 class camera {
 private:
@@ -35,7 +28,6 @@ private:
     static constexpr std::uintptr_t camera_size = 0x238;
 }; // class camera
 
-} // namespace game
-} // namespace plugin
+} // namespace plugin::game
 
 #endif // GADMIN_PLUGIN_GAME_CAMERA_H
