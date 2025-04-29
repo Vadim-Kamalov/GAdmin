@@ -18,6 +18,7 @@ private:
 
     static constexpr float deg_to_rad(float deg) noexcept;
 public:
+    void on_alogin_new_state(bool state) override;
     void register_hotkeys(types::not_null<gui::hotkey_handler*> handler) override;
     void main_loop() override;
 

@@ -1,11 +1,10 @@
 #include "plugin/gui/windows/players_nearby.h"
 #include "plugin/gui/widgets/text.h"
-#include "plugin/plugin.h"
-#include "plugin/samp/core/user.h"
 #include "plugin/server/admins.h"
 #include "plugin/server/spectator.h"
 #include "plugin/server/user.h"
 #include "plugin/samp/player.h"
+#include "plugin/plugin.h"
 #include "plugin/log.h"
 
 plugin::gui::windows::players_nearby::information_t
@@ -18,20 +17,23 @@ plugin::gui::windows::players_nearby::get_window_information() const {
     ImVec2 window_padding = ImGui::GetStyle().WindowPadding;
     float spacing_y = ImGui::GetStyle().ItemSpacing.y;
 
-    std::vector<samp::player::stream_entry_t> stream_players = samp::player::get_stream_players();
+    std::deque<samp::player::stream_entry_t> stream_players = samp::player::get_stream_players();
     std::deque<entry> entries;
 
     for (const auto& [ player, ped ] : stream_players) {
         entry new_entry;
         {
-            types::vector_3d ped_position = ped.get_position();
+            game::ped game_ped = ped.get_game_ped();
+            types::vector_3d ped_position = game_ped.get_position();
 
             if (server::spectator::is_active()) {
                 if (samp::ped spectator_ped = server::spectator::player.get_ped(); spectator_ped.is_available()) {
-                    new_entry.distance = ped_position.get_distance_to(spectator_ped.get_position());
+                    types::vector_3d spectator_position = spectator_ped.get_game_ped().get_position();
+                    new_entry.distance = ped_position.get_distance_to(spectator_position);
                 }
-            } else if (samp::ped local_ped = samp::user::get_ped(); local_ped.is_available()) {
-                new_entry.distance = ped_position.get_distance_to(local_ped.get_position());
+            } else {
+                types::vector_3d player_position = game::ped::get_player().get_position();
+                new_entry.distance = ped_position.get_distance_to(player_position);
             }
         }
 

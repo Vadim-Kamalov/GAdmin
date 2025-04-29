@@ -36,9 +36,9 @@ plugin::samp::player::is_available() const {
     return valid;
 }
 
-std::vector<plugin::samp::player::stream_entry_t>
+std::deque<plugin::samp::player::stream_entry_t>
 plugin::samp::player::get_stream_players() {
-    std::vector<stream_entry_t> players;
+    std::deque<stream_entry_t> players;
 
     for (id_t stream_id = 0; stream_id <= SERVER_MAX_PLAYERS; stream_id++) {
         if (stream_id == user::get_id())

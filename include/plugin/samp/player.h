@@ -5,7 +5,7 @@
 #include "plugin/types/color.h"
 #include <cstdint>
 #include <string>
-#include <vector>
+#include <deque>
 
 namespace plugin::samp {
 
@@ -32,7 +32,7 @@ public:
     bool is_available() const;
     explicit operator bool() const;
 
-    static std::vector<stream_entry_t> get_stream_players();
+    static std::deque<stream_entry_t> get_stream_players();
     
     explicit player(id_t new_id);
 }; // class player

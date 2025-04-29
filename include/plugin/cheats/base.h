@@ -12,10 +12,11 @@ public:
     virtual ~basic_cheat() = default;
 
     virtual void register_hotkeys(types::not_null<gui::hotkey_handler*> handler) {}
-    virtual void render(types::not_null<gui_initializer*> child) {}
     
+    virtual void render(types::not_null<gui_initializer*> child) {}
     virtual void main_loop() {}
     
+    virtual void on_alogin_new_state(bool state) {}
     virtual bool on_event(const samp::event_info& event) { return true; }
     virtual bool on_event(unsigned int message, WPARAM wparam, LPARAM lparam) { return true; }
 }; // class basic_cheat

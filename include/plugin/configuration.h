@@ -146,6 +146,12 @@ private:
                 "airbreak": {
                     "use": true,
                     "speed": 1.0
+                },
+
+                "wallhack": {
+                    "use": true,
+                    "custom_render": true,
+                    "font_size": 18
                 }
             },
 

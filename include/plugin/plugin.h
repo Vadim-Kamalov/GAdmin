@@ -14,14 +14,13 @@ namespace plugin {
 
 inline std::unique_ptr<samp::event_handler> event_handler;
 inline std::unique_ptr<configuration_initializer> configuration;
+inline std::unique_ptr<cheats::initializer> cheats_initializer;
 
 class plugin_initializer {
 private:
     std::mutex log_mutex;
     std::ofstream log_file_stream;
-
     std::unique_ptr<gui_initializer> gui;
-    std::unique_ptr<cheats::initializer> cheats_initializer;
 
     bool plugin_working = true;
 

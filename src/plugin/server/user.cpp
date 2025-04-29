@@ -1,14 +1,14 @@
 #include "plugin/server/user.h"
+#include "plugin/plugin.h"
 #include "plugin/server/admins.h"
 #include "plugin/samp/core/input.h"
-#include "plugin/log.h"
 #include <regex>
 
 void
 plugin::server::user::set_alogin_status(bool status) {
     on_alogin = status;
 
-    log::info("user::set_alogin_status({})", status);
+    cheats_initializer->on_alogin_new_state(status);
 
     if (status)
         return;

@@ -18,7 +18,9 @@ plugin::cheats::airbreak::hotkey_callback(gui::hotkey& hotkey) {
 
     game::ped player_ped = game::ped::get_player();
     game::vehicle player_vehicle = player_ped.get_vehicle();
-    game::placeable common = (player_vehicle) ? static_cast<game::placeable>(player_vehicle) : player_ped;
+    game::placeable common = (player_vehicle)
+        ? static_cast<game::placeable>(player_vehicle)
+        : player_ped;
 
     cheat_active ^= true;
 
@@ -44,6 +46,27 @@ float
 plugin::cheats::airbreak::get_heading_from_xy(float x, float y) const {
     float deg = std::atan2(y, x) * (180.0f / std::numbers::pi) - 90.0f;
     return (deg > 0.0f) ? deg : deg + 360.0f;
+}
+
+void
+plugin::cheats::airbreak::on_alogin_new_state(bool state) {
+    if (state || !cheat_active)
+        return;
+
+    cheat_active = false;
+
+    game::ped player_ped = game::ped::get_player();
+    game::vehicle player_vehicle = player_ped.get_vehicle();
+    {
+        game::placeable common = (player_vehicle)
+            ? static_cast<game::placeable>(player_vehicle)
+            : player_ped;
+        
+        if (common.is_locked())
+            common.set_lock(false);
+    }
+    
+    game::pad::set_player_enter_vehicle(false);
 }
 
 void

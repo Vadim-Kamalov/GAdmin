@@ -3,6 +3,7 @@
 
 namespace plugin::types {
 
+using meter_per_second_t = float;
 using zstring_t = const char*;
 
 struct vector_3d {

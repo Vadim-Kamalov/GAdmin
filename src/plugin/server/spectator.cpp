@@ -412,7 +412,7 @@ plugin::server::spectator::main_loop() {
 
         samp::ped ped = player.get_ped();
 
-        information.move_speed_current = ped.get_speed();
+        information.move_speed_current = ped.get_game_ped().get_speed();
         information.move_speed_max = game::get_max_ped_model_speed(ped.get_model_index());
     
         return;

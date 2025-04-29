@@ -1,17 +1,28 @@
 #ifndef GADMIN_PLUGIN_GAME_H
 #define GADMIN_PLUGIN_GAME_H
 
+#include "plugin/types/simple.h"
 #include <utility>
 #include <windef.h>
 
-namespace plugin::game {
+namespace plugin {
+namespace signatures {
+
+using calc_screen_coords = bool(__cdecl*)(types::vector_3d*, types::vector_3d*);
+
+} // namespace signatures
+
+namespace game {
 
 static inline HWND get_window() noexcept;
 static inline DWORD get_device() noexcept;
 static inline bool is_menu_opened() noexcept;
-std::pair<float, float> get_screen_resolution() noexcept;
 
-} // namespace plugin::game
+std::pair<float, float> get_screen_resolution() noexcept;
+std::pair<float, float> convert_3d_coords_to_screen(const types::vector_3d& coords) noexcept;
+
+} // namespace game
+} // namespace plugin
 
 inline HWND
 plugin::game::get_window() noexcept {

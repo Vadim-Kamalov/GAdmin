@@ -1,9 +1,12 @@
 #include "plugin/cheats/initializer.h"
 #include "plugin/cheats/airbreak.h"
+#include "plugin/cheats/wallhack.h"
 #include "plugin/gui/gui.h"
+#include <memory>
 
 plugin::cheats::initializer::initializer(types::not_null<gui_initializer*> gui) : gui(gui) {
     cheats.push_back(std::make_unique<airbreak>());
+    cheats.push_back(std::make_unique<wallhack>());
 
     for (const auto& cheat : cheats)
         cheat->register_hotkeys(gui->hotkey_handler.get());
@@ -19,6 +22,12 @@ void
 plugin::cheats::initializer::render() {
     for (const auto& cheat : cheats)
         cheat->render(gui);
+}
+
+void
+plugin::cheats::initializer::on_alogin_new_state(bool state) {
+    for (const auto& cheat : cheats)
+        cheat->on_alogin_new_state(state);
 }
 
 bool

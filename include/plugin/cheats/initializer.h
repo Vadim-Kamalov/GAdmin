@@ -14,7 +14,8 @@ private:
 public:
     void main_loop();
     void render();
-    
+
+    void on_alogin_new_state(bool state);
     bool on_event(const samp::event_info& event);
     bool on_event(unsigned int message, WPARAM wparam, LPARAM lparam);
 
