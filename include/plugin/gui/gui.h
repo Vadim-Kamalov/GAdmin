@@ -12,8 +12,6 @@ namespace plugin {
 class gui_initializer {
 private:
     std::vector<gui::window_ptr_t> registered_windows;
-
-    bool cursor_active = false;
     int cursor_last_x = -1, cursor_last_y = 1;
 public:
     std::unique_ptr<gui::fonts_initializer> fonts;

@@ -38,6 +38,30 @@ plugin::game::ped::get_vehicle() const {
 }
 
 void
+plugin::game::ped::jump_into_vehicle(const vehicle& vehicle) const {
+    static types::address<signatures::task_process_ped> process_ped = 0x64B950;
+    
+    // Creates a new `CTaskSimpleCarSetPedInAsDriver` task and sets
+    // the vehicle pointer to the passed one. Then, it calls a member function
+    // to process the ped. The call is safe because `process_ped` does not
+    // modify/read any member-pointers of the structure (except `target_vehicle`).
+    
+    struct {
+        std::uint32_t pad0;
+        std::uint32_t pad1;
+        std::uint32_t pad2;
+        std::uint32_t pad3;
+        std::uintptr_t target_vehicle;
+        std::uint32_t pad4;
+        std::uint16_t pad5;
+    } set_ped_in_as_driver_task = {
+        .target_vehicle = *vehicle.handle
+    };
+
+    process_ped(reinterpret_cast<std::uintptr_t>(&set_ped_in_as_driver_task), *handle);
+}
+
+void
 plugin::game::ped::teleport(const types::vector_3d& pos) const {
     auto flags = reinterpret_cast<flags_t*>(*handle + *flags_offset);
     

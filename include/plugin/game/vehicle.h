@@ -8,7 +8,10 @@
 namespace plugin::game {
 
 class vehicle : public placeable {
+private:
+    static inline types::offset<std::uintptr_t> driver_offset = 0x460;
 public:
+    bool has_driver() const;
     using placeable::placeable;
 }; // class vehicle
 

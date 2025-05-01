@@ -1,5 +1,6 @@
 #include "plugin/cheats/initializer.h"
 #include "plugin/cheats/airbreak.h"
+#include "plugin/cheats/clickwarp.h"
 #include "plugin/cheats/wallhack.h"
 #include "plugin/gui/gui.h"
 #include <memory>
@@ -7,6 +8,7 @@
 plugin::cheats::initializer::initializer(types::not_null<gui_initializer*> gui) : gui(gui) {
     cheats.push_back(std::make_unique<airbreak>());
     cheats.push_back(std::make_unique<wallhack>());
+    cheats.push_back(std::make_unique<clickwarp>());
 
     for (const auto& cheat : cheats)
         cheat->register_hotkeys(gui->hotkey_handler.get());

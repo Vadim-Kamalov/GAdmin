@@ -24,6 +24,7 @@ private:
 public:
     static types::vector_3d get_active_coordinates() noexcept;
     static types::vector_3d get_active_point_at() noexcept;
+    static types::vector_3d screen_to_coordinates(float x, float y, float depth) noexcept;
 private:
     static constexpr std::uintptr_t camera_size = 0x238;
 }; // class camera

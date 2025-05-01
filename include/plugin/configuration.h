@@ -152,7 +152,9 @@ private:
                     "use": true,
                     "custom_render": true,
                     "font_size": 18
-                }
+                },
+                
+                "clickwarp": { "use": true }
             },
 
             "additions": {

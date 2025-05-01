@@ -12,6 +12,7 @@ namespace signatures {
 using teleport = void(__thiscall*)(std::uintptr_t, types::vector_3d, bool);
 using get_bone_position = void(__thiscall*)(std::uintptr_t, types::vector_3d*, int, bool);
 using is_on_screen = bool(__thiscall*)(std::uintptr_t);
+using task_process_ped = bool(__thiscall*)(std::uintptr_t, std::uintptr_t);
 
 } // namespace signatures
 
@@ -48,6 +49,7 @@ public:
     vehicle get_vehicle() const;
     static ped get_player() noexcept;
     
+    void jump_into_vehicle(const vehicle& vehicle) const;
     void teleport(const types::vector_3d& pos) const override;
     void set_heading(float angle) const override;
 

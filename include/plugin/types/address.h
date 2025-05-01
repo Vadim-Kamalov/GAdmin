@@ -45,8 +45,8 @@ public:
     
     [[nodiscard]] inline std::uintptr_t operator*() const;
 
-    basic_address(std::nullptr_t) requires(type != address_type::dynamic) = delete;
-    basic_address& operator=(std::nullptr_t) requires(type != address_type::dynamic) = delete;
+    basic_address(std::nullptr_t) requires(type == address_type::static_t) = delete;
+    basic_address& operator=(std::nullptr_t) requires(type == address_type::static_t) = delete;
 
     basic_address(std::uintptr_t pointer)
         : pointer(pointer) {}

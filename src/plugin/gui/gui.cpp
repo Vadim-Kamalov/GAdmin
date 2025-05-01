@@ -116,27 +116,22 @@ plugin::gui_initializer::enable_cursor() {
     
     if (cursor_last_x != -1 && cursor_last_y != -1)
         SetCursorPos(cursor_last_x, cursor_last_y);
-
-    cursor_active = true;
 }
 
 void
 plugin::gui_initializer::disable_cursor() {
-    game::cursor::set_status(false);
-
     POINT cursor_pos;
-    {
-        GetCursorPos(&cursor_pos);
-        cursor_last_x = cursor_pos.x;
-        cursor_last_y = cursor_pos.y;
-    }
+    
+    game::cursor::set_status(false);
+    GetCursorPos(&cursor_pos);
 
-	cursor_active = false;
+    cursor_last_x = cursor_pos.x;
+    cursor_last_y = cursor_pos.y;
 }
 
 void
 plugin::gui_initializer::switch_cursor() {
-    if (cursor_active)
+    if (is_cursor_active())
         disable_cursor();
     else
         enable_cursor();

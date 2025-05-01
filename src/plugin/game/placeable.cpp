@@ -15,11 +15,6 @@ plugin::game::placeable::set_lock(bool state) const {
     physical_flags->soft = state;
 }
 
-plugin::types::vector_3d
-plugin::game::placeable::get_position() const {
-    return position_offset_in_matrix.read(matrix_offset.read(*handle));
-}
-
 float
 plugin::game::placeable::get_heading() const {
     return clamp_angle(get_placeable_rotation(*handle) * rad_to_deg_multiplier);
@@ -50,16 +45,6 @@ plugin::game::placeable::clamp_angle(float angle) const {
 }
 
 void
-plugin::game::placeable::set_coordinates(const types::vector_3d& pos) const {
-    position_offset_in_matrix.write(pos, matrix_offset.read(*handle));
-}
-
-void
 plugin::game::placeable::set_heading(float angle) const {
     set_heading_in_deg(angle);
-}
-
-void
-plugin::game::placeable::teleport(const types::vector_3d& pos) const {
-    set_coordinates(pos);
 }

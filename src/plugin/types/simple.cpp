@@ -20,3 +20,18 @@ plugin::types::vector_3d
 plugin::types::vector_3d::operator-(const vector_3d& other) const {
     return { x - other.x, y - other.y, z - other.z };
 }
+
+plugin::types::vector_3d
+plugin::types::vector_3d::operator*(const vector_3d& other) const {
+    return { x * other.x, y * other.y, z * other.z };
+}
+
+plugin::types::vector_3d
+plugin::types::vector_3d::operator*(float other) const {
+    return { x * other, y * other, z * other };
+}
+
+plugin::types::vector_3d
+plugin::types::vector_3d::operator-() const {
+    return { -x, -y, -z };
+}
