@@ -49,7 +49,7 @@ void
 plugin::cheats::wallhack::render(types::not_null<gui_initializer*> child) {
     auto cheat_configuration = (*configuration)["cheats"]["wallhack"];
 
-    if (!cheat_active || !cheat_configuration["custom_render"])
+    if (!cheat_active || !cheat_configuration["custom_render"] || game::is_menu_opened())
         return;
 
     float font_size = cheat_configuration["font_size"];

@@ -10,13 +10,15 @@
 #include "plugin/server/user.h"
 #include "plugin/log.h"
 #include <ranges>
-#include <regex>
+#include <ctre.hpp>
 
 bool
 plugin::gui::windows::vehicle_selection::on_send_command(const samp::out_event<samp::event_id::send_command>& event) {
+    static constexpr ctll::fixed_string command_pattern = "/veh\\s*";
+
     auto window_configuration = (*configuration)["windows"]["vehicle_selection"];
 
-    if (!window_configuration["use"] || !server::user::is_on_alogin() || !std::regex_match(event.command, std::regex("/veh\\s*")))
+    if (!window_configuration["use"] || !server::user::is_on_alogin() || !ctre::match<command_pattern>(event.command))
         return true;
 
     if (active)

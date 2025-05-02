@@ -9,8 +9,8 @@
 #include "plugin/server/spectator.h"
 #include "plugin/samp/core/input.h"
 #include <algorithm>
-#include <regex>
 #include <spanstream>
+#include <ctre.hpp>
 #include <string>
 
 void
@@ -87,6 +87,8 @@ plugin::gui::windows::spectator_information::vehicle_information_custom_renderer
 
 void
 plugin::gui::windows::spectator_information::render_centered_text(const std::string_view& value, ImFont* font, const ImVec4& color) const {
+    static constexpr ctll::fixed_string next_text_pattern = "(.*?)\\S+\\s*$"; 
+
     std::string text(value);
 
     text.erase(0, text.find_first_not_of(' '));
@@ -99,12 +101,12 @@ plugin::gui::windows::spectator_information::render_centered_text(const std::str
         std::string original(text);
 
         while (size.x >= column_width) {
-            std::smatch match;
+            ctre::regex_results match = ctre::search<next_text_pattern>(text);
 
-            if (!std::regex_search(text, match, std::regex("(.*?)\\S+\\s*$")))
+            if (!match)
                 return;
 
-            text = match[1].str();
+            text = match.get<1>().str();
             size = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0, text.c_str());
         }
 

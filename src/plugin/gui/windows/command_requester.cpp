@@ -8,9 +8,10 @@
 #include "plugin/game/game.h"
 #include "plugin/plugin.h"
 #include "plugin/log.h"
+#include "plugin/types/u8regex.h"
 #include <algorithm>
+#include <ctre.hpp>
 #include <cctype>
-#include <regex>
 
 const std::vector<plugin::gui::windows::command_requester::command_t> plugin::gui::windows::command_requester::commands = {
     { command_t::type_t::answer, "pk", 2, { command_t::param_t::id }},
@@ -130,14 +131,12 @@ plugin::gui::windows::command_requester::on_server_message(const samp::event<sam
 
 bool
 plugin::gui::windows::command_requester::try_handle_new_request(const std::string& text) {
-    static constexpr types::zstring_t command_request_pattern = R"(\[A\] (.+)\[(\d+)\]: (/.*))";
+    static constexpr ctll::fixed_string command_request_pattern = R"(\[A\] (.+)\[(\d+)\]: (/.*))";
 
-    std::smatch matches;
-
-    if (std::regex_match(text, matches, std::regex(command_request_pattern))) {
-        std::string sender_nickname = matches[1].str();
-        std::uint16_t sender_id = std::stoi(matches[2].str());
-        std::string command = matches[3].str();
+    if (auto matches = ctre::match<command_request_pattern>(text)) {
+        std::string sender_nickname = matches.get<1>().str();
+        std::uint16_t sender_id = std::stoi(matches.get<2>().str());
+        std::string command = matches.get<3>().str();
 
         if (sender_id == samp::user::get_id())
             return false;
@@ -176,33 +175,31 @@ plugin::gui::windows::command_requester::try_handle_approved_request(const std::
     if (!current_request.has_value())
         return false;
 
-    static constexpr types::zstring_t answer_request_pattern = R"(\[A\] .+\[\d+\] ответил .+\[\d+\]: \S+ by (.+))";
-    static constexpr types::zstring_t reason_request_pattern = R"(Администратор .+\. Причина: .+ // (.+))";
-    static constexpr types::zstring_t none_request_pattern = R"(\[A\] .+\[\d+\]: (\d+), \+)";
+    static constexpr ctll::fixed_string answer_request_pattern = R"(\[A\] .+\[\d+\] ответил .+\[\d+\]: \S+ by (.+))";
+    static constexpr ctll::fixed_string reason_request_pattern = R"(Администратор .+\. Причина: .+ // (.+))";
+    static constexpr ctll::fixed_string none_request_pattern = R"(\[A\] .+\[\d+\]: (\d+), \+)";
 
-    std::smatch matches;
-    std::regex regex;
+    auto matches = types::u8regex::match<answer_request_pattern>(text);
     std::string to_compare = current_request->sender_nickname;
 
     switch (current_request->command.type) {
         case command_t::type_t::answer:
-            regex = std::regex(answer_request_pattern);
             break;
         case command_t::type_t::reason:
-            regex = std::regex(reason_request_pattern);
+            matches = types::u8regex::match<reason_request_pattern>(text);
             break;
         case command_t::type_t::none: {
             if (color != 0xAA33AA33)
                 return false;
 
-            regex = std::regex(none_request_pattern);
+            matches = types::u8regex::match<none_request_pattern>(text);
             to_compare = std::to_string(current_request->sender_id);
 
             break;
         }
     }
 
-    if (std::regex_match(text, matches, regex) && matches[1].str() == to_compare) {
+    if (matches && matches.get_string<1>() == to_compare) {
         current_request = {};
         return true;
     }

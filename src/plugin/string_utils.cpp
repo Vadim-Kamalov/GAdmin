@@ -1,5 +1,7 @@
 #include "plugin/string_utils.h"
+#include "plugin/types/string_iterator.h"
 #include <algorithm>
+#include <cctype>
 #include <windows.h>
 #include <vector>
 
@@ -31,6 +33,36 @@ plugin::string_utils::truncate_until_hashtag(const std::string_view& text) {
         return std::string(text.substr(0, pos));
 
     return std::string(text);
+}
+
+std::string
+plugin::string_utils::remove_samp_colors(const std::string_view& text) {
+    types::string_iterator iterator(text);
+    std::string output;
+
+    while (iterator.current().has_value()) {
+        if (*iterator.current() != '{') {
+            output.push_back(iterator.consume());
+            continue;
+        }
+
+        iterator.consume();
+
+        std::string hexadecimal_part = iterator.collect(::isxdigit);
+
+        if (hexadecimal_part.size() == 6 && *iterator.current() == '}') {
+            iterator.consume();
+            continue;
+        }
+
+        output.push_back('{');
+        output.append(hexadecimal_part);
+
+        if (*iterator.current() == '}')
+            output.push_back(iterator.consume());
+    }
+
+    return output;
 }
 
 std::string

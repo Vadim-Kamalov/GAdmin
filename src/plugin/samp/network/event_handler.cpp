@@ -1,9 +1,17 @@
 #include "plugin/samp/network/event_handler.h"
+#include "plugin/game/game.h"
+#include "plugin/samp/events/event.h"
 #include "plugin/samp/network/bit_stream.h"
 #include "plugin/samp/network/address.h"
 #include "plugin/samp/samp.h"
 #include "plugin/log.h"
 #include <cstdint>
+
+bool
+plugin::samp::event_handler::can_process_event() const {
+    using namespace std::chrono_literals;
+    return std::chrono::steady_clock::now() - time_left_from_pause >= 500ms;
+}
 
 std::uintptr_t
 plugin::samp::event_handler::rak_client_interface_constructor_hooked(const decltype(rak_client_interface_constructor_hook)& hook) {
@@ -49,7 +57,7 @@ plugin::samp::event_handler::incoming_rpc_handler_hooked(const decltype(incoming
     unsigned char* input = nullptr;
     std::unique_ptr<BitStream> callback_stream = std::make_unique<BitStream>();
 
-    BitStream stream(std::bit_cast<unsigned char*>(const_cast<char*>(data)) , length, true);
+    BitStream stream(std::bit_cast<unsigned char*>(const_cast<char*>(data)), length, true);
     stream.IgnoreBits(8);
 
     if (data[0] == ID_TIMESTAMP)
@@ -58,6 +66,9 @@ plugin::samp::event_handler::incoming_rpc_handler_hooked(const decltype(incoming
     int offset = stream.GetReadOffset();
 
     stream.Read(id);
+
+    if (!can_process_event())
+        return hook.call_trampoline(ptr, data, length, player_id);
 
     if (!stream.ReadCompressed(bits_data))
         return false;
@@ -109,6 +120,9 @@ plugin::samp::event_handler::outgoing_packet_handler_hooked(const decltype(outgo
     bit_stream new_stream(stream);
     std::uint8_t event_id = new_stream.read<std::uint8_t>();
 
+    if (!can_process_event())
+        return hook.call_trampoline(ptr, stream, priority, reliability, ordering_channel);
+
     if (callback.has_value()) {
         new_stream.reset_read_pointer();
         if (!(*callback)(event_info(event_type::outgoing_packet, event_id, &new_stream)))
@@ -129,6 +143,9 @@ plugin::samp::event_handler::incoming_packet_handler_hooked(const decltype(incom
 
     bit_stream new_stream(packet->data, packet->bitSize, false);
     std::uint8_t id = new_stream.read<std::uint8_t>();
+
+    if (!can_process_event())
+        return packet;
 
     if (callback.has_value()) {
         while (packet) {
@@ -154,6 +171,9 @@ plugin::samp::event_handler::outgoing_rpc_handler_hooked(const decltype(outgoing
                                                         BitStream* stream, PacketPriority priority, PacketReliability reliability,
                                                         char ordering_channel, bool shift_timestamp)
 {
+    if (!can_process_event())
+        return hook.call_trampoline(ptr, id, stream, priority, reliability, ordering_channel, shift_timestamp);
+
     bit_stream new_stream(stream);
     new_stream.reset_read_pointer();
 
@@ -175,13 +195,17 @@ plugin::samp::event_handler::attach(callback_t new_callback) {
     callback = new_callback;
 }
 
-bool
-plugin::samp::event_handler::initialize() {
-    if (initialized)
-        return true;
+void
+plugin::samp::event_handler::main_loop() {
+    bool menu_opened = game::is_menu_opened();
 
-    if (!get_base() || get_version() == version::unknown)
-        return false;
+    if (!menu_opened && paused)
+        time_left_from_pause = std::chrono::steady_clock::now();
+
+    paused = menu_opened;
+
+    if (initialized || !get_base() || get_version() == version::unknown)
+        return;
 
     rak_client_interface_constructor_hook.set_dest(address::rak_client_interface_constructor());
     rak_client_interface_constructor_hook.set_cb(std::bind(&event_handler::rak_client_interface_constructor_hooked, this, std::placeholders::_1));
@@ -190,6 +214,4 @@ plugin::samp::event_handler::initialize() {
     log::info("hook \"RakClientInterface::RakClientInterface()\" installed");
 
     initialized = true;
-
-    return true;
 }

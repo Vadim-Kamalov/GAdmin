@@ -13,11 +13,11 @@
 #include "plugin/types/simple.h"
 #include "plugin/plugin.h"
 #include "plugin/log.h"
-#include <chrono>
-#include <minwindef.h>
+#include "plugin/types/u8regex.h"
 #include <misc/cpp/imgui_stdlib.h>
+#include <minwindef.h>
+#include <chrono>
 #include <ranges>
-#include <regex>
 
 std::array<plugin::gui::windows::report::action_button, 12>
 plugin::gui::windows::report::get_action_buttons() {
@@ -81,7 +81,7 @@ plugin::gui::windows::report::block_action_button() {
 
 bool
 plugin::gui::windows::report::on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog) {
-    static constexpr types::zstring_t report_information_pattern = R"(Описание репорта:\s+\{FFFFFF\}(.+)\n)";
+    static constexpr ctll::fixed_string report_information_pattern = R"(Описание репорта:\s+\{FFFFFF\}(.+)\n)";
 
     if (!dialog || dialog.title != "Обработка репорта")
         return true;
@@ -89,15 +89,14 @@ plugin::gui::windows::report::on_show_dialog(const samp::event<samp::event_id::s
     dialog_active = true;
     dialog_id = dialog.id;
 
-    std::smatch matches;
-    std::string dialog_text = dialog.text;
-
     if (!current_report.has_value())
         return true;
+    
+    std::string dialog_text = dialog.text;
 
-    if (current_report->text.empty() && std::regex_search(dialog_text, matches, std::regex(report_information_pattern))) {
+    if (auto matches = types::u8regex::search<report_information_pattern>(dialog_text); matches && current_report->text.empty()) {
         current_report->time_taken = std::chrono::steady_clock::now();
-        current_report->text = matches[1].str();
+        current_report->text = matches.get_string<1>();
 
         open_window();
         
@@ -135,16 +134,14 @@ plugin::gui::windows::report::on_show_dialog(const samp::event<samp::event_id::s
 
 bool
 plugin::gui::windows::report::on_server_message(const samp::event<samp::event_id::server_message>& message) {
-    static constexpr types::zstring_t new_report_pattern
+    static constexpr ctll::fixed_string new_report_pattern
         = R"(^\{FFFF00\}\| \{ffffff\}На вас был назначен репорт от игрока \{4a86b6\}(\S+)\[(\d+)\]\{FFFFFF\})";
 
     static constexpr types::zstring_t report_canceled_message
         = "{FFFF00}| {ffffff}Обработка репорта завершена.";
 
-    std::smatch matches;
-
-    if (std::regex_search(message.text, matches, std::regex(new_report_pattern)))
-        return on_new_report_message(matches[1].str(), std::stoi(matches[2].str()));
+    if (auto matches = types::u8regex::search<new_report_pattern>(message.text))
+        return on_new_report_message(matches.get_string<1>(), std::stoi(matches.get_string<2>()));
 
     if (message.text.substr(0, std::char_traits<char>::length(report_canceled_message)) == report_canceled_message)
         return on_report_canceled();

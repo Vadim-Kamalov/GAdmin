@@ -1,6 +1,7 @@
 #include "plugin/plugin.h"
 #include "plugin/gui/notify.h"
 #include "plugin/samp/core/net_game.h"
+#include "plugin/samp/events/event.h"
 #include "plugin/samp/samp.h"
 #include "plugin/server/admins.h"
 #include "plugin/server/binder.h"
@@ -31,24 +32,22 @@ bool
 plugin::plugin_initializer::on_event(const samp::event_info& event) {
     if (!server::admins::on_event(event))
         return false;
-    
+
     if (!gui->on_event(event))
         return false;
-    
+
     if (!cheats_initializer->on_event(event))
         return false;
 
     event.stream->reset_read_pointer();
 
-    if (!server::user::on_event(event))
+    if (!server::user::on_event(event)) 
         return false;
 
     event.stream->reset_read_pointer();
 
     if (!server::spectator::on_event(event))
         return false;
-
-    event.stream->reset_read_pointer();
 
     return true;
 }
@@ -103,7 +102,7 @@ void
 plugin::plugin_initializer::main_loop() {
     static bool samp_initialized = false;
     
-    event_handler->initialize();
+    event_handler->main_loop();
     configuration->save(5min);
     
     server::user::main_loop();

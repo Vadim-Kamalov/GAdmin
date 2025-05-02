@@ -2,10 +2,10 @@
 #define GADMIN_PLUGIN_SAMP_NETWORK_EVENT_HANDLER_H
 
 #include "plugin/samp/events/event.h"
-#include "plugin/samp/network/bit_stream.h"
 #include "plugin/samp/network/signatures.h"
 #include "plugin/types/simple.h"
 #include "raknet/rak_client.h"
+#include <chrono>
 #include <kthook/kthook.hpp>
 #include <functional>
 
@@ -21,11 +21,16 @@ public:
 private:
     std::optional<callback_t> callback;
 
+    bool paused = false;
+    std::chrono::steady_clock::time_point time_left_from_pause;
+
     kthook::kthook_simple<signatures::rak_client_interface_constructor_t> rak_client_interface_constructor_hook;
     kthook::kthook_simple<signatures::incoming_rpc_handler_t> incoming_rpc_handler_hook;
     kthook::kthook_simple<signatures::outgoing_packet_handler_t> outgoing_packet_handler_hook;
     kthook::kthook_simple<signatures::incoming_packet_handler_t> incoming_packet_handler_hook;
     kthook::kthook_simple<signatures::outgoing_rpc_handler_t> outgoing_rpc_handler_hook;
+
+    bool can_process_event() const;
 
     std::uintptr_t rak_client_interface_constructor_hooked(const decltype(rak_client_interface_constructor_hook)& hook);
 
@@ -49,7 +54,7 @@ public:
     signatures::incoming_rpc_handler_t get_incoming_rpc_trampoline() const;
 
     void attach(callback_t new_callback);
-    bool initialize();
+    void main_loop();
 }; // class event_handler
 
 } // namespace plugin::samp

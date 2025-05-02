@@ -3,8 +3,8 @@
 #include "plugin/samp/core/user.h"
 #include "plugin/log.h"
 #include "plugin/plugin.h"
+#include "plugin/types/u8regex.h"
 #include <algorithm>
-#include <regex>
 #include <spanstream>
 
 void
@@ -29,17 +29,19 @@ plugin::server::admins::on_show_dialog(const samp::event<samp::event_id::show_di
     if (!list.empty() || user::is_on_alogin())
         return true;
 
-    if (std::regex_search(dialog.text, std::regex("Лог отключений"))) {
+    if (dialog.text.contains("Лог отключений")) {
         dialog.send_response(samp::dialog::button::right, 0);
         return false;
     }
 
-    if (std::regex_search(dialog.text, std::regex("Администраторы в сети:"))) {
+    if (dialog.text.contains("Администраторы в сети:")) {
+        auto& user_information = (*configuration)["user"];
+
         update_admins(dialog.text);
 
-        if ((*configuration)["user"]["nickname"] == "Администратор" && (*configuration)["user"]["level"] == 0) {
-            (*configuration)["user"]["nickname"] = "Technical Admin";
-            (*configuration)["user"]["level"] = 6;
+        if (user_information["nickname"] == "Администратор" && user_information["level"] == 0) {
+            user_information["nickname"] = "Technical Admin";
+            user_information["level"] = 6;
         }
         
         log::info("user is on /alogin; admins::list is not empty and available now");
@@ -53,20 +55,24 @@ plugin::server::admins::on_show_dialog(const samp::event<samp::event_id::show_di
 
 bool
 plugin::server::admins::on_server_message(const samp::event<samp::event_id::server_message>& message) {
-    std::smatch matches;
+    static constexpr ctll::fixed_string authorization_pattern = 
+        R"(\[A\] (\S+)\[(\d+)\] авторизовался как администратор (\d+) уровня.)";
+
+    static constexpr ctll::fixed_string disconnect_pattern
+        = R"(\[A\] \S+\[(\d+)\] вышел как администратор.)";
     
-    if (std::regex_search(message.text, matches, std::regex(R"(^\[A\] (\S+)\[(\d+)\] авторизовался как администратор (\d+) уровня.$)"))) {
-        std::string nickname = matches[1].str();
-        std::uint16_t id = static_cast<std::uint16_t>(std::stoul(matches[2].str()));
-        std::uint8_t level = static_cast<std::uint8_t>(std::stoul(matches[3].str()));
+    if (auto matches = types::u8regex::match<authorization_pattern>(message.text)) {
+        std::string nickname = matches.get_string<1>();
+        std::uint16_t id = static_cast<std::uint16_t>(std::stoul(matches.get_string<2>()));
+        std::uint8_t level = static_cast<std::uint8_t>(std::stoul(matches.get_string<3>()));
 
         add_connected_admin({ nickname, id, level });
 
         return true;
     }
 
-    if (std::regex_search(message.text, matches, std::regex(R"(^\[A\] \S+\[(\d+)\] вышел как администратор.$)")))
-        remove_disconnected_admin(static_cast<std::uint16_t>(std::stoul(matches[1].str())));
+    if (auto matches = types::u8regex::match<disconnect_pattern>(message.text))
+        remove_disconnected_admin(static_cast<std::uint16_t>(std::stoul(matches.get_string<1>())));
 
     return true;
 }
@@ -85,17 +91,20 @@ plugin::server::admins::on_set_player_name(const samp::event<samp::event_id::set
 
 void
 plugin::server::admins::update_admins(const std::string_view& dialog_text) {
+    static constexpr ctll::fixed_string entry_pattern = R"(\{FFFFFF\}(.*)\[(\d+)\] - ([1-5]) уровень)";
+
     std::ispanstream stream(dialog_text);
-    for (std::string line; std::getline(stream, line);) {
-        std::smatch matches;
-        if (std::regex_search(line, matches, std::regex(R"(\{FFFFFF\}(.*)\[(\d+)\] - ([1-5]) уровень)"))) {
-            std::string nickname = matches[1].str();
-            std::uint16_t id = static_cast<std::uint16_t>(std::stoul(matches[2].str()));
-            std::uint8_t level = static_cast<std::uint8_t>(std::stoul(matches[3].str()));
+
+    for (std::string entry; std::getline(stream, entry);) {
+        if (auto matches = types::u8regex::search<entry_pattern>(entry)) {
+            std::string nickname = matches.get_string<1>();
+            std::uint16_t id = static_cast<std::uint16_t>(std::stoul(matches.get_string<2>()));
+            std::uint8_t level = static_cast<std::uint8_t>(std::stoul(matches.get_string<3>()));
                 
             if (id == samp::user::get_id()) {
-                (*configuration)["user"]["nickname"] = nickname;
-                (*configuration)["user"]["level"] = level;
+                auto& user_information = (*configuration)["user"];
+                user_information["nickname"] = nickname;
+                user_information["level"] = level;
             }
 
             list.push_back({ nickname, id, level });

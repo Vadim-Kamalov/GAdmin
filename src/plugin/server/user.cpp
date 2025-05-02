@@ -2,7 +2,7 @@
 #include "plugin/plugin.h"
 #include "plugin/server/admins.h"
 #include "plugin/samp/core/input.h"
-#include <regex>
+#include "plugin/types/u8regex.h"
 
 void
 plugin::server::user::set_alogin_status(bool status) {
@@ -26,17 +26,20 @@ plugin::server::user::on_show_dialog(const samp::event<samp::event_id::show_dial
 
 bool
 plugin::server::user::on_server_message(const samp::event<samp::event_id::server_message>& message) {
-    static constexpr types::zstring_t authorization_pattern = 
-        "Вы успешно авторизовались как администратор|"
-        "Вы уже авторизировались|"
-        "Вы успешно авторизовались как ведущий администратор|"
-        "Вы успешно авторизовались как разработчик";
+    static std::array<std::string, 4> authorization_strings = { 
+        "Вы успешно авторизовались как администратор",
+        "Вы уже авторизировались",
+        "Вы успешно авторизовались как ведущий администратор",
+        "Вы успешно авторизовались как разработчик"
+    }; // static std::array<std::string, 4> authorization_strings
 
-    static constexpr types::zstring_t alogout_pattern =
+    static constexpr ctll::fixed_string alogout_pattern =
         "^\\{FFFF00\\}\\| \\{ffffff\\}За сессию администратирования вы заработали "
         "\\{4a86b6\\}\\d+ \\{FFFFFF\\}GMoney.$";
 
-    if (std::regex_search(message.text, std::regex(authorization_pattern)) && message.color == 0xFFFFFFFF && !is_on_alogin()) {
+    if (std::find_if(authorization_strings.begin(), authorization_strings.end(), [message](const std::string& str) {
+        return message.text.contains(str);
+    }) != authorization_strings.end() && message.color == 0xFFFFFFFF && !is_on_alogin()) {
         auto now = std::chrono::steady_clock::now();
         if (now - last_time_authorized >= std::chrono::milliseconds(SERVER_COMMAND_DELAY_MS)) {
             last_time_authorized = now;
@@ -45,7 +48,7 @@ plugin::server::user::on_server_message(const samp::event<samp::event_id::server
         }
     }
 
-    if (std::regex_search(message.text, std::regex(alogout_pattern)) && is_on_alogin())
+    if (types::u8regex::search<alogout_pattern>(message.text) && is_on_alogin())
         set_alogin_status(false);
 
     return true;

@@ -11,10 +11,12 @@ private:
 public:
     static std::string to_lowercase(const std::string_view& str);
     static std::string truncate_until_hashtag(const std::string_view& text);
+    static std::string remove_samp_colors(const std::string_view& text);
     static std::string to_utf8(const std::string& text);
-    static std::string to_cp1251(const std::string& text); 
+    static std::string to_cp1251(const std::string& text);
 }; // class string_utils
 
 } // namespace plugin
+
 
 #endif // GADMIN_STRING_UTILS_H

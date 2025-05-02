@@ -8,7 +8,7 @@
 #include "plugin/game/weapon.h"
 #include "plugin/plugin.h"
 #include "plugin/log.h"
-#include <regex>
+#include "plugin/types/u8regex.h"
 
 using namespace std::chrono_literals;
 
@@ -16,6 +16,7 @@ bool
 plugin::server::spectator::on_show_text_draw(const samp::event<samp::event_id::show_text_draw>& text_draw) {
     static constexpr types::zstring_t dirty_title = "Adadadad_Dfghsadersasd(111)";
     static constexpr types::zstring_t dirty_body = "2282282~n~$400000~n~90 MP/H~n~100/20~n~M4A1/Pustinniy Orel~n~999 ms~n~127.23.42.123";
+    static constexpr ctll::fixed_string text_draw_id_pattern = "~y~\\((\\d+)\\)";
 
     bool hide = (*configuration)["additions"]["hide_spectator_text_draws"];
 
@@ -24,11 +25,9 @@ plugin::server::spectator::on_show_text_draw(const samp::event<samp::event_id::s
     if (hide && (text_draw.text == dirty_title || text_draw.text == dirty_body))
         return false;
 
-    std::smatch matches;
-
-    if (std::regex_search(text_draw.text, matches, std::regex(R"(~y~\((\d+)\))"))) {
+    if (auto [ whole, id ] = ctre::search<text_draw_id_pattern>(text_draw.text); whole) {
         text_draw_id = text_draw.id;
-        assign(std::stoul(matches[1].str()));
+        assign(std::stoul(id.str()));
         return !hide;
     }
 
@@ -40,30 +39,31 @@ plugin::server::spectator::on_show_text_draw(const samp::event<samp::event_id::s
 
 bool
 plugin::server::spectator::on_text_draw_set_string(const samp::event<samp::event_id::set_text_draw_string>& text_draw) {
-    static constexpr types::zstring_t spectator_information =
+    static constexpr ctll::fixed_string text_draw_id_pattern = "~y~\\((\\d+)\\)";
+    static constexpr ctll::fixed_string spectator_information =
         "ID Akkay.+a: (\\d+)~n~Ha.+e: (\\d+)~n~Ckopoc.+: (\\d+) / \\d+"
         "~n~Opy.+e: .+~n~Ping: \\d+ ms~n~HP: (.+)~n~Android: (.+)~n~Mo.+y.+p: (\\d+)";
 
-    std::smatch matches;
-    
-    if (std::regex_search(text_draw.text, matches, std::regex(R"(~y~\((\d+)\))"))) {
+    if (auto [ whole, id ] = ctre::search<text_draw_id_pattern>(text_draw.text); whole) {
         text_draw_id = text_draw.id;
-        assign(std::stoul(matches[1].str()));
+        assign(std::stoul(id.str()));
         return true;
     }
 
-    if (std::regex_search(text_draw.text, matches, std::regex(spectator_information))) {
-        information.account_id = std::stoul(matches[1].str());
-        information.money_hand = matches[2].str();
-        information.health = std::stoul(matches[4].str());
-        information.world = std::stoul(matches[6].str());
+    if (auto matches = types::u8regex::search<spectator_information>(text_draw.text)) {
+        information.account_id = std::stoul(matches.get_string<1>());
+        information.money_hand = matches.get_string<2>();
+        information.health = std::stoul(matches.get_string<4>());
+        information.world = std::stoul(matches.get_string<6>());
        
         if (player.is_available() && player.get_vehicle().is_available())
-            information.move_speed_current = std::stoul(matches[3].str());
+            information.move_speed_current = std::stoul(matches.get_string<3>());
 
-        if (matches[5].str() == "\x48\x65\xA6")
+        std::string platform_str = matches.get_string<5>();
+
+        if (platform_str == "\x48\x65\xA6")
             platform = platform_t::desktop;
-        else if (matches[5].str() == "\x83\x61")
+        else if (platform_str == "\x83\x61")
             platform = platform_t::mobile;
         else
             platform = platform_t::none;
@@ -82,8 +82,8 @@ plugin::server::spectator::on_text_draw_hide(const samp::event<samp::event_id::h
 
 bool
 plugin::server::spectator::on_show_3d_text(const samp::event<samp::event_id::create_3d_text>& text_3d) {
-    static constexpr types::zstring_t first_stage_pattern = R"(\(\( Данный персонаж ранен \d+ раз\(-а\) - /dm \d+ \)\))";
-    static constexpr types::zstring_t second_stage_pattern = R"(\(\( ДАННЫЙ ПЕРСОНАЖ .+ \)\))";
+    static constexpr ctll::fixed_string first_stage_pattern = R"(\(\( Данный персонаж ранен \d+ раз\(-а\) - /dm \d+ \)\))";
+    static constexpr ctll::fixed_string second_stage_pattern = R"(\(\( ДАННЫЙ ПЕРСОНАЖ .+ \)\))";
 
     if (!active)
         return true;
@@ -94,15 +94,13 @@ plugin::server::spectator::on_show_3d_text(const samp::event<samp::event_id::cre
     if (text_3d.attached_player_id != id)
         return true;
 
-    std::smatch matches;
-
-    if (std::regex_search(text_3d.text, matches, std::regex(first_stage_pattern))) {
+    if (types::u8regex::search<first_stage_pattern>(text_3d.text)) {
         information.stage = 1;
         stage_3d_text_id = text_3d.id;
         return true;
     }
 
-    if (std::regex_search(text_3d.text, matches, std::regex(second_stage_pattern))) {
+    if (types::u8regex::search<second_stage_pattern>(text_3d.text)) {
         information.stage = 2;
         stage_3d_text_id = text_3d.id;
         return true;
@@ -123,33 +121,33 @@ plugin::server::spectator::on_remove_3d_text(const samp::event<samp::event_id::r
 
 bool
 plugin::server::spectator::on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog) {
-    static constexpr types::zstring_t information_pattern =
-        "Банк: \\$(.+)[^]+Фракция: (.+)[^]+Должность: (.+)[^]+Транспорт: (.+)[^]+"
-        "Дом: (.+)[^]+Премиум аккаунт: (.+)[^]+Дата регистрации: (.+)[^]+";
+    static constexpr ctll::fixed_string warnings_pattern = "Предупреждения: (\\d+)";
+    static constexpr ctll::fixed_string information_pattern =
+        "Банк: \\$([^\\n]+).*Фракция: ([^\\n]+).*Должность: ([^\\n]+).*Транспорт: ([^\\n]+).*"
+        "Дом: ([^\\n]+).*Премиум аккаунт: ([^\\n]+).*Дата регистрации: ([^\\n]+)";
 
     if (!dialog.text.contains("Информация о игроке") || !checking_statistics || !active)
         return true;
 
-    std::string text = std::regex_replace(dialog.text, std::regex("\\{[0-9A-Fa-f]{6}\\}"), "");
-    std::smatch matches;
+    std::string text = string_utils::remove_samp_colors(dialog.text);
+    auto matches = types::u8regex::search<warnings_pattern>(text);
 
-    information.warnings = (std::regex_search(text, matches, std::regex("Предупреждения: (\\d+)"))) ? std::stoul(matches[1].str()) : 0; 
+    information.warnings = (matches) ? std::stoul(matches.get_string<1>()) : 0;
 
-    if (!std::regex_search(text, matches, std::regex(information_pattern)))
-        return true;
-
-    information.money_bank = matches[1].str();
-    information.fraction = convert_possible_absence_text(matches[2].str());
-    information.rank = convert_possible_absence_text(matches[3].str());
-    information.vehicle = convert_possible_absence_text(matches[4].str());
-    information.house = convert_possible_absence_text(matches[5].str());
-    information.vip = convert_possible_absence_text(matches[6].str());
-    information.registration_date = matches[7].str();
+    if (auto matches = types::u8regex::search<information_pattern>(text)) {
+        information.money_bank = matches.get_string<1>();
+        information.fraction = convert_possible_absence_text(matches.get_string<2>());
+        information.rank = convert_possible_absence_text(matches.get_string<3>());
+        information.vehicle = convert_possible_absence_text(matches.get_string<4>());
+        information.house = convert_possible_absence_text(matches.get_string<5>());
+        information.vip = convert_possible_absence_text(matches.get_string<6>());
+        information.registration_date = matches.get_string<7>();
     
-    checking_statistics = false;
+        checking_statistics = false;
     
-    std::replace(information.vehicle.begin(), information.vehicle.end(), ',', ' ');
-    dialog.send_response(samp::dialog::button::left);
+        std::replace(information.vehicle.begin(), information.vehicle.end(), ',', ' ');
+        dialog.send_response(samp::dialog::button::left);
+    }
     
     return false;
 }
