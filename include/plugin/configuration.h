@@ -153,6 +153,13 @@ private:
                     "custom_render": true,
                     "font_size": 18
                 },
+
+                "tracers": {
+                    "use": true,
+                    "only_from_spectator": false,
+                    "seconds_to_hide": 15,
+                    "limit": 15
+                },
                 
                 "clickwarp": { "use": true }
             },

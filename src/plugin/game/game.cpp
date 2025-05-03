@@ -10,14 +10,14 @@ plugin::game::get_screen_resolution() noexcept {
     return { resolution_x.read(), resolution_y.read() };
 }
 
-std::pair<float, float>
+plugin::types::vector_3d
 plugin::game::convert_3d_coords_to_screen(const types::vector_3d& coords) noexcept {
     types::vector_3d result;
 
     // `signatures::calc_screen_coords` doesn't modify input pointer,
     // so it's safe to do `const_cast` for const reference here.
     if (!calc_screen_coords(const_cast<types::vector_3d*>(std::addressof(coords)), &result))
-        return { 0, 0 };
+        return { 0, 0, 0 };
 
-    return { result.x, result.y };
+    return result;
 }

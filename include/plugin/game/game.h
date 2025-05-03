@@ -19,7 +19,7 @@ static inline DWORD get_device() noexcept;
 static inline bool is_menu_opened() noexcept;
 
 std::pair<float, float> get_screen_resolution() noexcept;
-std::pair<float, float> convert_3d_coords_to_screen(const types::vector_3d& coords) noexcept;
+types::vector_3d convert_3d_coords_to_screen(const types::vector_3d& coords) noexcept;
 
 } // namespace game
 } // namespace plugin

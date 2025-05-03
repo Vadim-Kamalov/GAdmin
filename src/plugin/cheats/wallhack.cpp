@@ -2,6 +2,7 @@
 #include "plugin/samp/core/net_game.h"
 #include "plugin/gui/notify.h"
 #include "plugin/samp/player.h"
+#include "plugin/server/spectator.h"
 #include "plugin/server/user.h"
 #include "plugin/game/game.h"
 #include "plugin/plugin.h"
@@ -57,6 +58,9 @@ plugin::cheats::wallhack::render(types::not_null<gui_initializer*> child) {
     ImFont* font = (*child->fonts->bold)[18];
 
     for (const auto& [ player, ped ] : samp::player::get_stream_players()) {
+        if (server::spectator::is_active() && player.id == server::spectator::id)
+            continue;
+
         game::ped game_ped = ped.get_game_ped();
 
         if (!game_ped.is_on_screen())
@@ -69,7 +73,7 @@ plugin::cheats::wallhack::render(types::not_null<gui_initializer*> child) {
         if (color == 0 || color == 0xFFFFFFFF)
             color = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_Text]);
 
-        auto [ pos_x, pos_y ] = game::convert_3d_coords_to_screen(bone_position);
+        auto [ pos_x, pos_y, _ ] = game::convert_3d_coords_to_screen(bone_position);
         pos_x -= font->CalcTextSizeA(font_size, FLT_MAX, 0.0f, text.c_str()).x / 2;
 
         draw_list->AddText(font, font_size, { pos_x + 1, pos_y + 1 }, 0xFF000000, text.c_str());
