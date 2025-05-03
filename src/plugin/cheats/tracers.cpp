@@ -1,6 +1,4 @@
 #include "plugin/cheats/tracers.h"
-#include "plugin/game/camera.h"
-#include "plugin/game/ped.h"
 #include "plugin/gui/icon.h"
 #include "plugin/gui/notify.h"
 #include "plugin/gui/style.h"
