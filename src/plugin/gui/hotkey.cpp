@@ -1,5 +1,6 @@
 #include "plugin/gui/hotkey.h"
 #include "plugin/gui/key_names.h"
+#include "plugin/gui/style.h"
 #include "plugin/gui/widgets/button.h"
 #include "plugin/gui/widgets/hint.h"
 #include "plugin/gui/widgets/text.h"
@@ -148,6 +149,7 @@ plugin::gui::hotkey::render() {
             handler->changing_any_hotkey = changing = false;
             new_bind = {};
         } else {
+            already_registered = handler->is_bind_defined(handler->current_keys);
             if (handler->current_keys.empty()) {
                 if (now - tick_time >= 500ms) {
                     tick_state ^= true;
@@ -157,10 +159,14 @@ plugin::gui::hotkey::render() {
                 button.label = (tick_state) ? "" : "Ожидание";
             } else {
                 button.label = handler->current_keys.to_string();
-                new_bind = handler->current_keys;
+                if (!already_registered)
+                    new_bind = handler->current_keys;
             }
         }
     }
+
+    if (!changing && already_registered)
+        already_registered = false;
 
     button.label = truncate_text_in_button(button.label);
 
@@ -173,6 +179,15 @@ plugin::gui::hotkey::render() {
         .with_condition(std::bind(&hotkey::hint_condition, this))
         .with_renderer(std::bind(&hotkey::hint_renderer, this))
         .render();
+
+    widgets::hint("Эти клавиши уже используются другим биндом.\nПодсказка: чтобы отменить смену клавиш - нажмите ESC.##" + label, style::accent_colors.red)
+        .with_condition([this] { return already_registered; })
+        .render();
+}
+
+bool
+plugin::gui::hotkey::is_down() const {
+    return bind.modifiers.internal_first_key_down && bind.modifiers.internal_second_key_down;
 }
 
 plugin::gui::hotkey::hotkey(const std::string_view& label, const key_bind& default_bind) : label(std::move(label)) {
@@ -276,6 +291,9 @@ plugin::gui::hotkey_handler::write_current_keys(unsigned int message, WPARAM wpa
 
 bool
 plugin::gui::hotkey_handler::is_bind_defined(const key_bind& bind) const {
+    if (bind.empty())
+        return false;
+
     return std::find_if(pool.begin(), pool.end(), [bind](const hotkey& hotkey) {
         return hotkey.bind == bind;
     }) != pool.end();
@@ -300,12 +318,15 @@ plugin::gui::hotkey_handler::on_event(unsigned int message, WPARAM wparam, LPARA
     }
 
     write_current_keys(message, wparam);
+    
+    if (changing_any_hotkey)
+        return true;
 
     for (auto& hotkey : pool) {
         auto& bind = hotkey.bind;
 
         if (bind.empty())
-            return true;
+            continue;
 
         bool modifiers_down = check_modifiers(bind.modifiers);
         auto& [ first_key, second_key ] = hotkey.bind.keys;
@@ -349,7 +370,7 @@ plugin::gui::hotkey_handler::on_event(unsigned int message, WPARAM wparam, LPARA
 
                 break;
             }
-        
+
             case WM_SYSKEYUP:
             case WM_KEYUP: {
                 if (wparam == first_key)

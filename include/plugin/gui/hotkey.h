@@ -122,7 +122,11 @@ private:
         "При выключенном курсоре", "Никогда"
     };
 
-    bool changing = false, tick_state = false, hint_active = false;
+    bool changing = false;
+    bool tick_state = false;
+    bool hint_active = false;
+    bool already_registered = false;
+
     std::chrono::steady_clock::time_point tick_time;
     
     hotkey_handler* handler;
@@ -140,6 +144,7 @@ public:
     callback_t callback = [](hotkey&) {};
 
     void render();
+    bool is_down() const;
     
     inline hotkey& with_callback(callback_t new_callback);
     inline hotkey& with_handler(hotkey_handler* new_handler);
@@ -199,7 +204,7 @@ plugin::gui::key_bind::join() const {
 
 constexpr bool
 plugin::gui::key_bind::operator==(const key_bind& other) const {
-    return join() == other.join();
+    return modifiers.join() == other.modifiers.join() && keys == other.keys;
 }
 
 constexpr bool
