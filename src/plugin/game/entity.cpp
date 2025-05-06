@@ -11,6 +11,11 @@ plugin::game::entity::teleport(const types::vector_3d& pos) const {
     set_coordinates(pos);
 }
 
+bool
+plugin::game::entity::is_on_screen() const {
+    return is_on_screen_address(*handle);
+}
+
 std::uint16_t
 plugin::game::entity::get_model_index() const {
     return model_index_offset.read(*handle);
@@ -27,4 +32,9 @@ plugin::game::entity::get_vehicle() const {
         return vehicle(0);
 
     return vehicle(*handle);
+}
+
+bool
+plugin::game::entity::operator==(const entity& other) const {
+    return *handle == *other.handle;
 }

@@ -4,7 +4,6 @@
 #include "plugin/gui/widgets/button.h"
 #include "plugin/gui/widgets/frame_switcher.h"
 #include "plugin/gui/widgets/menu_selector.h"
-#include "plugin/gui/widgets/toggle_button.h"
 #include "plugin/log.h"
 #include <imgui.h>
 #include <windows.h>

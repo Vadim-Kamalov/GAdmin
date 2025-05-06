@@ -5,6 +5,7 @@
 #include "plugin/types/options.h"
 #include <chrono>
 #include <cstdint>
+#include <deque>
 #include <format>
 #include <string>
 #include <minwindef.h>
@@ -144,7 +145,6 @@ public:
     callback_t callback = [](hotkey&) {};
 
     void render();
-    bool is_down() const;
     
     inline hotkey& with_callback(callback_t new_callback);
     inline hotkey& with_handler(hotkey_handler* new_handler);
@@ -162,13 +162,15 @@ private:
     void write_current_keys(unsigned int message, WPARAM wparam);
 public:
     types::not_null<gui_initializer*> child;
-    std::vector<hotkey> pool;
+    std::deque<hotkey> pool;
     
     key_bind current_keys;
     bool changing_any_properties = false;
     bool changing_any_hotkey = false;
 
     bool is_bind_defined(const key_bind& bind) const;
+    bool is_hotkey_active(const hotkey& hotkey_to_find) const;
+
     bool on_event(unsigned int message, WPARAM wparam, LPARAM lparam);
     void main_loop();
     void add(hotkey& hotkey);

@@ -2,8 +2,8 @@
 #define GADMIN_PLUGIN_SERVER_BINDER_H
 
 #include <chrono>
-#include <deque>
 #include <functional>
+#include <list>
 #include <string>
 
 namespace plugin::server {
@@ -18,7 +18,7 @@ private:
     using variable_replacement_t = std::function<std::string(const std::vector<std::string>&)>;
     
     static std::unordered_map<std::string, variable_replacement_t> variables;
-    static inline std::deque<message> messages;
+    static inline std::list<message> messages;
 
     static std::string process_variable_body(const std::string_view& input);
     static void evaluate_single_line(const std::string_view& input);

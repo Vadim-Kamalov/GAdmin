@@ -129,7 +129,7 @@ plugin::gui::windows::notify::render() {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
     ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
     {
-        std::deque<notification>& notifications = gui::notify::get_notifications();
+        std::list<notification>& notifications = gui::notify::get_notifications();
         for (auto it = notifications.rbegin(); it != notifications.rend();) {
             float start_pos_x = (align == "left") ? -notification_size[0] : notification_size[0];
             float end_pos_x = (align == "left") ? padding * 2 : 0;

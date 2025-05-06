@@ -2,11 +2,6 @@
 #include <cmath>
 
 bool
-plugin::game::ped::is_on_screen() const {
-    return is_on_screen_address(*handle);
-}
-
-bool
 plugin::game::ped::is_in_the_air() const {
     return flags_offset.read(*handle).in_the_air;
 }

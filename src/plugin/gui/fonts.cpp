@@ -2,6 +2,7 @@
 #include "plugin/log.h"
 #include "plugin/network.h"
 #include <filesystem>
+#include <list>
 
 std::unordered_map<float, ImFont*>
 plugin::gui::basic_font::create(const ImWchar* glyphs) const {
@@ -43,7 +44,7 @@ plugin::gui::fonts_initializer::initialize() {
 
 plugin::gui::fonts_initializer::fonts_initializer() {
     std::filesystem::path resources_directory = std::filesystem::current_path() / "gadmin" / "resources";
-    std::vector<std::string> fonts = { fonts::light::filename, fonts::regular::filename,
+    std::list<std::string> fonts = { fonts::light::filename, fonts::regular::filename,
                                        fonts::bold::filename, fonts::icon::filename };
 
     try {

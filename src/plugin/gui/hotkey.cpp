@@ -11,7 +11,7 @@
 
 std::string
 plugin::gui::key_bind::to_string() const {
-    std::vector<std::string> output;
+    std::deque<std::string> output;
 
     if (modifiers.shift)
         output.push_back((modifiers.uses_right_hand_shift) ? "Right Shift" : "Shift");
@@ -185,11 +185,6 @@ plugin::gui::hotkey::render() {
         .render();
 }
 
-bool
-plugin::gui::hotkey::is_down() const {
-    return bind.modifiers.internal_first_key_down && bind.modifiers.internal_second_key_down;
-}
-
 plugin::gui::hotkey::hotkey(const std::string_view& label, const key_bind& default_bind) : label(std::move(label)) {
     auto& saved_binds = (*configuration)["internal"]["hotkeys"];
 
@@ -297,6 +292,16 @@ plugin::gui::hotkey_handler::is_bind_defined(const key_bind& bind) const {
     return std::find_if(pool.begin(), pool.end(), [bind](const hotkey& hotkey) {
         return hotkey.bind == bind;
     }) != pool.end();
+}
+
+bool
+plugin::gui::hotkey_handler::is_hotkey_active(const hotkey& hotkey_to_find) const {
+    if (auto it = std::find_if(pool.begin(), pool.end(), [hotkey_to_find](const hotkey& hotkey_in_pool) {
+        return hotkey_to_find.label == hotkey_in_pool.label;
+    }); it != pool.end())
+        return it->bind.modifiers.internal_first_key_down && it->bind.modifiers.internal_second_key_down;
+
+    return false;
 }
 
 void

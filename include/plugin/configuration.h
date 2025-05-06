@@ -138,6 +138,11 @@ private:
                     ]
                 },
 
+                "interaction_area": {
+                    "use": true,
+                    "radius": 300
+                },
+
                 "spectator_keys": { "use": true },
                 "vehicle_selection": { "use": true }
             },

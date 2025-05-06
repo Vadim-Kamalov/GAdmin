@@ -19,7 +19,7 @@ plugin::samp::vehicle_pool::get_vehicle(std::uint16_t id) noexcept {
     if (!is_available(id))
         return std::unexpected(error::vehicle_not_available);
 
-    return vehicle(objects_offset.read(net_game::instance_container->read())[id]);
+    return vehicle(objects_offset.read(get_vehicle_pool_container->invoke(net_game::instance_container->read()))[id]);
 }
 
 std::expected<std::uint16_t, plugin::samp::vehicle_pool::error>

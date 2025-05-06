@@ -4,6 +4,7 @@
 #include "plugin/game/game.h"
 #include "plugin/gui/windows/admins.h"
 #include "plugin/gui/windows/far_chat.h"
+#include "plugin/gui/windows/interaction_area.h"
 #include "plugin/gui/windows/kill_list.h"
 #include "plugin/gui/windows/main.h"
 #include "plugin/gui/windows/notify.h"
@@ -88,6 +89,7 @@ plugin::gui_initializer::on_initialize() {
     registered_windows.push_back(windows::vehicle_selection::create(this));
     registered_windows.push_back(windows::command_requester::create(this));
     registered_windows.push_back(windows::report::create(this));
+    registered_windows.push_back(windows::interaction_area::create(this));
 }
 
 void
