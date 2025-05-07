@@ -16,8 +16,9 @@ plugin::samp::event<plugin::samp::event_id::show_dialog>::event(bit_stream* stre
     style = static_cast<dialog::style>(stream->read<std::uint8_t>());
     title = string_utils::to_utf8(stream->read_string<std::uint8_t>());
 
-    buttons = std::make_pair(string_utils::to_utf8(stream->read_string<std::uint8_t>()),
-                             string_utils::to_utf8(stream->read_string<std::uint8_t>()));
+    std::string first_button = string_utils::to_utf8(stream->read_string<std::uint8_t>());
+    std::string second_button = string_utils::to_utf8(stream->read_string<std::uint8_t>());
 
+    buttons = { first_button, second_button };
     text = string_utils::to_utf8(stream->read_encoded(4096));
 }

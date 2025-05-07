@@ -169,9 +169,16 @@ private:
                 "clickwarp": { "use": true }
             },
 
-            "additions": {
+            "misc": {
                 "hide_spectator_text_draws": true,
                 "hide_spectator_menu": true,
+                
+                "auto_login": {
+                    "use": true,
+                    "account_password": "",
+                    "alogin_password": ""
+                },
+
                 "command_requester": {
                     "use": true,
                     "notify_by_window": true

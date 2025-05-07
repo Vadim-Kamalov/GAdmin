@@ -149,7 +149,7 @@ plugin::gui::windows::command_requester::try_handle_new_request(const std::strin
             current_request = { request_command->receiver_id, sender_nickname,
                                 sender_id, command, request_command->command };
 
-            auto command_requester_configuration = (*configuration)["additions"]["command_requester"];
+            auto command_requester_configuration = (*configuration)["misc"]["command_requester"];
 
             if (command_requester_configuration["use"] && !command_requester_configuration["notify_by_window"]) {
                 std::string description = std::format("Команда: {}. Принять можно в течении 5 секунд биндом на {}",
@@ -255,7 +255,7 @@ plugin::gui::windows::command_requester::render() {
     if (current_request.has_value() && now - time_request_sent >= 5s)
         current_request = {};
     
-    auto command_requester_configuration = (*configuration)["additions"]["command_requester"];
+    auto command_requester_configuration = (*configuration)["misc"]["command_requester"];
 
     if (!command_requester_configuration["use"] ||
         !command_requester_configuration["notify_by_window"] ||

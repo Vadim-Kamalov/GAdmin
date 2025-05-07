@@ -49,6 +49,11 @@ plugin::plugin_initializer::on_event(const samp::event_info& event) {
     if (!server::spectator::on_event(event))
         return false;
 
+    event.stream->reset_read_pointer();
+
+    if (!misc_initializer->on_event(event))
+        return false;
+
     return true;
 }
 
@@ -314,6 +319,7 @@ plugin::plugin_initializer::plugin_initializer() {
 
     gui = std::make_unique<gui_initializer>();
     cheats_initializer = std::make_unique<cheats::initializer>(gui.get());
+    misc_initializer = std::make_unique<misc::initializer>();
 }
 
 plugin::plugin_initializer::~plugin_initializer() noexcept {
@@ -321,6 +327,7 @@ plugin::plugin_initializer::~plugin_initializer() noexcept {
 
     event_handler.reset(nullptr);
     configuration.reset(nullptr);
+    misc_initializer.reset(nullptr);
     gui.reset(nullptr);
 
     if (log_file_stream.is_open())

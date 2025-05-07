@@ -5,6 +5,7 @@
 #include "plugin/configuration.h"
 #include "plugin/log.h"
 #include "plugin/gui/gui.h"
+#include "plugin/misc/misc.h"
 #include "plugin/samp/network/event_handler.h"
 #include <windows.h>
 #include <fstream>
@@ -15,6 +16,7 @@ namespace plugin {
 inline std::unique_ptr<samp::event_handler> event_handler;
 inline std::unique_ptr<configuration_initializer> configuration;
 inline std::unique_ptr<cheats::initializer> cheats_initializer;
+inline std::unique_ptr<misc::initializer> misc_initializer;
 
 class plugin_initializer {
 private:
