@@ -41,6 +41,9 @@ public:
     template<typename T>
     std::string read_string();
 
+    template<typename T>
+    void write_string(const std::string_view& str);
+
     template<typename... Args>
     void read_into(Args&... args);
 
@@ -94,6 +97,14 @@ template<typename T>
 std::string
 plugin::samp::bit_stream::read_string() {
     return read_string(read<T>());
+}
+
+template<typename T>
+void
+plugin::samp::bit_stream::write_string(const std::string_view& str) {
+    T size = static_cast<T>(str.size());
+    bit_stream_ptr->Write(size);
+    bit_stream_ptr->Write(str.data(), size);
 }
 
 template<typename... Args>

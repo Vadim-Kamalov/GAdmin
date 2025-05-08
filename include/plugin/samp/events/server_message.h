@@ -8,14 +8,20 @@
 namespace plugin::samp {
 
 template<>
-struct event<event_id::server_message> {
+class event<event_id::server_message> {
+private:
+    bit_stream* stream;
+public:
     types::color color;
     std::string text;
 
+    void write_text(const std::string_view& new_text) const;
+
     explicit event(bit_stream* stream)
-        : color(types::color::rgba(stream->read<std::int32_t>())),
+        : stream(stream),
+          color(types::color::rgba(stream->read<std::int32_t>())),
           text(string_utils::to_utf8(stream->read_string<std::int32_t>())) {}
-}; // struct event_id<event_id::server_message>
+}; // class event_id<event_id::server_message>
 
 } // namespace plugin::samp
 
