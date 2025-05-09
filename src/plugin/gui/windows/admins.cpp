@@ -48,7 +48,8 @@ plugin::gui::windows::admins::get_window_information() const {
             window_width = width;
         
         types::color color = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_Text]);
-        {
+        
+        if ((*configuration)["misc"]["nickname_colors"]) {
             auto& nickname_colors = misc::get_nickname_colors();
             if (auto it = std::find_if(nickname_colors.begin(), nickname_colors.end(), [admin](const auto& entry) {
                 return entry.nickname == admin.nickname;

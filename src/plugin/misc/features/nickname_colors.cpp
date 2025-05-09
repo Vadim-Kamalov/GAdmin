@@ -2,6 +2,7 @@
 #include "plugin/common_utils.h"
 #include "plugin/network.h"
 #include "plugin/log.h"
+#include "plugin/plugin.h"
 #include <algorithm>
 #include <ctre.hpp>
 
@@ -55,7 +56,9 @@ plugin::misc::features::nickname_colors::append_entries(nlohmann::json& object) 
 
 bool
 plugin::misc::features::nickname_colors::on_event(const samp::event_info& event) {
-    if (event == samp::event_type::incoming_rpc && event == samp::event_id::server_message) 
+    bool use_feature = (*configuration)["misc"]["nickname_colors"];
+
+    if (use_feature && event == samp::event_type::incoming_rpc && event == samp::event_id::server_message) 
         return on_server_message(event.create<samp::event_id::server_message>());
 
     return true;

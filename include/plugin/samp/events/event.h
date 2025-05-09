@@ -17,6 +17,7 @@ enum class event_id : std::uint8_t {
     show_dialog = 61,
     show_menu = 77,
     server_message = 93,
+    send_chat = 101,
     set_text_draw_string = 105,
     show_text_draw = 134,
     hide_text_draw = 135,
