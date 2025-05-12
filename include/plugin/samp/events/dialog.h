@@ -8,7 +8,10 @@
 namespace plugin::samp {
 
 template<>
-struct event<event_id::show_dialog> {
+class event<event_id::show_dialog> {
+private:
+    bit_stream* stream;
+public:
     std::uint16_t id;
     dialog::style style;
     std::string title, text;
@@ -20,8 +23,10 @@ struct event<event_id::show_dialog> {
     void send_response(const dialog::button& button, std::uint16_t list_item = dialog::list_item_none,
                        const std::string_view& input = "") const;
 
+    void write_text(const std::string_view& text) const;
+
     explicit event(bit_stream* stream);
-}; // struct event<event_id::show_dialog>
+}; // class event<event_id::show_dialog>
 
 } // namespace plugin::samp
 

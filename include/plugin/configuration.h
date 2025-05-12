@@ -172,6 +172,7 @@ private:
             "misc": {
                 "hide_spectator_text_draws": true,
                 "hide_spectator_menu": true,
+                "hide_addresses": true,
                 "nickname_colors": true,
                 "auto_aa_command": true,
 

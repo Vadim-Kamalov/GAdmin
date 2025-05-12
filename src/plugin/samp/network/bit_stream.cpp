@@ -100,6 +100,8 @@ plugin::samp::bit_stream::write(const std::string_view& value) {
 void
 plugin::samp::bit_stream::write_encoded(const std::string_view& value) {
     bit_stream_ptr->AddBitsAndReallocate(value.size() * 16 + 16);
+    reinterpret_cast<signatures::encoded_writer_t>(address::encoded_writer())
+        (address::encode_decode_base(), value.data(), value.size() + 1, bit_stream_ptr, 0);
 }
 
 bool
