@@ -9,10 +9,10 @@ plugin::misc::features::auto_login::on_show_dialog(const samp::event<samp::event
         return true;
 
     auto& feature_settings = (*configuration)["misc"]["auto_login"];
-    configuration_t configuration = feature_settings;
+    configuration_t feature_information = feature_settings;
     
     if (dialog.text.contains("Для продолжения игры, Вам необходимо авторизоваться") &&
-        !configuration.account_password.empty())
+        !feature_information.account_password.empty())
     {
         if (dialog.text.contains("Попытка входа:")) {
             gui::notify::send(gui::notification("Неверный пароль!", incorrect_password_notification, ICON_CIRCLE_WARNING));
@@ -20,15 +20,25 @@ plugin::misc::features::auto_login::on_show_dialog(const samp::event<samp::event
             return true;
         }
 
-        dialog.send_response(samp::dialog::button::right, samp::dialog::list_item_none, configuration.account_password);
+        dialog.send_response(samp::dialog::button::right, samp::dialog::list_item_none, feature_information.account_password);
 
         return false;
     }
 
     if (dialog.text.contains("{FFFFFF}Введите пароль:") && dialog.text.contains("{4a86b6}Авторизация") &&
-        dialog.buttons.first == "Далее" && dialog.buttons.second == "Отмена" && !configuration.alogin_password.empty())
+        dialog.buttons.first == "Далее" && dialog.buttons.second == "Отмена" && !feature_information.alogin_password.empty())
     {
-        dialog.send_response(samp::dialog::button::right, samp::dialog::list_item_none, configuration.alogin_password);
+        dialog.send_response(samp::dialog::button::right, samp::dialog::list_item_none, feature_information.alogin_password);
+        return false;
+    }
+
+
+    std::string user_ooc_nickname = (*configuration)["user"]["nickname"];
+
+    if (dialog.text.contains("Авторизация") && dialog.text.contains("Введите логин:") &&
+        user_ooc_nickname != "Администратор" && user_ooc_nickname != "Technical Admin")
+    {
+        dialog.send_response(samp::dialog::button::right, samp::dialog::list_item_none, user_ooc_nickname);
         return false;
     }
 

@@ -1,6 +1,7 @@
 #include "plugin/misc/misc.h"
 #include "plugin/misc/features/auto_aa_command.h"
 #include "plugin/misc/features/auto_login.h"
+#include "plugin/misc/features/display_id_in_chat.h"
 #include "plugin/misc/features/hide_addresses.h"
 #include "plugin/misc/features/nickname_colors.h"
 #include "plugin/log.h"
@@ -22,6 +23,7 @@ plugin::misc::initializer::initializer() {
     features.push_back(std::make_unique<features::nickname_colors>());
     features.push_back(std::make_unique<features::auto_aa_command>());
     features.push_back(std::make_unique<features::hide_addresses>());
+    features.push_back(std::make_unique<features::display_id_in_chat>());
 
     log::info("misc::initializer initialized");
 }

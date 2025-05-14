@@ -175,6 +175,7 @@ private:
                 "hide_addresses": true,
                 "nickname_colors": true,
                 "auto_aa_command": true,
+                "display_id_in_chat": true,
 
                 "auto_login": {
                     "use": true,

@@ -1,8 +1,9 @@
 #include "plugin/server/user.h"
-#include "plugin/plugin.h"
 #include "plugin/server/admins.h"
 #include "plugin/samp/core/input.h"
+#include "plugin/samp/core/user.h"
 #include "plugin/types/u8regex.h"
+#include "plugin/plugin.h"
 
 void
 plugin::server::user::set_alogin_status(bool status) {
@@ -37,6 +38,8 @@ plugin::server::user::on_server_message(const samp::event<samp::event_id::server
         "^\\{FFFF00\\}\\| \\{ffffff\\}За сессию администратирования вы заработали "
         "\\{4a86b6\\}\\d+ \\{FFFFFF\\}GMoney.$";
 
+    static constexpr ctll::fixed_string admin_chat_message_pattern = R"(^\[A\] (\S+)\[(\d+)\]: )";
+
     if (std::find_if(authorization_strings.begin(), authorization_strings.end(), [message](const std::string& str) {
         return message.text.contains(str);
     }) != authorization_strings.end() && message.color == 0xFFFFFFFF && !is_on_alogin()) {
@@ -50,6 +53,18 @@ plugin::server::user::on_server_message(const samp::event<samp::event_id::server
 
     if (types::u8regex::search<alogout_pattern>(message.text) && is_on_alogin())
         set_alogin_status(false);
+
+    if (auto [ whole, nickname, id_match ] = ctre::search<admin_chat_message_pattern>(message.text); whole) {
+        if (samp::user::get_id() != std::stoul(id_match.str()))
+            return true;
+
+        auto& user_information = (*configuration)["user"];
+        std::string user_ooc_nickname = user_information["nickname"];
+        std::uint8_t user_level = user_information["level"];
+
+        if (user_ooc_nickname == "Администратор" && user_level == 6)
+            user_information["nickname"] = nickname;
+    }
 
     return true;
 }
