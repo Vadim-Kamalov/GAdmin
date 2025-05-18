@@ -185,7 +185,14 @@ private:
 
                 "command_requester": {
                     "use": true,
-                    "notify_by_window": true
+                    "notify_by_window": true,
+                    "sound_notify": true
+                },
+
+                "mentions": {
+                    "use": true,
+                    "sound_notify": true,
+                    "color": "FFB6864A"
                 }
             },
 

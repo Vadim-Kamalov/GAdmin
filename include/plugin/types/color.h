@@ -2,6 +2,7 @@
 #define GADMIN_PLUGIN_TYPES_COLOR_H
 
 #include <cstdint>
+#include <nlohmann/json.hpp>
 
 namespace plugin::types {
 
@@ -98,6 +99,9 @@ public:
 
     explicit constexpr color() noexcept = default;
 }; // class color
+
+void to_json(nlohmann::json& json, const color& col);
+void from_json(const nlohmann::json& json, color& col);
 
 } // namespace plugin::types
 

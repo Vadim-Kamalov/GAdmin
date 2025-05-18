@@ -1,4 +1,5 @@
 #include "plugin/gui/windows/command_requester.h"
+#include "plugin/samp/core/audio.h"
 #include "plugin/samp/core/player_pool.h"
 #include "plugin/types/string_iterator.h"
 #include "plugin/samp/core/input.h"
@@ -132,7 +133,7 @@ plugin::gui::windows::command_requester::on_server_message(const samp::event<sam
 bool
 plugin::gui::windows::command_requester::try_handle_new_request(const std::string& text) {
     static constexpr ctll::fixed_string command_request_pattern = R"(\[A\] (.+)\[(\d+)\]: (/.*))";
-
+            
     if (auto matches = ctre::match<command_request_pattern>(text)) {
         std::string sender_nickname = matches.get<1>().str();
         std::uint16_t sender_id = std::stoi(matches.get<2>().str());
@@ -151,7 +152,10 @@ plugin::gui::windows::command_requester::try_handle_new_request(const std::strin
 
             auto command_requester_configuration = (*configuration)["misc"]["command_requester"];
 
-            if (command_requester_configuration["use"] && !command_requester_configuration["notify_by_window"]) {
+            if (command_requester_configuration["sound_notify"])
+                samp::audio::play_sound(samp::audio::sound_id::bell);
+
+            if (!command_requester_configuration["notify_by_window"]) {
                 std::string description = std::format("Команда: {}. Принять можно в течении 5 секунд биндом на {}",
                                                       command, approve_request_hotkey.bind);
 
@@ -303,6 +307,11 @@ plugin::gui::windows::command_requester::render() {
 
 bool
 plugin::gui::windows::command_requester::on_event(const samp::event_info& event) {
+    bool use = (*configuration)["misc"]["command_requester"]["use"];
+
+    if (!use)
+        return true;
+
     if (event == samp::event_type::outgoing_rpc && event == samp::event_id::send_command)
         return on_send_command(event.create<samp::event_id::send_command, samp::event_type::outgoing_rpc>());
 

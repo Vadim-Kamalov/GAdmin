@@ -15,7 +15,8 @@ public:
     types::color color;
     std::string text;
 
-    void write_text(const std::string_view& new_text) const;
+    void write(const std::string_view& new_text, const types::color& color) const;
+    inline void write_text(const std::string_view& new_text) const;
 
     explicit event(bit_stream* stream)
         : stream(stream),
@@ -24,5 +25,10 @@ public:
 }; // class event_id<event_id::server_message>
 
 } // namespace plugin::samp
+
+inline void
+plugin::samp::event<plugin::samp::event_id::server_message>::write_text(const std::string_view& new_text) const {
+    write(new_text, color);
+}
 
 #endif // GADMIN_PLUGIN_SAMP_EVENTS_SERVER_MESSAGE_H

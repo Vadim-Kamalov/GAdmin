@@ -73,7 +73,11 @@ plugin::cheats::wallhack::render(types::not_null<gui_initializer*> child) {
         if (color == 0 || color == 0xFFFFFFFF)
             color = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_Text]);
 
-        auto [ pos_x, pos_y, _ ] = game::convert_3d_coords_to_screen(bone_position);
+        auto [ pos_x, pos_y, pos_z ] = game::convert_3d_coords_to_screen(bone_position);
+        
+        if (pos_z <= 0.0f)
+            continue;
+
         pos_x -= font->CalcTextSizeA(font_size, FLT_MAX, 0.0f, text.c_str()).x / 2;
 
         draw_list->AddText(font, font_size, { pos_x + 1, pos_y + 1 }, 0xFF000000, text.c_str());
