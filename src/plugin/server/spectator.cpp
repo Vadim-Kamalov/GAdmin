@@ -26,13 +26,14 @@ plugin::server::spectator::on_show_text_draw(const samp::event<samp::event_id::s
         return false;
 
     if (auto [ whole, id ] = ctre::search<text_draw_id_pattern>(text_draw.text); whole) {
-        text_draw_id = text_draw.id;
         assign(std::stoul(id.str()));
         return !hide;
     }
 
-    if (text_draw.text.contains("ID Akkay"))
+    if (text_draw.text.contains("ID Akkay")) {
+        text_draw_id = text_draw.id;
         return !hide;
+    }
 
     return true;
 }
@@ -45,12 +46,13 @@ plugin::server::spectator::on_text_draw_set_string(const samp::event<samp::event
         "~n~Opy.+e: .+~n~Ping: \\d+ ms~n~HP: (.+)~n~Android: (.+)~n~Mo.+y.+p: (\\d+)";
 
     if (auto [ whole, id ] = ctre::search<text_draw_id_pattern>(text_draw.text); whole) {
-        text_draw_id = text_draw.id;
         assign(std::stoul(id.str()));
         return true;
     }
 
     if (auto matches = types::u8regex::search<spectator_information>(text_draw.text)) {
+        text_draw_id = text_draw.id;
+        
         information.account_id = std::stoul(matches.get_string<1>());
         information.money_hand = matches.get_string<2>();
         information.health = std::stoul(matches.get_string<4>());
@@ -282,9 +284,6 @@ plugin::server::spectator::on_passenger_synchronization(const samp::packet<samp:
 
 bool
 plugin::server::spectator::on_bullet_synchronization(const samp::packet<samp::event_id::bullet_synchronization>& synchronization) {
-    if (synchronization.player_id != id)
-        return true;
-
     information.total_shots++;
     
     if (synchronization.hit_type == 0 || synchronization.hit_type == 3)
@@ -336,7 +335,7 @@ plugin::server::spectator::assign(std::uint16_t new_id) noexcept {
     
     auto new_player = samp::player_pool::get_remote_player(new_id);
 
-    if (!new_player || (new_player && !new_player->get_ped().is_available()))
+    if (!new_player || !new_player->get_ped().is_available())
         return; // No need to report that because it occurs very often (server-related problems?).
 
     id = new_id;
