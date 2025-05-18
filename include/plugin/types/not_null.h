@@ -30,7 +30,7 @@ public:
 
     template <typename U> requires std::convertible_to<U, T>
     constexpr not_null(U&& u) noexcept(std::is_nothrow_move_constructible_v<T>) : ptr(std::forward<U>(u)) {
-        assert(ptr != nullptr && "not_null: nullptr is not allowed");
+        assert(ptr != nullptr && "not_null: null pointer constant is not allowed");
     }
 
     template <typename U> requires std::convertible_to<U, T>
@@ -50,16 +50,16 @@ public:
     constexpr decltype(auto) operator->() const { return get(); }
     constexpr decltype(auto) operator*() const { return *get(); }
 
-    not_null(std::nullptr_t) = delete;
-    not_null& operator=(std::nullptr_t) = delete;
+    not_null(std::nullptr_t) = delete("null pointer constant is not allowed");
+    not_null& operator=(std::nullptr_t) = delete("null pointer constant is not allowed");
 
-    not_null& operator++() = delete;
-    not_null& operator--() = delete;
-    not_null operator++(int) = delete;
-    not_null operator--(int) = delete;
-    not_null& operator+=(std::ptrdiff_t) = delete;
-    not_null& operator-=(std::ptrdiff_t) = delete;
-    void operator[](std::ptrdiff_t) const = delete;
+    not_null& operator++() = delete("unwanted operator: pointers only point to single object");
+    not_null& operator--() = delete("unwanted operator: pointers only point to single object");
+    not_null operator++(int) = delete("unwanted operator: pointers only point to single object");
+    not_null operator--(int) = delete("unwanted operator: pointers only point to single object");
+    not_null& operator+=(std::ptrdiff_t) = delete("unwanted operator: pointers only point to single object");
+    not_null& operator-=(std::ptrdiff_t) = delete("unwanted operator: pointers only point to single object");
+    void operator[](std::ptrdiff_t) const = delete("unwanted operator: pointers only point to single object");
 }; // class not_null
 
 } // namespace types
