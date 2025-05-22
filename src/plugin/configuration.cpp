@@ -172,6 +172,11 @@ plugin::configuration_initializer::main_json = R"json(
             "use": true,
             "sound_notify": true,
             "color": "FFB6864A"
+        },
+
+        "report_one_color": {
+            "use": true,
+            "color": "FF00FFFF"
         }
     },
 

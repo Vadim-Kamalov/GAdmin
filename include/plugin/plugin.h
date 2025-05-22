@@ -32,6 +32,9 @@ private:
     void initialize_logging();
     void initialize_event_handler();
     void create_and_initialize_files();
+    
+    static void on_terminate() noexcept;
+    static long __stdcall on_unhandled_exception(EXCEPTION_POINTERS* exception_info) noexcept;
 public:
     void unload();
     bool is_active() const;
@@ -42,8 +45,6 @@ public:
     void on_frame();
     bool on_message(unsigned int message, WPARAM wparam, LPARAM lparam);
     void main_loop();
-
-    static long __stdcall on_unhandled_exception(EXCEPTION_POINTERS* exception_info) noexcept;
 
     explicit plugin_initializer();
     ~plugin_initializer() noexcept;

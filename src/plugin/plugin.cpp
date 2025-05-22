@@ -7,9 +7,9 @@
 #include "plugin/server/binder.h"
 #include "plugin/server/spectator.h"
 #include "plugin/server/user.h"
-#include <cstring>
 #include <errhandlingapi.h>
 #include <dbghelp.h>
+#include <exception>
 #include <imgui.h>
 #include <format>
 #include <minwindef.h>
@@ -168,6 +168,20 @@ plugin::plugin_initializer::is_active() const {
     return plugin_working;
 }
 
+void
+plugin::plugin_initializer::on_terminate() noexcept {
+    try {
+        if (std::exception_ptr eptr = std::current_exception()) {
+            std::rethrow_exception(eptr);
+        }
+    } catch (const std::exception& e) {
+        log::error("plugin terminated via std::terminate_handler (FATAL)");
+        log::error("details (std::exception::what): {}", e.what());
+    } catch (...) {
+        log::error("plugin terminated via std::terminate_handler: unknown exception caught (FATAL)");
+    }
+}
+
 long __stdcall
 plugin::plugin_initializer::on_unhandled_exception(EXCEPTION_POINTERS* exception_info) noexcept {
     auto process = GetCurrentProcess();
@@ -314,7 +328,8 @@ plugin::plugin_initializer::plugin_initializer() {
 
     create_and_initialize_files();
     initialize_event_handler();
-    
+
+    std::set_terminate(on_terminate);
     SetUnhandledExceptionFilter(on_unhandled_exception);
 
     gui = std::make_unique<gui_initializer>();

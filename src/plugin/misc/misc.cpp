@@ -6,6 +6,7 @@
 #include "plugin/misc/features/mentions.h"
 #include "plugin/misc/features/nickname_colors.h"
 #include "plugin/log.h"
+#include "plugin/misc/features/report_one_color.h"
 #include <memory>
 
 bool
@@ -26,6 +27,7 @@ plugin::misc::initializer::initializer() {
     features.push_back(std::make_unique<features::hide_addresses>());
     features.push_back(std::make_unique<features::display_id_in_chat>());
     features.push_back(std::make_unique<features::mentions>());
+    features.push_back(std::make_unique<features::report_one_color>());
 
     log::info("misc::initializer initialized");
 }
