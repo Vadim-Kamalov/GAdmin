@@ -1,8 +1,8 @@
 include(FetchContent)
 
-FetchContent_Declare(json   GIT_REPOSITORY https://github.com/nlohmann/json.git GIT_TAG 3cca3ad21012e289d34970e2e3060d255494c548)
+FetchContent_Declare(json   URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz)
 FetchContent_Declare(imgui  GIT_REPOSITORY https://github.com/ocornut/imgui.git)
-FetchContent_Declare(kthook GIT_REPOSITORY https://github.com/defaultzone/kthook.git)
+FetchContent_Declare(kthook GIT_REPOSITORY https://github.com/kin4stat/kthook.git)
 
 FetchContent_Declare(ctre
     GIT_REPOSITORY https://github.com/hanickadot/compile-time-regular-expressions.git

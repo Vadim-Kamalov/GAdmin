@@ -42,13 +42,13 @@ plugin::game::ped::jump_into_vehicle(const vehicle& vehicle) const {
     // modify/read any member-pointers of the structure (except `target_vehicle`).
     
     struct {
-        std::uint32_t _;
-        std::uint32_t _;
-        std::uint32_t _;
-        std::uint32_t _;
+        std::uint32_t pad0;
+        std::uint32_t pad1;
+        std::uint32_t pad2;
+        std::uint32_t pad3;
         std::uintptr_t target_vehicle;
-        std::uint32_t _;
-        std::uint16_t _;
+        std::uint32_t pad4;
+        std::uint16_t pad5;
     } set_ped_in_as_driver_task = {
         .target_vehicle = *vehicle.handle
     };
