@@ -177,6 +177,11 @@ plugin::configuration_initializer::main_json = R"json(
         "report_one_color": {
             "use": true,
             "color": "FF00FFFF"
+        },
+
+        "death_notify_in_chat": {
+            "use": true,
+            "color": "FFAFAFAF"
         }
     },
 
