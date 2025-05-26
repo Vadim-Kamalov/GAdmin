@@ -1,6 +1,7 @@
 #ifndef GADMIN_PLUGIN_SERVER_SPECTATOR_H
 #define GADMIN_PLUGIN_SERVER_SPECTATOR_H
 
+#include "plugin/gui/hotkey.h"
 #include "plugin/gui/widgets/joystick.h"
 #include "plugin/samp/core/remote_player.h"
 #include "plugin/samp/core/menu.h"
@@ -98,6 +99,7 @@ public:
 
     static bool on_event(const samp::event_info& event);
     static void main_loop();
+    static void register_hotkeys(types::not_null<gui::hotkey_handler*> handler) noexcept;
 }; // class spectator
 
 } // namespace plugin::server

@@ -2,6 +2,7 @@
 #define GADMIN_PLUGIN_TYPES_SIMPLE_H
 
 #include <format>
+
 namespace plugin::types {
 
 using meter_per_second_t = float;

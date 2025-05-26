@@ -15,6 +15,7 @@
 #include "plugin/gui/windows/vehicle_selection.h"
 #include "plugin/gui/windows/command_requester.h"
 #include "plugin/gui/windows/report.h"
+#include "plugin/server/spectator.h"
 #include <windows.h>
 #include <imgui.h>
 
@@ -142,6 +143,8 @@ plugin::gui_initializer::switch_cursor() {
 plugin::gui_initializer::gui_initializer() {
     fonts = std::make_unique<gui::fonts_initializer>();
     hotkey_handler = std::make_unique<gui::hotkey_handler>(this);
+
+    server::spectator::register_hotkeys(hotkey_handler.get());
 }
 
 plugin::gui_initializer::~gui_initializer() noexcept {

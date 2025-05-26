@@ -1,6 +1,7 @@
 #include "plugin/server/spectator.h"
 #include "plugin/game/ped_model.h"
 #include "plugin/game/vehicle.h"
+#include "plugin/gui/hotkey.h"
 #include "plugin/samp/core/vehicle.h"
 #include "plugin/samp/core/dialog.h"
 #include "plugin/samp/core/player_pool.h"
@@ -422,4 +423,23 @@ plugin::server::spectator::main_loop() {
 
     last_reload = now;
     send_menu_option<menu_option::reload>();
+}
+
+void
+plugin::server::spectator::register_hotkeys(types::not_null<gui::hotkey_handler*> handler) noexcept {
+    using namespace gui;
+
+    static hotkey hotkeys[] = {
+        hotkey("Переключить /sp", key_bind({ 'I', 0 }, bind_condition::in_spectator))
+            .with_callback([](auto&) { send_menu_option<menu_option::reload>(); }),
+        
+        hotkey("Следующий игрок в /sp", key_bind({ VK_RIGHT, 0 }, bind_condition::in_spectator))
+            .with_callback([](auto&) { send_menu_option<menu_option::next>(); }),
+
+        hotkey("Предыдущий игрок в /sp", key_bind({ VK_LEFT, 0 }, bind_condition::in_spectator))
+            .with_callback([](auto&) { send_menu_option<menu_option::back>(); })
+    };
+
+    for (auto& hotkey : hotkeys)
+        handler->add(hotkey);
 }
