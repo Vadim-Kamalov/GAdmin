@@ -7,11 +7,18 @@
 namespace plugin::samp {
 
 template<>
-struct event<event_id::send_command, event_type::outgoing_rpc> {
+class event<event_id::send_command, event_type::outgoing_rpc> {
+private:
+    bit_stream* stream;
+public:
     std::string command;
+    
+    void write_command(const std::string_view& new_command) const;
+
     explicit event(bit_stream* stream)
-        : command(string_utils::to_utf8(stream->read_string<std::uint32_t>())) {}
-}; // struct event<event_id::send_command, event_type::outgoing_rpc>
+        : command(string_utils::to_utf8(stream->read_string<std::uint32_t>())),
+          stream(stream) {}
+}; // class event<event_id::send_command, event_type::outgoing_rpc>
 
 } // namespace plugin::samp
 

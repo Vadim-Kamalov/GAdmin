@@ -182,6 +182,27 @@ plugin::configuration_initializer::main_json = R"json(
         "death_notify_in_chat": {
             "use": true,
             "color": "FFAFAFAF"
+        },
+
+        "short_commands": {
+            "use": true,
+            "commands": {
+                "vr": "vrepair {}",
+                "as": "aspawn {}",
+                "ah": "aheal {}",
+                "af": "afrisk {}",
+                "uf": "unfreeze {}",
+                "g": "goto {}",
+                "gh": "gethere {}",
+                "gc": "getcar {}",
+                "gbc": "getbuycar {}",
+                "pt": "ptop {}",
+                "jb": "ans {} Пишите жалобу на форум, туда со всем доказательствами",
+                "asl": "ans {} Слежу за игроком",
+                "ar": "kick {} AFK on ROAD",
+                "ak": "kick {} AFK without ESC",
+                "ap": "kick {} AFK public place"
+            }
         }
     },
 
