@@ -3,6 +3,7 @@
 #include "plugin/misc/features/auto_login.h"
 #include "plugin/misc/features/death_notify_in_chat.h"
 #include "plugin/misc/features/display_id_in_chat.h"
+#include "plugin/misc/features/fish_eye.h"
 #include "plugin/misc/features/hide_addresses.h"
 #include "plugin/misc/features/mentions.h"
 #include "plugin/misc/features/nickname_colors.h"
@@ -22,6 +23,12 @@ plugin::misc::initializer::on_event(const samp::event_info& event) {
     return true;
 }
 
+void
+plugin::misc::initializer::main_loop() {
+    for (const auto& feature : features)
+        feature->main_loop();
+}
+
 plugin::misc::initializer::initializer() {
     features.push_back(std::make_unique<features::auto_login>());
     features.push_back(std::make_unique<features::nickname_colors>());
@@ -32,6 +39,7 @@ plugin::misc::initializer::initializer() {
     features.push_back(std::make_unique<features::report_one_color>());
     features.push_back(std::make_unique<features::death_notify_in_chat>());
     features.push_back(std::make_unique<features::short_commands>());
+    features.push_back(std::make_unique<features::fish_eye>());
 
     log::info("misc::initializer initialized");
 }

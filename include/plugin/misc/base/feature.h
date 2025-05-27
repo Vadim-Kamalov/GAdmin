@@ -10,6 +10,7 @@ class feature {
 public:
     virtual ~feature() = default;
     virtual bool on_event(const samp::event_info& event);
+    virtual void main_loop();
 }; // class feature
 
 using feature_ptr_t = std::unique_ptr<feature>;

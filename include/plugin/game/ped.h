@@ -3,6 +3,7 @@
 
 #include "plugin/game/placeable.h"
 #include "plugin/game/vehicle.h"
+#include "plugin/game/weapon.h"
 #include "plugin/types/address.h"
 #include "plugin/types/simple.h"
 
@@ -37,12 +38,17 @@ private:
     static inline types::offset<float> aiming_rotation_offset = 0x55C;
     static inline types::offset<types::vector_3d> speed_offset = 0x44;
     static inline types::offset<flags_t> flags_offset = 0x46C;
+    static inline types::offset<std::uint8_t> target_state_offset = 0x528;
+    static inline types::offset<std::uintptr_t> weapons_offset = 0x5A0;
+    static inline types::offset<std::uint8_t> current_weapon_slot_offset = 0x718;
 public:
     bool is_in_the_air() const;
+    bool is_targeting() const;
 
     types::meter_per_second_t get_speed() const;
     types::vector_3d get_bone_bosition(const bone& bone_id) const;
 
+    weapon get_current_weapon() const;
     vehicle get_vehicle() const;
     static ped get_player() noexcept;
     
@@ -51,6 +57,8 @@ public:
     void set_heading(float angle) const override;
 
     using placeable::placeable;
+private:
+    static constexpr std::ptrdiff_t weapon_size = 0x1C;
 }; // class ped
 
 } // namespace game

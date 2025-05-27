@@ -116,6 +116,7 @@ plugin::plugin_initializer::main_loop() {
     
     gui->main_loop();
     cheats_initializer->main_loop();
+    misc_initializer->main_loop();
 
     if (!samp_initialized && samp::get_base() != 0 && samp::net_game::instance_container->read() != 0) {
         on_samp_initialize();

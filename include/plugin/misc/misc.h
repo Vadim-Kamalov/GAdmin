@@ -11,6 +11,7 @@ private:
     std::deque<feature_ptr_t> features;
 public:
     bool on_event(const samp::event_info& event);
+    void main_loop();
 
     explicit initializer();
 }; // class initializer

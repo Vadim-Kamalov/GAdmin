@@ -203,6 +203,11 @@ plugin::configuration_initializer::main_json = R"json(
                 "ak": "kick {} AFK without ESC",
                 "ap": "kick {} AFK public place"
             }
+        },
+        
+        "fish_eye": {
+            "use": true,
+            "fov": 101
         }
     },
 

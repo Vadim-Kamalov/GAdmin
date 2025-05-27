@@ -4,6 +4,11 @@
 #include <d3dx9math.h>
 #include <cstring>
 
+void
+plugin::game::camera::lerp_fov(float zoom_in_factor, float zoom_out_factor, float time_limit, bool ease) noexcept {
+    lerp_fov_address(*instance_address, zoom_in_factor, zoom_out_factor, time_limit, ease);
+}
+
 plugin::game::camera::active_camera
 plugin::game::camera::get_active_camera() noexcept {
     std::uintptr_t offset = active_camera_index_offset.read(*instance_address) * camera_size;

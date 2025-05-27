@@ -6,6 +6,11 @@ plugin::game::ped::is_in_the_air() const {
     return flags_offset.read(*handle).in_the_air;
 }
 
+bool
+plugin::game::ped::is_targeting() const {
+    return target_state_offset.read(*handle) == 19;
+}
+
 plugin::types::meter_per_second_t
 plugin::game::ped::get_speed() const {
     types::vector_3d speed = speed_offset.read(*handle);
@@ -17,6 +22,14 @@ plugin::game::ped::get_bone_bosition(const bone& bone_id) const {
     types::vector_3d result;
     get_bone_position_address(*handle, &result, std::to_underlying(bone_id), false);
     return result;
+}
+
+plugin::game::weapon
+plugin::game::ped::get_current_weapon() const {
+    auto weapons = weapons_offset.read(*handle);
+    auto current_weapon_slot = current_weapon_slot_offset.read(*handle);
+    auto current_weapon_type = *reinterpret_cast<int*>(weapons + current_weapon_slot * weapon_size);
+    return static_cast<weapon>(current_weapon_type);
 }
 
 plugin::game::ped
