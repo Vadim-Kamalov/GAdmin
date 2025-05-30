@@ -15,9 +15,10 @@
 /// along with this program. If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-
+///
 /// @file include/plugin/game/placeable.h
 /// @details Provides functionality for managing placeable entities in the game.
+///
 
 #ifndef GADMIN_PLUGIN_GAME_PLACEABLE_H
 #define GADMIN_PLUGIN_GAME_PLACEABLE_H
@@ -95,15 +96,11 @@ public:
 } // namespace game
 } // namespace plugin
 
-/// @brief Checks if the placeable entity is available.
-/// @return True if the entity is available, false otherwise.
 inline bool
 plugin::game::placeable::is_available() const {
     return handle.is_available();
 }
 
-/// @brief Boolean operator to check if the placeable entity is available.
-/// @return True if the entity is available, false otherwise
 inline plugin::game::placeable::operator bool() const {
     return is_available();
 }

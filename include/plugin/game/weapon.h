@@ -15,9 +15,10 @@
 /// along with this program. If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-
+///
 /// @file include/plugin/game/weapon.h
 /// @details Provides enumerations and constants related to weapons in the game
+///
 
 #ifndef GADMIN_PLUGIN_GAME_WEAPON_H
 #define GADMIN_PLUGIN_GAME_WEAPON_H

@@ -15,9 +15,10 @@
 /// along with this program. If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-
+///
 /// @file include/plugin/game/ped_model.h
 /// @details Provides constants and functions related to pedestrian models in the game
+///
 
 #ifndef GADMIN_PLUGIN_GAME_PED_MODEL_H
 #define GADMIN_PLUGIN_GAME_PED_MODEL_H
@@ -48,9 +49,6 @@ constexpr float get_max_ped_model_speed(std::uint16_t ped_model_index) noexcept;
 
 } // namespace plugin::game
 
-/// @brief Gets the maximum speed for a pedestrian model.
-/// @param ped_model_index The index of the pedestrian model.
-/// @return The maximum speed for the pedestrian model.
 constexpr float
 plugin::game::get_max_ped_model_speed(std::uint16_t ped_model_index) noexcept {
     for (const auto& special : special_models_speed)

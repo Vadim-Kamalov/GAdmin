@@ -15,9 +15,10 @@
 /// along with this program. If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-
+///
 /// @file include/plugin/game/vehicle.h
 /// @details Provides functionality for managing vehicles in the game.
+///
 
 #ifndef GADMIN_PLUGIN_GAME_VEHICLE_H
 #define GADMIN_PLUGIN_GAME_VEHICLE_H
@@ -110,17 +111,11 @@ constexpr types::zstring_t get_vehicle_name(std::uint16_t vehicle_model_index) n
 
 } // namespace plugin::game
 
-/// @brief Gets the maximum speed for a vehicle model.
-/// @param vehicle_model_index The index of the vehicle model.
-/// @return The maximum speed for the vehicle model.
 constexpr std::uint16_t
 plugin::game::get_max_vehicle_model_speed(std::uint16_t vehicle_model_index) noexcept {
     return max_vehicle_speeds[vehicle_model_index - min_vehicle_id];
 }
 
-/// @brief Gets the name of a vehicle model.
-/// @param vehicle_model_index The index of the vehicle model.
-/// @return The name of the vehicle model.
 constexpr plugin::types::zstring_t
 plugin::game::get_vehicle_name(std::uint16_t vehicle_model_index) noexcept {
     return vehicle_names[vehicle_model_index - min_vehicle_id];

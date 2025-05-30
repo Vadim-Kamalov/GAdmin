@@ -15,9 +15,10 @@
 /// along with this program. If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-
+///
 /// @file include/plugin/game/ped.h
 /// @details Provides functionality for managing in-game pedestrian entities.
+///
 
 #ifndef GADMIN_PLUGIN_GAME_PED_H
 #define GADMIN_PLUGIN_GAME_PED_H
@@ -39,8 +40,8 @@ using task_process_ped = bool(__thiscall*)(std::uintptr_t, std::uintptr_t);
 
 namespace game {
 
-    /// @class ped
-    /// @brief Represents a pedestrian entity in the game.
+/// @class ped
+/// @brief Represents a pedestrian entity in the game.
 class ped : public placeable {
 public:
     /// @struct flags_t

@@ -15,9 +15,10 @@
 /// along with this program. If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-
+///
 /// @file include/plugin/game/world.h
 /// @details Provides functionality for managing the game world and line of sight calculations.
+///
 
 #ifndef GADMIN_PLUGIN_GAME_WORLD_H
 #define GADMIN_PLUGIN_GAME_WORLD_H

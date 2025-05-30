@@ -15,10 +15,10 @@
 /// along with this program. If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-
+///
 /// @file include/plugin/game/pad.h
 /// @details Provides functionality for managing game pad controls.
-
+///
 
 #ifndef GADMIN_PLUGIN_GAME_PAD_H
 #define GADMIN_PLUGIN_GAME_PAD_H

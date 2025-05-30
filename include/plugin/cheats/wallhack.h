@@ -15,9 +15,10 @@
 /// along with this program. If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-
+///
 /// @file include/plugin/cheats/wallhack.h
 /// @details Provides functionality for the wallhack cheat, allowing visibility through walls.
+///
 
 #ifndef GADMIN_PLUGIN_CHEATS_WALLHACK_H
 #define GADMIN_PLUGIN_CHEATS_WALLHACK_H
@@ -26,9 +27,9 @@
 
 namespace plugin::cheats {
 
-    /// @class wallhack
-    /// @brief Implements wallhack cheat functionality
-    /// @inherits basic_cheat
+/// @class wallhack
+/// @brief Implements wallhack cheat functionality
+/// @inherits basic_cheat
 class wallhack : public basic_cheat {
 private:
     gui::hotkey hotkey;

@@ -15,10 +15,10 @@
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-
+/// 
 /// @file include/plugin/cheats/airbreak.h
 /// @details Provides interface for aerial movement system allowing:
-
+///
 
 #ifndef GADMIN_PLUGIN_CHEATS_AIRBREAK_H
 #define GADMIN_PLUGIN_CHEATS_AIRBREAK_H
@@ -37,8 +37,10 @@ private:
     gui::hotkey hotkey;
     types::vector_3d coords;
     bool cheat_active = false;
+    
     void hotkey_callback(gui::hotkey& hotkey);
     float get_heading_from_xy(float x, float y) const;
+    
     static constexpr float deg_to_rad(float deg) noexcept;
 public:
     /// @brief Handles login state changes

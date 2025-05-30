@@ -15,10 +15,10 @@
 /// along with this program. If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-
+///
 /// @file include/plugin/game/enity.h
 /// @details Provides functionality for managing in-game entities.
-
+///
 
 #ifndef GADMIN_PLUGIN_GAME_ENTITY_H
 #define GADMIN_PLUGIN_GAME_ENTITY_H
@@ -29,10 +29,10 @@
 namespace plugin {
 namespace signatures {
 
-    /// @brief Function pointer type for checking if a vehicle pointer is valid.
+/// @brief Function pointer type for checking if a vehicle pointer is valid.
 using is_vehicle_pointer_valid = bool(__stdcall*)(std::uintptr_t);
 
-    /// @brief Function pointer type for checking if an entity is on screen.
+/// @brief Function pointer type for checking if an entity is on screen.
 using is_on_screen = bool(__thiscall*)(std::uintptr_t);
 
 } // namespace signatures
@@ -41,16 +41,14 @@ namespace game {
 
 class vehicle;
 
-    /// @class entity
-    /// @brief Represents an in-game entity with various properties and methods.
+/// @class entity
+/// @brief Represents an in-game entity with various properties and methods.
 class entity {
 public:
     types::dynamic_address<std::uintptr_t> handle;
 protected:
-
     /// @brief Sets the coordinates of the entity.
     /// @param pos The new coordinates to set.
-
     void set_coordinates(const types::vector_3d& pos) const;
 private:
     static inline types::address<signatures::is_vehicle_pointer_valid> is_vehicle_pointer_valid_address = 0x6E38F0;
@@ -76,7 +74,6 @@ public:
 
     /// @brief Gets the position of the entity.
     /// @return The position of the entity.
-
     types::vector_3d get_position() const;
 
     /// @brief Gets the vehicle associated with the entity.
@@ -110,8 +107,6 @@ plugin::game::entity::is_available() const {
     return handle.is_available();
 }
 
-/// @brief Boolean operator to check if the entity is available.
-/// @return True if the entity is available, false otherwise.
 inline plugin::game::entity::operator bool() const {
     return is_available();
 }

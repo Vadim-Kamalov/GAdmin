@@ -29,18 +29,18 @@
 
 namespace plugin::cheats {
 
-    /// @class tracers
-    /// @brief Implements bullet tracer functionality
-    /// @inherits basic_cheat
+/// @class tracers
+/// @brief Implements bullet tracer functionality
+/// @inherits basic_cheat
 class tracers : public basic_cheat {
 private:
     /// @struct tracer_information
     /// @brief Contains information about a bullet tracer
     struct tracer_information {
-        bool miss; /// Flag indicating if the bullet missed
+        bool miss; ///< Flag indicating if the bullet missed
         types::vector_3d origin; ///< Origin coordinates of the tracer
         types::vector_3d target; ///< Target coordinates of the tracer
-        std::chrono::steady_clock::time_point time; /// Time point of the trace
+        std::chrono::steady_clock::time_point time; ///< Time point of the trace
     }; // struct tracer_information
 
     gui::hotkey hotkey;
