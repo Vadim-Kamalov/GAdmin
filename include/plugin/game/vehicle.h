@@ -1,3 +1,24 @@
+/// GAdmin - Plugin simplifying the work of administrators on the Gambit-RP
+/// Copyright (C) 2024-2025 The Contributors.
+///
+/// This program is free software: you can redistribute it and/or modify
+/// it under the terms of the GNU General Public License as published by
+/// the Free Software Foundation, either version 3 of the License, or
+/// (at your option) any later version.
+///
+/// This program is distributed in the hope that it will be useful,
+/// but WITHOUT ANY WARRANTY; without even the implied warranty of
+/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+/// GNU General Public License for more details.
+///
+/// You should have received a copy of the GNU General Public License
+/// along with this program. If not, see <https://www.gnu.org/licenses/>.
+///
+/// SPDX-License-Identifier: GPL-3.0-only
+
+/// @file include/plugin/game/vehicle.h
+/// @details Provides functionality for managing vehicles in the game.
+
 #ifndef GADMIN_PLUGIN_GAME_VEHICLE_H
 #define GADMIN_PLUGIN_GAME_VEHICLE_H
 
@@ -7,11 +28,17 @@
 
 namespace plugin::game {
 
+/// @class vehicle
+/// @brief Represents a vehicle in the game.
 class vehicle : public placeable {
 private:
     static inline types::offset<std::uintptr_t> driver_offset = 0x460;
 public:
+    /// @brief Checks if the vehicle has a driver.
+    /// @return True if the vehicle has a driver, false otherwise.
     bool has_driver() const;
+
+    /// @brief Constructor for the vehicle class using the placeable constructor.
     using placeable::placeable;
 }; // class vehicle
 
@@ -19,6 +46,7 @@ static constexpr std::uint16_t min_vehicle_id = 400;
 static constexpr std::uint16_t max_vehicle_id = 611;
 static constexpr std::uint16_t vehicle_count = max_vehicle_id - min_vehicle_id;
 
+/// @brief Maximum speeds for vehicle models.
 static constexpr std::uint16_t max_vehicle_speeds[vehicle_count + 1] = {
     88, 81, 103, 61, 74, 91, 61, 82, 55, 88, 72, 123,
     93, 61, 59, 107, 85, 61, 64, 83, 81, 85, 78, 55,
@@ -39,6 +67,7 @@ static constexpr std::uint16_t max_vehicle_speeds[vehicle_count + 1] = {
     60, 0, 0
 }; // static constexpr std::uint16_t max_vehicle_speeds[]
 
+/// @brief Names of vehicle models.
 static constexpr types::zstring_t vehicle_names[vehicle_count + 1] = {
     "Landstalker", "Bravura", "Buffalo", "Linerunner", "Perennial", "Sentinel",
     "Dumper", "Firetruck", "Trashmaster", "Stretch", "Manana", "Infernus",
@@ -69,16 +98,29 @@ static constexpr types::zstring_t vehicle_names[vehicle_count + 1] = {
     "Tiller", "Utility Trailer"
 }; // static constexpr types::zstring_t vehicle_names[vehicle_count + 1]
 
+/// @brief Gets the maximum speed for a vehicle model.
+/// @param vehicle_model_index The index of the vehicle model.
+/// @return The maximum speed for the vehicle model.
 constexpr std::uint16_t get_max_vehicle_model_speed(std::uint16_t vehicle_model_index) noexcept;
+
+/// @brief Gets the name of a vehicle model.
+/// @param vehicle_model_index The index of the vehicle model.
+/// @return The name of the vehicle model.
 constexpr types::zstring_t get_vehicle_name(std::uint16_t vehicle_model_index) noexcept;
 
 } // namespace plugin::game
 
+/// @brief Gets the maximum speed for a vehicle model.
+/// @param vehicle_model_index The index of the vehicle model.
+/// @return The maximum speed for the vehicle model.
 constexpr std::uint16_t
 plugin::game::get_max_vehicle_model_speed(std::uint16_t vehicle_model_index) noexcept {
     return max_vehicle_speeds[vehicle_model_index - min_vehicle_id];
 }
 
+/// @brief Gets the name of a vehicle model.
+/// @param vehicle_model_index The index of the vehicle model.
+/// @return The name of the vehicle model.
 constexpr plugin::types::zstring_t
 plugin::game::get_vehicle_name(std::uint16_t vehicle_model_index) noexcept {
     return vehicle_names[vehicle_model_index - min_vehicle_id];

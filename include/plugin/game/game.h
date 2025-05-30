@@ -31,7 +31,6 @@ namespace plugin {
 namespace signatures {
 
     /// @brief Function pointer type for calculating screen coordinates.
-
 using calc_screen_coords = bool(__cdecl*)(types::vector_3d*, types::vector_3d*);
 
 } // namespace signatures
@@ -40,29 +39,24 @@ namespace game {
 
     /// @brief Gets the window handle of the game.
     /// @return The window handle
-
 static inline HWND get_window() noexcept;
-
     /// @brief Gets the device associated with the game.
     /// @return The device identifier.
 
 static inline DWORD get_device() noexcept;
-
     /// @brief Checks if the game menu is opened.
     /// @return True if the menu is opened, false otherwise.
 
 static inline bool is_menu_opened() noexcept;
 
 std::pair<float, float> get_screen_resolution() noexcept;
-
     /// @brief Gets the screen resolution of the game.
     /// @return A pair representing the screen resolution (width, height).
 
 types::vector_3d convert_3d_coords_to_screen(const types::vector_3d& coords) noexcept;
-
-/// @brief Converts 3D coordinates to screen coordinates.
-/// @param coords The 3D coordinates to convert.
-/// @return The corresponding screen coordinates.
+    /// @brief Converts 3D coordinates to screen coordinates.
+    /// @param coords The 3D coordinates to convert.
+    /// @return The corresponding screen coordinates.
 
 } // namespace game
 } // namespace plugin

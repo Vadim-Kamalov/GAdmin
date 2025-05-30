@@ -38,8 +38,8 @@ private:
     /// @brief Contains information about a bullet tracer
     struct tracer_information {
         bool miss; /// Flag indicating if the bullet missed
-        types::vector_3d origin; /// Origin coordinates of the tracer
-        types::vector_3d target; /// Target coordinates of the tracer
+        types::vector_3d origin; ///< Origin coordinates of the tracer
+        types::vector_3d target; ///< Target coordinates of the tracer
         std::chrono::steady_clock::time_point time; /// Time point of the trace
     }; // struct tracer_information
 
@@ -47,6 +47,7 @@ private:
     std::deque<tracer_information> current_tracers;
 
     void hotkey_callback(gui::hotkey& hotkey);
+
     /// @brief Handles bullet synchronization events
     /// @param synchronization The bullet synchronization packet
     /// @return Boolean indicating if the event was handled
@@ -57,10 +58,12 @@ public:
     /// @return Boolean indicating if the event was handled
     /// @override
     bool on_event(const samp::event_info& event) override;
+
     /// @brief Renders the tracers interface
     /// @param child Pointer to the GUI initializer
     /// @override
     void render(types::not_null<gui_initializer*> child) override;
+
     /// @brief Registers hotkeys for tracer functionality
     /// @param handler Pointer to the hotkey handler
     /// @override

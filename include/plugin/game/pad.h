@@ -1,3 +1,25 @@
+/// GAdmin - Plugin simplifying the work of administrators on the Gambit-RP
+/// Copyright (C) 2024-2025 The Contributors.
+///
+/// This program is free software: you can redistribute it and/or modify
+/// it under the terms of the GNU General Public License as published by
+/// the Free Software Foundation, either version 3 of the License, or
+/// (at your option) any later version.
+///
+/// This program is distributed in the hope that it will be useful,
+/// but WITHOUT ANY WARRANTY; without even the implied warranty of
+/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+/// GNU General Public License for more details.
+///
+/// You should have received a copy of the GNU General Public License
+/// along with this program. If not, see <https://www.gnu.org/licenses/>.
+///
+/// SPDX-License-Identifier: GPL-3.0-only
+
+/// @file include/plugin/game/pad.h
+/// @details Provides functionality for managing game pad controls.
+
+
 #ifndef GADMIN_PLUGIN_GAME_PAD_H
 #define GADMIN_PLUGIN_GAME_PAD_H
 
@@ -5,13 +27,19 @@
 
 namespace plugin::game {
 
+/// @class pad
+/// @brief Manages game pad controls.
 class pad {
 private:
     static inline types::address<std::uintptr_t> instance = 0xB73458;
     static inline types::offset<bool> disable_player_controls_offset = 0x10E;
     static inline types::offset<bool> disable_player_enter_vehicle_offset = 0x119;
 public:
+    /// @brief Disables player control
     static void disable_player_control() noexcept;
+
+    /// @brief Sets the player's ability to enter a vehicle.
+    /// @param state The state to set for player's ability to enter a vehicle.
     static void set_player_enter_vehicle(bool state) noexcept;
 }; // class pad
 

@@ -38,47 +38,20 @@ namespace game {
 
     /// @class camera
     /// @brief Manages in-game camera operations and properties.
-
 class camera {
 private:
-
-    /// @struct active_camera
-    /// @brief Contains information about the active camera.
-
     struct active_camera {
         types::vector_3d front;
         types::vector_3d source;
     }; // struct active_camera
-
-    /// @brief Address of the active camera coordinates.
     static inline types::address<types::vector_3d> active_camera_coordinates = 0xB6F338;
-
-    /// @brief Address of the camera instance.
-
     static inline types::address<std::uintptr_t> instance_address = 0xB6F028;
-
-    /// @brief Offset for the active camera index.
-
     static inline types::offset<std::uint8_t> active_camera_index_offset = 0x59;
-
-    /// @brief Address of the lerp_fov function.
-
     static inline types::address<signatures::lerp_fov> lerp_fov_address = 0x50D280;
-
-    /// @brief Address of the front camera coordinates.
-
     static inline types::address<types::vector_3d> front_camera_address = 0xB6F32C;
-
-    /// @brief Address of the source camera coordinates.
-
     static inline types::address<types::vector_3d> source_camera_address = 0xB6F338;
-
-    /// @brief Retrieves the active camera information.
-    /// @return The active camera information.
-
     static active_camera get_active_camera() noexcept;
 public:
-
     /// @brief Linearly interpolates the field of view.
     /// @param zoom_in_factor Factor to zoom in.
     /// @param zoom_out_factor Factor to zoom out.
@@ -93,10 +66,8 @@ public:
 
     static types::vector_3d get_active_point_at() noexcept;
 
-
     /// @brief Gets the point at which the camera is looking.
     /// @return The point at which the camera is looking.
-
 
     /// @brief Converts screen coordinates to world coordinates.
     /// @param x The x-coordinate on the screen.
@@ -106,7 +77,6 @@ public:
 
     static types::vector_3d screen_to_coordinates(float x, float y, float depth) noexcept;
 private:
-    /// @brief Size of the camera structure.
     static constexpr std::uintptr_t camera_size = 0x238;
 }; // class camera
 

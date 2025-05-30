@@ -1,3 +1,24 @@
+/// GAdmin - Plugin simplifying the work of administrators on the Gambit-RP
+/// Copyright (C) 2024-2025 The Contributors.
+///
+/// This program is free software: you can redistribute it and/or modify
+/// it under the terms of the GNU General Public License as published by
+/// the Free Software Foundation, either version 3 of the License, or
+/// (at your option) any later version.
+///
+/// This program is distributed in the hope that it will be useful,
+/// but WITHOUT ANY WARRANTY; without even the implied warranty of
+/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+/// GNU General Public License for more details.
+///
+/// You should have received a copy of the GNU General Public License
+/// along with this program. If not, see <https://www.gnu.org/licenses/>.
+///
+/// SPDX-License-Identifier: GPL-3.0-only
+
+/// @file include/plugin/game/weapon.h
+/// @details Provides enumerations and constants related to weapons in the game
+
 #ifndef GADMIN_PLUGIN_GAME_WEAPON_H
 #define GADMIN_PLUGIN_GAME_WEAPON_H
 
@@ -6,6 +27,8 @@
 
 namespace plugin::game {
 
+/// @enum weapon
+/// @brief Enumeration of weapon types.
 enum class weapon : char {
     fist, brass_knuckles, golf_club, night_stick, knife,
     baseball_bat, shovel, pool_cue, katana, chainsaw,
@@ -19,6 +42,7 @@ enum class weapon : char {
     night_vision, thermal_vision, parachute
 }; // enum class weapon
 
+/// @brief Names of weapon types.
 static constexpr types::zstring_t weapon_names[std::to_underlying(weapon::parachute) + 1] = {
 	"Fist", "Brass Knuckles", "Golf Club", "Nightstick", "Knife", "Baseball Bat",
 	"Shovel", "Pool Cue", "Katana", "Chainsaw", "Purple Dildo", "Dildo", "Vibrator",

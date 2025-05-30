@@ -37,6 +37,7 @@ private:
     /// @brief Sets the state of the wallhack cheat
     /// @param state Boolean state to set the wallhack to
     void set_wallhack_state(bool state);
+
     /// @brief Callback for hotkey activation
     /// @param hotkey Reference to the triggering hotkey
     void hotkey_callback(gui::hotkey& hotkey);
@@ -45,10 +46,12 @@ public:
     /// @param handler Pointer to the hotkey handler
     /// @override
     void register_hotkeys(types::not_null<gui::hotkey_handler*> handler) override;
+
     /// @brief Renders the wallhack interface
     /// @param child Pointer to the GUI initializer
     /// @override
     void render(types::not_null<gui_initializer*> child) override;
+
     /// @brief Handles login state changes
     /// @param state New login state (true = logged in)
     /// @override
@@ -56,7 +59,7 @@ public:
 
     explicit wallhack();
 private:
-    static constexpr float render_distance = 0x7D0; /// Maximum render distance for wallhack
+    static constexpr float render_distance = 0x7D0; ///< Maximum render distance for wallhack
 }; // class wallhack : public basic_cheat
 
 } // namespace plugin::cheats

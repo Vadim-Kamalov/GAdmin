@@ -27,10 +27,10 @@
 #include "plugin/types/simple.h"
 
 namespace plugin::cheats {
+
     /// @class clickwarp
     /// @brief Implements teleportation cheat by clicking on a map location
     /// @inherits basic_cheat
-
 class clickwarp : public basic_cheat {
 private:
     struct teleport_information_t {
@@ -48,17 +48,22 @@ public:
     /// @brief Handles login state changes
     /// @param state New login state (true = logged in)
     /// @override
+    
     void on_alogin_new_state(bool state) override;
+
     /// @brief Handles events for teleportation
     /// @param message The message code
     /// @param wparam Additional message information
     /// @param lparam Additional message information
     /// @return Boolean indicating if the event was handled
     /// @override
+    
     bool on_event(unsigned int message, WPARAM wparam, LPARAM lparam) override;
+
     /// @brief Renders the teleportation interface
     /// @param child Pointer to the GUI initializer
     /// @override
+    
     void render(types::not_null<gui_initializer*> child) override;
 }; // class clickwarp : public basic_cheat
 

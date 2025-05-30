@@ -1,3 +1,24 @@
+/// GAdmin - Plugin simplifying the work of administrators on the Gambit-RP
+/// Copyright (C) 2024-2025 The Contributors.
+///
+/// This program is free software: you can redistribute it and/or modify
+/// it under the terms of the GNU General Public License as published by
+/// the Free Software Foundation, either version 3 of the License, or
+/// (at your option) any later version.
+///
+/// This program is distributed in the hope that it will be useful,
+/// but WITHOUT ANY WARRANTY; without even the implied warranty of
+/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+/// GNU General Public License for more details.
+///
+/// You should have received a copy of the GNU General Public License
+/// along with this program. If not, see <https://www.gnu.org/licenses/>.
+///
+/// SPDX-License-Identifier: GPL-3.0-only
+
+/// @file include/plugin/game/ped_model.h
+/// @details Provides constants and functions related to pedestrian models in the game
+
 #ifndef GADMIN_PLUGIN_GAME_PED_MODEL_H
 #define GADMIN_PLUGIN_GAME_PED_MODEL_H
 
@@ -20,10 +41,16 @@ static constexpr std::uint16_t female_models_index[] = {
     308, 309
 }; // static constexpr std::uint16_t female_models_index[]
 
+/// @brief Gets the maximum speed for a pedestrian model.
+/// @param ped_model_index The index of the pedestrian model.
+/// @return The maximum speed for the pedestrian model.
 constexpr float get_max_ped_model_speed(std::uint16_t ped_model_index) noexcept;
 
 } // namespace plugin::game
 
+/// @brief Gets the maximum speed for a pedestrian model.
+/// @param ped_model_index The index of the pedestrian model.
+/// @return The maximum speed for the pedestrian model.
 constexpr float
 plugin::game::get_max_ped_model_speed(std::uint16_t ped_model_index) noexcept {
     for (const auto& special : special_models_speed)

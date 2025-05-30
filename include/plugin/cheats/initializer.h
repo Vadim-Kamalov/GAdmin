@@ -27,8 +27,9 @@
 #include <deque>
 
 namespace plugin::cheats {
+
     /// @class initializer
-    /// @brief Manages initialization and execution of cheat
+    /// @brief Manages initialization and execution of cheat    
 class initializer {
 private:
     types::not_null<gui_initializer*> gui;
@@ -38,19 +39,24 @@ public:
     void render();
 
     void on_alogin_new_state(bool state);
+
     /// @brief Handles events related to cheats
     /// @param event The event information
     /// @return Boolean indicating if the event was handled
+    
     bool on_event(const samp::event_info& event);
+
     /// @brief Handles system events
     /// @param message The message code
     /// @param wparam Additional message information
     /// @param lparam Additional message information
     /// @return Boolean indicating if the event was handled
+    
     bool on_event(unsigned int message, WPARAM wparam, LPARAM lparam);
 
     /// @brief Constructor for the initializer
     /// @param gui Pointer to the GUI initializer
+    
     explicit initializer(types::not_null<gui_initializer*> gui);
 }; // class initializer
 

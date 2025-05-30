@@ -33,40 +33,45 @@
 #include <memory>
 
 namespace plugin::cheats {
+
 /// @class basic_cheat
 /// @brief Abstract base class for all cheat modules
 /// @details Serves as foundation for cheat implementations, providing:
 /// - Default implementations for optional functionality
 /// - Consistent interface for plugin system
 /// - Polymorphic behavior through virtual methods
-
 class basic_cheat {
 public:
     virtual ~basic_cheat() = default;
-
     /// @brief Registers hotkeys for the cheat module
     /// @param handler Pointer to hotkey handler system
     /// @note Base implementation does nothing (optional feature)
+
     virtual void register_hotkeys(types::not_null<gui::hotkey_handler*> handler) {}
     
     /// @brief Renders cheat-specific GUI elements
     /// @param child GUI initializer reference
     /// @note Base implementation does nothing (optional feature)
+    
     virtual void render(types::not_null<gui_initializer*> child) {}
     virtual void main_loop() {}
     
     virtual void on_alogin_new_state(bool state) {}
+
     /// @brief Processes SA-MP events
     /// @param event SA-MP event information
     /// @return true if event should continue processing, false to consume it
     /// @note Base implementation allows all events through
+    
     virtual bool on_event(const samp::event_info& event) { return true; }
+
     /// @brief Processes Windows messages
     /// @param message Windows message ID
     /// @param wparam Message parameter
     /// @param lparam Message parameter
     /// @return true if message should continue processing, false to consume it
     /// @note Base implementation allows all messages through
+    
     virtual bool on_event(unsigned int message, WPARAM wparam, LPARAM lparam) { return true; }
 }; // class basic_cheat
 

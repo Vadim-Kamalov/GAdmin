@@ -26,20 +26,16 @@ namespace plugin {
 namespace signatures {
 
 	/// @brief Function pointer type for clearing mouse history.
-
 using clear_mouse_history_t = void(__cdecl*)();
 
 	/// @brief Function pointer type for updating pads.
-
 using update_pads_t = void(__cdecl*)();
 
 } // namespace signatures
-
 namespace game::cursor {
 
 	/// @brief Sets the status of the cursor.
 	/// @param status The status to set for the cursor.
-
 void set_status(bool status) noexcept;
 
 } // namespace game::cursor
