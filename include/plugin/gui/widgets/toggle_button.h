@@ -1,3 +1,24 @@
+/// GAdmin - Plugin simplifying the work of administrators on the Gambit-RP
+/// Copyright (C) 2024-2025 The Contributors.
+///
+/// This program is free software: you can redistribute it and/or modify
+/// it under the terms of the GNU General Public License as published by
+/// the Free Software Foundation, either version 3 of the License, or
+/// (at your option) any later version.
+///
+/// This program is distributed in the hope that it will be useful,
+/// but WITHOUT ANY WARRANTY; without even the implied warranty of
+/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+/// GNU General Public License for more details.
+///
+/// You should have received a copy of the GNU General Public License
+/// along with this program. If not, see <https://www.gnu.org/licenses/>.
+///
+/// SPDX-License-Identifier: GPL-3.0-only
+
+/// @file include/plugin/gui/widgets/toggle_button.h
+/// @details Provides functionality for rendering a toggle button in the GUI.
+
 #ifndef GADMIN_PLUGIN_GUI_WIDGETS_TOGGLE_BUTTON_H
 #define GADMIN_PLUGIN_GUI_WIDGETS_TOGGLE_BUTTON_H
 
@@ -11,6 +32,8 @@ using namespace std::chrono_literals;
 
 namespace plugin::gui::widgets {
 
+/// @class toggle_button
+/// @brief Represents a toggle button in the GUI.
 class toggle_button {
 private:
     struct configuration_t {
@@ -24,11 +47,19 @@ private:
     std::string label;
     types::setter<bool> state;
 public:
+/// @brief Renders the toggle button.
+/// @return The state of the toggle button.
     bool render();
 
+/// @brief Constructor for the toggle_button class.
+/// @param label The label of the toggle button.
+/// @param state The state of the toggle button.
     explicit toggle_button(const std::string_view& label, bool& state)
         : label(std::move(label)), state(state) {}
 
+/// @brief Constructor for the toggle_button class with a setter.
+/// @param label The label of the toggle button.
+/// @param state The setter for the state of the toggle button.
     explicit toggle_button(const std::string_view& label, const types::setter<bool>& state)
         : label(std::move(label)), state(std::move(state)) {}
 private:

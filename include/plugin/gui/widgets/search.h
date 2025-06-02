@@ -1,3 +1,24 @@
+/// GAdmin - Plugin simplifying the work of administrators on the Gambit-RP
+/// Copyright (C) 2024-2025 The Contributors.
+///
+/// This program is free software: you can redistribute it and/or modify
+/// it under the terms of the GNU General Public License as published by
+/// the Free Software Foundation, either version 3 of the License, or
+/// (at your option) any later version.
+///
+/// This program is distributed in the hope that it will be useful,
+/// but WITHOUT ANY WARRANTY; without even the implied warranty of
+/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+/// GNU General Public License for more details.
+///
+/// You should have received a copy of the GNU General Public License
+/// along with this program. If not, see <https://www.gnu.org/licenses/>.
+///
+/// SPDX-License-Identifier: GPL-3.0-only
+
+/// @file include/plugin/gui/widgets/search.h
+/// @details Provides functionality for searching in the GUI.
+
 #ifndef GADMIN_PLUGIN_GUI_WIDGETS_SEARCH_H
 #define GADMIN_PLUGIN_GUI_WIDGETS_SEARCH_H
 
@@ -6,17 +27,30 @@
 
 namespace plugin::gui::widgets {
 
+/// @class search
+/// @brief Represents a search widget in the GUI.
 class search {
 private:
     std::string id = "";
     std::string buffer = "";
 public:
+/// @brief Renders the search widget.
+/// @param width The width of the search widget.
+/// @param placeholder The placeholder text for the search widget.
     void render(float width = 0, const std::string_view& placeholder = "");
     void clear();
 
+/// @brief Checks if the search buffer contains a specific text.
+/// @param text The text to check for.
+/// @return True if the search buffer contains the text, false otherwise
     bool contains(std::string text) const;
     bool empty() const;
 
+/// @brief Checks if the search buffer contains formatted text.
+/// @tparam Args The types of the arguments.
+/// @param fmt The format string.
+/// @param args The arguments to format.
+/// @return True if the search buffer contains the formatted text, false otherwise.
     template<typename... Args>
     bool contains(std::format_string<Args...> fmt, Args&&... args) const;
 
@@ -26,6 +60,11 @@ public:
 
 } // namespace plugin::gui::widgets
 
+/// @brief Checks if the search buffer contains formatted text.
+/// @tparam Args The types of the arguments.
+/// @param fmt The format string.
+/// @param args The arguments to format.
+/// @return True if the search buffer contains the formatted text, false otherwise.
 template<typename... Args>
 bool
 plugin::gui::widgets::search::contains(std::format_string<Args...> fmt, Args&&... args) const {

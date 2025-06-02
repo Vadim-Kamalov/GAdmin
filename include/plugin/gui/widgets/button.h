@@ -1,3 +1,24 @@
+/// GAdmin - Plugin simplifying the work of administrators on the Gambit-RP
+/// Copyright (C) 2024-2025 The Contributors.
+///
+/// This program is free software: you can redistribute it and/or modify
+/// it under the terms of the GNU General Public License as published by
+/// the Free Software Foundation, either version 3 of the License, or
+/// (at your option) any later version.
+///
+/// This program is distributed in the hope that it will be useful,
+/// but WITHOUT ANY WARRANTY; without even the implied warranty of
+/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+/// GNU General Public License for more details.
+///
+/// You should have received a copy of the GNU General Public License
+/// along with this program. If not, see <https://www.gnu.org/licenses/>.
+///
+/// SPDX-License-Identifier: GPL-3.0-only
+
+/// @file include/plugin/gui/widgets/button.h
+/// @details Provides functionality for creating and managing GUI buttons.
+
 #ifndef GADMIN_PLUGIN_GUI_WIDGETS_BUTTON_H
 #define GADMIN_PLUGIN_GUI_WIDGETS_BUTTON_H
 
@@ -13,6 +34,8 @@ using namespace std::chrono_literals;
 
 namespace plugin::gui::widgets {
 
+/// @class button
+/// @brief Represents a GUI button with customizable properties.
 class button {
 private:
     struct configuration_t {
@@ -30,6 +53,9 @@ private:
     ImVec2 size;
     ImDrawFlags draw_flags = ImDrawFlags_RoundCornersAll;
 
+/// @brief Sets the draw flags for the button.
+/// @param new_draw_flags The new draw flags to set.
+/// @return Reference to the button object.
     static inline std::unordered_map<std::string, configuration_t> pool;
    
     void register_in_pool() const;
@@ -37,12 +63,25 @@ public:
     std::string label;
 
     inline button& with_draw_flags(ImDrawFlags new_draw_flags) noexcept;
+
+/// @brief Sets the animation durations for the button.
+/// @param new_durations The new durations to set.
+/// @return Reference to the button object.
     inline button& with_durations(const std::array<std::chrono::milliseconds, 3>& durations) noexcept;
 
+/// @brief Renders the button.
+/// @return True if the button was clicked, false otherwise
     bool render();
 
+/// @brief Constructor for the button class with an ID and size.
+/// @param label The label of the button.
+/// @param id The ID of the button.
+/// @param size The size of the button.
     explicit button(const std::string_view& label);
 
+/// @brief Constructor for the button class with a size.
+/// @param label The label of the button.
+/// @param size The size of the button.
     explicit button(const std::string_view& label, const std::string_view& id, const ImVec2& size)
         : label(std::move(label)), size(std::move(size)), id(std::move(id)) { register_in_pool(); }
 
@@ -54,12 +93,18 @@ public:
 
 } // namespace plugin::gui::widgets
 
+/// @brief Sets the draw flags for the button.
+/// @param new_draw_flags The new draw flags to set.
+/// @return Reference to the button object.
 inline plugin::gui::widgets::button&
 plugin::gui::widgets::button::with_draw_flags(ImDrawFlags new_draw_flags) noexcept {
     draw_flags = new_draw_flags;
     return *this;
 }
 
+/// @brief Sets the animation durations for the button.
+/// @param new_durations The new durations to set.
+/// @return Reference to the button object.
 inline plugin::gui::widgets::button&
 plugin::gui::widgets::button::with_durations(const std::array<std::chrono::milliseconds, 3>& new_durations) noexcept {
     durations = std::move(new_durations);
