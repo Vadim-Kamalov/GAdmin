@@ -27,7 +27,7 @@ auto plugin::misc::features::display_id_in_chat::on_server_message(const samp::e
         if (!possible_id)
             return true;
 
-        message.write_text(std::format("{}[{}] {}", nickname, *possible_id, other.str()));
+        message.write_text(std::format("{}[{}] {}", nickname_match.str(), *possible_id, other.str()));
     }
 
     return true;
