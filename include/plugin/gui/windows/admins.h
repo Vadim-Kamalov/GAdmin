@@ -9,38 +9,40 @@
 
 namespace plugin::gui::windows {
 
-class admins : public window {
+class admins final : public window {
 private:
-    types::not_null<gui_initializer*> child;
-    ImFont *entry_font, *title_font;
+    ImFont* entry_font;
+    ImFont* title_font;
 
-    struct entry_t {
+    struct entry_t final {
         std::string text;
         types::color color;
         float width;
     }; // struct entry_t
 
-    struct information_t {
+    struct information_t final {
         float width;
         float content_height;
         std::string title;
         std::vector<entry_t> entries;
-    }; // struct information_t
+    }; // struct information_t final
 
-    information_t get_window_information() const;
+    auto get_window_information() const -> information_t;
 public:
-    constexpr types::zstring_t get_id() const override;
+    inline auto get_id() const -> types::zstring_t override;
+    static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
     
-    void render() override;
-    
-    static window_ptr_t create(types::not_null<gui_initializer*> child) noexcept;
-    explicit admins(types::not_null<gui_initializer*> child);
-}; // class admins : public window
+    auto render() -> void override;
+
+    explicit admins(types::not_null<gui_initializer*> child)
+        : window(child),
+          entry_font((*child->fonts->regular)[16]),
+          title_font((*child->fonts->bold)[18]) {}
+}; // class admins final : public window
 
 } // namespace plugin::gui::windows
 
-constexpr plugin::types::zstring_t
-plugin::gui::windows::admins::get_id() const {
+inline auto plugin::gui::windows::admins::get_id() const -> types::zstring_t {
     return "windows::admins";
 }
 

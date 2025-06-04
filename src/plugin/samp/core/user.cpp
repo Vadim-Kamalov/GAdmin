@@ -19,27 +19,22 @@ plugin::samp::user::get_local_player_ping_container = { 0x6A200, 0x6E150, 0x6E8C
 plugin::types::versioned_address_container<plugin::signatures::get_local_player_color_as_argb>
 plugin::samp::user::get_local_player_color_container = { 0x3D90, 0x3DA0, 0x3F20, 0x3E20 };
 
-plugin::types::color
-plugin::samp::user::get_color() noexcept {
+auto plugin::samp::user::get_color() noexcept -> types::color {
     return types::color::argb(get_local_player_color_container->invoke(get_local_player()));
 }
 
-std::uintptr_t
-plugin::samp::user::get_local_player() noexcept {
+auto plugin::samp::user::get_local_player() noexcept -> std::uintptr_t {
     return local_player_offsets->read(player_pool::instance());
 }
 
-std::uint16_t
-plugin::samp::user::get_id() noexcept {
+auto plugin::samp::user::get_id() noexcept -> std::uint16_t {
     return id_offsets->read(player_pool::instance());
 }
 
-std::string
-plugin::samp::user::get_name() noexcept {
+auto plugin::samp::user::get_name() noexcept -> std::string {
     return name_offsets->read(player_pool::instance());
 }
 
-int
-plugin::samp::user::get_ping() noexcept {
+auto plugin::samp::user::get_ping() noexcept -> int {
     return get_local_player_ping_container->invoke(player_pool::instance());
 }

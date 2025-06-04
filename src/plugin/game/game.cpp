@@ -3,15 +3,15 @@
 
 static plugin::types::address<plugin::signatures::calc_screen_coords> calc_screen_coords = 0x71DAB0;
 
-std::pair<float, float>
-plugin::game::get_screen_resolution() noexcept {
+auto plugin::game::get_screen_resolution() noexcept -> std::pair<float, float> {
     static types::address<int> resolution_x = 0xC9C040;
     static types::address<int> resolution_y = 0xC9C044;
     return { resolution_x.read(), resolution_y.read() };
 }
 
-plugin::types::vector_3d
-plugin::game::convert_3d_coords_to_screen(const types::vector_3d& coords) noexcept {
+auto plugin::game::convert_3d_coords_to_screen(const types::vector_3d& coords)
+    noexcept -> types::vector_3d
+{
     types::vector_3d result;
 
     // `signatures::calc_screen_coords` doesn't modify input pointer,

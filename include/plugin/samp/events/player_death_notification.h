@@ -6,7 +6,7 @@
 namespace plugin::samp {
 
 template<>
-class event<event_id::player_death_notification> {
+class event<event_id::player_death_notification> final {
 private:
     enum special_reason {
         special_reason_car = 49,
@@ -22,10 +22,10 @@ public:
     std::uint16_t killed_id = id_none;
     std::uint8_t reason = 0xFF;
 
-    std::string get_reason() const;
+    auto get_reason() const -> std::string;
 
     explicit event(bit_stream* stream);
-}; // class event<event_id::player_death_notification>
+}; // class event<event_id::player_death_notification> final
 
 } // namespace plugin::samp
 

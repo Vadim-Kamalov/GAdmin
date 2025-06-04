@@ -5,7 +5,7 @@
 using namespace plugin::gui;
 using namespace std::literals;
 
-struct frame_switcher_settings {
+struct frame_switcher_settings final {
     static inline std::chrono::milliseconds clicked_duration = 200ms;
     static inline std::chrono::milliseconds hovered_duration = 400ms;
     
@@ -19,10 +19,11 @@ struct frame_switcher_settings {
         ImVec4 clicked = ImGui::GetStyle().Colors[ImGuiCol_FrameBgActive];
         ImVec4 text = ImGui::GetStyle().Colors[ImGuiCol_Text];
     } colors; // struct colors_t
-}; // struct frame_switcher_settings
+}; // struct frame_switcher_settings final
 
-static frame_switcher_settings&
-get_settings(const std::string& id, const windows::main::frame& current_frame, const windows::main::frame& frame) {
+static auto get_settings(const std::string& id, const windows::main::frame& current_frame, const windows::main::frame& frame)
+    noexcept -> frame_switcher_settings&
+{
     static std::unordered_map<std::string, frame_switcher_settings> entries;
 
     if (entries.find(id) == entries.end()) {
@@ -34,8 +35,9 @@ get_settings(const std::string& id, const windows::main::frame& current_frame, c
     return entries[id];
 }
 
-static void
-update_color(frame_switcher_settings& it, plugin::types::not_null<windows::main*> child, const windows::main::frame& frame) noexcept {
+static auto update_color(frame_switcher_settings& it, plugin::types::not_null<windows::main*> child, const windows::main::frame& frame)
+    noexcept -> void
+{
     if (child->current_frame == frame) {
         it.color = animation::bring_to(it.color, it.colors.clicked, it.time[0], it.hovered_duration);
         return;
@@ -54,9 +56,9 @@ update_color(frame_switcher_settings& it, plugin::types::not_null<windows::main*
                                    it.hovered_time, it.hovered_duration);
 }
 
-static void
-draw_frame(const ImVec2& pos, const ImVec2& size, const frame_switcher_settings& it,
-           plugin::types::not_null<windows::main*> child, const windows::main::frame& frame) noexcept
+static auto draw_frame(const ImVec2& pos, const ImVec2& size, const frame_switcher_settings& it,
+                       plugin::types::not_null<windows::main*> child, const windows::main::frame& frame)
+    noexcept -> void
 {
     plugin::gui_initializer* gui = child->child;
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
@@ -77,8 +79,7 @@ draw_frame(const ImVec2& pos, const ImVec2& size, const frame_switcher_settings&
                                                          pos.y + (size.y - text_size.y) / 2 }, text_color, text);
 }
 
-void
-plugin::gui::widgets::frame_switcher(const windows::main::frame& frame, types::not_null<windows::main*> child) {
+auto plugin::gui::widgets::frame_switcher(const windows::main::frame& frame, types::not_null<windows::main*> child) -> void {
     std::string id = std::format("widgets::frame_switcher::{}", std::to_underlying(frame));
     ImVec2 size = { child->menu_width, 30 }, pos = ImGui::GetCursorScreenPos();
     auto now = std::chrono::steady_clock::now();

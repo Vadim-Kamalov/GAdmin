@@ -6,28 +6,26 @@
 
 namespace plugin {
 
-class common_utils {
+class common_utils final {
 public:
     template<typename iterator, typename random_generator>
-    static iterator select_randomly(iterator start, iterator end, random_generator& g);
+    static auto select_randomly(iterator start, iterator end, random_generator& g) -> iterator;
 
     template<typename iterator>
-    static iterator select_randomly(iterator start, iterator end);
-}; // class common_utils
+    static auto select_randomly(iterator start, iterator end) -> iterator;
+}; // class common_utils final
 
 } // namespace plugin
 
 template<typename iterator, typename random_generator>
-iterator
-plugin::common_utils::select_randomly(iterator start, iterator end, random_generator& g) {
+auto plugin::common_utils::select_randomly(iterator start, iterator end, random_generator& g) -> iterator {
     std::uniform_int_distribution<> dis(0, std::distance(start, end) - 1);
     std::advance(start, dis(g));
     return start;
 }
 
 template<typename iterator>
-iterator
-plugin::common_utils::select_randomly(iterator start, iterator end) {
+auto plugin::common_utils::select_randomly(iterator start, iterator end) -> iterator {
     static std::random_device rd;
     static std::mt19937 gen(rd());
     return select_randomly(start, end, gen);

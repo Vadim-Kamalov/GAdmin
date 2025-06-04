@@ -5,10 +5,10 @@
 
 namespace plugin::samp {
     
-class game {
+class game final {
 public:
     static types::versioned_address_container<std::uintptr_t> instance_container;
-}; // class game
+}; // class game final
 
 } // namespace plugin::samp
 

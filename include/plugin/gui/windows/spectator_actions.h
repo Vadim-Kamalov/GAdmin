@@ -9,31 +9,28 @@
 
 namespace plugin::gui::windows {
 
-class spectator_actions : public window {
-private:
-    types::not_null<gui_initializer*> child;
+class spectator_actions final : public window {
 public:
-    struct button {
+    struct button final {
         bool use;
         std::string name;
         std::variant<std::string, int> action;
-    }; // struct button
-public:
-    constexpr types::zstring_t get_id() const override;
+    }; // struct button final
+    
+    inline auto get_id() const -> types::zstring_t override;
+    static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
 
-    void render() override;
+    auto render() -> void override;
 
-    static window_ptr_t create(types::not_null<gui_initializer*> child) noexcept;
-    explicit spectator_actions(types::not_null<gui_initializer*> child);
-}; // class spectator_actions : public window
+    using window::window;
+}; // class spectator_actions final : public window
 
-void to_json(nlohmann::json& json, const spectator_actions::button& button);
-void from_json(const nlohmann::json& json, spectator_actions::button& button);
+auto to_json(nlohmann::json& json, const spectator_actions::button& button) -> void;
+auto from_json(const nlohmann::json& json, spectator_actions::button& button) -> void;
 
 } // namespace plugin::gui::windows
 
-constexpr plugin::types::zstring_t
-plugin::gui::windows::spectator_actions::get_id() const {
+inline auto plugin::gui::windows::spectator_actions::get_id() const -> types::zstring_t {
     return "windows::spectator_actions";
 }
 

@@ -12,29 +12,29 @@
 namespace plugin::misc {
 namespace features {
 
-class nickname_colors : public feature {
+class nickname_colors final : public feature {
 public:
-    struct entry_t {
+    struct entry_t final {
         std::string nickname;
         std::vector<types::color> colors;
-    }; // struct entry_t
+    }; // struct entry_t final
     
     static inline std::deque<entry_t> entries;
 private:
     std::jthread downloader_thread;
 
-    bool on_server_message(const samp::event<samp::event_id::server_message>& message);
-    void append_entries(nlohmann::json& object);
+    auto on_server_message(const samp::event<samp::event_id::server_message>& message) -> bool;
+    auto append_entries(nlohmann::json& object) -> void;
 public:
-    bool on_event(const samp::event_info& event) override;
+    auto on_event(const samp::event_info& event) -> bool override;
 
     explicit nickname_colors();
     ~nickname_colors() noexcept;
-}; // class nickname_colors : public feature
+}; // class nickname_colors final : public feature
 
 } // namespace features
 
-std::deque<features::nickname_colors::entry_t>& get_nickname_colors() noexcept;
+auto get_nickname_colors() noexcept -> std::deque<features::nickname_colors::entry_t>&;
 
 } // namespace plugin::misc
 

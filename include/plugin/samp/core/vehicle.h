@@ -7,19 +7,18 @@
 
 namespace plugin::samp {
 
-class vehicle : public entity {
+class vehicle final : public entity {
 private:
     static inline types::offset<int> engine_active_offset = 0x50;
     static inline types::offset<int> locked_offset = 0x60;
     static inline types::offset<game::vehicle> game_vehicle_offset = 0x4C;
 public:
-    game::vehicle get_game_vehicle() const;
-
-    bool is_engine_active() const;
-    bool is_locked() const;
+    auto get_game_vehicle() const -> game::vehicle;
+    auto is_engine_active() const -> bool;
+    auto is_locked() const -> bool;
 
     using entity::entity;
-}; // class vehicle : public entity
+}; // class vehicle final : public entity
 
 } // namespace plugin::samp
 

@@ -4,11 +4,9 @@
 #include "plugin/server/admins.h"
 #include "plugin/server/user.h"
 #include "plugin/plugin.h"
-#include "plugin/log.h"
 #include <ranges>
 
-plugin::gui::windows::admins::information_t
-plugin::gui::windows::admins::get_window_information() const {
+auto plugin::gui::windows::admins::get_window_information() const -> information_t {
     auto window_configuration = (*configuration)["windows"]["admins"];
     server::admin::sort_option sort_option = window_configuration["sort_by"];
     std::size_t show_scrollbar_on = window_configuration["show_scrollbar_on"];
@@ -68,8 +66,7 @@ plugin::gui::windows::admins::get_window_information() const {
     return { window_width, content_height, title, entries };
 }
 
-void
-plugin::gui::windows::admins::render() {
+auto plugin::gui::windows::admins::render() -> void {
     auto window_configuration = (*configuration)["windows"]["admins"];
 
     if (!window_configuration["use"] || !server::user::is_on_alogin())
@@ -122,16 +119,6 @@ plugin::gui::windows::admins::render() {
     ImGui::PopStyleVar();
 }
 
-plugin::gui::windows::admins::admins(types::not_null<gui_initializer*> child)
-    : child(child),
-      entry_font((*child->fonts->regular)[16]),
-      title_font((*child->fonts->bold)[18])
-
-{
-    log::info("window \"windows::admins\" initialized");
-}
-
-plugin::gui::window_ptr_t
-plugin::gui::windows::admins::create(types::not_null<gui_initializer*> child) noexcept {
+auto plugin::gui::windows::admins::create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t {
     return std::make_unique<admins>(child);
 }

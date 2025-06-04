@@ -15,7 +15,7 @@ using get_color_as_argb = std::uint32_t(__thiscall*)(std::uintptr_t);
 
 namespace samp {
 
-class remote_player {
+class remote_player final {
 private:
     types::dynamic_address<std::uintptr_t> handle = 0;
 
@@ -24,18 +24,18 @@ private:
     static types::versioned_address_container<float, types::version_container_option::offsets> armor_container;
     static types::versioned_address_container<signatures::get_color_as_argb> get_color_container;
 public:
-    bool is_available() const;
+    auto is_available() const -> bool;
 
-    ped get_ped() const;
-    vehicle get_vehicle() const;
-    float get_armor() const;
-    types::color get_color() const;
+    auto get_ped() const -> ped;
+    auto get_vehicle() const -> vehicle;
+    auto get_armor() const -> float;
+    auto get_color() const -> types::color;
 
     explicit remote_player(const types::dynamic_address<std::uintptr_t>& handle)
         : handle(handle) {}
 
     remote_player() = default;
-}; // class remote_player
+}; // class remote_player final
 
 } // namespace samp
 } // namespace plugin

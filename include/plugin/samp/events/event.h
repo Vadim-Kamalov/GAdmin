@@ -44,27 +44,26 @@ using packet = event<id, event_type::incoming_packet>;
 template<event_id id>
 using out_event = event<id, event_type::outgoing_rpc>;
 
-class event_info {
+class event_info final {
 public:
     bit_stream* stream;
     event_type type;
     std::uint8_t id;
 
-    bool operator==(const event_id& e_id) const;
-    bool operator==(const event_type& e_type) const;
+    auto operator==(const event_id& e_id) const -> bool;
+    auto operator==(const event_type& e_type) const -> bool;
 
     template<event_id e_id, event_type e_type = event_type::incoming_rpc>
-    event<e_id, e_type> create() const;
+    auto create() const -> event<e_id, e_type>;
 
     explicit event_info(const event_type& type, std::uint8_t id, bit_stream* stream)
         : type(type), id(id), stream(stream) {}
-}; // class basic_event
+}; // class event_info final
 
 } // namespace plugin::samp
 
 template<plugin::samp::event_id e_id, plugin::samp::event_type e_type>
-plugin::samp::event<e_id, e_type>
-plugin::samp::event_info::create() const {
+auto plugin::samp::event_info::create() const -> event<e_id, e_type> {
     if constexpr (std::is_empty_v<event<e_id, e_type>>)
         return event<e_id, e_type>();
 

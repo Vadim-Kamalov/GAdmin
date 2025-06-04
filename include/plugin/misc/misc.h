@@ -6,15 +6,15 @@
 
 namespace plugin::misc {
 
-class initializer {
+class initializer final {
 private:
     std::deque<feature_ptr_t> features;
 public:
-    bool on_event(const samp::event_info& event);
-    void main_loop();
+    auto on_event(const samp::event_info& event) -> bool;
+    auto main_loop() -> void;
 
     explicit initializer();
-}; // class initializer
+}; // class initializer final
 
 } // namespace plugin::misc
 

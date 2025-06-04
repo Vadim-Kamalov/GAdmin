@@ -3,10 +3,8 @@
 #include "plugin/gui/widgets/text.h"
 #include "plugin/gui/animation.h"
 #include "plugin/plugin.h"
-#include "plugin/log.h"
 
-plugin::types::color
-plugin::gui::windows::kill_list::entry::side::get_color() {
+auto plugin::gui::windows::kill_list::entry::side::get_color() -> types::color {
     if (color.has_value())
         return *color;
 
@@ -26,15 +24,13 @@ plugin::gui::windows::kill_list::entry::side::get_color() {
     return *color;
 }
 
-std::string
-plugin::gui::windows::kill_list::entry::get_formatted_time() const {
+auto plugin::gui::windows::kill_list::entry::get_formatted_time() const -> std::string {
     auto time_t = std::chrono::system_clock::to_time_t(time);
     auto local_time = std::localtime(&time_t);
     return std::format("[{:02}:{:02}:{:02}]", local_time->tm_hour, local_time->tm_min, local_time->tm_sec);
 }
 
-float
-plugin::gui::windows::kill_list::entry::compute_width(ImFont* bold_font, ImFont* regular_font, bool with_time) const {
+auto plugin::gui::windows::kill_list::entry::compute_width(ImFont* bold_font, ImFont* regular_font, bool with_time) const -> float {
     float width = 0;
 
     if (with_time)
@@ -49,8 +45,7 @@ plugin::gui::windows::kill_list::entry::compute_width(ImFont* bold_font, ImFont*
     return width;
 }
 
-ImVec2
-plugin::gui::windows::kill_list::get_window_size(bool with_time) const {
+auto plugin::gui::windows::kill_list::get_window_size(bool with_time) const -> ImVec2 {
     std::size_t max_count = (*configuration)["windows"]["kill_list"]["max_count"];
     ImVec2 window_padding = ImGui::GetStyle().WindowPadding;
     ImVec2 size = { 0, window_padding.y * 2 };
@@ -68,8 +63,9 @@ plugin::gui::windows::kill_list::get_window_size(bool with_time) const {
     return { size.x + window_padding.x * 2, size.y };
 }
 
-bool
-plugin::gui::windows::kill_list::on_player_death_notification(const samp::event<samp::event_id::player_death_notification>& notification) {
+auto plugin::gui::windows::kill_list::on_player_death_notification(const samp::event<samp::event_id::player_death_notification>& notification)
+    -> bool
+{
     auto left_nickname = samp::player_pool::get_nickname(notification.killed_id);
     auto window_configuration = (*configuration)["windows"]["kill_list"];
     std::size_t max_count = window_configuration["max_count"];
@@ -106,16 +102,14 @@ plugin::gui::windows::kill_list::on_player_death_notification(const samp::event<
     return true;
 }
 
-bool
-plugin::gui::windows::kill_list::on_event(const samp::event_info& event) {
+auto plugin::gui::windows::kill_list::on_event(const samp::event_info& event) -> bool {
     if (event == samp::event_type::incoming_rpc && event == samp::event_id::player_death_notification)
         return on_player_death_notification(event.create<samp::event_id::player_death_notification>());
 
     return true;
 }
 
-void
-plugin::gui::windows::kill_list::render() {
+auto plugin::gui::windows::kill_list::render() -> void {
     auto window_configuration = (*configuration)["windows"]["kill_list"];
     bool show_time = window_configuration["show_time"];
     std::size_t max_count = window_configuration["max_count"];
@@ -172,15 +166,6 @@ plugin::gui::windows::kill_list::render() {
     ImGui::PopStyleVar();
 }
 
-plugin::gui::window_ptr_t
-plugin::gui::windows::kill_list::create(types::not_null<gui_initializer*> child) noexcept {
+auto plugin::gui::windows::kill_list::create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t {
     return std::make_unique<kill_list>(child);
-}
-
-plugin::gui::windows::kill_list::kill_list(types::not_null<gui_initializer*> child)
-    : child(child),
-      bold_font((*child->fonts->bold)[18]),
-      regular_font((*child->fonts->regular)[16])
-{
-    log::info("window \"windows::kill_list\" initialized");
 }

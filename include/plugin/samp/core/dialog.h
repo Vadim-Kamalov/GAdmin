@@ -6,7 +6,7 @@
 
 namespace plugin::samp {
 
-class dialog {
+class dialog final {
 private:
     static types::versioned_address_container<std::uintptr_t> instance_container;
     static inline types::offset<int> active_address = 0x50; 
@@ -25,11 +25,11 @@ public:
     static constexpr std::uint16_t invalid_id = 0xFFFF;
     static constexpr std::uint8_t send_response_id = 62;
 
-    static void send_response(std::uint16_t id, const button& button, std::uint16_t list_item = list_item_none,
-                              const std::string_view& input = "") noexcept;
+    static auto send_response(std::uint16_t id, const button& button, std::uint16_t list_item = list_item_none,
+                              const std::string_view& input = "") noexcept -> void;
 
-    static bool is_active() noexcept;
-}; // class dialog
+    static auto is_active() noexcept -> bool;
+}; // class dialog final
 
 } // namespace plugin::samp
 

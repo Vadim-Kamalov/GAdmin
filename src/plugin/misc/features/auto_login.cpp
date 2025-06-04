@@ -3,8 +3,9 @@
 #include "plugin/gui/notify.h"
 #include "plugin/plugin.h"
 
-bool
-plugin::misc::features::auto_login::on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog) const {
+auto plugin::misc::features::auto_login::on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog) const
+    -> bool
+{
     if (!dialog || dialog.style != samp::dialog::style::password)
         return true;
 
@@ -45,8 +46,9 @@ plugin::misc::features::auto_login::on_show_dialog(const samp::event<samp::event
     return true;
 }
 
-bool
-plugin::misc::features::auto_login::on_server_message(const samp::event<samp::event_id::server_message>& message) const {
+auto plugin::misc::features::auto_login::on_server_message(const samp::event<samp::event_id::server_message>& message) const
+    -> bool
+{
     configuration_t feature_configuration = (*configuration)["misc"]["auto_login"];
     
     if (message.text == "Вы были отсоединены от сервера за неправильный пароль администрирования." &&
@@ -59,8 +61,7 @@ plugin::misc::features::auto_login::on_server_message(const samp::event<samp::ev
     return true;
 }
 
-bool
-plugin::misc::features::auto_login::on_event(const samp::event_info& event) {
+auto plugin::misc::features::auto_login::on_event(const samp::event_info& event) -> bool {
     configuration_t feature_configuration = (*configuration)["misc"]["auto_login"];
     
     if (!feature_configuration.use || event != samp::event_type::incoming_rpc)

@@ -8,19 +8,18 @@
 #include "plugin/samp/player.h"
 #include "plugin/server/spectator.h"
 #include "plugin/server/user.h"
-#include "plugin/log.h"
 #include "plugin/types/color.h"
 #include <cmath>
 #include <ranges>
 #include <utility>
 
-float
-plugin::gui::windows::interaction_area::get_distance_between_points(float ax, float ay, float bx, float by) const {
+auto plugin::gui::windows::interaction_area::get_distance_between_points(float ax, float ay, float bx, float by) const -> float {
     return std::hypot(bx - ax, by - ay);
 }
 
-std::optional<plugin::gui::windows::interaction_area::search_result>
-plugin::gui::windows::interaction_area::find_player_nearby_to_screen_center(float radius) const {
+auto plugin::gui::windows::interaction_area::find_player_nearby_to_screen_center(float radius) const
+    -> std::optional<search_result>
+{
     auto [ size_x, size_y ] = game::get_screen_resolution();
     std::optional<search_result> result;
 
@@ -58,8 +57,9 @@ plugin::gui::windows::interaction_area::find_player_nearby_to_screen_center(floa
     return result;
 }
 
-std::optional<plugin::gui::windows::interaction_area::search_result>
-plugin::gui::windows::interaction_area::find_vehicle_nearby_to_screen_center(float radius) const {
+auto plugin::gui::windows::interaction_area::find_vehicle_nearby_to_screen_center(float radius) const
+    -> std::optional<search_result>
+{
     auto [size_x, size_y] = game::get_screen_resolution();
     float center_x = size_x / 2.0f, center_y = size_y / 2.0f;
     std::optional<search_result> result;
@@ -100,8 +100,9 @@ plugin::gui::windows::interaction_area::find_vehicle_nearby_to_screen_center(flo
     return result;
 }
 
-std::optional<plugin::gui::windows::interaction_area::search_result>
-plugin::gui::windows::interaction_area::search_from_screen_center(float radius) const {
+auto plugin::gui::windows::interaction_area::search_from_screen_center(float radius) const
+    -> std::optional<search_result>
+{
     switch (current_search_type) {
         case search_type::players:
             return find_player_nearby_to_screen_center(radius);
@@ -112,8 +113,7 @@ plugin::gui::windows::interaction_area::search_from_screen_center(float radius) 
     return {};
 }
 
-void
-plugin::gui::windows::interaction_area::handle_controls() {
+auto plugin::gui::windows::interaction_area::handle_controls() -> void {
     if (ImGui::IsKeyReleased(ImGuiKey_1))
         current_search_type = (current_search_type == search_type::vehicles)
             ? search_type::players : search_type::vehicles;
@@ -130,8 +130,7 @@ plugin::gui::windows::interaction_area::handle_controls() {
     }
 }
 
-void
-plugin::gui::windows::interaction_area::handle_search_response(std::uint16_t id) {
+auto plugin::gui::windows::interaction_area::handle_search_response(std::uint16_t id) -> void {
     std::string command = "";
 
 #define FINISH_CASE(COMMAND, POSTFIX) command = std::format(COMMAND " {}" POSTFIX, id); break
@@ -154,9 +153,9 @@ plugin::gui::windows::interaction_area::handle_search_response(std::uint16_t id)
     current_search_response = search_response::none;
 }
 
-void
-plugin::gui::windows::interaction_area::render_stroked_text(ImDrawList* draw_list, ImFont* font, const ImVec2& pos,
-                                                            const types::color& color, types::zstring_t text) const
+auto plugin::gui::windows::interaction_area::render_stroked_text(ImDrawList* draw_list, ImFont* font, const ImVec2& pos,
+                                                                 const types::color& color, types::zstring_t text) const
+    -> void
 {
     draw_list->AddText(font, font->FontSize, { pos.x + 1, pos.y + 1 }, 0xFF000000, text);
     draw_list->AddText(font, font->FontSize, { pos.x - 1, pos.y - 1 }, 0xFF000000, text);
@@ -165,9 +164,8 @@ plugin::gui::windows::interaction_area::render_stroked_text(ImDrawList* draw_lis
     draw_list->AddText(font, font->FontSize, pos, *color, text);
 }
 
-void
-plugin::gui::windows::interaction_area::render_help_text(ImDrawList* draw_list, float radius, const types::color& active_color,
-                                                         const types::color& disabled_color) const
+auto plugin::gui::windows::interaction_area::render_help_text(ImDrawList* draw_list, float radius, const types::color& active_color,
+                                                              const types::color& disabled_color) const -> void
 {
     auto [ size_x, size_y ] = game::get_screen_resolution();
 
@@ -194,9 +192,8 @@ plugin::gui::windows::interaction_area::render_help_text(ImDrawList* draw_list, 
     }
 }
 
-void
-plugin::gui::windows::interaction_area::render_search_description(ImDrawList* draw_list, float radius, const types::color& active_color,
-                                                                  const std::string& search_description) const
+auto plugin::gui::windows::interaction_area::render_search_description(ImDrawList* draw_list, float radius, const types::color& active_color,
+                                                                       const std::string& search_description) const -> void
 {
     std::array<std::string, 2> lines = { "1 - переключение между режимами (поиск игроков или машин)",
                                          search_description };
@@ -213,8 +210,7 @@ plugin::gui::windows::interaction_area::render_search_description(ImDrawList* dr
     }
 }
 
-void
-plugin::gui::windows::interaction_area::render() {
+auto plugin::gui::windows::interaction_area::render() -> void {
     auto window_configuration = (*configuration)["windows"]["interaction_area"];
 
     if (!window_configuration["use"] || !server::user::is_on_alogin() ||
@@ -250,17 +246,15 @@ plugin::gui::windows::interaction_area::render() {
     render_help_text(draw_list, radius, color_active, color_disabled);
 }
 
-plugin::gui::window_ptr_t
-plugin::gui::windows::interaction_area::create(types::not_null<gui_initializer*> child) noexcept {
+auto plugin::gui::windows::interaction_area::create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t {
     return std::make_unique<interaction_area>(child);
 }
 
 plugin::gui::windows::interaction_area::interaction_area(types::not_null<gui_initializer*> child)
-    : child(child),
+    : window(child),
       bold_font((*child->fonts->bold)[18]),
       regular_font((*child->fonts->regular)[18])
 {
     activation_hotkey = hotkey("Активация кругового меню", key_bind({ 'Z', 0 }, bind_condition::on_alogin));
-    log::info("window \"windows::interaction_area\" initialized");
     child->hotkey_handler->add(activation_hotkey);
 }

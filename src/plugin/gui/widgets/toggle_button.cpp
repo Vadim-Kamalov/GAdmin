@@ -2,8 +2,7 @@
 #include "plugin/gui/animation.h"
 #include "plugin/string_utils.h"
 
-bool
-plugin::gui::widgets::toggle_button::render() {
+auto plugin::gui::widgets::toggle_button::render() -> bool {
     ImVec2 pos = ImGui::GetCursorScreenPos();
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
@@ -29,7 +28,7 @@ plugin::gui::widgets::toggle_button::render() {
     {
         if (ImGui::InvisibleButton(label.c_str(), size)) {
             it.time = now;
-            state = !state();
+            state = !*state;
             result = true;
         }
 

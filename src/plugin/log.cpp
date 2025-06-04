@@ -1,8 +1,7 @@
 #include "plugin/log.h"
 #include <chrono>
 
-std::string
-plugin::log::get_current_time() noexcept {
+auto plugin::log::get_current_time() noexcept -> std::string {
     auto now = std::chrono::system_clock::now();
     auto now_time_t = std::chrono::system_clock::to_time_t(now);
     auto now_tm = *std::localtime(&now_time_t);
@@ -28,7 +27,6 @@ plugin::log::get_current_time() noexcept {
     return oss.str();
 }
 
-void
-plugin::log::set_handler(handler_t new_handler) noexcept {
+auto plugin::log::set_handler(handler_t new_handler) noexcept -> void {
     handler = new_handler;
 }

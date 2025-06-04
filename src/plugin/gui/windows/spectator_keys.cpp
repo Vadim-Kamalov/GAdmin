@@ -1,10 +1,10 @@
 #include "plugin/gui/windows/spectator_keys.h"
 #include "plugin/server/spectator.h"
-#include "plugin/log.h"
 #include "plugin/plugin.h"
 
-std::vector<plugin::gui::widgets::keycap>
-plugin::gui::windows::spectator_keys::get_keycaps(const samp::synchronization_type& type) noexcept {
+auto plugin::gui::windows::spectator_keys::get_keycaps(const samp::synchronization_type& type)
+    noexcept -> std::vector<widgets::keycap>
+{
     using namespace server;
     using namespace samp;
 
@@ -77,8 +77,7 @@ plugin::gui::windows::spectator_keys::get_keycaps(const samp::synchronization_ty
     return {};
 }
 
-void
-plugin::gui::windows::spectator_keys::render() {
+auto plugin::gui::windows::spectator_keys::render() -> void {
     auto window_configuration = (*configuration)["windows"]["spectator_keys"];
 
     if (!window_configuration["use"] || !server::spectator::is_active())
@@ -117,11 +116,6 @@ plugin::gui::windows::spectator_keys::render() {
     ImGui::PopStyleColor(2);
 }
 
-plugin::gui::window_ptr_t
-plugin::gui::windows::spectator_keys::create(types::not_null<gui_initializer*> child) {
+auto plugin::gui::windows::spectator_keys::create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t {
     return std::make_unique<spectator_keys>(child);
-}
-
-plugin::gui::windows::spectator_keys::spectator_keys(types::not_null<gui_initializer*> child) : child(child) {
-    log::info("window \"windows::spectator_keys\" initialized");
 }

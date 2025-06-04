@@ -12,9 +12,9 @@
 
 namespace plugin::gui::windows {
 
-class command_requester : public window {
+class command_requester final : public window {
 private:
-    struct command_t {
+    struct command_t final {
         enum class type_t : std::uint8_t {
             none,
             reason,
@@ -32,26 +32,25 @@ private:
         std::string name;
         std::uint8_t level;
         std::vector<param_t> params;
-    }; // struct command_t
+    }; // struct command_t final
 
-    struct parsed_request_t {
+    struct parsed_request_t final {
         command_t command;
         std::optional<std::uint16_t> receiver_id;
 
         explicit parsed_request_t(const command_t& command, const std::optional<std::uint16_t>& receiver_id)
             : command(std::move(command)), receiver_id(std::move(receiver_id)) {}
-    }; // struct parsed_request_t
+    }; // struct parsed_request_t final
 
-    struct request_t {
+    struct request_t final {
         std::optional<std::uint16_t> receiver_id;
         std::string sender_nickname;
         std::uint16_t sender_id;
         std::string full_command;
         command_t command;
-    }; // struct request_t
+    }; // struct request_t final
 
     static const std::vector<command_t> commands;
-    types::not_null<gui_initializer*> child;
 
     std::chrono::steady_clock::time_point time_request_sent;
     std::optional<request_t> current_request;
@@ -65,28 +64,27 @@ private:
     std::chrono::steady_clock::time_point time_to_send_command;
     hotkey approve_request_hotkey;
 
-    std::optional<parsed_request_t> try_parse_request(const std::string_view& usage) const;
-    bool try_handle_new_request(const std::string& text);
-    bool try_handle_approved_request(const std::string& text, const types::color& color);
+    auto try_parse_request(const std::string_view& usage) const -> std::optional<parsed_request_t>;
+    auto try_handle_new_request(const std::string& text) -> bool;
+    auto try_handle_approved_request(const std::string& text, const types::color& color) -> bool;
 
-    void approve_request();
-
-    bool on_send_command(const samp::out_event<samp::event_id::send_command>& event);
-    bool on_server_message(const samp::event<samp::event_id::server_message>& event);
+    auto approve_request() -> void;
+    
+    auto on_send_command(const samp::out_event<samp::event_id::send_command>& event) -> bool;
+    auto on_server_message(const samp::event<samp::event_id::server_message>& event) -> bool;
 public:
-    constexpr types::zstring_t get_id() const override;
+    inline auto get_id() const -> types::zstring_t override;
+    static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
 
-    void render() override;
-    bool on_event(const samp::event_info& event) override;
+    auto render() -> void override;
+    auto on_event(const samp::event_info& event) -> bool override;
 
-    static window_ptr_t create(types::not_null<gui_initializer*> child) noexcept;
     explicit command_requester(types::not_null<gui_initializer*> child);
-}; // class command_requester : public window 
+}; // class command_requester final : public window 
 
 } // namespace plugin::gui::windows
 
-constexpr plugin::types::zstring_t
-plugin::gui::windows::command_requester::get_id() const {
+inline auto plugin::gui::windows::command_requester::get_id() const -> types::zstring_t {
     return "windows::command_requester";
 }
 

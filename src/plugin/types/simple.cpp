@@ -1,37 +1,30 @@
 #include "plugin/types/simple.h"
 #include <cmath>
 
-float
-plugin::types::vector_3d::magnitude() const {
+auto plugin::types::vector_3d::magnitude() const -> float {
     return std::hypot(x, y, z);
 }
 
-float
-plugin::types::vector_3d::get_distance_to(const vector_3d& vector) const {
+auto plugin::types::vector_3d::get_distance_to(const vector_3d& vector) const -> float {
     return std::hypot(x - vector.x, y - vector.y, z - vector.z);
 }
 
-plugin::types::vector_3d
-plugin::types::vector_3d::operator+(const vector_3d& other) const {
+auto plugin::types::vector_3d::operator+(const vector_3d& other) const -> vector_3d {
     return { x + other.x, y + other.y, z + other.z };
 }
 
-plugin::types::vector_3d
-plugin::types::vector_3d::operator-(const vector_3d& other) const {
+auto plugin::types::vector_3d::operator-(const vector_3d& other) const -> vector_3d {
     return { x - other.x, y - other.y, z - other.z };
 }
 
-plugin::types::vector_3d
-plugin::types::vector_3d::operator*(const vector_3d& other) const {
+auto plugin::types::vector_3d::operator*(const vector_3d& other) const -> vector_3d {
     return { x * other.x, y * other.y, z * other.z };
 }
 
-plugin::types::vector_3d
-plugin::types::vector_3d::operator*(float other) const {
+auto plugin::types::vector_3d::operator*(float other) const -> vector_3d {
     return { x * other, y * other, z * other };
 }
 
-plugin::types::vector_3d
-plugin::types::vector_3d::operator-() const {
+auto plugin::types::vector_3d::operator-() const -> vector_3d {
     return { -x, -y, -z };
 }

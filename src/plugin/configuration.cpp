@@ -218,8 +218,7 @@ plugin::configuration_initializer::main_json = R"json(
 }
 )json"_json;
 
-void
-plugin::configuration_initializer::write(const std::filesystem::path& path, const nlohmann::json& json) const {
+auto plugin::configuration_initializer::write(const std::filesystem::path& path, const nlohmann::json& json) const -> void {
     if (std::ofstream file = std::ofstream(path, std::ios::out | std::ios::binary)) {
         std::vector<std::uint8_t> bytes = nlohmann::json::to_msgpack(json);
         file.write(reinterpret_cast<types::zstring_t>(bytes.data()), bytes.size());
@@ -229,8 +228,7 @@ plugin::configuration_initializer::write(const std::filesystem::path& path, cons
     log::fatal("failed to write JSON to \"{}\"", path.string());
 }
 
-nlohmann::json
-plugin::configuration_initializer::get(const std::filesystem::path& path) const {
+auto plugin::configuration_initializer::get(const std::filesystem::path& path) const -> nlohmann::json {
     std::ifstream file(path, std::ios::binary | std::ios::ate);
     std::ifstream::pos_type pos = file.tellg();
 
@@ -254,18 +252,15 @@ plugin::configuration_initializer::get(const std::filesystem::path& path) const 
     return file_json;
 }
 
-nlohmann::json::reference
-plugin::configuration_initializer::operator[](const std::string_view& key) const {
+auto plugin::configuration_initializer::operator[](const std::string_view& key) const -> nlohmann::json::reference {
     return main_json[key];
 }
 
-void
-plugin::configuration_initializer::save() const {
+auto plugin::configuration_initializer::save() const -> void {
     write(configuration_file, main_json);
 }
 
-void
-plugin::configuration_initializer::save(std::chrono::milliseconds after) const {
+auto plugin::configuration_initializer::save(std::chrono::milliseconds after) const -> void {
     auto now = std::chrono::steady_clock::now();
     if (std::chrono::duration_cast<std::chrono::milliseconds>(now - last_time_saved) >= after) {
         last_time_saved = now;

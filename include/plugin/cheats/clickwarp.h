@@ -18,7 +18,6 @@
 ///
 /// @file include/plugin/cheats/clickwarp.h
 /// @details Provides functionality for teleporting to selected locations in the game.
-///
 
 #ifndef GADMIN_PLUGIN_CHEATS_CLICKWARP_H
 #define GADMIN_PLUGIN_CHEATS_CLICKWARP_H
@@ -32,7 +31,7 @@ namespace plugin::cheats {
 /// @class clickwarp
 /// @brief Implements teleportation cheat by clicking on a map location
 /// @inherits basic_cheat
-class clickwarp : public basic_cheat {
+class clickwarp final : public basic_cheat {
 private:
     struct teleport_information_t {
         types::vector_3d coordinates;
@@ -44,12 +43,12 @@ private:
 
     std::optional<teleport_information_t> teleport_information;
 
-    void stop_selecting_place();
+    auto stop_selecting_place() -> void;
 public:
     /// @brief Handles login state changes
     /// @param state New login state (true = logged in)
     /// @override
-    void on_alogin_new_state(bool state) override;
+    auto on_alogin_new_state(bool state) -> void override;
 
     /// @brief Handles events for teleportation
     /// @param message The message code
@@ -57,13 +56,13 @@ public:
     /// @param lparam Additional message information
     /// @return Boolean indicating if the event was handled
     /// @override 
-    bool on_event(unsigned int message, WPARAM wparam, LPARAM lparam) override;
+    auto on_event(unsigned int message, WPARAM wparam, LPARAM lparam) -> bool override;
 
     /// @brief Renders the teleportation interface
     /// @param child Pointer to the GUI initializer
     /// @override
-    void render(types::not_null<gui_initializer*> child) override;
-}; // class clickwarp : public basic_cheat
+    auto render(types::not_null<gui_initializer*> child) -> void override;
+}; // class clickwarp final : public basic_cheat
 
 } // namespace plugin::cheats
 

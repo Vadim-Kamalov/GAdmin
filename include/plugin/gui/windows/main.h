@@ -8,9 +8,9 @@
 
 namespace plugin::gui::windows {
 
-class main : public window {
+class main final : public window {
 private:
-    void render_menu();
+    auto render_menu() -> void;
 public:
     enum class frame {
         home,
@@ -26,18 +26,16 @@ public:
         plugin_information
     }; // enum class frame
 public:
-    types::not_null<gui_initializer*> child;
-    
     frame current_frame = frame::home;
     float menu_width = menu_min_width;
     bool menu_opened = false;
 
-    constexpr types::zstring_t get_id() const override;
+    inline auto get_id() const -> types::zstring_t override;
+    static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
 
-    void render() override;
-    
-    static window_ptr_t create(types::not_null<gui_initializer*> child) noexcept;
-    explicit main(types::not_null<gui_initializer*> child);
+    auto render() -> void override;
+
+    using window::window;
 public:
     static constexpr types::zstring_t frame_icons[] = {
         ICON_HOUSE01, ICON_SETTINGS, ICON_KEYBOARD, ICON_USERS,
@@ -57,8 +55,7 @@ public:
 
 } // namespace plugin::gui::windows
 
-constexpr plugin::types::zstring_t
-plugin::gui::windows::main::get_id() const {
+inline auto plugin::gui::windows::main::get_id() const -> types::zstring_t {
     return "windows::main";
 }
 

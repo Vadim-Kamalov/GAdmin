@@ -10,8 +10,7 @@
 #include <exception>
 #include <ctre.hpp>
 
-bool
-plugin::misc::features::mentions::is_user_mentioned(const std::string_view& possible_mention) const {
+auto plugin::misc::features::mentions::is_user_mentioned(const std::string_view& possible_mention) const -> bool {
     if (!std::isalnum(possible_mention[0]) && possible_mention[0] != '@')
         return false;
 
@@ -50,8 +49,9 @@ plugin::misc::features::mentions::is_user_mentioned(const std::string_view& poss
     return false;
 }
 
-bool
-plugin::misc::features::mentions::on_server_message(const samp::event<samp::event_id::server_message>& message) const {
+auto plugin::misc::features::mentions::on_server_message(const samp::event<samp::event_id::server_message>& message) const
+    -> bool
+{
     static constexpr ctll::fixed_string pattern = R"(^\[A\] (\S+)\[(\d+)\]: (\S+))";
 
     std::string clean_text = string_utils::remove_samp_colors(message.text);
@@ -76,8 +76,7 @@ plugin::misc::features::mentions::on_server_message(const samp::event<samp::even
     return true;
 }
 
-bool
-plugin::misc::features::mentions::on_event(const samp::event_info& event) {
+auto plugin::misc::features::mentions::on_event(const samp::event_info& event) -> bool {
     bool use = (*configuration)["misc"]["mentions"]["use"];
 
     if (use && event == samp::event_type::incoming_rpc && event == samp::event_id::server_message)

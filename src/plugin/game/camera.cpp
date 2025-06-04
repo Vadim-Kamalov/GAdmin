@@ -4,30 +4,29 @@
 #include <d3dx9math.h>
 #include <cstring>
 
-void
-plugin::game::camera::lerp_fov(float zoom_in_factor, float zoom_out_factor, float time_limit, bool ease) noexcept {
+auto plugin::game::camera::lerp_fov(float zoom_in_factor, float zoom_out_factor, float time_limit, bool ease)
+    noexcept -> void
+{
     lerp_fov_address(*instance_address, zoom_in_factor, zoom_out_factor, time_limit, ease);
 }
 
-plugin::game::camera::active_camera
-plugin::game::camera::get_active_camera() noexcept {
+auto plugin::game::camera::get_active_camera() noexcept -> active_camera {
     std::uintptr_t offset = active_camera_index_offset.read(*instance_address) * camera_size;
     return { front_camera_address.read(offset), source_camera_address.read(offset) };
 }
 
-plugin::types::vector_3d
-plugin::game::camera::get_active_coordinates() noexcept {
+auto plugin::game::camera::get_active_coordinates() noexcept -> types::vector_3d {
     return active_camera_coordinates.read();
 }
 
-plugin::types::vector_3d
-plugin::game::camera::get_active_point_at() noexcept {
+auto plugin::game::camera::get_active_point_at() noexcept -> types::vector_3d {
     active_camera camera = get_active_camera();
     return camera.front + camera.source;
 }
 
-plugin::types::vector_3d
-plugin::game::camera::screen_to_coordinates(float x, float y, float depth) noexcept {
+auto plugin::game::camera::screen_to_coordinates(float x, float y, float depth)
+    noexcept -> types::vector_3d
+{
     alignas(16) D3DXMATRIX view_proj_matrix;
     alignas(16) D3DXMATRIX inv_matrix;
 

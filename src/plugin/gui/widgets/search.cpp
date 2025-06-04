@@ -1,24 +1,20 @@
 #include "plugin/gui/widgets/search.h"
 #include "plugin/string_utils.h"
-#include <cstdlib>
 #include <imgui.h>
 #include <misc/cpp/imgui_stdlib.h>
 
-void
-plugin::gui::widgets::search::render(float width, const std::string_view& placeholder) {
+auto plugin::gui::widgets::search::render(float width, const std::string_view& placeholder) -> void {
     if (width != 0)
         ImGui::SetNextItemWidth(width);
 
     ImGui::InputTextWithHint(("##" + id).c_str(), std::string(placeholder).c_str(), &buffer);
 }
 
-void
-plugin::gui::widgets::search::clear() {
+auto plugin::gui::widgets::search::clear() -> void {
     buffer.clear();
 }
 
-bool
-plugin::gui::widgets::search::contains(std::string text) const {
+auto plugin::gui::widgets::search::contains(const std::string_view& text) const -> bool {
     if (empty())
         return true;
 
@@ -28,7 +24,6 @@ plugin::gui::widgets::search::contains(std::string text) const {
     return text_lower.contains(buffer_lower);
 }
 
-bool
-plugin::gui::widgets::search::empty() const {
+auto plugin::gui::widgets::search::empty() const -> bool {
     return buffer.empty();
 }

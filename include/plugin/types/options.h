@@ -10,10 +10,11 @@
 namespace plugin::types {
 
 template<typename T> requires std::is_enum_v<T>
-class options {
+class options final {
 public:
     using flags_t = std::underlying_type_t<T>;
-    class const_iterator {
+
+    class const_iterator final {
     private:
         flags_t current, flags;
     public:
@@ -23,34 +24,34 @@ public:
         using pointer = const T*;
         using reference = const T&;
 
-        constexpr const_iterator& operator++();
-        constexpr T operator*() const;
-        constexpr bool operator==(const const_iterator& other) const;
+        constexpr auto operator++() -> const_iterator&;
+        constexpr auto operator*() const -> T;
+        constexpr auto operator==(const const_iterator& other) const -> bool;
     
         constexpr const_iterator(flags_t current, flags_t flags);
-    }; // class const_iterator
+    }; // class const_iterator final
     
-    class reference : public setter_proxy<bool> {
+    class reference final : public setter_proxy<bool> {
     private:
         flags_t& flags;
         std::uint8_t bit_index;
     public:
-        constexpr bool operator()() const override;
-        constexpr void operator=(const bool& value) override;
+        constexpr auto operator*() const -> bool override;
+        constexpr auto operator=(const bool& value) -> void override;
         constexpr explicit reference(flags_t& flags, std::uint8_t bit_index)
             : flags(flags), bit_index(bit_index) {}
-    }; // class reference : public setter_proxy<bool>
+    }; // class reference final : public setter_proxy<bool>
 private:
-    constexpr flags_t initialize_flags(std::initializer_list<T> list);
+    constexpr auto initialize_flags(std::initializer_list<T> list) -> flags_t;
 public:
     flags_t flags = 0;
 
-    constexpr bool has_value(T flag) const;
-    constexpr const_iterator begin() const;
-    constexpr const_iterator end() const;
+    constexpr auto has_value(T flag) const -> bool;
+    constexpr auto begin() const -> const_iterator;
+    constexpr auto end() const -> const_iterator;
 
-    constexpr bool operator[](std::uint8_t bit_index) const;
-    constexpr reference operator[](std::uint8_t bit_index);
+    constexpr auto operator[](std::uint8_t bit_index) const -> bool;
+    constexpr auto operator[](std::uint8_t bit_index) -> reference;
 
     constexpr options(T flag)
         : flags(std::to_underlying(flag)) {}
@@ -62,21 +63,19 @@ public:
         : flags(initialize_flags(list)) {}
 
     constexpr options() = default;
-}; // class options
+}; // class options final
 
 } // namespace plugin::types
 
 template<typename T> requires std::is_enum_v<T>
-constexpr plugin::types::options<T>::flags_t
-plugin::types::options<T>::initialize_flags(std::initializer_list<T> list) {
+constexpr auto plugin::types::options<T>::initialize_flags(std::initializer_list<T> list) -> flags_t {
     return std::accumulate(list.begin(), list.end(), 0, [](flags_t lhs, T rhs) {
         return lhs | std::to_underlying(rhs);
     });
 }
 
 template<typename T> requires std::is_enum_v<T>
-constexpr bool
-plugin::types::options<T>::has_value(T flag) const {
+constexpr auto plugin::types::options<T>::has_value(T flag) const -> bool {
     return (flags & std::to_underlying(flag)) != 0;
 }
 
@@ -90,8 +89,7 @@ constexpr plugin::types::options<T>::const_iterator::const_iterator(flags_t curr
 }
 
 template<typename T> requires std::is_enum_v<T>
-constexpr plugin::types::options<T>::const_iterator&
-plugin::types::options<T>::const_iterator::operator++() {
+constexpr auto plugin::types::options<T>::const_iterator::operator++() -> const_iterator& {
     do {
         current = static_cast<flags_t>(current << 1);
     } while (current && !(flags & current));
@@ -99,50 +97,42 @@ plugin::types::options<T>::const_iterator::operator++() {
 }
 
 template<typename T> requires std::is_enum_v<T>
-constexpr T
-plugin::types::options<T>::const_iterator::operator*() const {
+constexpr auto plugin::types::options<T>::const_iterator::operator*() const -> T {
     return static_cast<T>(current);
 }
 
 template<typename T> requires std::is_enum_v<T>
-constexpr bool
-plugin::types::options<T>::const_iterator::operator==(const const_iterator& other) const {
+constexpr auto plugin::types::options<T>::const_iterator::operator==(const const_iterator& other) const -> bool {
     return current == other.current;
 }
 
 template<typename T> requires std::is_enum_v<T>
-constexpr plugin::types::options<T>::const_iterator
-plugin::types::options<T>::begin() const {
+constexpr auto plugin::types::options<T>::begin() const -> const_iterator {
     return const_iterator(1, flags);
 }
 
 template<typename T> requires std::is_enum_v<T>
-constexpr plugin::types::options<T>::const_iterator
-plugin::types::options<T>::end() const {
+constexpr auto plugin::types::options<T>::end() const -> const_iterator {
     return const_iterator(0, flags);
 }
 
 template<typename T> requires std::is_enum_v<T>
-constexpr bool
-plugin::types::options<T>::operator[](std::uint8_t bit_index) const {
+constexpr auto plugin::types::options<T>::operator[](std::uint8_t bit_index) const -> bool {
     return (flags & (1 << bit_index)) != 0;
 }
 
 template<typename T> requires std::is_enum_v<T>
-constexpr plugin::types::options<T>::reference
-plugin::types::options<T>::operator[](std::uint8_t bit_index) {
+constexpr auto plugin::types::options<T>::operator[](std::uint8_t bit_index) -> reference {
     return reference(flags, bit_index);
 }
 
 template<typename T> requires std::is_enum_v<T>
-constexpr bool
-plugin::types::options<T>::reference::operator()() const {
+constexpr auto plugin::types::options<T>::reference::operator*() const -> bool {
     return (flags & (1 << bit_index)) != 0;
 }
 
 template<typename T> requires std::is_enum_v<T>
-constexpr void
-plugin::types::options<T>::reference::operator=(const bool& value) {
+constexpr auto plugin::types::options<T>::reference::operator=(const bool& value) -> void{
     if (value)
         flags |= (1 << bit_index);
     else

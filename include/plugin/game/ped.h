@@ -18,7 +18,6 @@
 ///
 /// @file include/plugin/game/ped.h
 /// @details Provides functionality for managing in-game pedestrian entities.
-///
 
 #ifndef GADMIN_PLUGIN_GAME_PED_H
 #define GADMIN_PLUGIN_GAME_PED_H
@@ -42,7 +41,7 @@ namespace game {
 
 /// @class ped
 /// @brief Represents a pedestrian entity in the game.
-class ped : public placeable {
+class ped final : public placeable {
 public:
     /// @struct flags_t
     /// @brief Contains various state flags for the pedestrian.
@@ -72,49 +71,50 @@ private:
 public:
     /// @brief Checks if the pedestrian is in the air.
     /// @return True if the pedestrian is in the air, false otherwise
-    bool is_in_the_air() const;
+    auto is_in_the_air() const -> bool;
 
     /// @brief Checks if the pedestrian is targeting.
     /// @return True if the pedestrian is targeting, false otherwise.
-    bool is_targeting() const;
+    auto is_targeting() const -> bool;
 
     /// @brief Gets the speed of the pedestrian.
     /// @return The speed of the pedestrian.
-    types::meter_per_second_t get_speed() const;
+    auto get_speed() const -> types::meter_per_second_t;
 
     /// @brief Gets the position of a specific bone of the pedestrian.
     /// @param bone_id The bone identifier.
     /// @return The position of the specified bone.
-    types::vector_3d get_bone_bosition(const bone& bone_id) const;
+    auto get_bone_bosition(const bone& bone_id) const -> types::vector_3d;
 
     /// @brief Gets the current weapon of the pedestrian.
     /// @return The current weapon.
-    weapon get_current_weapon() const;
+    auto get_current_weapon() const -> weapon;
 
     /// @brief Gets the vehicle the pedestrian is in.
     /// @return The vehicle the pedestrian is in.
-    vehicle get_vehicle() const;
+    auto get_vehicle() const -> vehicle;
 
     /// @brief Gets the player pedestrian.
     /// @return The player pedestrian.
-    static ped get_player() noexcept;
+    static auto get_player() noexcept -> ped;
     
     /// @brief Makes the pedestrian jump into a vehicle.
+    /// @note The pedestrian always jumps as driver.
     /// @param vehicle The vehicle to jump into.
-    void jump_into_vehicle(const vehicle& vehicle) const;
+    auto jump_into_vehicle(const vehicle& vehicle) const -> void;
 
     /// @brief Teleports the pedestrian to a new position.
     /// @param pos The new position to teleport to.
-    void teleport(const types::vector_3d& pos) const override;
+    auto teleport(const types::vector_3d& pos) const -> void override;
 
     /// @brief Sets the heading of the pedestrian.
     /// @param angle The angle to set the heading to.
-    void set_heading(float angle) const override;
+    auto set_heading(float angle) const -> void override;
 
     using placeable::placeable;
 private:
     static constexpr std::ptrdiff_t weapon_size = 0x1C;
-}; // class ped
+}; // class ped final : public placeable
 
 } // namespace game
 } // namespace plugin

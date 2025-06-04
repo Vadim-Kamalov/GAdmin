@@ -6,14 +6,14 @@
 namespace plugin::samp {
 
 template<>
-struct event<event_id::server_quit> {
+struct event<event_id::server_quit> final {
     std::uint16_t id;
     std::uint8_t reason;
 
     explicit event(bit_stream* stream) {
         stream->read_into(id, reason);
     }
-}; // struct event<event_id::server_quit>
+}; // struct event<event_id::server_quit> final
 
 } // namespace plugin::samp
 

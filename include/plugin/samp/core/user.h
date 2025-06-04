@@ -21,7 +21,7 @@ using get_local_player_color_as_argb = std::uint32_t(__thiscall*)(std::uintptr_t
 
 namespace samp {
 
-class user {
+class user final {
 private:
     static types::versioned_address_container<std::uintptr_t, types::version_container_option::offsets> local_player_offsets;
     static types::versioned_address_container<types::zstring_t, types::version_container_option::offsets> name_offsets;
@@ -29,33 +29,31 @@ private:
     static types::versioned_address_container<signatures::local_player_chat_t> local_player_chat_container;
     static types::versioned_address_container<signatures::get_local_player_ping_t> get_local_player_ping_container;
     static types::versioned_address_container<signatures::get_local_player_color_as_argb> get_local_player_color_container;
-    static std::uintptr_t get_local_player() noexcept;
+    static auto get_local_player() noexcept -> std::uintptr_t;
 public:
-    static types::color get_color() noexcept;
-    static std::uint16_t get_id() noexcept;
-    static std::string get_name() noexcept;
-    static int get_ping() noexcept;
+    static auto get_color() noexcept -> types::color;
+    static auto get_id() noexcept -> std::uint16_t;
+    static auto get_name() noexcept -> std::string;
+    static auto get_ping() noexcept -> int;
 
     template<typename... Args>
-    static void chat(std::format_string<Args...> fmt, Args&&... args) noexcept;
+    static auto chat(std::format_string<Args...> fmt, Args&&... args) noexcept -> void;
 
     template<typename... Args>
-    static void send_message(std::format_string<Args...> fmt, Args&&... args) noexcept;
-}; // class user
+    static auto send_message(std::format_string<Args...> fmt, Args&&... args) noexcept -> void;
+}; // class user final
 
 } // namespace samp
 } // namespace plugin
 
 template<typename... Args>
-void
-plugin::samp::user::chat(std::format_string<Args...> fmt, Args&&... args) noexcept {
+auto plugin::samp::user::chat(std::format_string<Args...> fmt, Args&&... args) noexcept -> void {
     local_player_chat_container->invoke(get_local_player(), string_utils::to_cp1251(
         std::format(fmt, std::forward<Args>(args)...)).c_str());
 }
 
 template<typename... Args>
-void
-plugin::samp::user::send_message(std::format_string<Args...> fmt, Args&&... args) noexcept {
+auto plugin::samp::user::send_message(std::format_string<Args...> fmt, Args&&... args) noexcept -> void{
     std::string message = std::format(fmt, std::forward<Args>(args)...);
 
     if (!message.empty() && message[0] == '/') {

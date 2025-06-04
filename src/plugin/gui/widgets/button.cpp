@@ -1,16 +1,14 @@
 #include "plugin/gui/widgets/button.h"
 #include "plugin/string_utils.h"
 
-void
-plugin::gui::widgets::button::register_in_pool() const {
+auto plugin::gui::widgets::button::register_in_pool() const -> void {
     if (pool.contains(id))
         return;
 
     pool[id] = {};
 }
 
-bool
-plugin::gui::widgets::button::render() {
+auto plugin::gui::widgets::button::render() -> bool {
     configuration_t& it = pool[id];
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
 

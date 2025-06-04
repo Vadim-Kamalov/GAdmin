@@ -19,10 +19,9 @@ private:
 protected:
     types::dynamic_address<std::uintptr_t> handle;
 public:
-    bool is_available() const;
-    int get_model_index() const;
-    
-    bool operator==(const entity& other) const;
+    auto is_available() const -> bool;
+    auto get_model_index() const -> int;
+    auto operator==(const entity& other) const -> bool;
 
     explicit entity(const types::dynamic_address<std::uintptr_t>& handle)
         : handle(handle) {}

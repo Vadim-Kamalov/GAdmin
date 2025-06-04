@@ -2,16 +2,17 @@
 #include "plugin/string_utils.h"
 #include <utility>
 
-void
-plugin::samp::event<plugin::samp::event_id::show_dialog>::send_response(const dialog::button& button,
-                                                                        std::uint16_t list_item,
-                                                                        const std::string_view& input) const
+auto plugin::samp::event<plugin::samp::event_id::show_dialog>::send_response(const dialog::button& button,
+                                                                             std::uint16_t list_item,
+                                                                             const std::string_view& input) const
+    -> void
 {
     dialog::send_response(id, button, list_item, input);
 }
 
-void
-plugin::samp::event<plugin::samp::event_id::show_dialog>::write_text(const std::string_view& text) const {
+auto plugin::samp::event<plugin::samp::event_id::show_dialog>::write_text(const std::string_view& text) const
+    -> void
+{
     stream->reset_bit_stream();
     stream->write(id);
     stream->write(std::to_underlying(style));

@@ -18,7 +18,6 @@
 ///
 /// @file include/plugin/game/weapon.h
 /// @details Provides enumerations and constants related to weapons in the game
-///
 
 #ifndef GADMIN_PLUGIN_GAME_WEAPON_H
 #define GADMIN_PLUGIN_GAME_WEAPON_H

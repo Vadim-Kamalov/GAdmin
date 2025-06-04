@@ -11,22 +11,19 @@
 #include "plugin/game/cursor.h"
 #include <sstream>
 
-void
-plugin::cheats::clickwarp::stop_selecting_place() {
+auto plugin::cheats::clickwarp::stop_selecting_place() -> void {
     selecting_place_to_warp = false;
     teleport_information = {};
 }
 
-void
-plugin::cheats::clickwarp::on_alogin_new_state(bool state) {
+auto plugin::cheats::clickwarp::on_alogin_new_state(bool state) -> void{
     if (state || !selecting_place_to_warp)
         return;
 
     stop_selecting_place();
 }
 
-bool
-plugin::cheats::clickwarp::on_event(unsigned int message, WPARAM wparam, LPARAM lparam) {
+auto plugin::cheats::clickwarp::on_event(unsigned int message, WPARAM wparam, LPARAM lparam) -> bool {
     auto cheat_configuration = (*configuration)["cheats"]["clickwarp"];
 
     if (!cheat_configuration["use"] || !server::user::is_on_alogin() || server::spectator::is_active())
@@ -65,8 +62,7 @@ plugin::cheats::clickwarp::on_event(unsigned int message, WPARAM wparam, LPARAM 
     return true;
 }
 
-void
-plugin::cheats::clickwarp::render(types::not_null<gui_initializer*> child) {
+auto plugin::cheats::clickwarp::render(types::not_null<gui_initializer*> child) -> void {
     if (!selecting_place_to_warp)
         return;
 

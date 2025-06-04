@@ -15,7 +15,7 @@
 /// along with this program. If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-
+///
 /// @file include/plugin/gui/window.h
 /// @details Provides the base class for GUI windows in the plugin.
 
@@ -23,11 +23,16 @@
 #define GADMIN_PLUGIN_GUI_BASE_WINDOW_H
 
 #include "plugin/samp/events/event.h"
+#include "plugin/types/not_null.h"
 #include "plugin/types/simple.h"
-#include <memory>
 #include <minwindef.h>
+#include <memory>
 
-namespace plugin::gui {
+namespace plugin {
+
+class gui_initializer;
+
+namespace gui {
 
 /// @class window
 /// @brief Base class for GUI windows.
@@ -35,49 +40,64 @@ class window {
 private:
     bool rendering = true;
 public:
-/// @brief Virtual destructor for the window class.
+    types::not_null<gui_initializer*> child;
+    
+    /// @brief Virtual destructor for the window class.
     virtual ~window() = default;
     
-    virtual constexpr types::zstring_t get_id() const = 0;
+    /// @brief Window configuration: the window's ID.
+    /// @return Window's ID.
+    virtual inline auto get_id() const -> types::zstring_t;
 
-/// @brief Determines if the window should render when the game is paused.
-/// @return True if the window should render on game pause, false otherwise.
-    virtual constexpr bool render_on_game_paused() const;
+    /// @brief Window configuration: if the window should render when the game is paused.
+    /// @return True if the window should render on game pause, false otherwise.
+    virtual inline auto render_on_game_paused() const -> bool;
     
-    virtual void render() = 0;
+    /// @brief Window configuration: if the window can be rendered.
+    /// @return True if the window can be rendered, false otherwise.
+    inline auto can_render() const -> bool;
     
-/// @brief Handles window events.
-/// @param message The message code.
-/// @param wparam Additional message information.
-/// @param lparam Additional message information.
-/// @return True if the event was handled, false otherwise.
-    virtual bool on_event(unsigned int message, WPARAM wparam, LPARAM lparam);
+    /// @brief Called each frame and so safe to render ImGui in this function.
+    virtual auto render() -> void = 0;
+    
+    /// @brief Handles window events.
+    /// @param message The message code.
+    /// @param wparam Additional message information.
+    /// @param lparam Additional message information.
+    /// @return True if the event was handled, false otherwise.
+    virtual auto on_event(unsigned int message, WPARAM wparam, LPARAM lparam) -> bool;
 
-/// @brief Handles samp events.
-/// @param event The event information.
-/// @return True if the event was handled, false otherwise.
-    virtual bool on_event(const samp::event_info& event);
-    virtual void on_samp_initialize() {}
+    /// @brief Handles samp events.
+    /// @param event The event information.
+    /// @return True if the event was handled, false otherwise.
+    virtual auto on_event(const samp::event_info& event) -> bool;
 
-/// @brief Checks if the window can be rendered.
-/// @return True if the window can be rendered, false otherwise.
-    constexpr bool can_render() const;
+    /// @brief Called only once when samp is fully initialized.
+    virtual auto on_samp_initialize() -> void {}
+
+    /// @brief Stop render of the current window.
     void stop_render() noexcept;
+
+    /// @brief Constructor for all windows. When constructed, it writes in the log file that this window is initialized.
+    /// @param child Child class (GUI initializer) for current window.
+    explicit window(types::not_null<gui_initializer*> child);
 }; // class window
 
+/// @brief RAII pointer to the window.
 using window_ptr_t = std::unique_ptr<window>;
 
-} // namespace plugin::gui
+} // namespace gui
+} // namespace plugin
 
-constexpr bool
-plugin::gui::window::render_on_game_paused() const {
+inline auto plugin::gui::window::get_id() const -> types::zstring_t {
+    return "<unknown window>";
+}
+
+inline auto plugin::gui::window::render_on_game_paused() const -> bool {
     return false;
 }
 
-/// @brief Checks if the window can be rendered.
-/// @return True if the window can be rendered, false otherwise.
-constexpr bool
-plugin::gui::window::can_render() const {
+inline auto plugin::gui::window::can_render() const -> bool {
     return rendering;
 }
 

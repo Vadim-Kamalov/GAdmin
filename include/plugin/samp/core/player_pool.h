@@ -21,7 +21,7 @@ using get_ping_t = std::int32_t(__thiscall*)(std::uintptr_t, std::uint16_t);
 
 namespace samp {
 
-class player_pool {
+class player_pool final {
 public:
     enum class error { player_not_connected, player_not_found };
 private:
@@ -31,16 +31,16 @@ private:
     static inline types::offset<signatures::get_remote_player_t> get_remote_player_offset = 0x10F0;
     static inline types::offset<signatures::get_remote_player_t> is_connected_offset = 0x10B0;
 public:
-    static std::uintptr_t instance() noexcept;
+    static auto instance() noexcept -> std::uintptr_t;
 
-    static std::expected<std::string, error> get_nickname(std::uint16_t id) noexcept;
-    static std::expected<std::uint16_t, error> get_id(const std::string_view& nickname) noexcept;
+    static auto get_nickname(std::uint16_t id) noexcept -> std::expected<std::string, error>;
+    static auto get_id(const std::string_view& nickname) noexcept -> std::expected<std::uint16_t, error>;
 
-    static std::expected<remote_player, error> get_remote_player(std::uint16_t id, bool check_connection = true) noexcept;
-    static std::expected<remote_player, error> get_remote_player(const std::string_view& nickname) noexcept;
+    static auto get_remote_player(std::uint16_t id, bool check_connection = true) noexcept -> std::expected<remote_player, error>;
+    static auto get_remote_player(const std::string_view& nickname) noexcept -> std::expected<remote_player, error>;
 
-    static std::expected<std::int32_t, error> get_ping(std::uint16_t id) noexcept;
-    static bool is_connected(std::uint16_t id) noexcept;
+    static auto get_ping(std::uint16_t id) noexcept -> std::expected<std::int32_t, error>;
+    static auto is_connected(std::uint16_t id) noexcept -> bool;
 }; // class player_pool
 
 } // namespace samp

@@ -7,13 +7,13 @@
 namespace plugin::samp {
 
 template<>
-class event<event_id::send_command, event_type::outgoing_rpc> {
+class event<event_id::send_command, event_type::outgoing_rpc> final {
 private:
     bit_stream* stream;
 public:
     std::string command;
     
-    void write_command(const std::string_view& new_command) const;
+    auto write_command(const std::string_view& new_command) const -> void;
 
     explicit event(bit_stream* stream)
         : command(string_utils::to_utf8(stream->read_string<std::uint32_t>())),

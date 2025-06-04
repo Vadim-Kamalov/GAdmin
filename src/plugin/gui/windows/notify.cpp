@@ -4,8 +4,7 @@
 #include "plugin/gui/animation.h"
 #include "plugin/plugin.h"
 
-bool
-plugin::gui::windows::notify::on_send_notification(notification& notification) {
+auto plugin::gui::windows::notify::on_send_notification(notification& notification) -> bool {
     auto window_configuration = (*configuration)["windows"]["notify"];
     std::size_t max_count = window_configuration["max_count"];
 
@@ -20,8 +19,7 @@ plugin::gui::windows::notify::on_send_notification(notification& notification) {
     return true;
 }
 
-ImVec2
-plugin::gui::windows::notify::get_buttons_max_size(ImFont* font, const notification::buttons_t& buttons) const {
+auto plugin::gui::windows::notify::get_buttons_max_size(ImFont* font, const notification::buttons_t& buttons) const -> ImVec2 {
     ImVec2 first_size = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0, buttons.first.name.c_str());
     ImVec2 second_size = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0, buttons.second.name.c_str());
 
@@ -31,8 +29,7 @@ plugin::gui::windows::notify::get_buttons_max_size(ImFont* font, const notificat
     return first_size;
 }
 
-void
-plugin::gui::windows::notify::render_notification(notification& item) const {
+auto plugin::gui::windows::notify::render_notification(notification& item) const -> void {
     ImVec2 cursor_pos = ImGui::GetCursorScreenPos();
     ImU32 text_color = ImGui::GetColorU32(ImGuiCol_Text);
     ImFont *icon = (*child->fonts->icon)[24], *bold = (*child->fonts->bold)[18], *regular = (*child->fonts->regular)[16];
@@ -74,8 +71,9 @@ plugin::gui::windows::notify::render_notification(notification& item) const {
     ImGui::Dummy({ notification_size[0], notification_size[1] });
 }
 
-void
-plugin::gui::windows::notify::render_button(const ImVec2& pos, ImFont* font, notification& notification, notification::button& button) const {
+auto plugin::gui::windows::notify::render_button(const ImVec2& pos, ImFont* font, notification& notification, notification::button& button) const
+    -> void
+{
     if (!button.backend.has_value()) {
         notification::button::backend_t backend;
         backend.color = backend.colors.text;
@@ -112,8 +110,7 @@ plugin::gui::windows::notify::render_button(const ImVec2& pos, ImFont* font, not
         ? button.backend->colors.hovered : button.backend->colors.text, button.backend->hovered_time, button.backend->hovered_duration);
 }
 
-void
-plugin::gui::windows::notify::render() {
+auto plugin::gui::windows::notify::render() -> void {
     auto window_configuration = (*configuration)["windows"]["notify"];
 
     if (!gui::notify::has_notifications() || !window_configuration["use"])
@@ -168,12 +165,10 @@ plugin::gui::windows::notify::render() {
     ImGui::PopStyleVar();
 }
 
-plugin::gui::window_ptr_t
-plugin::gui::windows::notify::create(types::not_null<gui_initializer*> child) noexcept {
+auto plugin::gui::windows::notify::create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t {
     return std::make_unique<notify>(child);
 }
 
-plugin::gui::windows::notify::notify(types::not_null<gui_initializer*> child) : child(child) {
-    log::info("window \"windows::notify\" initialized");
+plugin::gui::windows::notify::notify(types::not_null<gui_initializer*> child) : window(child) {
     gui::notify::set_callback(std::bind(&notify::on_send_notification, this, std::placeholders::_1));
 }

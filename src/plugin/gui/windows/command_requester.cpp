@@ -38,8 +38,9 @@ const std::vector<plugin::gui::windows::command_requester::command_t> plugin::gu
     { command_t::type_t::none, "dvehid", 4, { command_t::param_t::number }}
 }; // const std::vector<plugin::gui::windows::command_requester::command_t> plugin::gui::windows::command_requester::commands
 
-std::optional<plugin::gui::windows::command_requester::parsed_request_t>
-plugin::gui::windows::command_requester::try_parse_request(const std::string_view& usage) const {
+auto plugin::gui::windows::command_requester::try_parse_request(const std::string_view& usage) const
+    -> std::optional<parsed_request_t>
+{
     std::optional<std::uint16_t> receiver_id;
 
     for (const auto& request_command : commands) {
@@ -99,14 +100,12 @@ plugin::gui::windows::command_requester::try_parse_request(const std::string_vie
     return {};
 }
 
-bool
-plugin::gui::windows::command_requester::on_send_command(const samp::out_event<samp::event_id::send_command>& event) {
+auto plugin::gui::windows::command_requester::on_send_command(const samp::out_event<samp::event_id::send_command>& event) -> bool {
     last_command = event.command;
     return true;
 }
 
-bool
-plugin::gui::windows::command_requester::on_server_message(const samp::event<samp::event_id::server_message>& event) {
+auto plugin::gui::windows::command_requester::on_server_message(const samp::event<samp::event_id::server_message>& event) -> bool {
     if (!server::user::is_on_alogin())
         return true;
 
@@ -130,8 +129,7 @@ plugin::gui::windows::command_requester::on_server_message(const samp::event<sam
     return true;
 }
 
-bool
-plugin::gui::windows::command_requester::try_handle_new_request(const std::string& text) {
+auto plugin::gui::windows::command_requester::try_handle_new_request(const std::string& text) -> bool {
     static constexpr ctll::fixed_string command_request_pattern = R"(\[A\] (.+)\[(\d+)\]: (/.*))";
             
     if (auto matches = ctre::match<command_request_pattern>(text)) {
@@ -174,8 +172,7 @@ plugin::gui::windows::command_requester::try_handle_new_request(const std::strin
     return false;
 }
 
-bool
-plugin::gui::windows::command_requester::try_handle_approved_request(const std::string& text, const types::color& color) {
+auto plugin::gui::windows::command_requester::try_handle_approved_request(const std::string& text, const types::color& color) -> bool {
     if (!current_request.has_value())
         return false;
 
@@ -211,8 +208,7 @@ plugin::gui::windows::command_requester::try_handle_approved_request(const std::
     return false;
 }
 
-void
-plugin::gui::windows::command_requester::approve_request() {
+auto plugin::gui::windows::command_requester::approve_request() -> void {
     if (!current_request.has_value())
         return;
 
@@ -245,8 +241,7 @@ plugin::gui::windows::command_requester::approve_request() {
     current_request = {};
 }
 
-void
-plugin::gui::windows::command_requester::render() {
+auto plugin::gui::windows::command_requester::render() -> void {
     using namespace std::chrono_literals;
 
     auto now = std::chrono::steady_clock::now();
@@ -305,8 +300,7 @@ plugin::gui::windows::command_requester::render() {
     ImGui::PopStyleVar(2);
 }
 
-bool
-plugin::gui::windows::command_requester::on_event(const samp::event_info& event) {
+auto plugin::gui::windows::command_requester::on_event(const samp::event_info& event) -> bool {
     bool use = (*configuration)["misc"]["command_requester"]["use"];
 
     if (!use)
@@ -320,14 +314,12 @@ plugin::gui::windows::command_requester::on_event(const samp::event_info& event)
 
     return true;
 }
-
-plugin::gui::window_ptr_t
-plugin::gui::windows::command_requester::create(types::not_null<gui_initializer*> child) noexcept {
+auto plugin::gui::windows::command_requester::create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t {
     return std::make_unique<command_requester>(child);
 }
 
 plugin::gui::windows::command_requester::command_requester(types::not_null<gui_initializer*> child)
-    : child(child),
+    : window(child),
       regular_font((*child->fonts->regular)[18]),
       bold_font((*child->fonts->bold)[18])
 {
@@ -335,6 +327,4 @@ plugin::gui::windows::command_requester::command_requester(types::not_null<gui_i
         .with_callback([this](auto) { approve_request(); });
 
     child->hotkey_handler->add(approve_request_hotkey);
-    
-    log::info("window \"windows::command_requester\" initialized");
 }

@@ -1,14 +1,16 @@
 #include "plugin/types/string_iterator.h"
 
-std::optional<unsigned char>
-plugin::types::string_iterator::current() const {
+auto plugin::types::string_iterator::current() const
+    -> std::optional<unsigned char>
+{
     if (index >= input.length())
         return {};
 
     return input[index];
 }
 
-unsigned char
-plugin::types::string_iterator::consume() {
+auto plugin::types::string_iterator::consume()
+    -> unsigned char
+{
     return input[index++];
 }

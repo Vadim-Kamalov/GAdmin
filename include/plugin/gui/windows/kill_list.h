@@ -14,14 +14,14 @@ using namespace std::chrono_literals;
 
 namespace plugin::gui::windows {
 
-class kill_list : public window {
+class kill_list final : public window {
 private:
-    struct entry {
-        struct side {
+    struct entry final {
+        struct side final {
             samp::player player;
             std::optional<types::color> color;
-            types::color get_color();
-        }; // struct side
+            auto get_color() -> types::color;
+        }; // struct side final
 
         side left;
         std::optional<side> right;
@@ -31,38 +31,38 @@ private:
         std::chrono::steady_clock::time_point alpha_time;
         float alpha = 1.00;
    
-        std::string get_formatted_time() const;
-        float compute_width(ImFont* bold_font, ImFont* regular_font, bool with_time) const;
+        auto get_formatted_time() const -> std::string;
+        auto compute_width(ImFont* bold_font, ImFont* regular_font, bool with_time) const -> float;
     }; // struct entry
 private:
     static constexpr std::chrono::milliseconds push_animation_duration = 300ms;
     static constexpr std::chrono::milliseconds alpha_change_duration = 300ms;
     static constexpr std::uint8_t text_border_size = 1;
 
-    types::not_null<gui_initializer*> child;
-    
     ImFont *bold_font, *regular_font;
     ImVec2 window_size = { 0, 0 };
     
     std::deque<entry> entries;
     std::chrono::steady_clock::time_point time_pushed;
 
-    ImVec2 get_window_size(bool with_time) const;
-    bool on_player_death_notification(const samp::event<samp::event_id::player_death_notification>& notification);
+    auto get_window_size(bool with_time) const -> ImVec2;
+    auto on_player_death_notification(const samp::event<samp::event_id::player_death_notification>& notification) -> bool;
 public:
-    constexpr types::zstring_t get_id() const override;
+    inline auto get_id() const -> types::zstring_t override;
+    static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
 
-    void render() override;
-    bool on_event(const samp::event_info& event) override;
+    auto render() -> void override;
+    auto on_event(const samp::event_info& event) -> bool override;
 
-    static window_ptr_t create(types::not_null<gui_initializer*> child) noexcept;
-    explicit kill_list(types::not_null<gui_initializer*> child);
+    explicit kill_list(types::not_null<gui_initializer*> child)
+        : window(child),
+          bold_font((*child->fonts->bold)[18]),
+          regular_font((*child->fonts->regular)[16]) {}
 }; // class kill_list : public window
 
 } // namespace plugin::gui::windows
 
-constexpr plugin::types::zstring_t
-plugin::gui::windows::kill_list::get_id() const {
+inline auto plugin::gui::windows::kill_list::get_id() const -> types::zstring_t {
     return "windows::kill_list";
 }
 

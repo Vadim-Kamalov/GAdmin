@@ -5,8 +5,7 @@
 #include "plugin/types/u8regex.h"
 #include "plugin/plugin.h"
 
-void
-plugin::server::user::set_alogin_status(bool status) {
+auto plugin::server::user::set_alogin_status(bool status) -> void {
     on_alogin = status;
 
     cheats_initializer->on_alogin_new_state(status);
@@ -17,16 +16,14 @@ plugin::server::user::set_alogin_status(bool status) {
     admins::on_alogout();
 }
 
-bool
-plugin::server::user::on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog) {
+auto plugin::server::user::on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog) -> bool {
     if (dialog.title == "Выбор персонажа" && is_on_alogin())
         set_alogin_status(false);
 
     return true;
 }
 
-bool
-plugin::server::user::on_server_message(const samp::event<samp::event_id::server_message>& message) {
+auto plugin::server::user::on_server_message(const samp::event<samp::event_id::server_message>& message) -> bool {
     static std::array<std::string, 4> authorization_strings = { 
         "Вы успешно авторизовались как администратор",
         "Вы уже авторизировались",
@@ -69,16 +66,14 @@ plugin::server::user::on_server_message(const samp::event<samp::event_id::server
     return true;
 }
 
-void
-plugin::server::user::main_loop() {
+auto plugin::server::user::main_loop() -> void {
     if (can_send_command) {
         samp::input::send_command("/adm");
         can_send_command = false;
     }
 }
 
-bool
-plugin::server::user::on_event(const samp::event_info& event) {
+auto plugin::server::user::on_event(const samp::event_info& event) -> bool {
     if (event == samp::event_type::incoming_packet && is_on_alogin() && (event.id == 32 || event.id == 36 || event.id == 37))
         set_alogin_status(false);
 

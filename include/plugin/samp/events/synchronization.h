@@ -39,25 +39,25 @@ struct common_synchronization_info {
 }; // struct common_synchronization_info
 
 template<>
-struct event<event_id::player_synchronization, event_type::incoming_packet> : common_synchronization_info {
+struct event<event_id::player_synchronization, event_type::incoming_packet> final : common_synchronization_info {
     explicit event(bit_stream* stream)
         : common_synchronization_info(stream, 0x0, true) {}
-}; // struct event<event_id::player_synchronization, event_type::incoming_packet> : common_synchronization_info
+}; // struct event<event_id::player_synchronization, event_type::incoming_packet> final : common_synchronization_info
 
 template<>
-struct event<event_id::vehicle_synchronization, event_type::incoming_packet> : common_synchronization_info {
+struct event<event_id::vehicle_synchronization, event_type::incoming_packet> final : common_synchronization_info {
     explicit event(bit_stream* stream)
         : common_synchronization_info(stream, 0x2) {}
-}; // struct event<event_id::vehicle_synchronization, event_type::incoming_packet> : common_synchronization_info
+}; // struct event<event_id::vehicle_synchronization, event_type::incoming_packet> final : common_synchronization_info
 
 template<>
-struct event<event_id::passenger_synchronization, event_type::incoming_packet> : common_synchronization_info {
+struct event<event_id::passenger_synchronization, event_type::incoming_packet> final : common_synchronization_info {
     explicit event(bit_stream* stream)
         : common_synchronization_info(stream, 0x6) {}
-}; // struct event<event_id::passenger_synchronization, event_type::incoming_packet> : common_synchronization_info
+}; // struct event<event_id::passenger_synchronization, event_type::incoming_packet> final : common_synchronization_info
 
 template<>
-struct event<event_id::bullet_synchronization, event_type::incoming_packet> {
+struct event<event_id::bullet_synchronization, event_type::incoming_packet> final {
     std::uint16_t player_id;
     std::uint8_t hit_type;
     std::uint16_t hit_id;
@@ -65,7 +65,7 @@ struct event<event_id::bullet_synchronization, event_type::incoming_packet> {
     std::uint8_t weapon_id;
 
     explicit event(bit_stream* stream);
-}; // struct event<event_id::bullet_synchronization, event_type::incoming_packet>
+}; // struct event<event_id::bullet_synchronization, event_type::incoming_packet> final
 
 } // namespace plugin::samp
 

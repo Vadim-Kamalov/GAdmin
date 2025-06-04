@@ -5,10 +5,10 @@
 
 namespace plugin::misc::features {
 
-class fish_eye : public feature {
+class fish_eye final : public feature {
 public:
-    void main_loop() override;
-}; // class fish_eye : public feature
+    auto main_loop() -> void override;
+}; // class fish_eye final : public feature
 
 } // namespace plugin::misc::features
 

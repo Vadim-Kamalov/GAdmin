@@ -4,21 +4,22 @@
 using namespace plugin::gui;
 using namespace std::literals;
 
-struct menu_selector_animation {
+struct menu_selector_animation final {
     static inline std::chrono::milliseconds duration = 500ms;
     
     ImVec4 color;
     bool hovered_state_current = false, hovered_state_previous = false;
     std::chrono::steady_clock::time_point hovered_time, click_time;
 
-    struct colors {
+    struct colors final {
         ImVec4 background = ImGui::GetStyle().Colors[ImGuiCol_ChildBg];
         ImVec4 hovered = ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered];
-    }; // struct colors
-}; // struct menu_selector_animation
+    }; // struct colors final
+}; // struct menu_selector_animation final
 
-static void
-update_color(menu_selector_animation& it, const menu_selector_animation::colors& colors) noexcept {
+static auto update_color(menu_selector_animation& it, const menu_selector_animation::colors& colors)
+    noexcept -> void
+{
     auto now = std::chrono::steady_clock::now();
 
     it.hovered_state_current = ImGui::IsItemHovered();
@@ -41,8 +42,9 @@ update_color(menu_selector_animation& it, const menu_selector_animation::colors&
     it.color = (it.hovered_state_current) ? colors.hovered : colors.background;
 }
 
-static void
-update_menu_width(menu_selector_animation& it, plugin::types::not_null<windows::main*> child) noexcept {
+static auto update_menu_width(menu_selector_animation& it, plugin::types::not_null<windows::main*> child)
+    noexcept -> void
+{
     if (!animation::is_time_available(it.click_time))
         return;
 
@@ -50,8 +52,9 @@ update_menu_width(menu_selector_animation& it, plugin::types::not_null<windows::
     child->menu_width = animation::bring_to(child->menu_width, to, it.click_time, child->menu_open_duration);
 }
 
-static void
-draw_frame(const ImVec2& size, const ImVec4& color, plugin::types::not_null<windows::main*> child) noexcept {
+static auto draw_frame(const ImVec2& size, const ImVec4& color, plugin::types::not_null<windows::main*> child)
+    noexcept -> void
+{
     plugin::gui_initializer* gui = child->child;
     ImVec2 pos = ImGui::GetWindowPos();
     float rounding = ImGui::GetStyle().ChildRounding;
@@ -68,8 +71,7 @@ draw_frame(const ImVec2& size, const ImVec4& color, plugin::types::not_null<wind
     ImGui::PopFont();
 }
 
-void
-plugin::gui::widgets::menu_selector(types::not_null<windows::main*> child) noexcept {
+auto plugin::gui::widgets::menu_selector(types::not_null<windows::main*> child) noexcept -> void {
     static menu_selector_animation::colors colors;
     static menu_selector_animation it = { colors.background };
     

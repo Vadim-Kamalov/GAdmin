@@ -5,9 +5,8 @@
 #include <wininet.h>
 #include <fstream>
 
-bool
-plugin::network::download_file(const std::string_view& url, const std::filesystem::path& output,
-                              std::stop_token stop_token, bool secured) noexcept
+auto plugin::network::download_file(const std::string_view& url, const std::filesystem::path& output,
+                              std::stop_token stop_token, bool secured) noexcept -> bool
 {
     HINTERNET internet = InternetOpen(NULL, INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
     
@@ -60,8 +59,9 @@ plugin::network::download_file(const std::string_view& url, const std::filesyste
     return true;
 }
 
-std::string
-plugin::network::fetch_file_content(const std::string_view& url, std::stop_token stop_token, bool secured) noexcept {
+auto plugin::network::fetch_file_content(const std::string_view& url, std::stop_token stop_token, bool secured)
+    noexcept -> std::string
+{
     HINTERNET internet = InternetOpen(NULL, INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
 
     if (!internet) {

@@ -9,8 +9,8 @@ namespace plugin::misc {
 class feature {
 public:
     virtual ~feature() = default;
-    virtual bool on_event(const samp::event_info& event);
-    virtual void main_loop();
+    virtual auto on_event(const samp::event_info& event) -> bool;
+    virtual auto main_loop() -> void;
 }; // class feature
 
 using feature_ptr_t = std::unique_ptr<feature>;

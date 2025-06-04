@@ -7,14 +7,14 @@
 
 namespace plugin {
 
-class network {
+class network final {
 public:
-    static bool download_file(const std::string_view& url, const std::filesystem::path& output,
-                              std::stop_token stop_token, bool secured = true) noexcept;
+    static auto download_file(const std::string_view& url, const std::filesystem::path& output,
+                              std::stop_token stop_token, bool secured = true) noexcept -> bool;
     
-    static std::string fetch_file_content(const std::string_view& url, std::stop_token stop_token,
-                                          bool secured = true) noexcept;
-}; // class network
+    static auto fetch_file_content(const std::string_view& url, std::stop_token stop_token,
+                                   bool secured = true) noexcept -> std::string;
+}; // class network final
 
 } // namespace plugin
 

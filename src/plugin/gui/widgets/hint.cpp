@@ -5,8 +5,7 @@
 #include <algorithm>
 #include <sstream>
 
-void
-plugin::gui::widgets::hint::default_renderer() const {
+auto plugin::gui::widgets::hint::default_renderer() const -> void {
     std::istringstream stream(string_utils::truncate_until_hashtag(label));
     for (std::string line; std::getline(stream, line);) {
         ImGui::SetCursorPosX((ImGui::GetWindowWidth() - ImGui::CalcTextSize(line.c_str()).x) / 2);
@@ -14,8 +13,7 @@ plugin::gui::widgets::hint::default_renderer() const {
     }
 }
 
-void
-plugin::gui::widgets::hint::render_hint(float alpha) const {
+auto plugin::gui::widgets::hint::render_hint(float alpha) const -> void {
     ImVec2 size = ImGui::GetItemRectSize();
     ImVec2 pos = ImGui::GetCursorScreenPos();
     {
@@ -65,8 +63,7 @@ plugin::gui::widgets::hint::render_hint(float alpha) const {
     draw_list->AddLine({ b.x - 1, b.y }, { c.x - 1, c.y }, *border_color);
 }
 
-void
-plugin::gui::widgets::hint::render() {
+auto plugin::gui::widgets::hint::render() -> void {
     bool hovered = condition();
     auto now = std::chrono::steady_clock::now();
     bool show = true;
@@ -108,8 +105,9 @@ plugin::gui::widgets::hint::render() {
     }
 }
 
-void
-plugin::gui::widgets::hint::render_as_guide(const std::string& label, bool optional_condition) noexcept {
+auto plugin::gui::widgets::hint::render_as_guide(const std::string& label, bool optional_condition)
+    noexcept -> void
+{
     static std::unordered_map<std::string, std::chrono::steady_clock::time_point> timers;
 
     auto& deleted_hints = (*configuration)["internal"]["guide_hints"];

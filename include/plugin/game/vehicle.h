@@ -18,7 +18,6 @@
 ///
 /// @file include/plugin/game/vehicle.h
 /// @details Provides functionality for managing vehicles in the game.
-///
 
 #ifndef GADMIN_PLUGIN_GAME_VEHICLE_H
 #define GADMIN_PLUGIN_GAME_VEHICLE_H
@@ -31,7 +30,7 @@ namespace plugin::game {
 
 /// @class vehicle
 /// @brief Represents a vehicle in the game.
-class vehicle : public placeable {
+class vehicle final : public placeable {
 private:
     static inline types::offset<std::uintptr_t> driver_offset = 0x460;
 public:
@@ -41,7 +40,7 @@ public:
 
     /// @brief Constructor for the vehicle class using the placeable constructor.
     using placeable::placeable;
-}; // class vehicle
+}; // class vehicle final : public placeable
 
 static constexpr std::uint16_t min_vehicle_id = 400;
 static constexpr std::uint16_t max_vehicle_id = 611;
@@ -102,22 +101,20 @@ static constexpr types::zstring_t vehicle_names[vehicle_count + 1] = {
 /// @brief Gets the maximum speed for a vehicle model.
 /// @param vehicle_model_index The index of the vehicle model.
 /// @return The maximum speed for the vehicle model.
-constexpr std::uint16_t get_max_vehicle_model_speed(std::uint16_t vehicle_model_index) noexcept;
+constexpr auto get_max_vehicle_model_speed(std::uint16_t vehicle_model_index) noexcept -> std::uint16_t;
 
 /// @brief Gets the name of a vehicle model.
 /// @param vehicle_model_index The index of the vehicle model.
 /// @return The name of the vehicle model.
-constexpr types::zstring_t get_vehicle_name(std::uint16_t vehicle_model_index) noexcept;
+constexpr auto get_vehicle_name(std::uint16_t vehicle_model_index) noexcept -> types::zstring_t;
 
 } // namespace plugin::game
 
-constexpr std::uint16_t
-plugin::game::get_max_vehicle_model_speed(std::uint16_t vehicle_model_index) noexcept {
+constexpr auto plugin::game::get_max_vehicle_model_speed(std::uint16_t vehicle_model_index) noexcept -> std::uint16_t {
     return max_vehicle_speeds[vehicle_model_index - min_vehicle_id];
 }
 
-constexpr plugin::types::zstring_t
-plugin::game::get_vehicle_name(std::uint16_t vehicle_model_index) noexcept {
+constexpr auto plugin::game::get_vehicle_name(std::uint16_t vehicle_model_index) noexcept -> types::zstring_t {
     return vehicle_names[vehicle_model_index - min_vehicle_id];
 }
 

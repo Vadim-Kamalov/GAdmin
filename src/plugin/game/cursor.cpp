@@ -2,8 +2,7 @@
 #include "plugin/memory.h"
 #include <windows.h>
 
-void
-plugin::game::cursor::set_status(bool status) noexcept {
+auto plugin::game::cursor::set_status(bool status) noexcept -> void {
     if (status) {
         memory::set(0x53F417, 0x90, 5);
 	    memory::copy(0x53F41F, { 0x33, 0xC0, 0x0F, 0x84 });

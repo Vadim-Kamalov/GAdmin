@@ -7,25 +7,24 @@
 
 namespace plugin::server {
 
-class user {
+class user final {
 private:
     inline static bool on_alogin = false;
     inline static bool can_send_command = false;
     inline static std::chrono::steady_clock::time_point last_time_authorized;
 
-    static bool on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog);
-    static bool on_server_message(const samp::event<samp::event_id::server_message>& message);
+    static auto on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog) -> bool;
+    static auto on_server_message(const samp::event<samp::event_id::server_message>& message) -> bool;
 public:
-    static inline bool is_on_alogin() noexcept;
-    static void main_loop();
-    static void set_alogin_status(bool status);
-    static bool on_event(const samp::event_info& event);
-}; // class user
+    static inline auto is_on_alogin() noexcept -> bool;
+    static auto main_loop() -> void;
+    static auto set_alogin_status(bool status) -> void;
+    static auto on_event(const samp::event_info& event) -> bool;
+}; // class user final
 
 } // namespace plugin::server
 
-inline bool
-plugin::server::user::is_on_alogin() noexcept {
+inline auto plugin::server::user::is_on_alogin() noexcept -> bool {
     return on_alogin;
 }
 

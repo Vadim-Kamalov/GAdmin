@@ -13,13 +13,13 @@ plugin::samp::player_pool::get_nickname_container = { 0x13CE0, 0x16F00, 0x175C0,
 plugin::types::versioned_address_container<plugin::signatures::get_ping_t>
 plugin::samp::player_pool::get_ping_container = { 0x6A1C0, 0x6E110, 0x6E880, 0x6E2B0 };
 
-std::uintptr_t
-plugin::samp::player_pool::instance() noexcept {
+auto plugin::samp::player_pool::instance() noexcept -> std::uintptr_t {
     return get_player_pool_container->invoke(net_game::instance_container->read());
 }
 
-std::expected<std::string, plugin::samp::player_pool::error>
-plugin::samp::player_pool::get_nickname(std::uint16_t id) noexcept {
+auto plugin::samp::player_pool::get_nickname(std::uint16_t id)
+    noexcept -> std::expected<std::string, error>
+{
     if (user::get_id() == id)
         return user::get_name();
 
@@ -31,8 +31,9 @@ plugin::samp::player_pool::get_nickname(std::uint16_t id) noexcept {
     return get_nickname_container->invoke(instance(), id);
 }
 
-std::expected<std::uint16_t, plugin::samp::player_pool::error>
-plugin::samp::player_pool::get_id(const std::string_view& nickname) noexcept {
+auto plugin::samp::player_pool::get_id(const std::string_view& nickname)
+    noexcept -> std::expected<std::uint16_t, error>
+{
     if (user::get_name() == nickname)
         return user::get_id();
     
@@ -43,31 +44,33 @@ plugin::samp::player_pool::get_id(const std::string_view& nickname) noexcept {
     return std::unexpected(error::player_not_found);
 }
 
-std::expected<plugin::samp::remote_player, plugin::samp::player_pool::error>
-plugin::samp::player_pool::get_remote_player(std::uint16_t id, bool check_connection) noexcept {
+auto plugin::samp::player_pool::get_remote_player(std::uint16_t id, bool check_connection)
+    noexcept -> std::expected<remote_player, error>
+{
     if (check_connection && !is_connected(id))
         return std::unexpected(error::player_not_connected);
 
     return remote_player((get_remote_player_offset + get_base())(instance(), id));
 }
 
-std::expected<plugin::samp::remote_player, plugin::samp::player_pool::error>
-plugin::samp::player_pool::get_remote_player(const std::string_view& nickname) noexcept {
+auto plugin::samp::player_pool::get_remote_player(const std::string_view& nickname)
+    noexcept -> std::expected<remote_player, error>
+{
     if (auto id = get_id(nickname))
         return get_remote_player(*id, false);
     else
         return std::unexpected(id.error());
 }
 
-std::expected<std::int32_t, plugin::samp::player_pool::error>
-plugin::samp::player_pool::get_ping(std::uint16_t id) noexcept {
+auto plugin::samp::player_pool::get_ping(std::uint16_t id)
+    noexcept -> std::expected<std::int32_t, error>
+{
     if (!is_connected(id))
         return std::unexpected(error::player_not_connected);
 
     return get_ping_container->invoke(instance(), id);
 }
 
-bool
-plugin::samp::player_pool::is_connected(std::uint16_t id) noexcept {
+auto plugin::samp::player_pool::is_connected(std::uint16_t id) noexcept -> bool {
     return id == user::get_id() || (is_connected_offset + get_base())(instance(), id);
 }

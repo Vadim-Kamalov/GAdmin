@@ -33,7 +33,7 @@ enum class bind_condition : std::uint8_t {
     never = 1 << 7
 }; // enum class bind_condition : std::uint8_t
 
-class key_bind {
+class key_bind final {
 public:
     using joined_t = std::uint32_t;
     using keys_t = std::pair<std::uint8_t, std::uint8_t>;
@@ -62,10 +62,10 @@ public:
 
     /// Wrapper for the `raw_modifiers` bit-field with
     /// the packing/unpacking method and constructor.
-    struct modifiers_t : raw_modifiers {
+    struct modifiers_t final : raw_modifiers {
         using joined_t = std::uint8_t;
         
-        constexpr joined_t join() const;
+        constexpr auto join() const -> joined_t;
 
         constexpr modifiers_t(const raw_modifiers& modifiers)
             : raw_modifiers(modifiers) {}
@@ -86,11 +86,11 @@ public:
     /// Represents two virtual keys.
     keys_t keys;
 
-    std::string to_string() const;
+    auto to_string() const -> std::string;
     
-    constexpr joined_t join() const;
-    constexpr bool empty() const;
-    constexpr bool operator==(const key_bind& other) const;
+    constexpr auto join() const -> joined_t;
+    constexpr auto empty() const -> bool;
+    constexpr auto operator==(const key_bind& other) const -> bool;
 
     constexpr explicit key_bind(joined_t bind)
         : conditions(static_cast<bind_condition>(bind >> 24)),
@@ -112,9 +112,9 @@ public:
         : keys(keys), conditions(conditions), modifiers(modifiers) {}
 
     constexpr key_bind() = default;
-}; // class key_bind
+}; // class key_bind final
 
-class hotkey {
+class hotkey final {
 private:
     static constexpr ImVec2 button_size = { 100, 30 };
     static inline const std::vector<std::string> hint_settings = {
@@ -133,10 +133,9 @@ private:
     hotkey_handler* handler;
     key_bind new_bind;
 
-    std::string truncate_text_in_button(const std::string_view& text) const;
-    
-    void hint_renderer();
-    bool hint_condition();
+    auto truncate_text_in_button(const std::string_view& text) const -> std::string;
+    auto hint_renderer() -> void;
+    auto hint_condition() -> bool;
 public:
     using callback_t = std::function<void(hotkey&)>;
 public: 
@@ -144,22 +143,22 @@ public:
     key_bind bind;
     callback_t callback = [](hotkey&) {};
 
-    void render();
+    auto render() -> void;
     
-    inline hotkey& with_callback(callback_t new_callback);
-    inline hotkey& with_handler(hotkey_handler* new_handler);
+    inline auto with_callback(callback_t new_callback) -> hotkey&;
+    inline auto with_handler(hotkey_handler* new_handler) -> hotkey&;
 
     explicit hotkey(const std::string_view& label, const key_bind& bind);
 
     hotkey() = default;
-}; // class hotkey
+}; // class hotkey final
 
-class hotkey_handler {
+class hotkey_handler final {
 private:
-    bool check_modifiers(const key_bind::modifiers_t& modifiers) const;
-    bool check_conditions(const types::options<bind_condition>& conditions) const;
-    void write_current_modifiers();
-    void write_current_keys(unsigned int message, WPARAM wparam);
+    auto check_modifiers(const key_bind::modifiers_t& modifiers) const -> bool;
+    auto check_conditions(const types::options<bind_condition>& conditions) const -> bool;
+    auto write_current_modifiers() -> void;
+    auto write_current_keys(unsigned int message, WPARAM wparam) -> void;
 public:
     types::not_null<gui_initializer*> child;
     std::deque<hotkey> pool;
@@ -168,16 +167,16 @@ public:
     bool changing_any_properties = false;
     bool changing_any_hotkey = false;
 
-    bool is_bind_defined(const key_bind& bind) const;
-    bool is_hotkey_active(const hotkey& hotkey_to_find) const;
+    auto is_bind_defined(const key_bind& bind) const -> bool;
+    auto is_hotkey_active(const hotkey& hotkey_to_find) const -> bool;
 
-    bool on_event(unsigned int message, WPARAM wparam, LPARAM lparam);
-    void main_loop();
-    void add(hotkey& hotkey);
+    auto on_event(unsigned int message, WPARAM wparam, LPARAM lparam) -> bool;
+    auto main_loop() -> void;
+    auto add(hotkey& hotkey) -> void;
 
     explicit hotkey_handler(types::not_null<gui_initializer*> child)
         : child(child) {}
-}; // class hotkey_handler
+}; // class hotkey_handler final
 
 } // namespace gui
 } // namespace plugin
@@ -189,39 +188,33 @@ struct std::formatter<plugin::gui::key_bind> : std::formatter<std::string_view> 
     }
 }; // struct std::formatter<plugin::gui::key_bind> : std::formatter<std::string_view>
 
-constexpr plugin::gui::key_bind::modifiers_t::joined_t
-plugin::gui::key_bind::modifiers_t::join() const {
+constexpr auto plugin::gui::key_bind::modifiers_t::join() const -> joined_t {
     return (alt << 7) | (uses_right_hand_alt << 6) |
            (control << 5) | (uses_right_hand_control << 4) |
            (shift << 3) | (uses_right_hand_shift << 2);
 }
 
-constexpr plugin::gui::key_bind::joined_t
-plugin::gui::key_bind::join() const {
+constexpr auto plugin::gui::key_bind::join() const -> joined_t {
     return (static_cast<joined_t>(conditions.flags) << 24) |
            (static_cast<joined_t>(modifiers.join()) << 16) |
            (static_cast<joined_t>(keys.first) << 8) |
            (static_cast<joined_t>(keys.second));
 }
 
-constexpr bool
-plugin::gui::key_bind::operator==(const key_bind& other) const {
+constexpr auto plugin::gui::key_bind::operator==(const key_bind& other) const -> bool {
     return modifiers.join() == other.modifiers.join() && keys == other.keys;
 }
 
-constexpr bool
-plugin::gui::key_bind::empty() const {
+constexpr auto plugin::gui::key_bind::empty() const -> bool {
     return keys.first == 0 && keys.second == 0;
 }
 
-inline plugin::gui::hotkey&
-plugin::gui::hotkey::with_callback(callback_t new_callback) {
+inline auto plugin::gui::hotkey::with_callback(callback_t new_callback) -> hotkey& {
     callback = new_callback;
     return *this;
 }
 
-inline plugin::gui::hotkey&
-plugin::gui::hotkey::with_handler(hotkey_handler* new_handler) {
+inline auto plugin::gui::hotkey::with_handler(hotkey_handler* new_handler) -> hotkey& {
     handler = new_handler;
     return *this;
 }

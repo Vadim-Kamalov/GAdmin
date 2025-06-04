@@ -5,11 +5,11 @@
 
 namespace plugin::samp {
 
-class menu {
+class menu final {
 public:
     static constexpr std::uint8_t select_id = 132;
-    static void select(std::uint8_t id) noexcept;
-}; // class menu
+    static auto select(std::uint8_t id) noexcept -> void;
+}; // class menu final
 
 } // namespace plugin::samp
 

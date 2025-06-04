@@ -5,17 +5,17 @@
 
 namespace plugin::gui {
 
-struct accent_colors_t {
+struct accent_colors_t final {
     types::color green = 0xFFA1E3A6;
     types::color red = 0xFFA88BF3;
     types::color yellow = 0xFFAEE2F9;
-}; // struct accent_colors_t
+}; // struct accent_colors_t final
 
-class style {
+class style final {
 public:
     static inline accent_colors_t accent_colors;
-    static void apply() noexcept;
-}; // class style
+    static auto apply() noexcept -> void;
+}; // class style final
 
 } // namespace plugin::gui
 

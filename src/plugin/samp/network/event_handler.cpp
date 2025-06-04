@@ -7,14 +7,14 @@
 #include "plugin/log.h"
 #include <cstdint>
 
-bool
-plugin::samp::event_handler::can_process_event() const {
+auto plugin::samp::event_handler::can_process_event() const -> bool {
     using namespace std::chrono_literals;
     return std::chrono::steady_clock::now() - time_left_from_pause >= 500ms;
 }
 
-std::uintptr_t
-plugin::samp::event_handler::rak_client_interface_constructor_hooked(const decltype(rak_client_interface_constructor_hook)& hook) {
+auto plugin::samp::event_handler::rak_client_interface_constructor_hooked(const decltype(rak_client_interface_constructor_hook)& hook)
+    -> std::uintptr_t
+{
     using namespace std::placeholders;
 
     std::uintptr_t rak_client_interface = hook.call_trampoline();
@@ -46,9 +46,8 @@ plugin::samp::event_handler::rak_client_interface_constructor_hooked(const declt
     return rak_client_interface;
 }
 
-bool
-plugin::samp::event_handler::incoming_rpc_handler_hooked(const decltype(incoming_rpc_handler_hook)& hook, void* ptr, types::zstring_t data,
-                                                        int length, PlayerID player_id)
+auto plugin::samp::event_handler::incoming_rpc_handler_hooked(const decltype(incoming_rpc_handler_hook)& hook, void* ptr,
+                                                              types::zstring_t data, int length, PlayerID player_id) -> bool
 {
     user_id = player_id;
 
@@ -60,7 +59,7 @@ plugin::samp::event_handler::incoming_rpc_handler_hooked(const decltype(incoming
     BitStream stream(std::bit_cast<unsigned char*>(const_cast<char*>(data)), length, true);
     stream.IgnoreBits(8);
 
-    if (data[0] == ID_TIMESTAMP)
+    if (data[0] == timestamp_rpc_id)
         stream.IgnoreBits(8 * (sizeof(RakNetTime) + sizeof(unsigned char)));
 
     int offset = stream.GetReadOffset();
@@ -76,7 +75,7 @@ plugin::samp::event_handler::incoming_rpc_handler_hooked(const decltype(incoming
     if (bits_data) {
         bool used_alloca = false;
 
-        if (BITS_TO_BYTES(stream.GetNumberOfUnreadBits()) < MAX_ALLOCA_STACK_ALLOCATION) {
+        if (BITS_TO_BYTES(stream.GetNumberOfUnreadBits()) < max_alloca_stack_allocation) {
             input = reinterpret_cast<unsigned char*>(alloca(BITS_TO_BYTES(stream.GetNumberOfUnreadBits())));
             used_alloca = true;
         } else
@@ -113,9 +112,9 @@ plugin::samp::event_handler::incoming_rpc_handler_hooked(const decltype(incoming
     return hook.call_trampoline(ptr, std::bit_cast<char*>(stream.GetData()), stream.GetNumberOfBytesUsed(), player_id);
 }
 
-bool
-plugin::samp::event_handler::outgoing_packet_handler_hooked(const decltype(outgoing_packet_handler_hook)& hook, void* ptr, BitStream* stream,
-                                                           PacketPriority priority, PacketReliability reliability, char ordering_channel)
+auto plugin::samp::event_handler::outgoing_packet_handler_hooked(const decltype(outgoing_packet_handler_hook)& hook, void* ptr, BitStream* stream,
+                                                                 PacketPriority priority, PacketReliability reliability, char ordering_channel)
+    -> bool
 {
     bit_stream new_stream(stream);
     std::uint8_t event_id = new_stream.read<std::uint8_t>();
@@ -134,8 +133,7 @@ plugin::samp::event_handler::outgoing_packet_handler_hooked(const decltype(outgo
     return hook.call_trampoline(ptr, stream, priority, reliability, ordering_channel);
 }
 
-Packet*
-plugin::samp::event_handler::incoming_packet_handler_hooked(const decltype(incoming_packet_handler_hook)& hook, void* ptr) {
+auto plugin::samp::event_handler::incoming_packet_handler_hooked(const decltype(incoming_packet_handler_hook)& hook, void* ptr) -> Packet* {
     Packet* packet = hook.call_trampoline(ptr);
 
     if (packet == nullptr || packet->data == nullptr || packet->length == 0 || packet->bitSize == 0)
@@ -166,10 +164,10 @@ plugin::samp::event_handler::incoming_packet_handler_hooked(const decltype(incom
     return packet;
 }
 
-bool
-plugin::samp::event_handler::outgoing_rpc_handler_hooked(const decltype(outgoing_rpc_handler_hook)& hook, void* ptr, int* id,
-                                                        BitStream* stream, PacketPriority priority, PacketReliability reliability,
-                                                        char ordering_channel, bool shift_timestamp)
+auto plugin::samp::event_handler::outgoing_rpc_handler_hooked(const decltype(outgoing_rpc_handler_hook)& hook, void* ptr, int* id,
+                                                              BitStream* stream, PacketPriority priority, PacketReliability reliability,
+                                                              char ordering_channel, bool shift_timestamp)
+    -> bool
 {
     if (!can_process_event())
         return hook.call_trampoline(ptr, id, stream, priority, reliability, ordering_channel, shift_timestamp);
@@ -185,18 +183,15 @@ plugin::samp::event_handler::outgoing_rpc_handler_hooked(const decltype(outgoing
     return hook.call_trampoline(ptr, id, stream, priority, reliability, ordering_channel, shift_timestamp);
 }
 
-plugin::signatures::incoming_rpc_handler_t
-plugin::samp::event_handler::get_incoming_rpc_trampoline() const {
+auto plugin::samp::event_handler::get_incoming_rpc_trampoline() const -> signatures::incoming_rpc_handler_t {
     return incoming_rpc_handler_hook.get_trampoline();
 }
 
-void
-plugin::samp::event_handler::attach(callback_t new_callback) {
+auto plugin::samp::event_handler::attach(callback_t new_callback) -> void {
     callback = new_callback;
 }
 
-void
-plugin::samp::event_handler::main_loop() {
+auto plugin::samp::event_handler::main_loop() -> void {
     bool menu_opened = game::is_menu_opened();
 
     if (!menu_opened && paused)

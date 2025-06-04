@@ -3,8 +3,9 @@
 #include "plugin/samp/core/chat.h"
 #include "plugin/plugin.h"
 
-bool
-plugin::misc::features::death_notify_in_chat::on_death_notification(const samp::event<samp::event_id::player_death_notification>& notification) const {
+auto plugin::misc::features::death_notify_in_chat::on_death_notification(const samp::event<samp::event_id::player_death_notification>& notification) const
+    -> bool
+{
     auto killed_nickname = samp::player_pool::get_nickname(notification.killed_id);
 
     if (!killed_nickname)
@@ -32,8 +33,7 @@ plugin::misc::features::death_notify_in_chat::on_death_notification(const samp::
     return true;
 }
 
-bool
-plugin::misc::features::death_notify_in_chat::on_event(const samp::event_info& event) {
+auto plugin::misc::features::death_notify_in_chat::on_event(const samp::event_info& event) -> bool {
     bool use = (*configuration)["misc"]["death_notify_in_chat"]["use"];
 
     if (use && event == samp::event_type::incoming_rpc && event == samp::event_id::player_death_notification)

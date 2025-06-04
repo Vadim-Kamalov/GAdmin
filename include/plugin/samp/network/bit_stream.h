@@ -8,62 +8,62 @@
 
 namespace plugin::samp {
 
-class bit_stream {
+class bit_stream final {
 private:
     BitStream* bit_stream_ptr;
     bool delete_bit_stream = true;
 public:
-    int get_number_of_bits_used();
-    int get_number_of_bytes_used();
+    auto get_number_of_bits_used() -> int;
+    auto get_number_of_bytes_used() -> int;
 
-    int get_number_of_unread_bits();
-    int get_number_of_unread_bytes();
+    auto get_number_of_unread_bits() -> int;
+    auto get_number_of_unread_bytes() -> int;
 
-    void reset_read_pointer();
-    void reset_write_pointer();
-    void reset_bit_stream();
+    auto reset_read_pointer() -> void;
+    auto reset_write_pointer() -> void;
+    auto reset_bit_stream() -> void;
 
-    int get_read_offset();
-    int get_write_offset();
+    auto get_read_offset() -> int;
+    auto get_write_offset() -> int;
 
-    void set_read_offset(int offset);
-    void set_write_offset(int offset);
+    auto set_read_offset(int offset) -> void;
+    auto set_write_offset(int offset) -> void;
 
-    void ignore_bits(int count);
-    void ignore_bytes(int count);
+    auto ignore_bits(int count) -> void;
+    auto ignore_bytes(int count) -> void;
 
     template<typename T>
-    T read();
+    auto read() -> T;
     
     template<typename T>
-    void write(T value);
+    auto write(T value) -> void;
 
     template<typename T>
-    std::string read_string();
+    auto read_string() -> std::string;
 
     template<typename T>
-    void write_string(const std::string_view& str);
+    auto write_string(const std::string_view& str) -> void;
 
     template<typename... Args>
-    void read_into(Args&... args);
+    auto read_into(Args&... args) -> void;
 
-    std::string read_string(std::int32_t length);
-    std::string read_encoded(int length);
-    bool read_buffer(std::uintptr_t destination, int size);
+    auto read_string(std::int32_t length) -> std::string;
+    auto read_encoded(int length) -> std::string;
+    auto read_buffer(std::uintptr_t destination, int size) -> bool;
 
-    void write(const std::string_view& value);
-    void write_encoded(const std::string_view& value);
+    auto write(const std::string_view& value) -> void;
+    auto write_encoded(const std::string_view& value) -> void;
 
-    bool emulate_incoming_rpc(std::uint8_t rpc_id);
-    bool emulate_incoming_packet(std::uint8_t packet_id);
+    auto emulate_incoming_rpc(std::uint8_t rpc_id) -> bool;
+    auto emulate_incoming_packet(std::uint8_t packet_id) -> bool;
 
-    bool send_rpc(int rpc_id);
-    bool send_rpc(int rpc_id, PacketPriority priority, PacketReliability reliability, std::uint8_t channel, bool timestamp);
-    bool send_packet();
-    bool send_packet(PacketPriority priority, PacketReliability reliability, std::uint8_t channel);
+    auto send_rpc(int rpc_id) -> bool;
+    auto send_rpc(int rpc_id, PacketPriority priority, PacketReliability reliability, std::uint8_t channel, bool timestamp) -> bool;
+    auto send_packet() -> bool;
+    auto send_packet(PacketPriority priority, PacketReliability reliability, std::uint8_t channel) -> bool;
 
-    BitStream* get_original_bit_stream();
-    std::uintptr_t get_data_ptr();
+    auto get_original_bit_stream() -> BitStream*;
+    auto get_data_ptr() -> std::uintptr_t;
 
     explicit bit_stream()
         : bit_stream(new BitStream) {}
@@ -75,41 +75,36 @@ public:
         : bit_stream(new BitStream(data, BITS_TO_BYTES(length), copy_data)) {}
 
     ~bit_stream() noexcept;
-}; // class bit_stream
+}; // class bit_stream final
 
 } // namespace plugin::samp
 
 template<typename T>
-T
-plugin::samp::bit_stream::read() {
+auto plugin::samp::bit_stream::read() -> T {
     T result;
     bit_stream_ptr->Read(result);
     return result;
 }
     
 template<typename T>
-void
-plugin::samp::bit_stream::write(T value) {
+auto plugin::samp::bit_stream::write(T value) -> void{
     bit_stream_ptr->Write(value);
 }
 
 template<typename T>
-std::string
-plugin::samp::bit_stream::read_string() {
+auto plugin::samp::bit_stream::read_string() -> std::string {
     return read_string(read<T>());
 }
 
 template<typename T>
-void
-plugin::samp::bit_stream::write_string(const std::string_view& str) {
+auto plugin::samp::bit_stream::write_string(const std::string_view& str) -> void {
     T size = static_cast<T>(str.size());
     bit_stream_ptr->Write(size);
     bit_stream_ptr->Write(str.data(), size);
 }
 
 template<typename... Args>
-void
-plugin::samp::bit_stream::read_into(Args&... args) {
+auto plugin::samp::bit_stream::read_into(Args&... args) -> void {
     ((args = read<std::decay_t<Args>>()), ...);
 }
 

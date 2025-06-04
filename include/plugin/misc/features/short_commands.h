@@ -8,9 +8,9 @@ namespace plugin::misc::features {
 
 class short_commands : public feature {
 private:
-    bool on_send_command(const samp::out_event<samp::event_id::send_command>& event) const;
+    auto on_send_command(const samp::out_event<samp::event_id::send_command>& event) const -> bool;
 public:
-    bool on_event(const samp::event_info& event) override;
+    auto on_event(const samp::event_info& event) -> bool override;
 }; // class short_commands : public feature
 
 } // namespace plugin::misc::features

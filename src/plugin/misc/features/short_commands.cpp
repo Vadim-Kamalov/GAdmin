@@ -2,8 +2,9 @@
 #include "plugin/types/string_iterator.h"
 #include "plugin/plugin.h"
 
-bool
-plugin::misc::features::short_commands::on_send_command(const samp::out_event<samp::event_id::send_command>& event) const {
+auto plugin::misc::features::short_commands::on_send_command(const samp::out_event<samp::event_id::send_command>& event) const
+    -> bool
+{
     auto feature_configuration = (*configuration)["misc"]["short_commands"];
 
     if (!feature_configuration["use"])
@@ -34,8 +35,7 @@ plugin::misc::features::short_commands::on_send_command(const samp::out_event<sa
     return true;
 }
 
-bool
-plugin::misc::features::short_commands::on_event(const samp::event_info& event) {
+auto plugin::misc::features::short_commands::on_event(const samp::event_info& event) -> bool {
     if (event == samp::event_type::outgoing_rpc && event == samp::event_id::send_command)
         return on_send_command(event.create<samp::event_id::send_command, samp::event_type::outgoing_rpc>());
 

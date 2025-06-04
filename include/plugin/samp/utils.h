@@ -1,10 +1,13 @@
 #ifndef GADMIN_PLUGIN_SAMP_UTILS_H
 #define GADMIN_PLUGIN_SAMP_UTILS_H
 
-namespace plugin::samp::utils {
+namespace plugin::samp {
 
-bool is_inputs_active() noexcept;
+class utils final {
+public:
+    static auto is_inputs_active() noexcept -> bool;
+}; // class utils final
 
-} // namespace plugin::samp::utils
+} // namespace plugin::samp
 
 #endif // GADMIN_PLUGIN_SAMP_UTILS_H

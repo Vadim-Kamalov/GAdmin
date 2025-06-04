@@ -2,8 +2,9 @@
 #include "plugin/types/simple.h"
 #include "plugin/plugin.h"
 
-bool
-plugin::misc::features::report_one_color::on_server_message(const samp::event<samp::event_id::server_message>& message) {
+auto plugin::misc::features::report_one_color::on_server_message(const samp::event<samp::event_id::server_message>& message)
+    -> bool
+{
     static constexpr types::zstring_t complaint_text_start = "[A] Жалоба от ";
     static constexpr types::zstring_t report_text_start = "[A] Репорт от ";
 
@@ -34,8 +35,7 @@ plugin::misc::features::report_one_color::on_server_message(const samp::event<sa
     return true;
 }
 
-bool
-plugin::misc::features::report_one_color::on_event(const samp::event_info& event) {
+auto plugin::misc::features::report_one_color::on_event(const samp::event_info& event) -> bool {
     bool use = (*configuration)["misc"]["report_one_color"]["use"];
 
     if (use && event == samp::event_type::incoming_rpc && event == samp::event_id::server_message)

@@ -18,7 +18,7 @@ inline std::unique_ptr<configuration_initializer> configuration;
 inline std::unique_ptr<cheats::initializer> cheats_initializer;
 inline std::unique_ptr<misc::initializer> misc_initializer;
 
-class plugin_initializer {
+class plugin_initializer final {
 private:
     std::mutex log_mutex;
     std::ofstream log_file_stream;
@@ -26,29 +26,28 @@ private:
 
     bool plugin_working = true;
 
-    void on_samp_initialize();
-    void on_log_message(const log::type& type, const std::string_view& message);
-
-    void initialize_logging();
-    void initialize_event_handler();
-    void create_and_initialize_files();
+    auto on_samp_initialize() -> void;
+    auto on_log_message(const log::type& type, const std::string_view& message) -> void;
+    auto initialize_logging() -> void;
+    auto initialize_event_handler() -> void;
+    auto create_and_initialize_files() -> void;
     
-    static void on_terminate() noexcept;
-    static long __stdcall on_unhandled_exception(EXCEPTION_POINTERS* exception_info) noexcept;
+    static auto on_terminate() noexcept -> void;
+    static auto __stdcall on_unhandled_exception(EXCEPTION_POINTERS* exception_info) noexcept -> long;
 public:
-    void unload();
-    bool is_active() const;
+    auto unload() -> void;
+    auto is_active() const -> bool;
 
-    bool on_event(const samp::event_info& event);
-    bool can_initialize_render() const;
-    void on_render_initialize();
-    void on_frame();
-    bool on_message(unsigned int message, WPARAM wparam, LPARAM lparam);
-    void main_loop();
+    auto on_event(const samp::event_info& event) -> bool;
+    auto can_initialize_render() const -> bool;
+    auto on_render_initialize() -> void;
+    auto on_frame() -> void;
+    auto on_message(unsigned int message, WPARAM wparam, LPARAM lparam) -> bool;
+    auto main_loop() -> void;
 
     explicit plugin_initializer();
     ~plugin_initializer() noexcept;
-}; // class plugin_initializer
+}; // class plugin_initializer final
 
 } // namespace plugin
 

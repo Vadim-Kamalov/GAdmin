@@ -5,8 +5,7 @@
 #include <windows.h>
 #include <vector>
 
-std::string
-plugin::string_utils::convert_encoding(const std::string& text, unsigned int code_page_from, unsigned int code_page_to) {
+auto plugin::string_utils::convert_encoding(const std::string& text, unsigned int code_page_from, unsigned int code_page_to) -> std::string {
     int wide_char_size = MultiByteToWideChar(code_page_from, 0, text.c_str(), -1, nullptr, 0);
     std::vector<wchar_t> wide_char_string(wide_char_size);
     
@@ -20,23 +19,20 @@ plugin::string_utils::convert_encoding(const std::string& text, unsigned int cod
     return std::string(new_string.data());
 }
 
-std::string
-plugin::string_utils::to_lowercase(const std::string_view& string) {
+auto plugin::string_utils::to_lowercase(const std::string_view& string) -> std::string {
     std::wstring result(string.begin(), string.end());
     std::transform(result.begin(), result.end(), result.begin(), towlower);
     return std::string(result.begin(), result.end());
 }
 
-std::string
-plugin::string_utils::truncate_until_hashtag(const std::string_view& text) {
+auto plugin::string_utils::truncate_until_hashtag(const std::string_view& text) -> std::string {
     if (std::size_t pos = text.find("##"); pos != std::string::npos)
         return std::string(text.substr(0, pos));
 
     return std::string(text);
 }
 
-std::string
-plugin::string_utils::remove_samp_colors(const std::string_view& text) {
+auto plugin::string_utils::remove_samp_colors(const std::string_view& text) -> std::string {
     types::string_iterator iterator(text);
     std::string output;
 
@@ -65,12 +61,10 @@ plugin::string_utils::remove_samp_colors(const std::string_view& text) {
     return output;
 }
 
-std::string
-plugin::string_utils::to_utf8(const std::string& text) {
+auto plugin::string_utils::to_utf8(const std::string& text) -> std::string {
     return convert_encoding(text, 1251, CP_UTF8);
 }
 
-std::string
-plugin::string_utils::to_cp1251(const std::string& text) {
+auto plugin::string_utils::to_cp1251(const std::string& text) -> std::string {
     return convert_encoding(text, CP_UTF8, 1251);
 }

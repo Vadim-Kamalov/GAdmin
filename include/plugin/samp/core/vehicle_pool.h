@@ -15,7 +15,7 @@ using get_vehicle_pool_t = std::uintptr_t(__thiscall*)(std::uintptr_t);
 
 namespace samp {
 
-class vehicle_pool {
+class vehicle_pool final {
 public:
     enum class error { vehicle_not_found, vehicle_not_available };
 private:
@@ -24,13 +24,13 @@ private:
     static inline types::offset<int*> not_empty_offset = 0x3074;
     static types::versioned_address_container<signatures::get_vehicle_pool_t> get_vehicle_pool_container; 
     
-    static bool is_available(std::uint16_t id) noexcept;
+    static auto is_available(std::uint16_t id) noexcept -> bool;
 public:
-    static std::expected<vehicle, error> get_vehicle(std::uint16_t id) noexcept;
-    static std::expected<std::uint16_t, error> get_id(const vehicle& vehicle) noexcept;
+    static auto get_vehicle(std::uint16_t id) noexcept -> std::expected<vehicle, error>;
+    static auto get_id(const vehicle& vehicle) noexcept -> std::expected<std::uint16_t, error>;
 public:
     static constexpr std::uint16_t max_vehicles = 2000;
-}; // class vehicle_pool
+}; // class vehicle_pool final
 
 } // namespace samp
 } // namespace plugin

@@ -3,11 +3,9 @@
 #include "plugin/samp/core/menu.h"
 #include "plugin/server/binder.h"
 #include "plugin/server/spectator.h"
-#include "plugin/log.h"
 #include "plugin/plugin.h"
 
-void
-plugin::gui::windows::to_json(nlohmann::json& json, const spectator_actions::button& button) {
+auto plugin::gui::windows::to_json(nlohmann::json& json, const spectator_actions::button& button) -> void {
     json["use"] = button.use;
     json["name"] = button.name;
 
@@ -17,8 +15,7 @@ plugin::gui::windows::to_json(nlohmann::json& json, const spectator_actions::but
         json["action"] = std::get<std::string>(button.action);
 }
 
-void
-plugin::gui::windows::from_json(const nlohmann::json& json, spectator_actions::button& button) {
+auto plugin::gui::windows::from_json(const nlohmann::json& json, spectator_actions::button& button) -> void {
     button.use = json["use"];
     button.name = json["name"];
 
@@ -28,8 +25,7 @@ plugin::gui::windows::from_json(const nlohmann::json& json, spectator_actions::b
         button.action = json["action"].get<std::string>();
 }
 
-void
-plugin::gui::windows::spectator_actions::render() {
+auto plugin::gui::windows::spectator_actions::render() -> void {
     auto window_configuration = (*configuration)["windows"]["spectator_actions"];
 
     if (!server::spectator::is_active() || !window_configuration["use"])
@@ -156,11 +152,6 @@ plugin::gui::windows::spectator_actions::render() {
     ImGui::PopStyleVar();
 }
 
-plugin::gui::window_ptr_t
-plugin::gui::windows::spectator_actions::create(types::not_null<gui_initializer*> child) noexcept {
+auto plugin::gui::windows::spectator_actions::create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t {
     return std::make_unique<spectator_actions>(child);
-}
-
-plugin::gui::windows::spectator_actions::spectator_actions(types::not_null<gui_initializer*> child) : child(child) {
-    log::info("window \"windows::spectator_actions\" initialized");
 }

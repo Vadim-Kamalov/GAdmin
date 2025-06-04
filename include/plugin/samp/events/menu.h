@@ -6,7 +6,7 @@
 namespace plugin::samp {
 
 template<>
-struct event<event_id::show_menu> {};
+struct event<event_id::show_menu> final {};
 
 } // namespace plugin::samp
 

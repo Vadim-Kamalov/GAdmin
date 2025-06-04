@@ -15,7 +15,7 @@
 /// along with this program. If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-
+///
 /// @file include/plugin/gui/widgets/joystick.h
 /// @details Provides functionality for managing a GUI joystick.
 
@@ -29,7 +29,7 @@ namespace plugin::gui::widgets {
 
 /// @class joystick
 /// @brief Represents a GUI joystick.
-class joystick {
+class joystick final {
 private:
     static constexpr std::uint8_t radius = 37;
     static constexpr std::uint8_t dot_radius = 10;
@@ -37,14 +37,14 @@ private:
     ImVec2 current, old;
     std::chrono::steady_clock::time_point time;
 public:
-/// @brief Updates the joystick position.
-/// @param x The x-coordinate of the joystick.
-/// @param y The y-coordinate of the joystick
-    void update(std::uint16_t x, std::uint16_t y);
+    /// @brief Updates the joystick position.
+    /// @param x The x-coordinate of the joystick.
+    /// @param y The y-coordinate of the joystick
+    auto update(std::uint16_t x, std::uint16_t y) -> void;
 
-/// @brief Renders the joystick.
-    void render() const;
-}; // class joystick
+    /// @brief Renders the joystick.
+    auto render() const -> void;
+}; // class joystick final
 
 } // namespace plugin::gui::widgets
 

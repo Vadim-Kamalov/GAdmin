@@ -10,15 +10,16 @@
 #include <unordered_map>
 
 #define CREATE_FONT(NAME, FILENAME, GLYPHS, ...)                                                    \
-    class NAME : public basic_font {                                                                \
+    class NAME final : public basic_font {                                                          \
     private:                                                                                        \
         std::unordered_map<float, ImFont*> fonts;                                                   \
     public:                                                                                         \
         static constexpr types::zstring_t filename = FILENAME;                                      \
                                                                                                     \
-        constexpr types::zstring_t get_filename() const override { return filename; }               \
-        constexpr std::vector<float> get_sizes() const override { return { __VA_ARGS__ }; }         \
-        std::unordered_map<float, ImFont*> get_fonts() const override { return fonts; }             \
+        inline auto get_filename() const -> types::zstring_t override { return filename; }          \
+        inline auto get_sizes() const -> std::vector<float> override { return { __VA_ARGS__ }; }    \
+        auto get_fonts() const -> std::unordered_map<float, ImFont*> override { return fonts; }     \
+                                                                                                    \
         explicit NAME() : fonts(create(GLYPHS)) {}                                                  \
     }
 
@@ -36,13 +37,13 @@ protected:
     std::unordered_map<float, ImFont*> create(const ImWchar* glyphs) const;
 public:
     virtual ~basic_font() = default;
-    virtual constexpr types::zstring_t get_filename() const = 0;
-    virtual constexpr std::vector<float> get_sizes() const = 0;
-    virtual std::unordered_map<float, ImFont*> get_fonts() const = 0;
+    virtual inline auto get_filename() const -> types::zstring_t = 0;
+    virtual inline auto get_sizes() const -> std::vector<float> = 0;
+    virtual auto get_fonts() const -> std::unordered_map<float, ImFont*> = 0;
 
-    void push(std::size_t size) const;
-    ImFont* operator[](std::size_t size) const;
-    void text(std::size_t size, types::zstring_t text) const;
+    auto push(std::size_t size) const -> void;
+    auto operator[](std::size_t size) const -> ImFont*;
+    auto text(std::size_t size, types::zstring_t text) const -> void;
 }; // class basic_font
 
 namespace fonts {
@@ -54,22 +55,29 @@ CREATE_RANGED_FONT(icon, "coolicons.ttf", ICON_MIN, ICON_MAX, 24);
 
 } // namespace fonts
 
-using font = std::unique_ptr<basic_font>;
+using font_ptr_t = std::unique_ptr<basic_font>;
 
-class fonts_initializer {
+class fonts_initializer final {
 private:
     bool fonts_available = false;
     std::jthread downloader_thread;
 public:
-    font light, regular, bold, icon;
+    font_ptr_t light;
+    font_ptr_t regular;
+    font_ptr_t bold;
+    font_ptr_t icon;
 
-    constexpr bool available() const { return fonts_available; };
-    void initialize();
+    inline auto is_available() const -> bool;
+    auto initialize() -> void;
 
     explicit fonts_initializer();
     ~fonts_initializer() noexcept;
-}; // class fonts_initializer
+}; // class fonts_initializer final
 
 } // namespace plugin::gui
+
+inline auto plugin::gui::fonts_initializer::is_available() const -> bool {
+    return fonts_available;
+}
 
 #endif // GADMIN_PLUGIN_GUI_FONTS_H

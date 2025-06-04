@@ -6,13 +6,13 @@
 
 namespace plugin::misc::features {
 
-class report_one_color : public feature {
+class report_one_color final : public feature {
 private:
     bool change_next_message_color = false;
-    bool on_server_message(const samp::event<samp::event_id::server_message>& event);
+    auto on_server_message(const samp::event<samp::event_id::server_message>& event) -> bool;
 public:
-    bool on_event(const samp::event_info& event) override;
-}; // class report_one_color : public feature
+    auto on_event(const samp::event_info& event) -> bool override;
+}; // class report_one_color final : public feature
 
 } // namespace plugin::misc::features
 

@@ -7,12 +7,12 @@
 namespace plugin::samp {
 
 template<>
-struct event<event_id::send_chat, event_type::outgoing_rpc> {
+struct event<event_id::send_chat, event_type::outgoing_rpc> final {
     std::string text;
     
     explicit event(bit_stream* stream)
         : text(string_utils::to_utf8(stream->read_string<std::uint8_t>())) {}
-}; // struct event<event_id::send_chat, event_type::outgoing_rpc>
+}; // struct event<event_id::send_chat, event_type::outgoing_rpc> final
 
 } // namespace plugin::samp
 

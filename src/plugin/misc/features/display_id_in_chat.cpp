@@ -3,8 +3,9 @@
 #include "plugin/types/u8regex.h"
 #include "plugin/plugin.h"
 
-bool
-plugin::misc::features::display_id_in_chat::on_server_message(const samp::event<samp::event_id::server_message>& message) const {
+auto plugin::misc::features::display_id_in_chat::on_server_message(const samp::event<samp::event_id::server_message>& message) const
+    -> bool
+{
     static constexpr ctll::fixed_string basic_pattern = "^\\w+.* ";
     static constexpr ctll::fixed_string ic_chat_pattern = "^\\w+.* говорит:";
     static constexpr ctll::fixed_string capture_pattern = "^([\\w ]+) (.*)";
@@ -32,8 +33,7 @@ plugin::misc::features::display_id_in_chat::on_server_message(const samp::event<
     return true;
 }
 
-bool
-plugin::misc::features::display_id_in_chat::on_event(const samp::event_info& event) {
+auto plugin::misc::features::display_id_in_chat::on_event(const samp::event_info& event) -> bool {
     bool use = (*configuration)["misc"]["display_id_in_chat"];
 
     if (use && event == samp::event_type::incoming_rpc && event == samp::event_id::server_message)

@@ -5,14 +5,14 @@
 
 namespace plugin::samp::address {
 
-std::uintptr_t rak_client_interface_constructor() noexcept;
-std::uintptr_t incoming_rpc_handler() noexcept;
-std::uintptr_t encoded_reader() noexcept;
-std::uintptr_t encoded_writer() noexcept;
-std::uintptr_t encode_decode_base() noexcept;
-std::uintptr_t allocate_packet() noexcept;
-std::uintptr_t write_lock() noexcept;
-std::uintptr_t write_unlock() noexcept;
+auto rak_client_interface_constructor() noexcept -> std::uintptr_t;
+auto incoming_rpc_handler() noexcept -> std::uintptr_t;
+auto encoded_reader() noexcept -> std::uintptr_t;
+auto encoded_writer() noexcept -> std::uintptr_t;
+auto encode_decode_base() noexcept -> std::uintptr_t;
+auto allocate_packet() noexcept -> std::uintptr_t;
+auto write_lock() noexcept -> std::uintptr_t;
+auto write_unlock() noexcept -> std::uintptr_t;
 
 } // namespace plugin::samp::address
 

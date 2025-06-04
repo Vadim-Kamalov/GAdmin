@@ -13,8 +13,7 @@
 
 using namespace std::chrono_literals;
 
-bool
-plugin::server::spectator::on_show_text_draw(const samp::event<samp::event_id::show_text_draw>& text_draw) {
+auto plugin::server::spectator::on_show_text_draw(const samp::event<samp::event_id::show_text_draw>& text_draw) -> bool {
     static constexpr types::zstring_t dirty_title = "Adadadad_Dfghsadersasd(111)";
     static constexpr types::zstring_t dirty_body = "2282282~n~$400000~n~90 MP/H~n~100/20~n~M4A1/Pustinniy Orel~n~999 ms~n~127.23.42.123";
     static constexpr ctll::fixed_string text_draw_id_pattern = "~y~\\((\\d+)\\)";
@@ -39,8 +38,7 @@ plugin::server::spectator::on_show_text_draw(const samp::event<samp::event_id::s
     return true;
 }
 
-bool
-plugin::server::spectator::on_text_draw_set_string(const samp::event<samp::event_id::set_text_draw_string>& text_draw) {
+auto plugin::server::spectator::on_text_draw_set_string(const samp::event<samp::event_id::set_text_draw_string>& text_draw) -> bool {
     static constexpr ctll::fixed_string text_draw_id_pattern = "~y~\\((\\d+)\\)";
     static constexpr ctll::fixed_string spectator_information =
         "ID Akkay.+a: (\\d+)~n~Ha.+e: (\\d+)~n~Ckopoc.+: (\\d+) / \\d+"
@@ -75,16 +73,14 @@ plugin::server::spectator::on_text_draw_set_string(const samp::event<samp::event
     return true;
 }
 
-bool
-plugin::server::spectator::on_text_draw_hide(const samp::event<samp::event_id::hide_text_draw>& text_draw) {
+auto plugin::server::spectator::on_text_draw_hide(const samp::event<samp::event_id::hide_text_draw>& text_draw) -> bool {
     if (text_draw.id == text_draw_id)
         active = false;
     
     return true;
 }
 
-bool
-plugin::server::spectator::on_show_3d_text(const samp::event<samp::event_id::create_3d_text>& text_3d) {
+auto plugin::server::spectator::on_show_3d_text(const samp::event<samp::event_id::create_3d_text>& text_3d) -> bool {
     static constexpr ctll::fixed_string first_stage_pattern = R"(\(\( Данный персонаж ранен \d+ раз\(-а\) - /dm \d+ \)\))";
     static constexpr ctll::fixed_string second_stage_pattern = R"(\(\( ДАННЫЙ ПЕРСОНАЖ .+ \)\))";
 
@@ -114,16 +110,14 @@ plugin::server::spectator::on_show_3d_text(const samp::event<samp::event_id::cre
     return true;
 }
 
-bool
-plugin::server::spectator::on_remove_3d_text(const samp::event<samp::event_id::remove_3d_text>& text_3d) {
+auto plugin::server::spectator::on_remove_3d_text(const samp::event<samp::event_id::remove_3d_text>& text_3d) -> bool {
     if (active && information.stage != 0 && text_3d.id == stage_3d_text_id)
         information.stage = 0;
 
     return true;
 }
 
-bool
-plugin::server::spectator::on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog) {
+auto plugin::server::spectator::on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog) -> bool {
     static constexpr ctll::fixed_string warnings_pattern = "Предупреждения: (\\d+)";
     static constexpr ctll::fixed_string information_pattern =
         "Банк: \\$([^\\n]+).*Фракция: ([^\\n]+).*Должность: ([^\\n]+).*Транспорт: ([^\\n]+).*"
@@ -157,8 +151,9 @@ plugin::server::spectator::on_show_dialog(const samp::event<samp::event_id::show
 
 #define SET_KEY_STATE(KEY, CONDITION) get_key_state(samp::synchronization_key::KEY) = CONDITION
 
-bool
-plugin::server::spectator::on_player_synchronization(const samp::packet<samp::event_id::player_synchronization>& synchronization) {
+auto plugin::server::spectator::on_player_synchronization(const samp::packet<samp::event_id::player_synchronization>& synchronization)
+    -> bool
+{
     if (synchronization.player_id != id)
         return true;
     
@@ -201,8 +196,9 @@ plugin::server::spectator::on_player_synchronization(const samp::packet<samp::ev
     return true;
 }
 
-bool
-plugin::server::spectator::on_vehicle_synchronization(const samp::packet<samp::event_id::vehicle_synchronization>& synchronization) {
+auto plugin::server::spectator::on_vehicle_synchronization(const samp::packet<samp::event_id::vehicle_synchronization>& synchronization)
+    -> bool
+{
     if (synchronization.player_id != id)
         return true;
     
@@ -248,8 +244,9 @@ plugin::server::spectator::on_vehicle_synchronization(const samp::packet<samp::e
     return true;
 }
 
-bool
-plugin::server::spectator::on_passenger_synchronization(const samp::packet<samp::event_id::passenger_synchronization>& synchronization) {
+auto plugin::server::spectator::on_passenger_synchronization(const samp::packet<samp::event_id::passenger_synchronization>& synchronization)
+    -> bool
+{
     if (synchronization.player_id != id)
         return true;
     
@@ -283,8 +280,9 @@ plugin::server::spectator::on_passenger_synchronization(const samp::packet<samp:
 
 #undef SET_KEY_STATE
 
-bool
-plugin::server::spectator::on_bullet_synchronization(const samp::packet<samp::event_id::bullet_synchronization>& synchronization) {
+auto plugin::server::spectator::on_bullet_synchronization(const samp::packet<samp::event_id::bullet_synchronization>& synchronization)
+    -> bool
+{
     information.total_shots++;
     
     if (synchronization.hit_type == 0 || synchronization.hit_type == 3)
@@ -293,8 +291,7 @@ plugin::server::spectator::on_bullet_synchronization(const samp::packet<samp::ev
     return true;
 }
 
-void
-plugin::server::spectator::update_available_information() noexcept {
+auto plugin::server::spectator::update_available_information() noexcept -> void {
     if (!is_active())
         return;
 
@@ -305,22 +302,19 @@ plugin::server::spectator::update_available_information() noexcept {
 
     information.ping = *samp::player_pool::get_ping(id);
     information.armor = player.get_armor();
-    information.weapon = game::weapon_names[std::to_underlying(ped.get_current_weapon())];
+    information.weapon = game::weapon_names[std::to_underlying(ped.get_game_ped().get_current_weapon())];
 }
 
-std::string
-plugin::server::spectator::convert_possible_absence_text(const std::string& text) noexcept {
+auto plugin::server::spectator::convert_possible_absence_text(const std::string& text) noexcept -> std::string {
     return (text == "НЕТ" || text == "Нет") ? "Отсутствует" : text;
 }
 
-void
-plugin::server::spectator::clear_keys_down() noexcept {
+auto plugin::server::spectator::clear_keys_down() noexcept -> void {
     for (std::uint8_t i = 0; i < std::to_underlying(samp::synchronization_key::count); i++)
         keys_down[i] = false;
 }
 
-void
-plugin::server::spectator::assign(std::uint16_t new_id) noexcept {
+auto plugin::server::spectator::assign(std::uint16_t new_id) noexcept -> void {
     auto now = std::chrono::steady_clock::now();
     
     if (id == new_id || now - last_checked < 1s || samp::dialog::is_active() || checking_statistics)
@@ -352,14 +346,12 @@ plugin::server::spectator::assign(std::uint16_t new_id) noexcept {
     last_checked = now;
 }
 
-plugin::server::spectator_information
-plugin::server::spectator::get_information() noexcept {
+auto plugin::server::spectator::get_information() noexcept -> spectator_information {
     update_available_information();
     return information;
 }
 
-bool
-plugin::server::spectator::on_event(const samp::event_info& event) {
+auto plugin::server::spectator::on_event(const samp::event_info& event) -> bool {
     if (event == samp::event_type::incoming_rpc) {
         if (event == samp::event_id::show_text_draw)
             return on_show_text_draw(event.create<samp::event_id::show_text_draw>());
@@ -393,8 +385,7 @@ plugin::server::spectator::on_event(const samp::event_info& event) {
     return true;
 }
 
-void
-plugin::server::spectator::main_loop() {
+auto plugin::server::spectator::main_loop() -> void {
     if (!active || !user::is_on_alogin())
         return;
 
@@ -425,8 +416,7 @@ plugin::server::spectator::main_loop() {
     send_menu_option<menu_option::reload>();
 }
 
-void
-plugin::server::spectator::register_hotkeys(types::not_null<gui::hotkey_handler*> handler) noexcept {
+auto plugin::server::spectator::register_hotkeys(types::not_null<gui::hotkey_handler*> handler) noexcept -> void {
     using namespace gui;
 
     static hotkey hotkeys[] = {

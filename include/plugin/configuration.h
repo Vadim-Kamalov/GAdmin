@@ -7,24 +7,24 @@
 
 namespace plugin {
 
-class configuration_initializer {
+class configuration_initializer final {
 private:
     std::filesystem::path configuration_file;
     
     static nlohmann::json main_json;
     mutable std::chrono::steady_clock::time_point last_time_saved;
 
-    void write(const std::filesystem::path& path, const nlohmann::json& json) const;
-    nlohmann::json get(const std::filesystem::path& path) const;
+    auto write(const std::filesystem::path& path, const nlohmann::json& json) const -> void;
+    auto get(const std::filesystem::path& path) const -> nlohmann::json;
 public:
-    nlohmann::json::reference operator[](const std::string_view& key) const;
+    auto operator[](const std::string_view& key) const -> nlohmann::json::reference;
 
-    void save() const;
-    void save(std::chrono::milliseconds after) const;
+    auto save() const -> void;
+    auto save(std::chrono::milliseconds after) const -> void;
 
     explicit configuration_initializer(const std::filesystem::path& configuration_file);
     ~configuration_initializer() noexcept;
-}; // class configuration_initializer
+}; // class configuration_initializer final
 
 } // namespace plugin
 

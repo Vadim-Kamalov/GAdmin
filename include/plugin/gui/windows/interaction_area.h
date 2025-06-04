@@ -11,7 +11,7 @@
 
 namespace plugin::gui::windows {
 
-class interaction_area : public window {
+class interaction_area final : public window {
 private:
     enum class search_type : std::uint8_t {
         players,
@@ -32,45 +32,44 @@ private:
         vehicle_gethere
     }; // enum class search_response : std::uint8_t
 
-    struct search_result {
+    struct search_result final {
         ImVec2 point = { 0, 0 };
         float distance = 0;
         std::uint16_t id = 0;
         std::string description = "";
-    }; // struct search_result
+    }; // struct search_result final
 
-    types::not_null<gui_initializer*> child;
     ImFont *bold_font, *regular_font;
     hotkey activation_hotkey;
 
     search_type current_search_type = search_type::players;
     search_response current_search_response = search_response::none;
 
-    float get_distance_between_points(float ax, float ay, float bx, float by) const;
+    auto get_distance_between_points(float ax, float ay, float bx, float by) const -> float;
 
-    std::optional<search_result> find_player_nearby_to_screen_center(float radius) const;
-    std::optional<search_result> find_vehicle_nearby_to_screen_center(float radius) const;
-    std::optional<search_result> search_from_screen_center(float radius) const;
+    auto find_player_nearby_to_screen_center(float radius) const -> std::optional<search_result>;
+    auto find_vehicle_nearby_to_screen_center(float radius) const -> std::optional<search_result>;
+    auto search_from_screen_center(float radius) const -> std::optional<search_result>;
 
-    void handle_controls();
-    void handle_search_response(std::uint16_t id);
+    auto handle_controls() -> void;
+    auto handle_search_response(std::uint16_t id) -> void;
 
-    void render_stroked_text(ImDrawList* draw_list, ImFont* font, const ImVec2& pos,
-                             const types::color& color, types::zstring_t text) const;
+    auto render_stroked_text(ImDrawList* draw_list, ImFont* font, const ImVec2& pos,
+                             const types::color& color, types::zstring_t text) const -> void;
 
-    void render_help_text(ImDrawList* draw_list, float radius, const types::color& active_color,
-                          const types::color& disabled_color) const;
+    auto render_help_text(ImDrawList* draw_list, float radius, const types::color& active_color,
+                          const types::color& disabled_color) const -> void;
 
-    void render_search_description(ImDrawList* draw_list, float radius, const types::color& active_color,
-                                   const std::string& search_description) const;
+    auto render_search_description(ImDrawList* draw_list, float radius, const types::color& active_color,
+                                   const std::string& search_description) const -> void;
 
-    static consteval types::zstring_t get_longest_action_description() noexcept;
+    static consteval auto get_longest_action_description() noexcept -> types::zstring_t;
 public:
-    constexpr types::zstring_t get_id() const override;
+    inline auto get_id() const -> types::zstring_t override;
+    static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
 
-    void render() override;
+    auto render() -> void override;
 
-    static window_ptr_t create(types::not_null<gui_initializer*> child) noexcept;
     explicit interaction_area(types::not_null<gui_initializer*> child);
 private:
     static constexpr int action_count_per_type = 5;
@@ -83,12 +82,13 @@ private:
         { "Починить [2]", "Заспавнить [3]", "Заправить [4]",
           "Узнать владельца [5]", "Телепортировать к себе [6]" }
     }; // static constexpr types::zstring_t actions_description[2]
-}; // class interaction_area : public window
+}; // class interaction_area final : public window
 
 } // namespace plugin::gui::windows
 
-consteval plugin::types::zstring_t
-plugin::gui::windows::interaction_area::get_longest_action_description() noexcept {
+consteval auto plugin::gui::windows::interaction_area::get_longest_action_description()
+    noexcept -> types::zstring_t
+{
     types::zstring_t longest_description = "";
     std::size_t max_length = 0;
 
@@ -105,8 +105,7 @@ plugin::gui::windows::interaction_area::get_longest_action_description() noexcep
     return longest_description;
 }
 
-constexpr plugin::types::zstring_t
-plugin::gui::windows::interaction_area::get_id() const {
+inline auto plugin::gui::windows::interaction_area::get_id() const -> types::zstring_t {
     return "windows::interaction_area";
 }
 

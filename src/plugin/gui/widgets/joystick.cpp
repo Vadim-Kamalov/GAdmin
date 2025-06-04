@@ -4,8 +4,7 @@
 
 using namespace std::chrono_literals;
 
-void
-plugin::gui::widgets::joystick::update(std::uint16_t x, std::uint16_t y) {
+auto plugin::gui::widgets::joystick::update(std::uint16_t x, std::uint16_t y) -> void {
     auto now = std::chrono::steady_clock::now();
 
     if (now - time < 100ms)
@@ -17,8 +16,7 @@ plugin::gui::widgets::joystick::update(std::uint16_t x, std::uint16_t y) {
     current.y = (y == 0) ? 0 : ((y > 128) ? y - 0xFFFF : y);
 }
 
-void
-plugin::gui::widgets::joystick::render() const {
+auto plugin::gui::widgets::joystick::render() const -> void {
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
     types::color color = ImGui::GetColorU32(ImGuiCol_FrameBg);

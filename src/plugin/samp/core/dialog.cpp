@@ -4,9 +4,9 @@
 plugin::types::versioned_address_container<std::uintptr_t>
 plugin::samp::dialog::instance_container = { 0x21A0B8, 0x26E898, 0x26EB50, 0x2AC9E0 };
 
-void
-plugin::samp::dialog::send_response(std::uint16_t id, const button& button,
-                                    std::uint16_t list_item, const std::string_view& input) noexcept
+auto plugin::samp::dialog::send_response(std::uint16_t id, const button& button,
+                                         std::uint16_t list_item, const std::string_view& input)
+    noexcept -> void
 {
     bit_stream stream;
     stream.write(id);
@@ -17,7 +17,6 @@ plugin::samp::dialog::send_response(std::uint16_t id, const button& button,
     stream.send_rpc(send_response_id);
 }
 
-bool
-plugin::samp::dialog::is_active() noexcept {
+auto plugin::samp::dialog::is_active() noexcept -> bool {
     return active_address.read(instance_container->read());
 }

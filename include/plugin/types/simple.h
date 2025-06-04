@@ -8,20 +8,18 @@ namespace plugin::types {
 using meter_per_second_t = float;
 using zstring_t = const char*;
 
-struct vector_3d {
+struct vector_3d final {
     float x, y, z;
 
-    float magnitude() const;
-    float get_distance_to(const vector_3d& vector) const;
+    auto magnitude() const -> float;
+    auto get_distance_to(const vector_3d& vector) const -> float;
 
-    vector_3d operator+(const vector_3d& other) const;
-    vector_3d operator-(const vector_3d& other) const;
-    
-    vector_3d operator*(const vector_3d& other) const;
-    vector_3d operator*(float other) const;
-
-    vector_3d operator-() const;
-}; // struct vector_3d
+    auto operator+(const vector_3d& other) const -> vector_3d;
+    auto operator-(const vector_3d& other) const -> vector_3d;
+    auto operator*(const vector_3d& other) const -> vector_3d;
+    auto operator*(float other) const -> vector_3d;
+    auto operator-() const -> vector_3d;
+}; // struct vector_3d final
 
 } // namespace plugin::types
 

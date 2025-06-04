@@ -12,15 +12,13 @@
 #include "plugin/string_utils.h"
 #include "plugin/types/simple.h"
 #include "plugin/plugin.h"
-#include "plugin/log.h"
 #include "plugin/types/u8regex.h"
 #include <misc/cpp/imgui_stdlib.h>
 #include <minwindef.h>
 #include <chrono>
 #include <ranges>
 
-std::array<plugin::gui::windows::report::action_button, 12>
-plugin::gui::windows::report::get_action_buttons() {
+auto plugin::gui::windows::report::get_action_buttons() -> std::array<action_button, 12> {
     static constexpr std::array<std::chrono::milliseconds, 3> close_button_duration = { 200ms, 0ms, 0ms };
     
     std::array<action_button, 12> output;
@@ -65,22 +63,19 @@ plugin::gui::windows::report::get_action_buttons() {
     return output;
 }
 
-void
-plugin::gui::windows::report::send_chat_action_button() const {
+auto plugin::gui::windows::report::send_chat_action_button() const -> void {
     samp::input::send_command("/a {}[{}]: {}", current_report->nickname,
                               current_report->id, current_report->text);
 }
 
-void
-plugin::gui::windows::report::block_action_button() {
+auto plugin::gui::windows::report::block_action_button() -> void {
     if (!can_send_response())
         return;
 
     ImGui::OpenPopup("block_time_selection");
 }
 
-bool
-plugin::gui::windows::report::on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog) {
+auto plugin::gui::windows::report::on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog) -> bool {
     static constexpr ctll::fixed_string report_information_pattern = R"(Описание репорта:\s+\{FFFFFF\}(.+)\n)";
 
     if (!dialog || dialog.title != "Обработка репорта")
@@ -132,8 +127,7 @@ plugin::gui::windows::report::on_show_dialog(const samp::event<samp::event_id::s
     return false;
 }
 
-bool
-plugin::gui::windows::report::on_server_message(const samp::event<samp::event_id::server_message>& message) {
+auto plugin::gui::windows::report::on_server_message(const samp::event<samp::event_id::server_message>& message) -> bool {
     static constexpr ctll::fixed_string new_report_pattern
         = R"(^\{FFFF00\}\| \{ffffff\}На вас был назначен репорт от игрока \{4a86b6\}(\S+)\[(\d+)\]\{FFFFFF\})";
 
@@ -149,8 +143,7 @@ plugin::gui::windows::report::on_server_message(const samp::event<samp::event_id
     return true;
 }
 
-bool
-plugin::gui::windows::report::on_new_report_message(const std::string& nickname, std::uint16_t id) {
+auto plugin::gui::windows::report::on_new_report_message(const std::string& nickname, std::uint16_t id) -> bool {
     auto window_configuration = (*configuration)["windows"]["report"];
 
     current_report = { nickname, "", id };
@@ -180,8 +173,7 @@ plugin::gui::windows::report::on_new_report_message(const std::string& nickname,
     return true;
 }
 
-bool
-plugin::gui::windows::report::on_report_canceled() {
+auto plugin::gui::windows::report::on_report_canceled() -> bool {
     notification_active = false;
     current_report = {};
 
@@ -198,21 +190,18 @@ plugin::gui::windows::report::on_report_canceled() {
     return true;
 }
 
-void
-plugin::gui::windows::report::open_window() {
+auto plugin::gui::windows::report::open_window() -> void {
     time_switched_window = std::chrono::steady_clock::now();
     active = focus = true;
     notification_active = false;
 }
 
-void
-plugin::gui::windows::report::open_window_with_dialog() {
+auto plugin::gui::windows::report::open_window_with_dialog() -> void {
     open_window();
     samp::input::send_command("/greport");
 }
 
-void
-plugin::gui::windows::report::close_window() {
+auto plugin::gui::windows::report::close_window() -> void {
     time_switched_window = std::chrono::steady_clock::now();
     closing = true;
     child->disable_cursor();
@@ -223,23 +212,20 @@ plugin::gui::windows::report::close_window() {
     samp::dialog::send_response(dialog_id, samp::dialog::button::right);
 }
 
-void
-plugin::gui::windows::report::close_dialog() {
+auto plugin::gui::windows::report::close_dialog() -> void {
     dialog_active = false;
     samp::dialog::send_response(dialog_id, samp::dialog::button::left);
     close_window();
 }
 
-void
-plugin::gui::windows::report::switch_window() {
+auto plugin::gui::windows::report::switch_window() -> void {
     if (!server::user::is_on_alogin() || !current_report.has_value())
         return;
 
     (active) ? close_window() : open_window_with_dialog();
 }
 
-std::string
-plugin::gui::windows::report::get_time_active() const {
+auto plugin::gui::windows::report::get_time_active() const -> std::string {
     auto duration = std::chrono::steady_clock::now() - current_report->time_taken;
     auto minutes = std::chrono::duration_cast<std::chrono::minutes>(duration);
     
@@ -250,8 +236,7 @@ plugin::gui::windows::report::get_time_active() const {
     return std::format("{:02}:{:02}", minutes.count(), seconds.count());
 }
 
-bool
-plugin::gui::windows::report::can_send_response() {
+auto plugin::gui::windows::report::can_send_response() -> bool {
     if (answer_input.empty()) {
         time_hint_active = std::chrono::steady_clock::now();
         return false;
@@ -260,14 +245,12 @@ plugin::gui::windows::report::can_send_response() {
     return true;
 }
 
-void
-plugin::gui::windows::report::send_response(const dialog_option& option) {
+auto plugin::gui::windows::report::send_response(const dialog_option& option) -> void {
     current_response = { option };
     close_dialog();
 }
 
-void
-plugin::gui::windows::report::send_input_response(const dialog_option& option) {
+auto plugin::gui::windows::report::send_input_response(const dialog_option& option) -> void {
     if (!can_send_response())
         return;
 
@@ -275,8 +258,7 @@ plugin::gui::windows::report::send_input_response(const dialog_option& option) {
     close_dialog();
 }
 
-void
-plugin::gui::windows::report::close_report() {
+auto plugin::gui::windows::report::close_report() -> void {
     current_report = {};
     current_response = {};
     dialog_active = false;
@@ -285,8 +267,7 @@ plugin::gui::windows::report::close_report() {
     close_window();
 }
 
-void
-plugin::gui::windows::report::render() {
+auto plugin::gui::windows::report::render() -> void {
     if (!active)
         return;
 
@@ -390,8 +371,7 @@ plugin::gui::windows::report::render() {
     ImGui::PopStyleVar();
 }
 
-bool
-plugin::gui::windows::report::on_event(const samp::event_info& event) {
+auto plugin::gui::windows::report::on_event(const samp::event_info& event) -> bool {
     if (!(*configuration)["windows"]["report"]["use"])
         return true;
 
@@ -407,18 +387,15 @@ plugin::gui::windows::report::on_event(const samp::event_info& event) {
     return true;
 }
 
-plugin::gui::window_ptr_t
-plugin::gui::windows::report::create(types::not_null<gui_initializer*> child) noexcept {
+auto plugin::gui::windows::report::create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t {
     return std::make_unique<report>(child);
 }
 
 plugin::gui::windows::report::report(types::not_null<gui_initializer*> child)
-    : child(child),
+    : window(child),
       bold_font((*child->fonts->bold)[18]),
       regular_font((*child->fonts->regular)[16])
 {
-    log::info("window \"windows::report\" initialized");
-
     switch_window_hotkey = hotkey("Открыть/закрыть окно репорта", key_bind({ 'K', 0 }, bind_condition::on_alogin))
         .with_callback(std::bind(&report::switch_window, this));
 

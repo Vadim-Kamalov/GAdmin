@@ -33,13 +33,13 @@ namespace plugin::gui::widgets {
 
 /// @class keycap
 /// @brief Represents a keycap in the GUI.
-class keycap {
+class keycap final {
 private:
     std::string label;
     ImVec2 size;
     bool state;
     
-    struct configuration_t {
+    struct configuration_t final {
         bool state;
         types::color color;
         std::chrono::steady_clock::time_point time;
@@ -47,15 +47,16 @@ private:
 
     static inline std::unordered_map<std::string, configuration_t> pool;
 public:
-    void render() const;
+    /// @brief Renders the keycap.
+    auto render() const -> void;
 
-/// @brief Constructor for the keycap class.
-/// @param label The label of the keycap.
-/// @param size The size of the keycap.
-/// @param state The state of the keycap.
+    /// @brief Constructor for the keycap class.
+    /// @param label The label of the keycap.
+    /// @param size The size of the keycap.
+    /// @param state The state of the keycap.
     explicit keycap(const std::string_view& label, const ImVec2& size, bool state)
         : label(std::move(label)), size(std::move(size)), state(state) {}
-}; // class keycap
+}; // class keycap final
 
 } // namespace plugin::gui::widgets
 

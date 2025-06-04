@@ -9,8 +9,7 @@
 #include "plugin/server/user.h"
 #include "plugin/plugin.h"
 
-std::string
-plugin::gui::key_bind::to_string() const {
+auto plugin::gui::key_bind::to_string() const -> std::string {
     std::deque<std::string> output;
 
     if (modifiers.shift)
@@ -43,8 +42,7 @@ plugin::gui::key_bind::to_string() const {
     return result;
 }
 
-std::string
-plugin::gui::hotkey::truncate_text_in_button(const std::string_view& text) const {
+auto plugin::gui::hotkey::truncate_text_in_button(const std::string_view& text) const -> std::string {
     std::string output(text);
     std::string ellipsis = " ...";
 
@@ -66,8 +64,7 @@ plugin::gui::hotkey::truncate_text_in_button(const std::string_view& text) const
     return output;
 }
 
-bool
-plugin::gui::hotkey::hint_condition() {
+auto plugin::gui::hotkey::hint_condition() -> bool {
     if (ImGui::IsMouseReleased(ImGuiMouseButton_Right) && ImGui::IsItemHovered() &&
         !handler->changing_any_hotkey && !handler->changing_any_properties)
     {
@@ -77,8 +74,7 @@ plugin::gui::hotkey::hint_condition() {
     return hint_active;
 }
 
-void
-plugin::gui::hotkey::hint_renderer() {
+auto plugin::gui::hotkey::hint_renderer() -> void {
     if (!ImGui::IsWindowHovered() && (ImGui::IsMouseClicked(ImGuiMouseButton_Left) ||
         ImGui::IsMouseClicked(ImGuiMouseButton_Left) ||
         ImGui::IsMouseClicked(ImGuiMouseButton_Left)))
@@ -130,8 +126,7 @@ plugin::gui::hotkey::hint_renderer() {
     ImGui::PopFont();
 }
 
-void
-plugin::gui::hotkey::render() {
+auto plugin::gui::hotkey::render() -> void {
     auto now = std::chrono::steady_clock::now();
     auto saved_hotkeys = (*configuration)["internal"]["hotkeys"];
 
@@ -201,8 +196,7 @@ plugin::gui::hotkey::hotkey(const std::string_view& label, const key_bind& defau
     saved_binds[label] = default_bind.join();
 }
 
-bool
-plugin::gui::hotkey_handler::check_modifiers(const key_bind::modifiers_t& modifiers) const {
+auto plugin::gui::hotkey_handler::check_modifiers(const key_bind::modifiers_t& modifiers) const -> bool {
     if (modifiers.shift && !ImGui::IsKeyDown((modifiers.uses_right_hand_shift) ? ImGuiKey_RightShift : ImGuiKey_LeftShift))
         return false;
 
@@ -215,8 +209,7 @@ plugin::gui::hotkey_handler::check_modifiers(const key_bind::modifiers_t& modifi
     return true;
 }
 
-bool
-plugin::gui::hotkey_handler::check_conditions(const types::options<bind_condition>& conditions) const {
+auto plugin::gui::hotkey_handler::check_conditions(const types::options<bind_condition>& conditions) const -> bool {
     if (conditions.has_value(bind_condition::never))
         return false;
     
@@ -244,8 +237,7 @@ plugin::gui::hotkey_handler::check_conditions(const types::options<bind_conditio
     return true;
 }
 
-void
-plugin::gui::hotkey_handler::write_current_modifiers() {
+auto plugin::gui::hotkey_handler::write_current_modifiers() -> void {
     current_keys.modifiers.shift = ImGui::IsKeyDown(ImGuiMod_Shift);
     current_keys.modifiers.alt = ImGui::IsKeyDown(ImGuiMod_Alt);
     current_keys.modifiers.control = ImGui::IsKeyDown(ImGuiMod_Ctrl);
@@ -254,8 +246,7 @@ plugin::gui::hotkey_handler::write_current_modifiers() {
     current_keys.modifiers.uses_right_hand_control = ImGui::IsKeyDown(ImGuiKey_RightCtrl);
 }
 
-void
-plugin::gui::hotkey_handler::write_current_keys(unsigned int message, WPARAM wparam) {
+auto plugin::gui::hotkey_handler::write_current_keys(unsigned int message, WPARAM wparam) -> void {
     auto& [ first_key, second_key ] = current_keys.keys;
    
     if (wparam == VK_CONTROL || wparam == VK_MENU || wparam == VK_SHIFT || wparam == VK_OEM_3)
@@ -284,8 +275,7 @@ plugin::gui::hotkey_handler::write_current_keys(unsigned int message, WPARAM wpa
     }
 }
 
-bool
-plugin::gui::hotkey_handler::is_bind_defined(const key_bind& bind) const {
+auto plugin::gui::hotkey_handler::is_bind_defined(const key_bind& bind) const -> bool {
     if (bind.empty())
         return false;
 
@@ -294,8 +284,7 @@ plugin::gui::hotkey_handler::is_bind_defined(const key_bind& bind) const {
     }) != pool.end();
 }
 
-bool
-plugin::gui::hotkey_handler::is_hotkey_active(const hotkey& hotkey_to_find) const {
+auto plugin::gui::hotkey_handler::is_hotkey_active(const hotkey& hotkey_to_find) const -> bool {
     if (auto it = std::find_if(pool.begin(), pool.end(), [hotkey_to_find](const hotkey& hotkey_in_pool) {
         return hotkey_to_find.label == hotkey_in_pool.label;
     }); it != pool.end())
@@ -304,16 +293,14 @@ plugin::gui::hotkey_handler::is_hotkey_active(const hotkey& hotkey_to_find) cons
     return false;
 }
 
-void
-plugin::gui::hotkey_handler::main_loop() {
+auto plugin::gui::hotkey_handler::main_loop() -> void {
     if (ImGui::GetCurrentContext() == nullptr)
         return;
 
     write_current_modifiers();
 }
 
-bool
-plugin::gui::hotkey_handler::on_event(unsigned int message, WPARAM wparam, LPARAM lparam) {
+auto plugin::gui::hotkey_handler::on_event(unsigned int message, WPARAM wparam, LPARAM lparam) -> bool {
     if (wparam == 0)
         return true;
 
@@ -391,8 +378,7 @@ plugin::gui::hotkey_handler::on_event(unsigned int message, WPARAM wparam, LPARA
     return true;
 }
 
-void
-plugin::gui::hotkey_handler::add(hotkey& hotkey) {
+auto plugin::gui::hotkey_handler::add(hotkey& hotkey) -> void {
     log::info("hotkey \"{}\" initialized: key_bind = 0x{:08X}", hotkey.label, hotkey.bind.join());
     pool.push_back(hotkey.with_handler(this));
 }

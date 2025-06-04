@@ -6,26 +6,26 @@
 namespace plugin::samp {
 
 template<>
-struct event<event_id::show_text_draw> {
+struct event<event_id::show_text_draw> final {
     std::uint16_t id;
     std::string text;
 
     explicit event(bit_stream* stream);
-}; // struct event<event_id::show_text_traw>
+}; // struct event<event_id::show_text_traw> final
 
 template<>
-struct event<event_id::hide_text_draw> {
+struct event<event_id::hide_text_draw> final {
     std::uint16_t id;
     explicit event(bit_stream* stream);
-}; // struct event<event_id::hide_text_draw>
+}; // struct event<event_id::hide_text_draw> final
 
 template<>
-struct event<event_id::set_text_draw_string> {
+struct event<event_id::set_text_draw_string> final {
     std::uint16_t id;
     std::string text;
 
     explicit event(bit_stream* stream);
-}; // struct event<event_id::set_text_draw_string>
+}; // struct event<event_id::set_text_draw_string> final
 
 } // namespace plugin::samp
 

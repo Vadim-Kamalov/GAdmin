@@ -7,7 +7,7 @@
 namespace plugin::samp {
 
 template<>
-struct event<event_id::player_chat_bubble> {
+struct event<event_id::player_chat_bubble> final {
     std::uint16_t player_id;
     types::color color;
     std::int32_t duration;
@@ -15,7 +15,7 @@ struct event<event_id::player_chat_bubble> {
     float distance;
 
     explicit event(bit_stream* stream);
-}; // struct event<event_id::player_chat_bubble>
+}; // struct event<event_id::player_chat_bubble> final
 
 } // namespace plugin::samp
 

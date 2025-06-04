@@ -7,7 +7,7 @@
 namespace plugin::samp {
 
 template<>
-struct event<event_id::create_3d_text> {
+struct event<event_id::create_3d_text> final {
     std::uint16_t id;
     std::int32_t color;
     types::vector_3d pos;
@@ -18,15 +18,15 @@ struct event<event_id::create_3d_text> {
     std::string text;
 
     explicit event(bit_stream* stream);
-}; // struct event<event_id::create_3d_text>
+}; // struct event<event_id::create_3d_text> final
 
 template<>
-struct event<event_id::remove_3d_text> {
+struct event<event_id::remove_3d_text> final {
     std::uint16_t id;
 
     explicit event(bit_stream* stream)
         : id(stream->read<std::uint16_t>()) {}
-}; // struct event<event_id::remove_3d_text>
+}; // struct event<event_id::remove_3d_text> final
 
 } // namespace plugin::samp
 

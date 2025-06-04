@@ -13,8 +13,7 @@ std::unordered_map<std::string, plugin::server::binder::variable_replacement_t> 
     { "USER_ID", [](auto) { return std::to_string(samp::user::get_id()); }}
 }; // std::unordered_map<std::string, plugin::server::binder::variable_replacement_t> plugin::server::binder::variables
 
-std::string
-plugin::server::binder::process_variable_body(const std::string_view& input) {
+auto plugin::server::binder::process_variable_body(const std::string_view& input) -> std::string {
     std::string variable_name;
     std::size_t index = 0;
 
@@ -50,8 +49,7 @@ plugin::server::binder::process_variable_body(const std::string_view& input) {
     return it->second(params);
 }
 
-std::string
-plugin::server::binder::process(const std::string_view& input) {
+auto plugin::server::binder::process(const std::string_view& input) -> std::string {
     std::string result;
     std::size_t index = 0;
 
@@ -92,8 +90,7 @@ plugin::server::binder::process(const std::string_view& input) {
     return result;
 }
 
-void
-plugin::server::binder::evaluate_single_line(const std::string_view& input) {
+auto plugin::server::binder::evaluate_single_line(const std::string_view& input) -> void {
     if (input.empty())
         return samp::user::send_message("");
 
@@ -119,8 +116,7 @@ plugin::server::binder::evaluate_single_line(const std::string_view& input) {
     samp::user::send_message("{}", input);
 }
 
-void
-plugin::server::binder::evaluate(const std::string_view& input) {
+auto plugin::server::binder::evaluate(const std::string_view& input) -> void {
     if (input.empty())
         return;
 
@@ -136,8 +132,7 @@ plugin::server::binder::evaluate(const std::string_view& input) {
     }
 }
 
-void
-plugin::server::binder::main_loop() {
+auto plugin::server::binder::main_loop() -> void {
     for (auto it = messages.begin(); it != messages.end();) {
         if (std::chrono::steady_clock::now() >= it->time) {
             evaluate_single_line(process(it->text));

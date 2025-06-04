@@ -2,11 +2,9 @@
 #include "plugin/gui/widgets/text.h"
 #include "plugin/server/user.h"
 #include "plugin/plugin.h"
-#include "plugin/log.h"
 #include <ctime>
 
-ImVec2
-plugin::gui::windows::far_chat::compute_window_size() const {
+auto plugin::gui::windows::far_chat::compute_window_size() const -> ImVec2 {
     auto window_configuration = (*configuration)["windows"]["far_chat"];
     std::size_t max_count = window_configuration["max_count"];
 
@@ -28,26 +26,22 @@ plugin::gui::windows::far_chat::compute_window_size() const {
     return { size.x + padding.x * 2, size.y };
 }
 
-ImVec2
-plugin::gui::windows::far_chat::compute_entry_size(const entry& entry) const {
+auto plugin::gui::windows::far_chat::compute_entry_size(const entry& entry) const -> ImVec2 {
     auto window_configuration = (*configuration)["windows"]["far_chat"];
-    
     ImVec2 size = { 0, bold->FontSize + text_border_size };
-    {
-        size.x += bold->CalcTextSizeA(bold->FontSize, FLT_MAX, 0,
-            std::format("{}[{}]:", entry.player.nickname, entry.player.id).c_str()).x + spacing_x;
 
-        size.x += regular->CalcTextSizeA(regular->FontSize, FLT_MAX, 0, entry.message.c_str()).x;
+    size.x += bold->CalcTextSizeA(bold->FontSize, FLT_MAX, 0,
+        std::format("{}[{}]:", entry.player.nickname, entry.player.id).c_str()).x + spacing_x;
 
-        if (window_configuration["show_time"])
-            size.x += bold->CalcTextSizeA(bold->FontSize, FLT_MAX, 0, entry.time.c_str()).x + spacing_x;
-    }
+    size.x += regular->CalcTextSizeA(regular->FontSize, FLT_MAX, 0, entry.message.c_str()).x;
+
+    if (window_configuration["show_time"])
+        size.x += bold->CalcTextSizeA(bold->FontSize, FLT_MAX, 0, entry.time.c_str()).x + spacing_x;
 
     return size;
 }
 
-bool
-plugin::gui::windows::far_chat::on_player_chat_bubble(const samp::event<samp::event_id::player_chat_bubble>& event) {
+auto plugin::gui::windows::far_chat::on_player_chat_bubble(const samp::event<samp::event_id::player_chat_bubble>& event) -> bool {
     auto window_configuration = (*configuration)["windows"]["far_chat"];
 
     if (!window_configuration["use"])
@@ -101,21 +95,20 @@ plugin::gui::windows::far_chat::on_player_chat_bubble(const samp::event<samp::ev
     return true;
 }
 
-bool
-plugin::gui::windows::far_chat::on_event(const samp::event_info& event) {
+auto plugin::gui::windows::far_chat::on_event(const samp::event_info& event) -> bool {
     if (event == samp::event_type::incoming_rpc && event == samp::event_id::player_chat_bubble)
         return on_player_chat_bubble(event.create<samp::event_id::player_chat_bubble>());
 
     return true;
 }
 
-void
-plugin::gui::windows::far_chat::render() {
+auto plugin::gui::windows::far_chat::render() -> void {
     auto window_configuration = (*configuration)["windows"]["far_chat"];
-    ImVec2 window_size = compute_window_size();
 
     if (!window_configuration["use"] || !server::user::is_on_alogin())
         return;
+    
+    ImVec2 window_size = compute_window_size();
 
     ImGui::SetNextWindowSize(window_size);
     ImGui::SetNextWindowBgAlpha(0);
@@ -160,15 +153,6 @@ plugin::gui::windows::far_chat::render() {
     ImGui::PopStyleVar();
 }
 
-plugin::gui::windows::far_chat::far_chat(types::not_null<gui_initializer*> child)
-    : child(child),
-      regular((*child->fonts->regular)[16]),
-      bold((*child->fonts->bold)[18])
-{
-    log::info("window \"windows::far_chat\" initialized");
-}
-
-plugin::gui::window_ptr_t
-plugin::gui::windows::far_chat::create(types::not_null<gui_initializer*> child) noexcept {
+auto plugin::gui::windows::far_chat::create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t {
     return std::make_unique<far_chat>(child);
 }

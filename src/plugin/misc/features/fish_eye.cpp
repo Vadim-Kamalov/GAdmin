@@ -3,8 +3,7 @@
 #include "plugin/game/ped.h"
 #include "plugin/plugin.h"
 
-void
-plugin::misc::features::fish_eye::main_loop() {
+auto plugin::misc::features::fish_eye::main_loop() -> void {
     auto feature_configuration = (*configuration)["misc"]["fish_eye"];
 
     if (!feature_configuration["use"])

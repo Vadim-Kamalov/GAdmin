@@ -9,14 +9,14 @@
 #include "plugin/server/user.h"
 #include "plugin/types/color.h"
 
-void
-plugin::cheats::tracers::hotkey_callback(gui::hotkey&) {
+auto plugin::cheats::tracers::hotkey_callback(gui::hotkey&) -> void {
     current_tracers.clear();
     gui::notify::send(gui::notification("Трассера удалены", "Трассера на экране успешно удалены!", ICON_INFO));
 }
 
-bool
-plugin::cheats::tracers::on_bullet_synchronization(const samp::packet<samp::event_id::bullet_synchronization>& synchronization) {
+auto plugin::cheats::tracers::on_bullet_synchronization(const samp::packet<samp::event_id::bullet_synchronization>& synchronization)
+    -> bool
+{
     auto cheat_configuration = (*configuration)["cheats"]["tracers"];
 
     if (!cheat_configuration["use"] || !server::user::is_on_alogin())
@@ -41,16 +41,14 @@ plugin::cheats::tracers::on_bullet_synchronization(const samp::packet<samp::even
     return true;
 }
 
-bool
-plugin::cheats::tracers::on_event(const samp::event_info& event) {
+auto plugin::cheats::tracers::on_event(const samp::event_info& event) -> bool {
     if (event == samp::event_type::incoming_packet && event == samp::event_id::bullet_synchronization)
         return on_bullet_synchronization(event.create<samp::event_id::bullet_synchronization, samp::event_type::incoming_packet>());
 
     return true;
 }
 
-void
-plugin::cheats::tracers::render(types::not_null<gui_initializer*> child) {
+auto plugin::cheats::tracers::render(types::not_null<gui_initializer*> child) -> void {
     if (current_tracers.empty() || game::is_menu_opened())
         return;
 
@@ -81,8 +79,7 @@ plugin::cheats::tracers::render(types::not_null<gui_initializer*> child) {
     } 
 }
 
-void
-plugin::cheats::tracers::register_hotkeys(types::not_null<gui::hotkey_handler*> handler) {
+auto plugin::cheats::tracers::register_hotkeys(types::not_null<gui::hotkey_handler*> handler) -> void {
     handler->add(hotkey);
 }
 

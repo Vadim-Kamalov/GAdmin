@@ -9,7 +9,7 @@
 
 namespace plugin {
 
-class log {
+class log final {
 public:
     enum class type { info, warn, error, fatal };
     using handler_t = std::function<void(const type&, const std::string_view&)>;
@@ -17,25 +17,25 @@ private:
     static inline handler_t handler = [](const type&, const std::string_view&) {};
     static constexpr types::zstring_t types[] = { "INFO", "WARN", "ERROR", "FATAL" };
 
-    static std::string get_current_time() noexcept;
+    static auto get_current_time() noexcept -> std::string;
 
     template<type message_type>
-    static void write(const std::string_view& text) noexcept;
+    static auto write(const std::string_view& text) noexcept -> void;
 public:
-    static void set_handler(handler_t new_handler) noexcept;
+    static auto set_handler(handler_t new_handler) noexcept -> void;
 
     template<typename... Args>
-    static void info(std::format_string<Args...> fmt, Args&&... args) noexcept;
+    static auto info(std::format_string<Args...> fmt, Args&&... args) noexcept -> void;
     
     template<typename... Args>
-    static void warn(std::format_string<Args...> fmt, Args&&... args) noexcept;
+    static auto warn(std::format_string<Args...> fmt, Args&&... args) noexcept -> void;
     
     template<typename... Args>
-    static void error(std::format_string<Args...> fmt, Args&&... args) noexcept;
+    static auto error(std::format_string<Args...> fmt, Args&&... args) noexcept -> void;
     
     template<typename... Args>
-    static void fatal(std::format_string<Args...> fmt, Args&&... args) noexcept;
-}; // class log
+    static auto fatal(std::format_string<Args...> fmt, Args&&... args) noexcept -> void;
+}; // class log final
 
 } // namespace plugin
 

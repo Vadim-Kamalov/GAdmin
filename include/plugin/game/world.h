@@ -18,7 +18,6 @@
 ///
 /// @file include/plugin/game/world.h
 /// @details Provides functionality for managing the game world and line of sight calculations.
-///
 
 #ifndef GADMIN_PLUGIN_GAME_WORLD_H
 #define GADMIN_PLUGIN_GAME_WORLD_H
@@ -41,7 +40,7 @@ namespace game {
 
 /// @class world
 /// @brief Manages the game world and line of sight calculations.
-class world {
+class world final {
 public:
     /// @struct processed_line_of_sight
     /// @brief Contains information about the processed line of sight.
@@ -66,9 +65,10 @@ public:
 private:
     static inline types::address<signatures::process_line_of_sight> process_line_of_sight_address = 0x56BA00;
 public:
-    static std::optional<processed_line_of_sight> process_line_of_sight(const types::vector_3d& origin, const types::vector_3d& target,
-            const types::options<line_of_sight_condition>& conditions = line_of_sight_condition::buildings) noexcept;
-}; // class world
+    static auto process_line_of_sight(const types::vector_3d& origin, const types::vector_3d& target,
+                                      const types::options<line_of_sight_condition>& conditions = line_of_sight_condition::buildings)
+        noexcept -> std::optional<processed_line_of_sight>;
+}; // class world final
 
 } // namespace game
 } // namespace plugin

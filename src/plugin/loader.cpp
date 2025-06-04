@@ -14,19 +14,19 @@ using wnd_proc_t = LRESULT(__stdcall*)(HWND, UINT, WPARAM, LPARAM);
 std::unique_ptr<plugin::plugin_initializer> plugin_to_load;
 
 kthook::kthook_simple<game_loop_t> game_loop_hook;
-static void game_loop_hooked(const decltype(game_loop_hook)& hook);
+static auto game_loop_hooked(const decltype(game_loop_hook)& hook) -> void;
 
 kthook::kthook_simple<wnd_proc_t> wndproc_hook;
-static LRESULT wndproc_hooked(const decltype(wndproc_hook)& hook, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
+static auto wndproc_hooked(const decltype(wndproc_hook)& hook, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) -> LRESULT;
 
 kthook::kthook_signal<d3d9_present_t> d3d9_present_hook;
-static std::optional<HRESULT> d3d9_present_hooked(const decltype(d3d9_present_hook)&, IDirect3DDevice9* device,
-                                                  const RECT*, const RECT*, HWND, const RGNDATA*);
+static auto d3d9_present_hooked(const decltype(d3d9_present_hook)&, IDirect3DDevice9* device,
+                                const RECT*, const RECT*, HWND, const RGNDATA*) -> std::optional<HRESULT>;
 
 kthook::kthook_signal<d3d9_reset_t> d3d9_reset_hook;
-static std::optional<HRESULT> d3d9_reset_hooked(const decltype(d3d9_reset_hook)&, IDirect3DDevice9*, D3DPRESENT_PARAMETERS*);
+static auto d3d9_reset_hooked(const decltype(d3d9_reset_hook)&, IDirect3DDevice9*, D3DPRESENT_PARAMETERS*) -> std::optional<HRESULT>;
 
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+extern IMGUI_IMPL_API auto ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) -> LRESULT;
 
 class loader_t {
 public:
@@ -50,8 +50,7 @@ public:
     }
 } loader;
 
-void
-game_loop_hooked(const decltype(game_loop_hook)& hook) {
+auto game_loop_hooked(const decltype(game_loop_hook)& hook) -> void {
     static bool initialized = false;
     
     hook.call_trampoline();
@@ -82,8 +81,7 @@ game_loop_hooked(const decltype(game_loop_hook)& hook) {
     initialized = true;
 }
 
-LRESULT
-wndproc_hooked(const decltype(wndproc_hook)& hook, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
+auto wndproc_hooked(const decltype(wndproc_hook)& hook, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) -> LRESULT {
     if (!plugin_to_load)
         return hook.call_trampoline(hwnd, message, wparam, lparam);
     
@@ -96,8 +94,9 @@ wndproc_hooked(const decltype(wndproc_hook)& hook, HWND hwnd, UINT message, WPAR
     return hook.call_trampoline(hwnd, message, wparam, lparam);
 }
 
-std::optional<HRESULT>
-d3d9_present_hooked(const decltype(d3d9_present_hook)&, IDirect3DDevice9* device, const RECT*, const RECT*, HWND, const RGNDATA*) {
+auto d3d9_present_hooked(const decltype(d3d9_present_hook)&, IDirect3DDevice9* device, const RECT*, const RECT*, HWND, const RGNDATA*)
+    -> std::optional<HRESULT>
+{
     static bool imgui_initialized = false;
 
     if (!plugin_to_load)
@@ -129,8 +128,7 @@ d3d9_present_hooked(const decltype(d3d9_present_hook)&, IDirect3DDevice9* device
     return {};
 }
 
-std::optional<HRESULT>
-d3d9_reset_hooked(const decltype(d3d9_reset_hook)&, IDirect3DDevice9*, D3DPRESENT_PARAMETERS*) {
+auto d3d9_reset_hooked(const decltype(d3d9_reset_hook)&, IDirect3DDevice9*, D3DPRESENT_PARAMETERS*) -> std::optional<HRESULT> {
     ImGui_ImplDX9_InvalidateDeviceObjects();
     return {};
 }

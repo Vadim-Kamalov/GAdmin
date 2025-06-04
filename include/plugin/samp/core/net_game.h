@@ -15,7 +15,7 @@ using update_players_t = void(__thiscall*)(std::uintptr_t);
 
 namespace samp {
 
-class net_game {
+class net_game final {
 private:
     static types::versioned_address_container<types::zstring_t, types::version_container_option::offsets> host_address_offsets;
     static types::versioned_address_container<server_settings, types::version_container_option::offsets> server_settings_container;
@@ -23,10 +23,10 @@ private:
 public:
     static types::versioned_address_container<std::uintptr_t> instance_container;
 
-    static server_settings get_server_settings() noexcept;
-    static std::string get_host_address() noexcept;
-    static void update_players() noexcept;
-}; // class net_game
+    static auto get_server_settings() noexcept -> server_settings;
+    static auto get_host_address() noexcept -> std::string;
+    static auto update_players() noexcept -> void;
+}; // class net_game final
 
 } // namespace samp
 } // namespace plugin

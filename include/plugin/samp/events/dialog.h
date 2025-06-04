@@ -8,7 +8,7 @@
 namespace plugin::samp {
 
 template<>
-class event<event_id::show_dialog> {
+class event<event_id::show_dialog> final {
 private:
     bit_stream* stream;
 public:
@@ -17,21 +17,20 @@ public:
     std::string title, text;
     std::pair<std::string, std::string> buttons;
 
-    inline bool is_available() const;
+    inline auto is_available() const -> bool;
     inline explicit operator bool() const;
 
-    void send_response(const dialog::button& button, std::uint16_t list_item = dialog::list_item_none,
-                       const std::string_view& input = "") const;
+    auto send_response(const dialog::button& button, std::uint16_t list_item = dialog::list_item_none,
+                       const std::string_view& input = "") const -> void;
 
-    void write_text(const std::string_view& text) const;
+    auto write_text(const std::string_view& text) const -> void;
 
     explicit event(bit_stream* stream);
-}; // class event<event_id::show_dialog>
+}; // class event<event_id::show_dialog> final
 
 } // namespace plugin::samp
 
-inline bool
-plugin::samp::event<plugin::samp::event_id::show_dialog>::is_available() const {
+inline auto plugin::samp::event<plugin::samp::event_id::show_dialog>::is_available() const -> bool {
     return id != dialog::invalid_id;
 }
 

@@ -15,7 +15,7 @@
 /// along with this program. If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-
+///
 /// @file include/plugin/cheats/initializer.h
 /// @details Provides functionality for initializing and managing cheats in the plugin.
 
@@ -30,32 +30,31 @@ namespace plugin::cheats {
 
 /// @class initializer
 /// @brief Manages initialization and execution of cheat    
-class initializer {
+class initializer final {
 private:
     types::not_null<gui_initializer*> gui;
     std::deque<cheat_t> cheats;
 public:
-    void main_loop();
-    void render();
-
-    void on_alogin_new_state(bool state);
+    auto main_loop() -> void;
+    auto render() -> void;
+    auto on_alogin_new_state(bool state) -> void;
 
     /// @brief Handles events related to cheats
     /// @param event The event information
     /// @return Boolean indicating if the event was handled
-    bool on_event(const samp::event_info& event);
+    auto on_event(const samp::event_info& event) -> bool;
 
     /// @brief Handles system events
     /// @param message The message code
     /// @param wparam Additional message information
     /// @param lparam Additional message information
     /// @return Boolean indicating if the event was handled
-    bool on_event(unsigned int message, WPARAM wparam, LPARAM lparam);
+    auto on_event(unsigned int message, WPARAM wparam, LPARAM lparam) -> bool;
 
     /// @brief Constructor for the initializer
     /// @param gui Pointer to the GUI initializer    
     explicit initializer(types::not_null<gui_initializer*> gui);
-}; // class initializer
+}; // class initializer final
 
 } // namespace plugin::cheats
 

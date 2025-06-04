@@ -7,14 +7,13 @@
 #include "plugin/game/game.h"
 #include "plugin/plugin.h"
 
-void
-plugin::cheats::wallhack::set_wallhack_state(bool state) {
+auto plugin::cheats::wallhack::set_wallhack_state(bool state) -> void {
+    if (cheat_active == state)
+        return;
+    
     auto cheat_configuration = (*configuration)["cheats"]["wallhack"];
     
     if (!cheat_configuration["use"])
-        return;
-
-    if (cheat_active == state)
         return;
     
     cheat_active = state;
@@ -27,8 +26,7 @@ plugin::cheats::wallhack::set_wallhack_state(bool state) {
     settings.set_name_tags_render_distance((state) ? render_distance : SERVER_NAME_TAGS_DISTANCE);
 }
 
-void
-plugin::cheats::wallhack::hotkey_callback(gui::hotkey& hotkey) {
+auto plugin::cheats::wallhack::hotkey_callback(gui::hotkey& hotkey) -> void {
     if (!server::user::is_on_alogin())
         return;
 
@@ -41,13 +39,11 @@ plugin::cheats::wallhack::hotkey_callback(gui::hotkey& hotkey) {
     gui::notify::send(gui::notification(notify_title, notify_description, ICON_INFO));
 }
 
-void
-plugin::cheats::wallhack::register_hotkeys(types::not_null<gui::hotkey_handler*> handler) {
+auto plugin::cheats::wallhack::register_hotkeys(types::not_null<gui::hotkey_handler*> handler) -> void {
     handler->add(hotkey);
 }
 
-void
-plugin::cheats::wallhack::render(types::not_null<gui_initializer*> child) {
+auto plugin::cheats::wallhack::render(types::not_null<gui_initializer*> child) -> void {
     auto cheat_configuration = (*configuration)["cheats"]["wallhack"];
 
     if (!cheat_active || !cheat_configuration["custom_render"] || game::is_menu_opened())
@@ -88,8 +84,7 @@ plugin::cheats::wallhack::render(types::not_null<gui_initializer*> child) {
     }
 }
 
-void
-plugin::cheats::wallhack::on_alogin_new_state(bool state) {
+auto plugin::cheats::wallhack::on_alogin_new_state(bool state) -> void {
     set_wallhack_state(state);
 }
 

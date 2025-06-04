@@ -1,8 +1,9 @@
 #include "plugin/samp/events/player_death_notification.h"
 #include "plugin/game/weapon.h"
 
-std::string
-plugin::samp::event<plugin::samp::event_id::player_death_notification>::get_reason() const {
+auto plugin::samp::event<plugin::samp::event_id::player_death_notification>::get_reason() const
+    -> std::string
+{
     switch (reason) {
         case special_reason_car: return "Vehicle";
         case special_reason_helicopter: return "Helicopter";

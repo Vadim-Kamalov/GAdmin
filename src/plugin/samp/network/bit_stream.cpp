@@ -3,80 +3,65 @@
 #include "plugin/samp/network/signatures.h"
 #include "plugin/plugin.h"
 
-int
-plugin::samp::bit_stream::get_number_of_bits_used() {
+auto plugin::samp::bit_stream::get_number_of_bits_used() -> int {
     return bit_stream_ptr->GetNumberOfBitsUsed();
 }
 
-int
-plugin::samp::bit_stream::get_number_of_bytes_used() {
+auto plugin::samp::bit_stream::get_number_of_bytes_used() -> int {
     return bit_stream_ptr->GetNumberOfBytesUsed();
 }
 
-int
-plugin::samp::bit_stream::get_number_of_unread_bits() {
+auto plugin::samp::bit_stream::get_number_of_unread_bits() -> int {
     return bit_stream_ptr->GetNumberOfUnreadBits();
 }
 
-int
-plugin::samp::bit_stream::get_number_of_unread_bytes() {
+auto plugin::samp::bit_stream::get_number_of_unread_bytes() -> int {
     return BITS_TO_BYTES(bit_stream_ptr->GetNumberOfUnreadBits());
 }
 
-void
-plugin::samp::bit_stream::reset_read_pointer() {
+auto plugin::samp::bit_stream::reset_read_pointer() -> void {
     bit_stream_ptr->ResetReadPointer();
 }
 
-void
-plugin::samp::bit_stream::reset_write_pointer() {
+auto plugin::samp::bit_stream::reset_write_pointer() -> void {
     bit_stream_ptr->ResetWritePointer();
 }
 
-void
-plugin::samp::bit_stream::reset_bit_stream() {
+auto plugin::samp::bit_stream::reset_bit_stream() -> void {
     bit_stream_ptr->Reset();
 }
 
-int
-plugin::samp::bit_stream::get_read_offset() {
+auto plugin::samp::bit_stream::get_read_offset() -> int {
     return bit_stream_ptr->GetReadOffset();
 }
 
-int
-plugin::samp::bit_stream::get_write_offset() {
+auto plugin::samp::bit_stream::get_write_offset() -> int {
     return bit_stream_ptr->GetWriteOffset();
 }
 
-void
-plugin::samp::bit_stream::set_read_offset(int offset) {
+auto plugin::samp::bit_stream::set_read_offset(int offset) -> void {
     bit_stream_ptr->SetReadOffset(offset);
 }
 
-void
-plugin::samp::bit_stream::set_write_offset(int offset) {
+auto plugin::samp::bit_stream::set_write_offset(int offset) -> void {
     bit_stream_ptr->SetWriteOffset(offset);
 }
 
-void
-plugin::samp::bit_stream::ignore_bits(int count) {
+auto plugin::samp::bit_stream::ignore_bits(int count) -> void {
     bit_stream_ptr->IgnoreBits(count);
 }
 
-void
-plugin::samp::bit_stream::ignore_bytes(int count) {
+auto plugin::samp::bit_stream::ignore_bytes(int count) -> void {
     bit_stream_ptr->IgnoreBits(BYTES_TO_BITS(count));
 }
 
-std::string
-plugin::samp::bit_stream::read_string(std::int32_t length) {
+auto plugin::samp::bit_stream::read_string(std::int32_t length) -> std::string {
     std::string result(length, '\0');
     bit_stream_ptr->Read(result.data(), length);
     return result;
 }
 
-std::string
-plugin::samp::bit_stream::read_encoded(int length) {
+auto plugin::samp::bit_stream::read_encoded(int length) -> std::string {
     std::string result(length, '\0');
     
     reinterpret_cast<signatures::encoded_reader_t>(address::encoded_reader())
@@ -87,31 +72,27 @@ plugin::samp::bit_stream::read_encoded(int length) {
     return result;
 }
 
-bool
-plugin::samp::bit_stream::read_buffer(std::uintptr_t destination, int size) {
+auto plugin::samp::bit_stream::read_buffer(std::uintptr_t destination, int size) -> bool {
     return bit_stream_ptr->ReadBits(reinterpret_cast<unsigned char*>(destination), BYTES_TO_BITS(size), false);
 }
 
-void
-plugin::samp::bit_stream::write(const std::string_view& value) {
+auto plugin::samp::bit_stream::write(const std::string_view& value) -> void {
     bit_stream_ptr->Write(value.data(), value.size());
 }
 
-void
-plugin::samp::bit_stream::write_encoded(const std::string_view& value) {
+auto plugin::samp::bit_stream::write_encoded(const std::string_view& value) -> void {
     bit_stream_ptr->AddBitsAndReallocate(value.size() * 16 + 16);
     reinterpret_cast<signatures::encoded_writer_t>(address::encoded_writer())
         (address::encode_decode_base(), value.data(), value.size() + 1, bit_stream_ptr, 0);
 }
 
-bool
-plugin::samp::bit_stream::emulate_incoming_rpc(std::uint8_t rpc_id) {
+auto plugin::samp::bit_stream::emulate_incoming_rpc(std::uint8_t rpc_id) -> bool {
     if (plugin::event_handler == nullptr || !plugin::event_handler->initialized || plugin::event_handler->rak_peer == nullptr)
         return false;
 
     BitStream send_bit_stream;
 
-    send_bit_stream.Write<std::uint8_t>(ID_RPC);
+    send_bit_stream.Write<std::uint8_t>(rpc_id);
     send_bit_stream.Write(rpc_id);
     send_bit_stream.WriteCompressed<unsigned int>(bit_stream_ptr->GetNumberOfBitsUsed());
     send_bit_stream.WriteBits(bit_stream_ptr->GetData(), bit_stream_ptr->GetNumberOfBitsUsed(), false);
@@ -122,8 +103,7 @@ plugin::samp::bit_stream::emulate_incoming_rpc(std::uint8_t rpc_id) {
                            send_bit_stream.GetNumberOfBytesUsed(), plugin::event_handler->user_id);
 }
 
-bool
-plugin::samp::bit_stream::emulate_incoming_packet(std::uint8_t packet_id) {
+auto plugin::samp::bit_stream::emulate_incoming_packet(std::uint8_t packet_id) -> bool {
     if (plugin::event_handler == nullptr || !plugin::event_handler->initialized || plugin::event_handler->rak_peer == nullptr)
         return false;
 
@@ -149,8 +129,7 @@ plugin::samp::bit_stream::emulate_incoming_packet(std::uint8_t packet_id) {
 
 #define RAKCLIENT_INTERFACE reinterpret_cast<std::uintptr_t>(plugin::event_handler->rak_peer) + 0xDDE
 
-bool
-plugin::samp::bit_stream::send_rpc(int rpc_id) {
+auto plugin::samp::bit_stream::send_rpc(int rpc_id) -> bool {
     if (plugin::event_handler == nullptr || !plugin::event_handler->initialized)
         return false;
 
@@ -158,8 +137,10 @@ plugin::samp::bit_stream::send_rpc(int rpc_id) {
         (RAKCLIENT_INTERFACE, &rpc_id, bit_stream_ptr, HIGH_PRIORITY, RELIABLE_ORDERED, 0, false); 
 }
 
-bool
-plugin::samp::bit_stream::send_rpc(int rpc_id, PacketPriority priority, PacketReliability reliability, std::uint8_t channel, bool timestamp) {
+auto plugin::samp::bit_stream::send_rpc(int rpc_id, PacketPriority priority,
+                                        PacketReliability reliability, std::uint8_t channel,
+                                        bool timestamp) -> bool
+{
     if (plugin::event_handler == nullptr || !plugin::event_handler->initialized)
         return false;
 
@@ -167,8 +148,7 @@ plugin::samp::bit_stream::send_rpc(int rpc_id, PacketPriority priority, PacketRe
         (RAKCLIENT_INTERFACE, &rpc_id, bit_stream_ptr, priority, reliability, channel, timestamp);
 }
 
-bool
-plugin::samp::bit_stream::send_packet() {
+auto plugin::samp::bit_stream::send_packet() -> bool {
     if (plugin::event_handler == nullptr || !plugin::event_handler->initialized)
         return false;
 
@@ -176,8 +156,9 @@ plugin::samp::bit_stream::send_packet() {
         (RAKCLIENT_INTERFACE, bit_stream_ptr, HIGH_PRIORITY, UNRELIABLE_SEQUENCED, 0);
 }
 
-bool
-plugin::samp::bit_stream::send_packet(PacketPriority priority, PacketReliability reliability, std::uint8_t channel) {
+auto plugin::samp::bit_stream::send_packet(PacketPriority priority, PacketReliability reliability, std::uint8_t channel)
+    -> bool
+{
     if (plugin::event_handler == nullptr || !plugin::event_handler->initialized)
         return false;
 
@@ -187,13 +168,11 @@ plugin::samp::bit_stream::send_packet(PacketPriority priority, PacketReliability
 
 #undef RAKCLIENT_INTERFACE
 
-BitStream*
-plugin::samp::bit_stream::get_original_bit_stream() {
+auto plugin::samp::bit_stream::get_original_bit_stream() -> BitStream* {
     return bit_stream_ptr;
 }
 
-std::uintptr_t
-plugin::samp::bit_stream::get_data_ptr() {
+auto plugin::samp::bit_stream::get_data_ptr() -> std::uintptr_t {
     return reinterpret_cast<std::uintptr_t>(bit_stream_ptr->GetData());
 }
 

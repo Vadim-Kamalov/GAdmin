@@ -9,7 +9,7 @@
 
 namespace plugin {
 
-class gui_initializer {
+class gui_initializer final {
 private:
     std::vector<gui::window_ptr_t> registered_windows;
     int cursor_last_x = -1, cursor_last_y = 1;
@@ -17,23 +17,23 @@ public:
     std::unique_ptr<gui::fonts_initializer> fonts;
     std::unique_ptr<gui::hotkey_handler> hotkey_handler;
 
-    bool on_event(const samp::event_info& event) const;
-    bool on_event(unsigned int message, WPARAM wparam, LPARAM lparam);
+    auto on_event(const samp::event_info& event) const -> bool;
+    auto on_event(unsigned int message, WPARAM wparam, LPARAM lparam) -> bool;
     
-    void on_samp_initialize();
-    bool can_initialize_render() const;
-    void on_initialize();
-    void render() const;
-    void main_loop();
+    auto on_samp_initialize() -> void;
+    auto can_initialize_render() const -> bool;
+    auto on_initialize() -> void;
+    auto render() const -> void;
+    auto main_loop() -> void;
 
-    bool is_cursor_active() const;
-    void enable_cursor();
-    void disable_cursor();
-    void switch_cursor();
+    auto is_cursor_active() const -> bool;
+    auto enable_cursor() -> void;
+    auto disable_cursor() -> void;
+    auto switch_cursor() -> void;
 
     explicit gui_initializer();
     ~gui_initializer() noexcept;
-}; // class gui_initializer
+}; // class gui_initializer final
 
 } // namespace plugin
 

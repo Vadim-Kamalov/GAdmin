@@ -15,7 +15,7 @@
 /// along with this program. If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-
+///
 /// @file include/plugin/cheats/tracers.h
 /// @details Provides functionality for managing bullet tracers in the game.
 
@@ -32,7 +32,7 @@ namespace plugin::cheats {
 /// @class tracers
 /// @brief Implements bullet tracer functionality
 /// @inherits basic_cheat
-class tracers : public basic_cheat {
+class tracers final : public basic_cheat {
 private:
     /// @struct tracer_information
     /// @brief Contains information about a bullet tracer
@@ -46,31 +46,31 @@ private:
     gui::hotkey hotkey;
     std::deque<tracer_information> current_tracers;
 
-    void hotkey_callback(gui::hotkey& hotkey);
+    auto hotkey_callback(gui::hotkey& hotkey) -> void;
 
     /// @brief Handles bullet synchronization events
     /// @param synchronization The bullet synchronization packet
     /// @return Boolean indicating if the event was handled
-    bool on_bullet_synchronization(const samp::packet<samp::event_id::bullet_synchronization>& synchronization);
+    auto on_bullet_synchronization(const samp::packet<samp::event_id::bullet_synchronization>& synchronization) -> bool;
 public:
     /// @brief Handles events related to tracers
     /// @param event The event information
     /// @return Boolean indicating if the event was handled
     /// @override
-    bool on_event(const samp::event_info& event) override;
+    auto on_event(const samp::event_info& event) -> bool override;
 
     /// @brief Renders the tracers interface
     /// @param child Pointer to the GUI initializer
     /// @override
-    void render(types::not_null<gui_initializer*> child) override;
+    auto render(types::not_null<gui_initializer*> child) -> void override;
 
     /// @brief Registers hotkeys for tracer functionality
     /// @param handler Pointer to the hotkey handler
     /// @override
-    void register_hotkeys(types::not_null<gui::hotkey_handler*> handler) override;
+    auto register_hotkeys(types::not_null<gui::hotkey_handler*> handler) -> void override;
 
     explicit tracers();
-}; // class tracers : public basic_cheat
+}; // class tracers final : public basic_cheat
 
 } // namespace plugin::cheats
 

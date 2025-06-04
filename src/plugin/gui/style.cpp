@@ -1,9 +1,7 @@
 #include "plugin/gui/style.h"
 #include <imgui.h>
-#include <cstdlib>
 
-void
-plugin::gui::style::apply() noexcept {
+auto plugin::gui::style::apply() noexcept -> void {
     ImGuiStyle& style = ImGui::GetStyle();
 
     style.AntiAliasedLines = true;

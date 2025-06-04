@@ -18,7 +18,6 @@
 ///
 /// @file include/plugin/cheats/wallhack.h
 /// @details Provides functionality for the wallhack cheat, allowing visibility through walls.
-///
 
 #ifndef GADMIN_PLUGIN_CHEATS_WALLHACK_H
 #define GADMIN_PLUGIN_CHEATS_WALLHACK_H
@@ -30,38 +29,38 @@ namespace plugin::cheats {
 /// @class wallhack
 /// @brief Implements wallhack cheat functionality
 /// @inherits basic_cheat
-class wallhack : public basic_cheat {
+class wallhack final : public basic_cheat {
 private:
     gui::hotkey hotkey;
     bool cheat_active = false;
 
     /// @brief Sets the state of the wallhack cheat
     /// @param state Boolean state to set the wallhack to
-    void set_wallhack_state(bool state);
+    auto set_wallhack_state(bool state) -> void;
 
     /// @brief Callback for hotkey activation
     /// @param hotkey Reference to the triggering hotkey
-    void hotkey_callback(gui::hotkey& hotkey);
+    auto hotkey_callback(gui::hotkey& hotkey) -> void;
 public:
     /// @brief Registers hotkeys for wallhack functionality
     /// @param handler Pointer to the hotkey handler
     /// @override
-    void register_hotkeys(types::not_null<gui::hotkey_handler*> handler) override;
+    auto register_hotkeys(types::not_null<gui::hotkey_handler*> handler) -> void override;
 
     /// @brief Renders the wallhack interface
     /// @param child Pointer to the GUI initializer
     /// @override
-    void render(types::not_null<gui_initializer*> child) override;
+    auto render(types::not_null<gui_initializer*> child) -> void override;
 
     /// @brief Handles login state changes
     /// @param state New login state (true = logged in)
     /// @override
-    void on_alogin_new_state(bool state) override;
+    auto on_alogin_new_state(bool state) -> void override;
 
     explicit wallhack();
 private:
     static constexpr float render_distance = 0x7D0; ///< Maximum render distance for wallhack
-}; // class wallhack : public basic_cheat
+}; // class wallhack final : public basic_cheat
 
 } // namespace plugin::cheats
 

@@ -18,7 +18,6 @@
 ///
 /// @file include/plugin/game/cursor.h
 /// @details Provides functionality for managing the in-game cursor.
-///
 
 #ifndef GADMIN_PLUGIN_GAME_CURSOR_H
 #define GADMIN_PLUGIN_GAME_CURSOR_H
@@ -34,13 +33,18 @@ using update_pads_t = void(__cdecl*)();
 
 } // namespace signatures
 
-namespace game::cursor {
+namespace game {
 
-/// @brief Sets the status of the cursor.
-/// @param status The status to set for the cursor.
-void set_status(bool status) noexcept;
+/// @class cursor
+/// @brief Manages in-game cursor's state.
+class cursor final {
+public:
+    /// @brief Sets the status of the cursor.
+    /// @param status The status to set for the cursor.
+    static auto set_status(bool status) noexcept -> void;
+}; // class cursor final
 
-} // namespace game::cursor
+} // namespace game
 } // namespace plugin
 
 #endif // GADMIN_PLUGIN_GAME_CURSOR_H

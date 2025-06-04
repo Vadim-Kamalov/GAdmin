@@ -4,8 +4,7 @@
 #include <filesystem>
 #include <list>
 
-std::unordered_map<float, ImFont*>
-plugin::gui::basic_font::create(const ImWchar* glyphs) const {
+auto plugin::gui::basic_font::create(const ImWchar* glyphs) const -> std::unordered_map<float, ImFont*> {
     std::unordered_map<float, ImFont*> fonts;
 
     std::filesystem::path path = std::filesystem::current_path() / "gadmin" / "resources" / get_filename();
@@ -17,25 +16,21 @@ plugin::gui::basic_font::create(const ImWchar* glyphs) const {
     return fonts;
 }
 
-void
-plugin::gui::basic_font::push(std::size_t size) const {
+auto plugin::gui::basic_font::push(std::size_t size) const -> void {
     ImGui::PushFont((*this)[size]);
 }
 
-ImFont*
-plugin::gui::basic_font::operator[](std::size_t size) const {
+auto plugin::gui::basic_font::operator[](std::size_t size) const -> ImFont* {
     return get_fonts().at(size);
 }
 
-void
-plugin::gui::basic_font::text(std::size_t size, types::zstring_t text) const {
+auto plugin::gui::basic_font::text(std::size_t size, types::zstring_t text) const -> void {
     push(size);
     ImGui::TextUnformatted(text);
     ImGui::PopFont();
 }
 
-void
-plugin::gui::fonts_initializer::initialize() {
+auto plugin::gui::fonts_initializer::initialize() -> void {
     light = std::make_unique<fonts::light>();
     regular = std::make_unique<fonts::regular>();
     bold = std::make_unique<fonts::bold>();
@@ -90,8 +85,9 @@ plugin::gui::fonts_initializer::fonts_initializer() {
 }
 
 plugin::gui::fonts_initializer::~fonts_initializer() noexcept {
-    if (downloader_thread.joinable()) {
-        downloader_thread.request_stop();
-        downloader_thread.join();
-    }
+    if (!downloader_thread.joinable())
+        return;
+
+    downloader_thread.request_stop();
+    downloader_thread.join();
 }

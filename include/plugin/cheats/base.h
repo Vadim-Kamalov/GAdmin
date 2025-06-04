@@ -15,7 +15,7 @@
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-/// 
+///
 /// @file include/plugin/cheats/base.h
 /// @brief Base interface for cheat modules
 /// @details Provides core interface that all cheat systems must implement:
@@ -24,7 +24,6 @@
 /// - Main loop processing
 /// - Event handling
 /// - State management
-/// 
 
 #ifndef GADMIN_PLUGIN_CHEATS_BASE_H
 #define GADMIN_PLUGIN_CHEATS_BASE_H
@@ -48,21 +47,20 @@ public:
     /// @brief Registers hotkeys for the cheat module
     /// @param handler Pointer to hotkey handler system
     /// @note Base implementation does nothing (optional feature)
-    virtual void register_hotkeys(types::not_null<gui::hotkey_handler*> handler) {}
-    
+    virtual auto register_hotkeys(types::not_null<gui::hotkey_handler*> handler) -> void {}
+
     /// @brief Renders cheat-specific GUI elements
     /// @param child GUI initializer reference
     /// @note Base implementation does nothing (optional feature)
-    virtual void render(types::not_null<gui_initializer*> child) {}
-    virtual void main_loop() {}
-    
-    virtual void on_alogin_new_state(bool state) {}
+    virtual auto render(types::not_null<gui_initializer*> child) -> void {}
+    virtual auto main_loop() -> void {}
+    virtual auto on_alogin_new_state(bool state) -> void {}
 
     /// @brief Processes SA-MP events
     /// @param event SA-MP event information
     /// @return true if event should continue processing, false to consume it
     /// @note Base implementation allows all events through
-    virtual bool on_event(const samp::event_info& event) { return true; }
+    virtual auto on_event(const samp::event_info& event) -> bool { return true; }
 
     /// @brief Processes Windows messages
     /// @param message Windows message ID
@@ -70,7 +68,7 @@ public:
     /// @param lparam Message parameter
     /// @return true if message should continue processing, false to consume it
     /// @note Base implementation allows all messages through
-    virtual bool on_event(unsigned int message, WPARAM wparam, LPARAM lparam) { return true; }
+    virtual auto on_event(unsigned int message, WPARAM wparam, LPARAM lparam) -> bool { return true; }
 }; // class basic_cheat
 
 /// @brief Alias for cheat pointer type

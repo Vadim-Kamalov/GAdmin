@@ -19,8 +19,7 @@
 
 using namespace std::chrono_literals;
 
-void
-plugin::plugin_initializer::on_log_message(const log::type& type, const std::string_view& message) {
+auto plugin::plugin_initializer::on_log_message(const log::type& type, const std::string_view& message) -> void {
     std::lock_guard<std::mutex> lock(log_mutex);
     log_file_stream << message << std::endl;
 
@@ -28,8 +27,7 @@ plugin::plugin_initializer::on_log_message(const log::type& type, const std::str
         unload();
 }
 
-bool
-plugin::plugin_initializer::on_event(const samp::event_info& event) {
+auto plugin::plugin_initializer::on_event(const samp::event_info& event) -> bool {
     if (!server::admins::on_event(event))
         return false;
 
@@ -57,25 +55,21 @@ plugin::plugin_initializer::on_event(const samp::event_info& event) {
     return true;
 }
 
-bool
-plugin::plugin_initializer::can_initialize_render() const {
+auto plugin::plugin_initializer::can_initialize_render() const -> bool {
     return gui->can_initialize_render();
 }
 
-void
-plugin::plugin_initializer::on_render_initialize() {
+auto plugin::plugin_initializer::on_render_initialize() -> void {
     log::info("render initialized");
     gui->on_initialize();
 }
 
-void
-plugin::plugin_initializer::on_frame() {
+auto plugin::plugin_initializer::on_frame() -> void {
     gui->render();
     cheats_initializer->render();
 }
 
-bool
-plugin::plugin_initializer::on_message(unsigned int message, WPARAM wparam, LPARAM lparam) {
+auto plugin::plugin_initializer::on_message(unsigned int message, WPARAM wparam, LPARAM lparam) -> bool {
     if (!gui->on_event(message, wparam, lparam))
         return false;
     
@@ -85,8 +79,7 @@ plugin::plugin_initializer::on_message(unsigned int message, WPARAM wparam, LPAR
     return true;
 }
 
-void
-plugin::plugin_initializer::on_samp_initialize() {
+auto plugin::plugin_initializer::on_samp_initialize() -> void {
     using namespace plugin::gui;
 
     log::info("samp::net_game::instance() != nullptr: SA:MP {} initialized", samp::get_version());
@@ -103,8 +96,7 @@ plugin::plugin_initializer::on_samp_initialize() {
                               ICON_INFO));
 }
 
-void
-plugin::plugin_initializer::main_loop() {
+auto plugin::plugin_initializer::main_loop() -> void {
     static bool samp_initialized = false;
     
     event_handler->main_loop();
@@ -124,8 +116,7 @@ plugin::plugin_initializer::main_loop() {
     }
 }
 
-void
-plugin::plugin_initializer::initialize_logging() {
+auto plugin::plugin_initializer::initialize_logging() -> void {
     using namespace std::placeholders;
 
     std::filesystem::path log_file = std::filesystem::current_path() / "gadmin.log";
@@ -135,8 +126,7 @@ plugin::plugin_initializer::initialize_logging() {
     log::set_handler(std::bind(&plugin_initializer::on_log_message, this, _1, _2));
 }
 
-void
-plugin::plugin_initializer::initialize_event_handler() {
+auto plugin::plugin_initializer::initialize_event_handler() -> void {
     using namespace std::placeholders;
     
     event_handler = std::make_unique<samp::event_handler>();
@@ -145,8 +135,7 @@ plugin::plugin_initializer::initialize_event_handler() {
     log::info("plugin::samp::event_handler initialized");
 }
 
-void
-plugin::plugin_initializer::create_and_initialize_files() {
+auto plugin::plugin_initializer::create_and_initialize_files() -> void {
     try {
         std::filesystem::path current_path = std::filesystem::current_path();
         
@@ -159,18 +148,15 @@ plugin::plugin_initializer::create_and_initialize_files() {
     }
 }
 
-void
-plugin::plugin_initializer::unload() {
+auto plugin::plugin_initializer::unload() -> void {
     plugin_working = false;
 }
 
-bool
-plugin::plugin_initializer::is_active() const {
+auto plugin::plugin_initializer::is_active() const -> bool {
     return plugin_working;
 }
 
-void
-plugin::plugin_initializer::on_terminate() noexcept {
+auto plugin::plugin_initializer::on_terminate() noexcept -> void {
     try {
         if (std::exception_ptr eptr = std::current_exception()) {
             std::rethrow_exception(eptr);
@@ -183,8 +169,9 @@ plugin::plugin_initializer::on_terminate() noexcept {
     }
 }
 
-long __stdcall
-plugin::plugin_initializer::on_unhandled_exception(EXCEPTION_POINTERS* exception_info) noexcept {
+auto __stdcall plugin::plugin_initializer::on_unhandled_exception(EXCEPTION_POINTERS* exception_info)
+    noexcept -> long
+{
     auto process = GetCurrentProcess();
     auto thread = GetCurrentThread();
     

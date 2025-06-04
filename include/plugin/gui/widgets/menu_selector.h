@@ -15,7 +15,7 @@
 /// along with this program. If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-
+///
 /// @file include/plugin/gui/widgets/menu_selector.h
 /// @details Provides functionality for selecting menus in the GUI.
 

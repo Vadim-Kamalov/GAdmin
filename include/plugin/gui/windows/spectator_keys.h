@@ -13,36 +13,34 @@
 
 namespace plugin::gui::windows {
 
-class spectator_keys : public window {
+class spectator_keys final : public window {
 private:
-    types::not_null<gui_initializer*> child;
-
     static constexpr float keycap_height = 35;
 
     template<samp::synchronization_key key>
-    static constexpr widgets::keycap make_keycap(const ImVec2& size = { keycap_height, keycap_height }) noexcept;
+    static constexpr auto make_keycap(const ImVec2& size = { keycap_height, keycap_height }) noexcept -> widgets::keycap;
     
-    static std::vector<widgets::keycap> get_keycaps(const samp::synchronization_type& type) noexcept;
+    static auto get_keycaps(const samp::synchronization_type& type) noexcept -> std::vector<widgets::keycap>;
 public:
-    constexpr types::zstring_t get_id() const override;
+    inline auto get_id() const -> types::zstring_t override;
+    static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
 
-    void render() override;
+    auto render() -> void override;
 
-    static window_ptr_t create(types::not_null<gui_initializer*> child);
-    explicit spectator_keys(types::not_null<gui_initializer*> child);
+    using window::window;
 }; // class spectator_keys : public window
 
 } // namespace plugin::gui::windows
 
-constexpr plugin::types::zstring_t
-plugin::gui::windows::spectator_keys::get_id() const {
+inline auto plugin::gui::windows::spectator_keys::get_id() const -> types::zstring_t {
     return "windows::spectator_keys";
 }
 
 template<plugin::samp::synchronization_key key>
-constexpr plugin::gui::widgets::keycap
-plugin::gui::windows::spectator_keys::make_keycap(const ImVec2& size) noexcept {
-    const constexpr std::string_view name = samp::synchronization_key_names[std::to_underlying(key)];
+constexpr auto plugin::gui::windows::spectator_keys::make_keycap(const ImVec2& size)
+    noexcept -> widgets::keycap
+{
+    constexpr std::string_view name = samp::synchronization_key_names[std::to_underlying(key)];
     return widgets::keycap(name, size, server::spectator::get_key_state(key));
 }
 

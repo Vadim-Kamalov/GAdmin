@@ -18,7 +18,6 @@
 ///
 /// @file include/plugin/game/pad.h
 /// @details Provides functionality for managing game pad controls.
-///
 
 #ifndef GADMIN_PLUGIN_GAME_PAD_H
 #define GADMIN_PLUGIN_GAME_PAD_H
@@ -29,19 +28,19 @@ namespace plugin::game {
 
 /// @class pad
 /// @brief Manages game pad controls.
-class pad {
+class pad final {
 private:
     static inline types::address<std::uintptr_t> instance = 0xB73458;
     static inline types::offset<bool> disable_player_controls_offset = 0x10E;
     static inline types::offset<bool> disable_player_enter_vehicle_offset = 0x119;
 public:
     /// @brief Disables player control
-    static void disable_player_control() noexcept;
+    static auto disable_player_control() noexcept -> void;
 
     /// @brief Sets the player's ability to enter a vehicle.
     /// @param state The state to set for player's ability to enter a vehicle.
-    static void set_player_enter_vehicle(bool state) noexcept;
-}; // class pad
+    static auto set_player_enter_vehicle(bool state) noexcept -> void;
+}; // class pad final
 
 } // namespace plugin::game
 

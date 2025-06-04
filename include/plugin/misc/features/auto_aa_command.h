@@ -6,12 +6,12 @@
 
 namespace plugin::misc::features {
 
-class auto_aa_command : public feature {
+class auto_aa_command final : public feature {
 private:
-    bool on_send_chat(const samp::out_event<samp::event_id::send_chat>& chat) const;
+    auto on_send_chat(const samp::out_event<samp::event_id::send_chat>& chat) const -> bool;
 public:
-    bool on_event(const samp::event_info& event) override;
-}; // class auto_aa_command : public feature
+    auto on_event(const samp::event_info& event) -> bool override;
+}; // class auto_aa_command final : public feature
 
 } // namespace plugin::misc::features
 

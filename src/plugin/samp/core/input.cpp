@@ -19,13 +19,11 @@ plugin::samp::input::set_text_container = { 0x80F60, 0x84E70, 0x85580, 0x85000 }
 plugin::types::versioned_address_container<plugin::signatures::get_text_t>
 plugin::samp::input::get_text_container = { 0x81030, 0x84F40, 0x85650, 0x850D0 };
 
-bool
-plugin::samp::input::is_active() noexcept {
+auto plugin::samp::input::is_active() noexcept -> bool {
     return active_offset.read(instance_container->read()) != 0;
 }
 
-bool
-plugin::samp::input::is_command_defined(const std::string_view& command) noexcept {
+auto plugin::samp::input::is_command_defined(const std::string_view& command) noexcept -> bool {
     auto commands = commands_offset.read(instance_container->read());
 
     for (std::uint8_t i = 0; i < max_commands_count; i++)
@@ -35,24 +33,20 @@ plugin::samp::input::is_command_defined(const std::string_view& command) noexcep
     return false;
 }
 
-void
-plugin::samp::input::open() noexcept {
+auto plugin::samp::input::open() noexcept -> void {
     open_container->invoke(instance_container->read());
 }
 
-void
-plugin::samp::input::process(const std::string_view& text) noexcept {
+auto plugin::samp::input::process(const std::string_view& text) noexcept -> void {
     set_text(text);
     process_input_container->invoke(instance_container->read());
 }
 
-void
-plugin::samp::input::set_text(const std::string_view& text) noexcept {
+auto plugin::samp::input::set_text(const std::string_view& text) noexcept -> void {
     set_text_container->invoke(dxut_input_offset.read(instance_container->read()),
                                string_utils::to_cp1251(std::string(text)).c_str(), false);
 }
 
-std::string
-plugin::samp::input::get_text() noexcept {
+auto plugin::samp::input::get_text() noexcept -> std::string {
     return string_utils::to_utf8(get_text_container->invoke(dxut_input_offset.read(instance_container->read())));
 }

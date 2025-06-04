@@ -16,21 +16,22 @@ using add_message_t = void(__thiscall*)(std::uintptr_t, unsigned long, types::zs
 
 namespace samp {
 
-class chat {
+class chat final {
 private:
     static types::versioned_address_container<signatures::add_message_t> add_message_container;
     static types::versioned_address_container<std::uintptr_t> instance_container;
 public:
     template<typename... Args>
-    static void add_message(const types::color& color, std::format_string<Args...> fmt, Args&&... args) noexcept;
-}; // class chat
+    static auto add_message(const types::color& color, std::format_string<Args...> fmt, Args&&... args) noexcept -> void;
+}; // class chat final
 
 } // namespace samp
 } // namespace plugin
 
 template<typename... Args>
-void
-plugin::samp::chat::add_message(const types::color& color, std::format_string<Args...> fmt, Args&&... args) noexcept {
+auto plugin::samp::chat::add_message(const types::color& color, std::format_string<Args...> fmt, Args&&... args)
+    noexcept -> void
+{
     add_message_container->invoke(instance_container->read(), color.cast<types::color_type::rgba>(),
                                   string_utils::to_cp1251(std::format(fmt, std::forward<Args>(args)...)).c_str());
 }

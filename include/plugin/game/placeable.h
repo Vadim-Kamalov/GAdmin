@@ -18,7 +18,6 @@
 ///
 /// @file include/plugin/game/placeable.h
 /// @details Provides functionality for managing placeable entities in the game.
-///
 
 #ifndef GADMIN_PLUGIN_GAME_PLACEABLE_H
 #define GADMIN_PLUGIN_GAME_PLACEABLE_H
@@ -53,9 +52,9 @@ public:
         std::uint8_t : 8;
     }; // struct physical_flags_t
 protected:
-    void set_heading_in_rad(float angle) const;
-    void set_heading_in_deg(float angle) const;
-    float clamp_angle(float angle) const;
+    auto set_heading_in_rad(float angle) const -> void;
+    auto set_heading_in_deg(float angle) const -> void;
+    auto clamp_angle(float angle) const -> float;
 
     static constexpr float rad_to_deg_multiplier = 180.0f / std::numbers::pi;
     static constexpr float deg_to_rad_multiplier = std::numbers::pi / 180.0f;
@@ -69,25 +68,27 @@ public:
     
     /// @brief Checks if the placeable entity is available.
     /// @return True if the entity is available, false otherwise
-    inline bool is_available() const;
+    inline auto is_available() const -> bool;
 
     /// @brief Boolean operator to check if the placeable entity is available.
     /// @return True if the entity is available, false otherwise.
     inline explicit operator bool() const;
     
-    bool is_locked() const;
-
     /// @brief Checks if the placeable entity is locked.
     /// @return True if the entity is locked, false otherwise.
-    void set_lock(bool state) const;
+    auto is_locked() const -> bool;
 
     /// @brief Sets the lock state of the placeable entity.
     /// @param state The state to set for the entity's lock.
-    float get_heading() const;
+    auto set_lock(bool state) const -> void;
 
     /// @brief Gets the heading of the placeable entity.
     /// @return The heading of the entity.
-    virtual void set_heading(float angle) const;
+    auto get_heading() const -> float;
+
+    /// @brief Sets the heading of the placeable entity.
+    /// @param angle The angle of the angle need to be set.
+    virtual auto set_heading(float angle) const -> void;
 
     /// @brief Constructor for the placeable class using the entity constructor.
     using entity::entity;
@@ -96,8 +97,7 @@ public:
 } // namespace game
 } // namespace plugin
 
-inline bool
-plugin::game::placeable::is_available() const {
+inline auto plugin::game::placeable::is_available() const -> bool {
     return handle.is_available();
 }
 

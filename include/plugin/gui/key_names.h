@@ -151,9 +151,9 @@ static const std::unordered_map<std::uint8_t, std::string> key_names = {
     { 0xDC, "Backslash" },
     { 0xDD, "Close Bracket" },
     { 0xDE, "Quote" }
-}; // static constexpr const std::vector<std::pair<std::uint8_t, std::string>> key_names
+}; // static const std::unordered_map<std::uint8_t, std::string> key_names
 
-std::string key_to_string(std::uint8_t key);
+auto key_to_string(std::uint8_t key) noexcept -> std::string;
 
 } // namespace plugin::gui
 

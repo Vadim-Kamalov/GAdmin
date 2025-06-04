@@ -14,41 +14,42 @@
 
 namespace plugin::gui::windows {
 
-class far_chat : public window {
+class far_chat final : public window {
 private:
-    struct entry {
+    struct entry final {
         samp::player player;
         types::color player_color, message_color;
         std::string message, time;
         std::chrono::steady_clock::time_point steady_time;
-    }; // struct entry
+    }; // struct entry final
 private:
-    ImFont *regular, *bold;
+    ImFont* regular;
+    ImFont* bold;
 
-    types::not_null<gui_initializer*> child;
     std::deque<entry> entries;
 
-    ImVec2 compute_window_size() const;
-    ImVec2 compute_entry_size(const entry& entry) const;
-
-    bool on_player_chat_bubble(const samp::event<samp::event_id::player_chat_bubble>& event);
+    auto compute_window_size() const -> ImVec2;
+    auto compute_entry_size(const entry& entry) const -> ImVec2;
+    auto on_player_chat_bubble(const samp::event<samp::event_id::player_chat_bubble>& event) -> bool;
 public:
-    constexpr types::zstring_t get_id() const override;
+    inline auto get_id() const -> types::zstring_t override;
+    static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
 
-    bool on_event(const samp::event_info& event) override;
-    void render() override;
+    auto on_event(const samp::event_info& event) -> bool override;
+    auto render() -> void override;
 
-    static window_ptr_t create(types::not_null<gui_initializer*> child) noexcept;
-    explicit far_chat(types::not_null<gui_initializer*> child);
+    explicit far_chat(types::not_null<gui_initializer*> child)
+        : window(child),
+          regular((*child->fonts->regular)[16]),
+          bold((*child->fonts->bold)[18]) {}
 private:
     static constexpr float spacing_x = 5;
     static constexpr std::size_t text_border_size = 1;
-}; // class far_chat : public window
+}; // class far_chat final : public window
 
 } // namespace plugin::gui::windows
 
-constexpr plugin::types::zstring_t
-plugin::gui::windows::far_chat::get_id() const {
+inline auto plugin::gui::windows::far_chat::get_id() const -> types::zstring_t {
     return "windows::far_chat";
 }
 

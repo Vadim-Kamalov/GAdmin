@@ -14,14 +14,14 @@ using play_sound_t = void(__thiscall*)(std::uintptr_t, int, types::vector_3d);
 
 namespace samp {
 
-class audio {
+class audio final {
 private:
     static types::versioned_address_container<signatures::play_sound_t> play_sound_container;
-    static std::uintptr_t instance() noexcept;
+    static auto instance() noexcept -> std::uintptr_t;
 public:
     enum class sound_id { bell = 1137 };
 
-    static void play_sound(const sound_id& id, types::vector_3d pos = {}) noexcept;
+    static auto play_sound(const sound_id& id, types::vector_3d pos = {}) noexcept -> void;
 }; // class audio
 
 } // namespace samp

@@ -6,36 +6,34 @@
 
 namespace plugin::types {
 
-class string_iterator {
+class string_iterator final {
 protected:
     std::string input;
     std::size_t index = 0;
 public:
-    std::optional<unsigned char> current() const;
-    unsigned char consume();
+    auto current() const -> std::optional<unsigned char>;
+    auto consume() -> unsigned char;
 
     template<typename callback_until>
-    void skip(callback_until until);
+    auto skip(callback_until until) -> void;
 
     template<typename callback_until>
-    std::string collect(callback_until until);
+    auto collect(callback_until until) -> std::string;
 
     explicit string_iterator(const std::string_view& input, std::size_t index = 0)
         : input(std::move(input)), index(index) {}
-}; // class string_iterator
+}; // class string_iterator final
 
 } // namespace plugin::types
 
 template<typename callback_until>
-void
-plugin::types::string_iterator::skip(callback_until until) {
+auto plugin::types::string_iterator::skip(callback_until until) -> void {
     while (current().has_value() && until(*current()))
         consume();
 }
 
 template<typename callback_until>
-std::string
-plugin::types::string_iterator::collect(callback_until until) {
+auto plugin::types::string_iterator::collect(callback_until until) -> std::string {
     std::string output;
 
     while (current().has_value() && until(*current()))

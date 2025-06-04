@@ -18,7 +18,6 @@
 ///
 /// @file include/plugin/game.h
 /// @details Provides general game-related utilities and functions.
-///
 
 #ifndef GADMIN_PLUGIN_GAME_H
 #define GADMIN_PLUGIN_GAME_H
@@ -39,40 +38,38 @@ namespace game {
 
 /// @brief Gets the window handle of the game.
 /// @return The window handle
-static inline HWND get_window() noexcept;
+inline auto get_window() noexcept -> HWND;
 
 /// @brief Gets the device associated with the game.
 /// @return The device identifier.
-static inline DWORD get_device() noexcept;
+inline auto get_device() noexcept -> DWORD;
 
 /// @brief Checks if the game menu is opened.
 /// @return True if the menu is opened, false otherwise.
-static inline bool is_menu_opened() noexcept;
+inline auto is_menu_opened() noexcept -> bool;
 
 /// @brief Gets the screen resolution of the game.
 /// @return A pair representing the screen resolution (width, height).
-std::pair<float, float> get_screen_resolution() noexcept;
+auto get_screen_resolution() noexcept -> std::pair<float, float>;
 
 /// @brief Converts 3D coordinates to screen coordinates.
+/// @note If the Z-coordinate returns a value below `0.0f`, then the conversion has failed.
 /// @param coords The 3D coordinates to convert.
 /// @return The corresponding screen coordinates.
-types::vector_3d convert_3d_coords_to_screen(const types::vector_3d& coords) noexcept;
+auto convert_3d_coords_to_screen(const types::vector_3d& coords) noexcept -> types::vector_3d;
 
 } // namespace game
 } // namespace plugin
 
-inline HWND
-plugin::game::get_window() noexcept {
+inline auto plugin::game::get_window() noexcept -> HWND {
     return **reinterpret_cast<HWND**>(0xC17054);
 }
 
-inline DWORD
-plugin::game::get_device() noexcept {
+inline auto plugin::game::get_device() noexcept -> DWORD {
     return *reinterpret_cast<DWORD*>(0xC97C28);
 }
 
-inline bool
-plugin::game::is_menu_opened() noexcept {
+inline auto plugin::game::is_menu_opened() noexcept -> bool {
     return *reinterpret_cast<bool*>(0xBA67A4);
 }
 

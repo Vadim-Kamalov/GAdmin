@@ -13,8 +13,9 @@
 #include <ctre.hpp>
 #include <string>
 
-void
-plugin::gui::windows::spectator_information::vehicles_custom_renderer(const std::string_view& value, types::color color) const {
+auto plugin::gui::windows::spectator_information::vehicles_custom_renderer(const std::string_view& value, types::color color) const
+    -> void
+{
     ImFont* font = (*child->fonts->regular)[16];
     
     if (value == "Отсутствует")
@@ -50,8 +51,9 @@ plugin::gui::windows::spectator_information::vehicles_custom_renderer(const std:
     widgets::hint::render_as_guide("Нажмите на ID машины чтобы телепортировать ее.");
 }
 
-void
-plugin::gui::windows::spectator_information::vehicle_information_custom_renderer(const std::string_view&, types::color) const {
+auto plugin::gui::windows::spectator_information::vehicle_information_custom_renderer(const std::string_view&, types::color) const
+    -> void
+{
     ImFont* font = (*child->fonts->regular)[16];
     samp::vehicle vehicle = server::spectator::player.get_vehicle();
 
@@ -85,8 +87,9 @@ plugin::gui::windows::spectator_information::vehicle_information_custom_renderer
     ImGui::PopFont();
 }
 
-void
-plugin::gui::windows::spectator_information::render_centered_text(const std::string_view& value, ImFont* font, const ImVec4& color) const {
+auto plugin::gui::windows::spectator_information::render_centered_text(const std::string_view& value, ImFont* font, const ImVec4& color) const
+    -> void
+{
     static constexpr ctll::fixed_string next_text_pattern = "(.*?)\\S+\\s*$"; 
 
     std::string text(value);
@@ -124,8 +127,9 @@ plugin::gui::windows::spectator_information::render_centered_text(const std::str
     ImGui::PopFont();
 }
 
-void
-plugin::gui::windows::spectator_information::nickname_custom_renderer(const std::string_view& text, types::color color) const {
+auto plugin::gui::windows::spectator_information::nickname_custom_renderer(const std::string_view& text, types::color color) const
+    -> void
+{
     std::vector<server::admin>& admins = server::admins::list;
 
     bool spectating_administrator = std::find_if(admins.begin(), admins.end(), [=](server::admin it) {
@@ -138,8 +142,7 @@ plugin::gui::windows::spectator_information::nickname_custom_renderer(const std:
     widgets::hint::render_as_guide("Красный цвет означает, что вы следите\nза администратором.", spectating_administrator);
 }
 
-std::string
-plugin::gui::windows::spectator_information::get_time_spectated() const {
+auto plugin::gui::windows::spectator_information::get_time_spectated() const -> std::string {
     auto duration = std::chrono::steady_clock::now() - server::spectator::last_checked;
     auto minutes = std::chrono::duration_cast<std::chrono::minutes>(duration);
     
@@ -150,8 +153,7 @@ plugin::gui::windows::spectator_information::get_time_spectated() const {
     return std::format("{:02}:{:02}", minutes.count(), seconds.count());
 }
 
-std::vector<plugin::gui::windows::spectator_information::row>
-plugin::gui::windows::spectator_information::get_rows() const {
+auto plugin::gui::windows::spectator_information::get_rows() const -> std::vector<row> {
     using namespace std::placeholders;
 
     server::spectator_information information = server::spectator::get_information();
@@ -215,8 +217,7 @@ plugin::gui::windows::spectator_information::get_rows() const {
     };
 }
 
-void
-plugin::gui::windows::spectator_information::render() {
+auto plugin::gui::windows::spectator_information::render() -> void {
     auto window_configuration = (*configuration)["windows"]["spectator_information"];
 
     if (!server::spectator::is_active() || !window_configuration["use"])
@@ -228,16 +229,6 @@ plugin::gui::windows::spectator_information::render() {
     for (std::size_t i = 0; i < rows.size(); i++) {
         auto user_ordered_row = std::find(row_order.begin(), row_order.end(), rows[i].label);
         auto new_index = std::distance(row_order.begin(), user_ordered_row);
-
-        if (user_ordered_row == row_order.end()) {
-            log::error("string-array in configuration[\"windows\"][\"spectator_information\"][\"row_order\"] "
-                       "is corrupted: value changing is prohibited");
-
-            stop_render();
-            
-            return;
-        }
-
         std::swap(rows[new_index], rows[i]);
     }
 
@@ -274,13 +265,6 @@ plugin::gui::windows::spectator_information::render() {
     ImGui::PopStyleVar(2);
 }
 
-plugin::gui::window_ptr_t
-plugin::gui::windows::spectator_information::create(types::not_null<gui_initializer*> child) noexcept {
+auto plugin::gui::windows::spectator_information::create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t {
     return std::make_unique<spectator_information>(child);
-}
-
-plugin::gui::windows::spectator_information::spectator_information(types::not_null<gui_initializer*> child) 
-    : child(child)
-{
-    log::info("window \"windows::spectator_information\" initialized");
 }

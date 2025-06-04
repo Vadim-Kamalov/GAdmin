@@ -5,15 +5,15 @@
 
 namespace plugin {
 
-class string_utils {
+class string_utils final {
 private:
-    static std::string convert_encoding(const std::string& text, unsigned int code_page_from, unsigned int code_page_to);
+    static auto convert_encoding(const std::string& text, unsigned int code_page_from, unsigned int code_page_to) -> std::string;
 public:
-    static std::string to_lowercase(const std::string_view& str);
-    static std::string truncate_until_hashtag(const std::string_view& text);
-    static std::string remove_samp_colors(const std::string_view& text);
-    static std::string to_utf8(const std::string& text);
-    static std::string to_cp1251(const std::string& text);
+    static auto to_lowercase(const std::string_view& str) -> std::string;
+    static auto truncate_until_hashtag(const std::string_view& text) -> std::string;
+    static auto remove_samp_colors(const std::string_view& text) -> std::string;
+    static auto to_utf8(const std::string& text) -> std::string;
+    static auto to_cp1251(const std::string& text) -> std::string;
 }; // class string_utils
 
 } // namespace plugin

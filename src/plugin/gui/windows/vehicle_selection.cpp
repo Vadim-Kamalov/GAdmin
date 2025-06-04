@@ -8,12 +8,12 @@
 #include "plugin/gui/animation.h"
 #include "plugin/gui/widgets/text.h"
 #include "plugin/server/user.h"
-#include "plugin/log.h"
 #include <ranges>
 #include <ctre.hpp>
 
-bool
-plugin::gui::windows::vehicle_selection::on_send_command(const samp::out_event<samp::event_id::send_command>& event) {
+auto plugin::gui::windows::vehicle_selection::on_send_command(const samp::out_event<samp::event_id::send_command>& event)
+    -> bool
+{
     static constexpr ctll::fixed_string command_pattern = "/veh\\s*";
 
     auto window_configuration = (*configuration)["windows"]["vehicle_selection"];
@@ -29,8 +29,7 @@ plugin::gui::windows::vehicle_selection::on_send_command(const samp::out_event<s
     return false;
 }
 
-std::vector<plugin::gui::windows::vehicle_selection::entry>
-plugin::gui::windows::vehicle_selection::get_filtered_entries() {
+auto plugin::gui::windows::vehicle_selection::get_filtered_entries() -> std::vector<entry> {
     std::vector<entry> entries;
 
     if (!search_bar.empty()) {
@@ -52,16 +51,14 @@ plugin::gui::windows::vehicle_selection::get_filtered_entries() {
     return entries;
 }
 
-bool
-plugin::gui::windows::vehicle_selection::on_event(const samp::event_info& event) {
+auto plugin::gui::windows::vehicle_selection::on_event(const samp::event_info& event) -> bool {
     if (event == samp::event_type::outgoing_rpc && event == samp::event_id::send_command)
         return on_send_command(event.create<samp::event_id::send_command, samp::event_type::outgoing_rpc>());
 
     return true;
 }
 
-bool
-plugin::gui::windows::vehicle_selection::on_event(unsigned int message, WPARAM wparam, LPARAM) {
+auto plugin::gui::windows::vehicle_selection::on_event(unsigned int message, WPARAM wparam, LPARAM) -> bool {
     if (message == WM_KEYUP && wparam == VK_ESCAPE && active) {
         close_window();
         return false;
@@ -70,8 +67,7 @@ plugin::gui::windows::vehicle_selection::on_event(unsigned int message, WPARAM w
     return true;
 }
 
-void
-plugin::gui::windows::vehicle_selection::render() {
+auto plugin::gui::windows::vehicle_selection::render() -> void {
     if (!active)
         return;
 
@@ -220,24 +216,17 @@ plugin::gui::windows::vehicle_selection::render() {
     ImGui::PopStyleVar();
 }
 
-void
-plugin::gui::windows::vehicle_selection::open_window() {
+auto plugin::gui::windows::vehicle_selection::open_window() -> void {
     time = std::chrono::steady_clock::now();
     active = focus = true;
 }
 
-void
-plugin::gui::windows::vehicle_selection::close_window() {
+auto plugin::gui::windows::vehicle_selection::close_window() -> void {
     time = std::chrono::steady_clock::now();
     closing = true;
     child->disable_cursor();
 }
 
-plugin::gui::window_ptr_t
-plugin::gui::windows::vehicle_selection::create(types::not_null<gui_initializer*> child) noexcept {
+auto plugin::gui::windows::vehicle_selection::create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t {
     return std::make_unique<vehicle_selection>(child);
-}
-
-plugin::gui::windows::vehicle_selection::vehicle_selection(types::not_null<gui_initializer*> child) : child(child) {
-    log::info("window \"windows::vehicle_selection\" initialized");
 }

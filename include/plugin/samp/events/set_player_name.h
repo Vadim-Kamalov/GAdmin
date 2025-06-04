@@ -6,14 +6,14 @@
 namespace plugin::samp {
 
 template<>
-struct event<event_id::set_player_name> {
+struct event<event_id::set_player_name> final {
     std::string nickname;
     std::uint16_t id;
 
     explicit event(bit_stream* stream)
         : id(stream->read<std::uint16_t>()),
           nickname(stream->read_string<std::uint8_t>()) {}
-}; // struct event<event_id::set_player_name>
+}; // struct event<event_id::set_player_name> final
 
 } // namespace plugin::samp
 

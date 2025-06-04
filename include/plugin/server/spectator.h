@@ -16,7 +16,7 @@
 
 namespace plugin::server {
 
-struct spectator_information {
+struct spectator_information final {
     float armor = 0;
     std::int32_t ping = 0;
     std::uint32_t health = 0, account_id = 0;
@@ -32,9 +32,9 @@ struct spectator_information {
     std::uint8_t warnings = 0, stage = 0, world = 0;
     std::uint16_t move_speed_current = 0, move_speed_max = 0;
     std::uint32_t total_shots = 0, hit_shots = 0;
-}; // struct spectator_information
+}; // struct spectator_information final
 
-class spectator {
+class spectator final {
 private:
     static inline bool active = false;
     static inline std::uint16_t text_draw_id = 0;
@@ -45,26 +45,23 @@ private:
     static inline bool checking_statistics = false;
     static inline std::chrono::steady_clock::time_point last_reload;
 
-    static bool on_show_text_draw(const samp::event<samp::event_id::show_text_draw>& text_draw);
-    static bool on_text_draw_set_string(const samp::event<samp::event_id::set_text_draw_string>& text_draw);
-    static bool on_text_draw_hide(const samp::event<samp::event_id::hide_text_draw>& text_draw);
+    static auto on_show_text_draw(const samp::event<samp::event_id::show_text_draw>& text_draw) -> bool;
+    static auto on_text_draw_set_string(const samp::event<samp::event_id::set_text_draw_string>& text_draw) -> bool;
+    static auto on_text_draw_hide(const samp::event<samp::event_id::hide_text_draw>& text_draw) -> bool;
+    static auto on_show_3d_text(const samp::event<samp::event_id::create_3d_text>& created_3d_text) -> bool;
+    static auto on_remove_3d_text(const samp::event<samp::event_id::remove_3d_text>& removed_3d_text) -> bool;
+    static auto on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog) -> bool;
+    static auto on_player_synchronization(const samp::packet<samp::event_id::player_synchronization>& synchronization) -> bool;
+    static auto on_vehicle_synchronization(const samp::packet<samp::event_id::vehicle_synchronization>& synchronization) -> bool;
+    static auto on_passenger_synchronization(const samp::packet<samp::event_id::passenger_synchronization>& synchronization) -> bool;
+    static auto on_bullet_synchronization(const samp::packet<samp::event_id::bullet_synchronization>& synchronization) -> bool;
 
-    static bool on_show_3d_text(const samp::event<samp::event_id::create_3d_text>& created_3d_text);
-    static bool on_remove_3d_text(const samp::event<samp::event_id::remove_3d_text>& removed_3d_text);
-
-    static bool on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog);
-
-    static bool on_player_synchronization(const samp::packet<samp::event_id::player_synchronization>& synchronization);
-    static bool on_vehicle_synchronization(const samp::packet<samp::event_id::vehicle_synchronization>& synchronization);
-    static bool on_passenger_synchronization(const samp::packet<samp::event_id::passenger_synchronization>& synchronization);
-    static bool on_bullet_synchronization(const samp::packet<samp::event_id::bullet_synchronization>& synchronization);
-
-    static void update_available_information() noexcept;
-    static std::string convert_possible_absence_text(const std::string& text) noexcept;
-    static void clear_keys_down() noexcept;
+    static auto update_available_information() noexcept -> void;
+    static auto convert_possible_absence_text(const std::string& text) noexcept -> std::string;
+    static auto clear_keys_down() noexcept -> void;
 public:
-    enum class camera_switch_state_t { none, player, vehicle };
-    enum class platform_t { none, desktop, mobile };
+    enum class camera_switch_state_t : std::uint8_t { none, player, vehicle };
+    enum class platform_t : std::uint8_t { none, desktop, mobile };
     enum class menu_option : std::uint8_t {
         next,
         reload,
@@ -86,42 +83,40 @@ public:
     static inline gui::widgets::joystick joystick;
     static inline std::chrono::steady_clock::time_point last_checked;
 
-    static inline bool is_active() noexcept;
-    static inline void set_status(bool status) noexcept;
+    static inline auto is_active() noexcept -> bool;
+    static inline auto set_status(bool status) noexcept -> void;
 
-    static void assign(std::uint16_t new_id) noexcept;
-    static spectator_information get_information() noexcept;
+    static auto assign(std::uint16_t new_id) noexcept -> void;
+    static auto get_information() noexcept -> spectator_information;
 
     template<menu_option option>
-    static inline void send_menu_option() noexcept;
+    static inline auto send_menu_option() noexcept -> void;
 
-    static inline bool& get_key_state(const samp::synchronization_key& key) noexcept;
+    static inline auto get_key_state(const samp::synchronization_key& key) noexcept -> bool&;
 
-    static bool on_event(const samp::event_info& event);
-    static void main_loop();
-    static void register_hotkeys(types::not_null<gui::hotkey_handler*> handler) noexcept;
-}; // class spectator
+    static auto on_event(const samp::event_info& event) -> bool;
+    static auto main_loop() -> void;
+    static auto register_hotkeys(types::not_null<gui::hotkey_handler*> handler) noexcept -> void;
+}; // class spectator final
 
 } // namespace plugin::server
 
-inline bool
-plugin::server::spectator::is_active() noexcept {
+inline auto plugin::server::spectator::is_active() noexcept -> bool {
     return active && player.is_available() && user::is_on_alogin();
 }
 
-inline void
-plugin::server::spectator::set_status(bool status) noexcept {
+inline auto plugin::server::spectator::set_status(bool status) noexcept -> void {
     active = status;
 }
     
 template<plugin::server::spectator::menu_option option>
-inline void
-plugin::server::spectator::send_menu_option() noexcept {
+inline auto plugin::server::spectator::send_menu_option() noexcept -> void {
     samp::menu::select(std::to_underlying(option));
 }
 
-inline bool&
-plugin::server::spectator::get_key_state(const samp::synchronization_key& key) noexcept {
+inline auto plugin::server::spectator::get_key_state(const samp::synchronization_key& key)
+    noexcept -> bool&
+{
     return keys_down[std::to_underlying(key)];
 }
 

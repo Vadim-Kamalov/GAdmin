@@ -2,15 +2,13 @@
 #include "plugin/samp/core/player_pool.h"
 #include "plugin/samp/core/user.h"
 
-void
-plugin::samp::player::write_local_player(id_t new_id) {
+auto plugin::samp::player::write_local_player(id_t new_id) -> void {
     local_player = valid = true;
     nickname = user::get_name();
     id = new_id;
 }
 
-plugin::types::color
-plugin::samp::player::get_color() const {
+auto plugin::samp::player::get_color() const -> types::color {
     if (local_player)
         return user::get_color();
 
@@ -20,8 +18,7 @@ plugin::samp::player::get_color() const {
     return 0;
 }
 
-plugin::samp::player::ping_t
-plugin::samp::player::get_ping() const {
+auto plugin::samp::player::get_ping() const -> ping_t {
     if (local_player)
         return user::get_ping();
 
@@ -31,13 +28,11 @@ plugin::samp::player::get_ping() const {
     return 0;
 }
 
-bool
-plugin::samp::player::is_available() const {
+auto plugin::samp::player::is_available() const -> bool {
     return valid;
 }
 
-std::deque<plugin::samp::player::stream_entry_t>
-plugin::samp::player::get_stream_players() {
+auto plugin::samp::player::get_stream_players() -> std::deque<plugin::samp::player::stream_entry_t> {
     std::deque<stream_entry_t> players;
 
     for (id_t stream_id = 0; stream_id <= SERVER_MAX_PLAYERS; stream_id++) {

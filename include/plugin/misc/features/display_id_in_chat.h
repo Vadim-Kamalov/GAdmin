@@ -6,12 +6,12 @@
 
 namespace plugin::misc::features {
 
-class display_id_in_chat : public feature {
+class display_id_in_chat final : public feature {
 private:
-    bool on_server_message(const samp::event<samp::event_id::server_message>& message) const;
+    auto on_server_message(const samp::event<samp::event_id::server_message>& message) const -> bool;
 public:
-    bool on_event(const samp::event_info& event) override;
-}; // class display_id_in_chat : public feature
+    auto on_event(const samp::event_info& event) -> bool override;
+}; // class display_id_in_chat final : public feature
 
 } // namespace plugin::misc::feature 
 

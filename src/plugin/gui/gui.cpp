@@ -19,8 +19,7 @@
 #include <windows.h>
 #include <imgui.h>
 
-bool
-plugin::gui_initializer::on_event(const samp::event_info& event) const {
+auto plugin::gui_initializer::on_event(const samp::event_info& event) const -> bool {
     for (const auto& window : registered_windows) {
         event.stream->reset_read_pointer();
         if (!window->on_event(event))
@@ -30,8 +29,7 @@ plugin::gui_initializer::on_event(const samp::event_info& event) const {
     return true;
 }
 
-bool
-plugin::gui_initializer::on_event(unsigned int message, WPARAM wparam, LPARAM lparam) {
+auto plugin::gui_initializer::on_event(unsigned int message, WPARAM wparam, LPARAM lparam) -> bool {
     if (ImGui::GetCurrentContext() == nullptr)
         return true;
 
@@ -56,19 +54,16 @@ plugin::gui_initializer::on_event(unsigned int message, WPARAM wparam, LPARAM lp
     return true;
 }
 
-void
-plugin::gui_initializer::on_samp_initialize() {
+auto plugin::gui_initializer::on_samp_initialize() -> void {
     for (const auto& window : registered_windows)
         window->on_samp_initialize();
 }
 
-bool
-plugin::gui_initializer::can_initialize_render() const {
-    return fonts->available();
+auto plugin::gui_initializer::can_initialize_render() const -> bool {
+    return fonts->is_available();
 }
 
-void
-plugin::gui_initializer::on_initialize() {
+auto plugin::gui_initializer::on_initialize() -> void {
     using namespace gui;
     
     ImGui::GetIO().IniFilename = nullptr; 
@@ -93,8 +88,7 @@ plugin::gui_initializer::on_initialize() {
     registered_windows.push_back(windows::interaction_area::create(this));
 }
 
-void
-plugin::gui_initializer::render() const {
+auto plugin::gui_initializer::render() const -> void {
     for (const auto& window : registered_windows) {
         if (!window->can_render() || (game::is_menu_opened() && !window->render_on_game_paused()))
             continue;
@@ -103,26 +97,22 @@ plugin::gui_initializer::render() const {
     }
 }
 
-void
-plugin::gui_initializer::main_loop() {
+auto plugin::gui_initializer::main_loop() -> void {
     hotkey_handler->main_loop();
 }
 
-bool
-plugin::gui_initializer::is_cursor_active() const {
+auto plugin::gui_initializer::is_cursor_active() const -> bool {
     return GetCursor() != nullptr;
 }
 
-void
-plugin::gui_initializer::enable_cursor() {
+auto plugin::gui_initializer::enable_cursor() -> void {
     game::cursor::set_status(true);
     
     if (cursor_last_x != -1 && cursor_last_y != -1)
         SetCursorPos(cursor_last_x, cursor_last_y);
 }
 
-void
-plugin::gui_initializer::disable_cursor() {
+auto plugin::gui_initializer::disable_cursor() -> void {
     POINT cursor_pos;
     
     game::cursor::set_status(false);
@@ -132,8 +122,7 @@ plugin::gui_initializer::disable_cursor() {
     cursor_last_y = cursor_pos.y;
 }
 
-void
-plugin::gui_initializer::switch_cursor() {
+auto plugin::gui_initializer::switch_cursor() -> void {
     if (is_cursor_active())
         disable_cursor();
     else
@@ -143,7 +132,6 @@ plugin::gui_initializer::switch_cursor() {
 plugin::gui_initializer::gui_initializer() {
     fonts = std::make_unique<gui::fonts_initializer>();
     hotkey_handler = std::make_unique<gui::hotkey_handler>(this);
-
     server::spectator::register_hotkeys(hotkey_handler.get());
 }
 

@@ -22,7 +22,7 @@ using value_or_reference_return_t = std::conditional_t<
 namespace types {
 
 template<concepts::comparable_to_nullptr T>
-class not_null {
+class not_null final {
 private:
     T ptr;
 public:
@@ -38,29 +38,29 @@ public:
         : not_null(other.get()) {}
 
     not_null(const not_null& other) = default;
-    not_null& operator=(const not_null& other) = default;
+    auto operator=(const not_null& other) -> not_null& = default;
 
-    constexpr concepts::value_or_reference_return_t<T> get() const
-        noexcept(noexcept(concepts::value_or_reference_return_t<T>(std::declval<T&>())))
+    constexpr auto get() const noexcept(noexcept(concepts::value_or_reference_return_t<T>(std::declval<T&>())))
+        -> concepts::value_or_reference_return_t<T>
     {
         return ptr;
     }
 
     constexpr operator T() const { return get(); }
-    constexpr decltype(auto) operator->() const { return get(); }
-    constexpr decltype(auto) operator*() const { return *get(); }
+    constexpr auto operator->() const { return get(); }
+    constexpr auto operator*() const { return *get(); }
 
     not_null(std::nullptr_t) = delete;
-    not_null& operator=(std::nullptr_t) = delete;
+    auto operator=(std::nullptr_t) -> not_null& = delete;
 
-    not_null& operator++() = delete;
-    not_null& operator--() = delete;
-    not_null operator++(int) = delete;
-    not_null operator--(int) = delete;
-    not_null& operator+=(std::ptrdiff_t) = delete;
-    not_null& operator-=(std::ptrdiff_t) = delete;
-    void operator[](std::ptrdiff_t) const = delete;
-}; // class not_null
+    auto operator++() -> not_null& = delete;
+    auto operator--() -> not_null& = delete;
+    auto operator++(int) -> not_null = delete;
+    auto operator--(int) -> not_null = delete;
+    auto operator+=(std::ptrdiff_t) -> not_null& = delete;
+    auto operator-=(std::ptrdiff_t) -> not_null& = delete;
+    auto operator[](std::ptrdiff_t) const -> void = delete;
+}; // class not_null final
 
 } // namespace types
 } // namespace plugin

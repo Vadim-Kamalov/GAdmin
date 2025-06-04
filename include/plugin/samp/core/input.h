@@ -19,7 +19,7 @@ using process_input_t = void(__thiscall*)(std::uintptr_t);
 
 namespace samp {
 
-class input {
+class input final {
 public:
     static constexpr std::uint8_t max_commands_count = 144;
     static constexpr std::uint8_t max_command_length = 32;
@@ -35,25 +35,24 @@ private:
     static types::versioned_address_container<signatures::set_text_t> set_text_container;
     static types::versioned_address_container<signatures::get_text_t> get_text_container;
 public:
-    static bool is_active() noexcept;
-    static bool is_command_defined(const std::string_view& command) noexcept;
+    static auto is_active() noexcept -> bool;
+    static auto is_command_defined(const std::string_view& command) noexcept -> bool;
 
-    static void open() noexcept;
-    static void process(const std::string_view& text) noexcept;
-    static void set_text(const std::string_view& text) noexcept;
+    static auto open() noexcept -> void;
+    static auto process(const std::string_view& text) noexcept -> void;
+    static auto set_text(const std::string_view& text) noexcept -> void;
 
-    static std::string get_text() noexcept;
+    static auto get_text() noexcept -> std::string;
 
     template<typename... Args>
-    static void send_command(std::format_string<Args...> fmt, Args&&... args) noexcept;
-}; // class input
+    static auto send_command(std::format_string<Args...> fmt, Args&&... args) noexcept -> void;
+}; // class input final
 
 } // namespace samp
 } // namespace plugin
 
 template<typename... Args>
-void
-plugin::samp::input::send_command(std::format_string<Args...> fmt, Args&&... args) noexcept {
+auto plugin::samp::input::send_command(std::format_string<Args...> fmt, Args&&... args) noexcept -> void {
     send_command_container->invoke(instance_container->read(), string_utils::to_cp1251(
         std::format(fmt, std::forward<Args>(args)...)).c_str());
 }

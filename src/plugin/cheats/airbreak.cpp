@@ -9,8 +9,7 @@
 #include "plugin/server/spectator.h"
 #include <cmath>
 
-void
-plugin::cheats::airbreak::hotkey_callback(gui::hotkey& hotkey) {
+auto plugin::cheats::airbreak::hotkey_callback(gui::hotkey& hotkey) -> void {
     auto cheat_configuration = (*configuration)["cheats"]["airbreak"];
     
     if (!cheat_configuration["use"] || !server::user::is_on_alogin() || server::spectator::is_active())
@@ -42,14 +41,12 @@ plugin::cheats::airbreak::hotkey_callback(gui::hotkey& hotkey) {
     gui::notify::send(gui::notification(notify_title, notify_description, ICON_INFO));
 }
 
-float
-plugin::cheats::airbreak::get_heading_from_xy(float x, float y) const {
+auto plugin::cheats::airbreak::get_heading_from_xy(float x, float y) const -> float {
     float deg = std::atan2(y, x) * (180.0f / std::numbers::pi) - 90.0f;
     return (deg > 0.0f) ? deg : deg + 360.0f;
 }
 
-void
-plugin::cheats::airbreak::on_alogin_new_state(bool state) {
+auto plugin::cheats::airbreak::on_alogin_new_state(bool state) -> void {
     if (state || !cheat_active)
         return;
 
@@ -69,13 +66,11 @@ plugin::cheats::airbreak::on_alogin_new_state(bool state) {
     game::pad::set_player_enter_vehicle(false);
 }
 
-void
-plugin::cheats::airbreak::register_hotkeys(types::not_null<gui::hotkey_handler*> handler) {
+auto plugin::cheats::airbreak::register_hotkeys(types::not_null<gui::hotkey_handler*> handler) -> void {
     handler->add(hotkey);
 }
 
-void
-plugin::cheats::airbreak::main_loop() {
+auto plugin::cheats::airbreak::main_loop() -> void {
     if (!cheat_active)
         return;
     

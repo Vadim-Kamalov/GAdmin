@@ -2,9 +2,9 @@
 #include "plugin/game/entity.h"
 #include <memory>
 
-std::optional<plugin::game::world::processed_line_of_sight>
-plugin::game::world::process_line_of_sight(const types::vector_3d& origin, const types::vector_3d& target,
-                                           const types::options<line_of_sight_condition>& conditions) noexcept
+auto plugin::game::world::process_line_of_sight(const types::vector_3d& origin, const types::vector_3d& target,
+                                                const types::options<line_of_sight_condition>& conditions)
+    noexcept -> std::optional<processed_line_of_sight>
 {
     types::vector_3d* vector_origin = const_cast<types::vector_3d*>(std::addressof(origin));
     types::vector_3d* vector_target = const_cast<types::vector_3d*>(std::addressof(target));
@@ -17,14 +17,10 @@ plugin::game::world::process_line_of_sight(const types::vector_3d& origin, const
     } point;
 
     if (!process_line_of_sight_address(vector_origin, vector_target, reinterpret_cast<std::uintptr_t>(&point), &entity_ptr,
-                                       conditions.has_value(line_of_sight_condition::buildings),
-                                       conditions.has_value(line_of_sight_condition::vehicles),
-                                       conditions.has_value(line_of_sight_condition::peds),
-                                       conditions.has_value(line_of_sight_condition::objects),
-                                       conditions.has_value(line_of_sight_condition::dummies),
-                                       conditions.has_value(line_of_sight_condition::see_through),
-                                       conditions.has_value(line_of_sight_condition::camera_ignore),
-                                       conditions.has_value(line_of_sight_condition::shoot_through)))
+        conditions.has_value(line_of_sight_condition::buildings), conditions.has_value(line_of_sight_condition::vehicles),
+        conditions.has_value(line_of_sight_condition::peds), conditions.has_value(line_of_sight_condition::objects),
+        conditions.has_value(line_of_sight_condition::dummies), conditions.has_value(line_of_sight_condition::see_through),
+        conditions.has_value(line_of_sight_condition::camera_ignore), conditions.has_value(line_of_sight_condition::shoot_through)))
     {
         return {};
     }

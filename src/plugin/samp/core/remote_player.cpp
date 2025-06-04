@@ -12,27 +12,22 @@ plugin::samp::remote_player::armor_container = { 0x1B8, 0x1AC, 0x1AC, 0x1AC };
 plugin::types::versioned_address_container<plugin::signatures::get_color_as_argb>
 plugin::samp::remote_player::get_color_container = { 0x12A00, 0x15C10, 0x16180, 0x15E30 };
 
-bool
-plugin::samp::remote_player::is_available() const {
+auto plugin::samp::remote_player::is_available() const -> bool {
     return handle.is_available();
 }
 
-plugin::samp::ped
-plugin::samp::remote_player::get_ped() const {
+auto plugin::samp::remote_player::get_ped() const -> ped {
     return ped_container->read(*handle);
 }
 
-plugin::samp::vehicle
-plugin::samp::remote_player::get_vehicle() const {
+auto plugin::samp::remote_player::get_vehicle() const -> vehicle {
     return vehicle_container->read(*handle);
 }
 
-float
-plugin::samp::remote_player::get_armor() const {
+auto plugin::samp::remote_player::get_armor() const -> float {
     return armor_container->read(*handle);
 }
 
-plugin::types::color
-plugin::samp::remote_player::get_color() const {
+auto plugin::samp::remote_player::get_color() const -> types::color {
     return types::color::argb(get_color_container->invoke(*handle));
 }

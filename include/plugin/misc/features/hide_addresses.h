@@ -7,16 +7,16 @@
 
 namespace plugin::misc::features {
 
-class hide_addresses : public feature {
+class hide_addresses final : public feature {
 private:
-    std::optional<std::string> try_change_addresses(const std::string_view& input) const;
-    bool is_ip_address(const std::string_view& input) const;
+    auto try_change_addresses(const std::string_view& input) const -> std::optional<std::string>;
+    auto is_ip_address(const std::string_view& input) const -> bool;
 
-    bool on_server_message(const samp::event<samp::event_id::server_message>& message) const;
-    bool on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog) const;
+    auto on_server_message(const samp::event<samp::event_id::server_message>& message) const -> bool;
+    auto on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog) const -> bool;
 public:
-    bool on_event(const samp::event_info& event) override;
-}; // class hide_addresses : public feature
+    auto on_event(const samp::event_info& event) -> bool override;
+}; // class hide_addresses final : public feature
 
 } // namespace plugin::misc::features
 

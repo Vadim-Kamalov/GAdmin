@@ -18,7 +18,6 @@
 ///
 /// @file include/plugin/game/camera.h
 /// @details Provides functionality for managing in-game camera operations.
-///
 
 #ifndef GADMIN_PLUGIN_GAME_CAMERA_H
 #define GADMIN_PLUGIN_GAME_CAMERA_H
@@ -39,7 +38,7 @@ namespace game {
 
 /// @class camera
 /// @brief Manages in-game camera operations and properties.
-class camera {
+class camera final {
 private:
     struct active_camera {
         types::vector_3d front;
@@ -53,32 +52,32 @@ private:
     static inline types::address<types::vector_3d> front_camera_address = 0xB6F32C;
     static inline types::address<types::vector_3d> source_camera_address = 0xB6F338;
     
-    static active_camera get_active_camera() noexcept;
+    static auto get_active_camera() noexcept -> active_camera;
 public:
     /// @brief Linearly interpolates the field of view.
     /// @param zoom_in_factor Factor to zoom in.
     /// @param zoom_out_factor Factor to zoom out.
     /// @param time_limit Time limit for the interpolation.
     /// @param ease Whether to ease the interpolation.
-    static void lerp_fov(float zoom_in_factor, float zoom_out_factor, float time_limit, bool ease) noexcept;
+    static auto lerp_fov(float zoom_in_factor, float zoom_out_factor, float time_limit, bool ease) noexcept -> void;
     
     /// @brief Gets the active camera coordinates.
     /// @return The active camera coordinates.
-    static types::vector_3d get_active_coordinates() noexcept;
+    static auto get_active_coordinates() noexcept -> types::vector_3d;
 
     /// @brief Gets the point at which the camera is looking.
     /// @return The point at which the camera is looking.
-    static types::vector_3d get_active_point_at() noexcept;
+    static auto get_active_point_at() noexcept -> types::vector_3d;
 
     /// @brief Converts screen coordinates to world coordinates.
     /// @param x The x-coordinate on the screen.
     /// @param y The y-coordinate on the screen.
     /// @param depth The depth on the screen.
     /// @return The corresponding world coordinates.
-    static types::vector_3d screen_to_coordinates(float x, float y, float depth) noexcept;
+    static auto screen_to_coordinates(float x, float y, float depth) noexcept -> types::vector_3d;
 private:
     static constexpr std::uintptr_t camera_size = 0x238;
-}; // class camera
+}; // class camera final
 
 } // namespace game
 } // namespace plugin

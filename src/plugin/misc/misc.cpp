@@ -12,8 +12,7 @@
 #include "plugin/misc/features/short_commands.h"
 #include <memory>
 
-bool
-plugin::misc::initializer::on_event(const samp::event_info& event) {
+auto plugin::misc::initializer::on_event(const samp::event_info& event) -> bool {
     for (const auto& feature : features) {
         event.stream->reset_read_pointer();
         if (!feature->on_event(event))
@@ -23,8 +22,7 @@ plugin::misc::initializer::on_event(const samp::event_info& event) {
     return true;
 }
 
-void
-plugin::misc::initializer::main_loop() {
+auto plugin::misc::initializer::main_loop() -> void {
     for (const auto& feature : features)
         feature->main_loop();
 }

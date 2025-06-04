@@ -4,12 +4,10 @@
 #include "plugin/gui/widgets/button.h"
 #include "plugin/gui/widgets/frame_switcher.h"
 #include "plugin/gui/widgets/menu_selector.h"
-#include "plugin/log.h"
 #include <imgui.h>
 #include <windows.h>
 
-void
-plugin::gui::windows::main::render_menu() {
+auto plugin::gui::windows::main::render_menu() -> void {
     ImGui::SetCursorPos({ 0, 0 });
     ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 0);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 10, 10 });
@@ -64,8 +62,7 @@ plugin::gui::windows::main::render_menu() {
     }
 }
 
-void
-plugin::gui::windows::main::render() {
+auto plugin::gui::windows::main::render() -> void {
     auto [size_x, size_y] = game::get_screen_resolution();
     auto flags = ImGuiWindowFlags_NoTitleBar;
 
@@ -97,11 +94,6 @@ plugin::gui::windows::main::render() {
     ImGui::PopStyleVar();
 }
 
-plugin::gui::windows::main::main(types::not_null<gui_initializer*> child) : child(child) {
-    log::info("window \"{}\" initialized", get_id());
-}
-
-plugin::gui::window_ptr_t
-plugin::gui::windows::main::create(types::not_null<gui_initializer*> child) noexcept {
+auto plugin::gui::windows::main::create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t {
     return std::make_unique<main>(child);
 }

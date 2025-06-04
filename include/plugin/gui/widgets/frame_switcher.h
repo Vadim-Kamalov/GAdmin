@@ -15,7 +15,7 @@
 /// along with this program. If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-
+///
 /// @file include/plugin/gui/widgets/frame_switcher.h
 /// @details Provides functionality for switching frames in the GUI.
 

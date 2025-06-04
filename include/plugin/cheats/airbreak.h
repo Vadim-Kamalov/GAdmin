@@ -18,7 +18,6 @@
 /// 
 /// @file include/plugin/cheats/airbreak.h
 /// @details Provides interface for aerial movement system allowing:
-///
 
 #ifndef GADMIN_PLUGIN_CHEATS_AIRBREAK_H
 #define GADMIN_PLUGIN_CHEATS_AIRBREAK_H
@@ -32,35 +31,30 @@ namespace plugin::cheats {
 /// @class airbreak
 /// @brief Implements aerial movement cheat
 /// @inherits basic_cheat
-class airbreak : public basic_cheat {
+class airbreak final : public basic_cheat {
 private:
     gui::hotkey hotkey;
     types::vector_3d coords;
     bool cheat_active = false;
     
-    void hotkey_callback(gui::hotkey& hotkey);
-    float get_heading_from_xy(float x, float y) const;
+    auto hotkey_callback(gui::hotkey& hotkey) -> void;
+    auto get_heading_from_xy(float x, float y) const -> float;
     
-    static constexpr float deg_to_rad(float deg) noexcept;
+    static constexpr auto deg_to_rad(float deg) noexcept -> float;
 public:
     /// @brief Handles login state changes
     /// @param state New login state (true = logged in)
     /// @override
-    void on_alogin_new_state(bool state) override;
-    void register_hotkeys(types::not_null<gui::hotkey_handler*> handler) override;
-    void main_loop() override;
+    auto on_alogin_new_state(bool state) -> void override;
+    auto register_hotkeys(types::not_null<gui::hotkey_handler*> handler) -> void override;
+    auto main_loop() -> void override;
 
     explicit airbreak();
-}; // class airbreak : public basic_cheat
+}; // class airbreak final : public basic_cheat
 
 } // namespace plugin::cheats
 
-/// @brief Compile-time degree to radian conversion
-/// @param deg Angle in degrees
-/// @return Angle in radians
-/// @noexcept
-constexpr float
-plugin::cheats::airbreak::deg_to_rad(float deg) noexcept {
+constexpr auto plugin::cheats::airbreak::deg_to_rad(float deg) noexcept -> float {
     return deg * (std::numbers::pi / 180.0f);
 }
 

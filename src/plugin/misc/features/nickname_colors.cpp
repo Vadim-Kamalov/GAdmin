@@ -6,8 +6,7 @@
 #include <algorithm>
 #include <ctre.hpp>
 
-bool
-plugin::misc::features::nickname_colors::on_server_message(const samp::event<samp::event_id::server_message>& message) {
+auto plugin::misc::features::nickname_colors::on_server_message(const samp::event<samp::event_id::server_message>& message) -> bool {
     static constexpr ctll::fixed_string message_pattern = R"(^\[A\] (\S+)(\[\d+\].*))";
     
     if (entries.empty())
@@ -30,8 +29,7 @@ plugin::misc::features::nickname_colors::on_server_message(const samp::event<sam
     return true;
 }
 
-void
-plugin::misc::features::nickname_colors::append_entries(nlohmann::json& object) {
+auto plugin::misc::features::nickname_colors::append_entries(nlohmann::json& object) -> void {
     for (const auto& [ key, value ] : object.items()) {
         if (value.is_array()) {
             std::vector<types::color> colors;
@@ -54,8 +52,7 @@ plugin::misc::features::nickname_colors::append_entries(nlohmann::json& object) 
     }
 }
 
-bool
-plugin::misc::features::nickname_colors::on_event(const samp::event_info& event) {
+auto plugin::misc::features::nickname_colors::on_event(const samp::event_info& event) -> bool {
     bool use_feature = (*configuration)["misc"]["nickname_colors"];
 
     if (use_feature && event == samp::event_type::incoming_rpc && event == samp::event_id::server_message) 
@@ -87,7 +84,6 @@ plugin::misc::features::nickname_colors::~nickname_colors() noexcept {
     }
 }
 
-std::deque<plugin::misc::features::nickname_colors::entry_t>&
-plugin::misc::get_nickname_colors() noexcept {
+auto plugin::misc::get_nickname_colors() noexcept -> std::deque<features::nickname_colors::entry_t>& {
     return features::nickname_colors::entries;
 }

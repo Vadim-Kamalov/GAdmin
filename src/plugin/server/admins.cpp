@@ -7,8 +7,7 @@
 #include <algorithm>
 #include <spanstream>
 
-void
-plugin::server::admin::sort(std::vector<admin>& admins, const sort_option& option) {
+auto plugin::server::admin::sort(std::vector<admin>& admins, const sort_option& option) -> void {
     switch (option) {
         case sort_option::disabled:
             break;
@@ -24,8 +23,7 @@ plugin::server::admin::sort(std::vector<admin>& admins, const sort_option& optio
     }
 }
 
-bool
-plugin::server::admins::on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog) {
+auto plugin::server::admins::on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog) -> bool {
     if (!list.empty() || user::is_on_alogin())
         return true;
 
@@ -53,8 +51,7 @@ plugin::server::admins::on_show_dialog(const samp::event<samp::event_id::show_di
     return true;
 }
 
-bool
-plugin::server::admins::on_server_message(const samp::event<samp::event_id::server_message>& message) {
+auto plugin::server::admins::on_server_message(const samp::event<samp::event_id::server_message>& message) -> bool {
     static constexpr ctll::fixed_string authorization_pattern = 
         R"(\[A\] (\S+)\[(\d+)\] авторизовался как администратор (\d+) уровня.)";
 
@@ -77,20 +74,17 @@ plugin::server::admins::on_server_message(const samp::event<samp::event_id::serv
     return true;
 }
 
-bool
-plugin::server::admins::on_server_quit(const samp::event<samp::event_id::server_quit>& disconnected) {
+auto plugin::server::admins::on_server_quit(const samp::event<samp::event_id::server_quit>& disconnected) -> bool {
     remove_disconnected_admin(disconnected.id);
     return true;
 }
 
-bool
-plugin::server::admins::on_set_player_name(const samp::event<samp::event_id::set_player_name>& player) {
+auto plugin::server::admins::on_set_player_name(const samp::event<samp::event_id::set_player_name>& player) -> bool {
     remove_disconnected_admin(player.id);
     return true;
 }
 
-void
-plugin::server::admins::update_admins(const std::string_view& dialog_text) {
+auto plugin::server::admins::update_admins(const std::string_view& dialog_text) -> void {
     static constexpr ctll::fixed_string entry_pattern = R"(\{FFFFFF\}(.*)\[(\d+)\] - ([1-5]) уровень)";
 
     std::ispanstream stream(dialog_text);
@@ -112,16 +106,14 @@ plugin::server::admins::update_admins(const std::string_view& dialog_text) {
     }
 }
 
-void
-plugin::server::admins::add_connected_admin(const admin& connected_admin) {
+auto plugin::server::admins::add_connected_admin(const admin& connected_admin) -> void {
     if (get_admin(connected_admin.id).has_value())
         return;
 
     list.push_back(connected_admin);
 }
 
-void
-plugin::server::admins::remove_disconnected_admin(std::uint16_t id) {
+auto plugin::server::admins::remove_disconnected_admin(std::uint16_t id) -> void {
     if (id == samp::user::get_id()) {
         user::set_alogin_status(false);
         return;
@@ -137,21 +129,18 @@ plugin::server::admins::remove_disconnected_admin(std::uint16_t id) {
     }
 }
 
-std::optional<plugin::server::admin>
-plugin::server::admins::get_admin(std::uint16_t id) {
+auto plugin::server::admins::get_admin(std::uint16_t id) -> std::optional<admin> {
     if (auto found = std::find_if(list.begin(), list.end(), [id](const admin& it) { return it.id == id; }); found != list.end())
         return *found;
     else
         return {};
 }
 
-void
-plugin::server::admins::on_alogout() {
+auto plugin::server::admins::on_alogout() -> void {
     list.clear();
 }
 
-bool
-plugin::server::admins::on_event(const samp::event_info& event) {
+auto plugin::server::admins::on_event(const samp::event_info& event) -> bool {
     if (event == samp::event_type::incoming_rpc) {
         if (event == samp::event_id::show_dialog)
             if (auto dialog_event = event.create<samp::event_id::show_dialog>())

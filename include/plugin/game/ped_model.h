@@ -18,7 +18,6 @@
 ///
 /// @file include/plugin/game/ped_model.h
 /// @details Provides constants and functions related to pedestrian models in the game
-///
 
 #ifndef GADMIN_PLUGIN_GAME_PED_MODEL_H
 #define GADMIN_PLUGIN_GAME_PED_MODEL_H
@@ -45,12 +44,11 @@ static constexpr std::uint16_t female_models_index[] = {
 /// @brief Gets the maximum speed for a pedestrian model.
 /// @param ped_model_index The index of the pedestrian model.
 /// @return The maximum speed for the pedestrian model.
-constexpr float get_max_ped_model_speed(std::uint16_t ped_model_index) noexcept;
+constexpr auto get_max_ped_model_speed(std::uint16_t ped_model_index) noexcept -> float;
 
 } // namespace plugin::game
 
-constexpr float
-plugin::game::get_max_ped_model_speed(std::uint16_t ped_model_index) noexcept {
+constexpr auto plugin::game::get_max_ped_model_speed(std::uint16_t ped_model_index) noexcept -> float {
     for (const auto& special : special_models_speed)
         if (special[0] == ped_model_index)
             return special[1];
