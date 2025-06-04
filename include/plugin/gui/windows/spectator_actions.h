@@ -22,7 +22,8 @@ public:
 
     auto render() -> void override;
 
-    using window::window;
+    explicit spectator_actions(types::not_null<gui_initializer*> child)
+        : window(child, get_id()) {}
 }; // class spectator_actions final : public window
 
 auto to_json(nlohmann::json& json, const spectator_actions::button& button) -> void;

@@ -169,6 +169,6 @@ auto plugin::gui::windows::notify::create(types::not_null<gui_initializer*> chil
     return std::make_unique<notify>(child);
 }
 
-plugin::gui::windows::notify::notify(types::not_null<gui_initializer*> child) : window(child) {
+plugin::gui::windows::notify::notify(types::not_null<gui_initializer*> child) : window(child, get_id()) {
     gui::notify::set_callback(std::bind(&notify::on_send_notification, this, std::placeholders::_1));
 }

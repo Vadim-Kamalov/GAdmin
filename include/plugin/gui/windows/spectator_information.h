@@ -56,7 +56,8 @@ public:
     
     auto render() -> void override;
 
-    using window::window;
+    explicit spectator_information(types::not_null<gui_initializer*> child)
+        : window(child, get_id()) {}
 private:
     static constexpr float min_wrap_width = 80;
 }; // class spectator_information final : public window

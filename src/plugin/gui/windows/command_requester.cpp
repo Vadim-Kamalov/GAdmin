@@ -319,7 +319,7 @@ auto plugin::gui::windows::command_requester::create(types::not_null<gui_initial
 }
 
 plugin::gui::windows::command_requester::command_requester(types::not_null<gui_initializer*> child)
-    : window(child),
+    : window(child, get_id()),
       regular_font((*child->fonts->regular)[18]),
       bold_font((*child->fonts->bold)[18])
 {

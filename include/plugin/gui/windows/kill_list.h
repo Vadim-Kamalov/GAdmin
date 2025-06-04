@@ -55,7 +55,7 @@ public:
     auto on_event(const samp::event_info& event) -> bool override;
 
     explicit kill_list(types::not_null<gui_initializer*> child)
-        : window(child),
+        : window(child, get_id()),
           bold_font((*child->fonts->bold)[18]),
           regular_font((*child->fonts->regular)[16]) {}
 }; // class kill_list : public window

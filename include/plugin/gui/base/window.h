@@ -80,7 +80,8 @@ public:
 
     /// @brief Constructor for all windows. When constructed, it writes in the log file that this window is initialized.
     /// @param child Child class (GUI initializer) for current window.
-    explicit window(types::not_null<gui_initializer*> child);
+    /// @param id Window ID.
+    explicit window(types::not_null<gui_initializer*> child, types::zstring_t id);
 }; // class window
 
 /// @brief RAII pointer to the window.

@@ -35,7 +35,8 @@ public:
 
     auto render() -> void override;
 
-    using window::window;
+    explicit main(types::not_null<gui_initializer*> child)
+        : window(child, get_id()) {}
 public:
     static constexpr types::zstring_t frame_icons[] = {
         ICON_HOUSE01, ICON_SETTINGS, ICON_KEYBOARD, ICON_USERS,

@@ -302,7 +302,7 @@ auto plugin::server::spectator::update_available_information() noexcept -> void 
 
     information.ping = *samp::player_pool::get_ping(id);
     information.armor = player.get_armor();
-    information.weapon = game::weapon_names[std::to_underlying(ped.get_game_ped().get_current_weapon())];
+    information.weapon = game::weapon_names[std::to_underlying(ped.get_current_weapon())];
 }
 
 auto plugin::server::spectator::convert_possible_absence_text(const std::string& text) noexcept -> std::string {

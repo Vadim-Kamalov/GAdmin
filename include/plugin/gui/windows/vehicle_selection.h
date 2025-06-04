@@ -39,7 +39,8 @@ public:
     auto on_event(unsigned int message, WPARAM wparam, LPARAM lparam) -> bool override;
     auto render() -> void override;
 
-    using window::window;
+    explicit vehicle_selection(types::not_null<gui_initializer*> child)
+        : window(child, get_id()) {}
 private:
     static constexpr std::chrono::milliseconds animation_duration = 500ms;
     static constexpr float create_button_height = 30;

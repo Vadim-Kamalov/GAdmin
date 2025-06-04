@@ -27,7 +27,8 @@ public:
 
     auto render() -> void override;
 
-    using window::window;
+    explicit spectator_keys(types::not_null<gui_initializer*> child)
+        : window(child, get_id()) {}
 }; // class spectator_keys : public window
 
 } // namespace plugin::gui::windows

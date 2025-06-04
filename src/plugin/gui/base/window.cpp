@@ -14,6 +14,6 @@ auto plugin::gui::window::stop_render() noexcept -> void {
     rendering = false;
 }
 
-plugin::gui::window::window(types::not_null<gui_initializer*> child) : child(child) {
-    log::info("window \"{}\" initialized", get_id());
+plugin::gui::window::window(types::not_null<gui_initializer*> child, types::zstring_t id) : child(child) {
+    log::info("window \"{}\" initialized", id);
 }

@@ -392,7 +392,7 @@ auto plugin::gui::windows::report::create(types::not_null<gui_initializer*> chil
 }
 
 plugin::gui::windows::report::report(types::not_null<gui_initializer*> child)
-    : window(child),
+    : window(child, get_id()),
       bold_font((*child->fonts->bold)[18]),
       regular_font((*child->fonts->regular)[16])
 {

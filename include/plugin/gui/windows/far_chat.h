@@ -39,7 +39,7 @@ public:
     auto render() -> void override;
 
     explicit far_chat(types::not_null<gui_initializer*> child)
-        : window(child),
+        : window(child, get_id()),
           regular((*child->fonts->regular)[16]),
           bold((*child->fonts->bold)[18]) {}
 private:

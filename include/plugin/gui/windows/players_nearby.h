@@ -38,7 +38,7 @@ public:
     auto render() -> void override;
 
     explicit players_nearby(types::not_null<gui_initializer*> child)
-        : window(child),
+        : window(child, get_id()),
           entry_font((*child->fonts->regular)[16]),
           title_font((*child->fonts->bold)[18]) {}
 private:
