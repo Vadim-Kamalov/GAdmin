@@ -1,8 +1,8 @@
 #include "plugin/misc/features/nickname_colors.h"
 #include "plugin/common_utils.h"
-#include "plugin/network.h"
 #include "plugin/log.h"
 #include "plugin/plugin.h"
+#include <common/network.h>
 #include <algorithm>
 #include <ctre.hpp>
 
@@ -63,7 +63,7 @@ auto plugin::misc::features::nickname_colors::on_event(const samp::event_info& e
 
 plugin::misc::features::nickname_colors::nickname_colors() {
     downloader_thread = std::jthread([this](std::stop_token stop_token) {
-        std::string nickname_colors = network::fetch_file_content(PROJECT_DATABASE "/nickname-colors.json", stop_token);
+        std::string nickname_colors = common::network::fetch_file_content(PROJECT_DATABASE "/nickname-colors.json", stop_token);
 
         if (nickname_colors.empty()) {
             log::error("failed to fetch [PROJECT_DATABASE \"/nickname-colors.json\"]: nickname_colors.empty() => true");

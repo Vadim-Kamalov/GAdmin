@@ -1,6 +1,6 @@
 #include "plugin/gui/fonts.h"
 #include "plugin/log.h"
-#include "plugin/network.h"
+#include <common/network.h>
 #include <filesystem>
 #include <list>
 
@@ -62,7 +62,7 @@ plugin::gui::fonts_initializer::fonts_initializer() {
                     std::string url = std::format(PROJECT_DATABASE "/resources/{}", font);
                     std::filesystem::path output = resources_directory / font;
 
-                    if (!network::download_file(url, output, stop_token)) {
+                    if (!common::network::download_file(url, output, stop_token)) {
                         log::fatal("failed to download \"{}\" file when initializing resources", url);
                         return;
                     }

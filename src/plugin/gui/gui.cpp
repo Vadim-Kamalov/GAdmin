@@ -9,6 +9,7 @@
 #include "plugin/gui/windows/main.h"
 #include "plugin/gui/windows/notify.h"
 #include "plugin/gui/windows/players_nearby.h"
+#include "plugin/gui/windows/release_information.h"
 #include "plugin/gui/windows/spectator_information.h"
 #include "plugin/gui/windows/spectator_actions.h"
 #include "plugin/gui/windows/spectator_keys.h"
@@ -86,6 +87,7 @@ auto plugin::gui_initializer::on_initialize() -> void {
     registered_windows.push_back(windows::command_requester::create(this));
     registered_windows.push_back(windows::report::create(this));
     registered_windows.push_back(windows::interaction_area::create(this));
+    registered_windows.push_back(windows::release_information::create(this));
 }
 
 auto plugin::gui_initializer::render() const -> void {

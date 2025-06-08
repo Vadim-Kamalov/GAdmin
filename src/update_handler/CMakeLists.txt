@@ -17,21 +17,22 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 cmake_minimum_required(VERSION 4.0.0)
-project(gadmin VERSION 0.0 LANGUAGES CXX RC)
+project(update_handler VERSION 1.0 LANGUAGES CXX)
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS  ON)
-set(CMAKE_SHARED_LIBRARY_PREFIX    "")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(ORIGINAL_FILENAME_TO_SEARCH "gadmin.asi")
+set(UPDATE_HANDLER_REPOSITORY   "Vadim-Kamalov/GAdmin")
 
-if (NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release)
-endif()
+file(GLOB_RECURSE SOURCES *.cpp)
+add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
-if (NOT gadmin_VERSION_PATCH)
-    set(gadmin_VERSION_PATCH 0)
-endif()
+include(${CMAKE_SOURCE_DIR}/cmake/compile_flags.cmake)
 
-include(cmake/fetch_content.cmake)
-add_subdirectory(src/common)
-add_subdirectory(src/plugin)
-add_subdirectory(src/update_handler)
+target_link_libraries(${PROJECT_NAME} PRIVATE wininet version nlohmann_json::nlohmann_json common)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include)
+set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "gadmin-update-handler" SUFFIX ".asi")
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
+
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+    ORIGINAL_FILENAME_TO_SEARCH="${ORIGINAL_FILENAME_TO_SEARCH}"
+    UPDATE_HANDLER_REPOSITORY="${UPDATE_HANDLER_REPOSITORY}"
+)

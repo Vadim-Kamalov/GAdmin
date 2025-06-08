@@ -17,21 +17,11 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 cmake_minimum_required(VERSION 4.0.0)
-project(gadmin VERSION 0.0 LANGUAGES CXX RC)
+project(common LANGUAGES CXX)
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS  ON)
-set(CMAKE_SHARED_LIBRARY_PREFIX    "")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+file(GLOB_RECURSE SOURCES *.cpp)
+add_library(${PROJECT_NAME} STATIC ${SOURCES})
 
-if (NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release)
-endif()
-
-if (NOT gadmin_VERSION_PATCH)
-    set(gadmin_VERSION_PATCH 0)
-endif()
-
-include(cmake/fetch_content.cmake)
-add_subdirectory(src/common)
-add_subdirectory(src/plugin)
-add_subdirectory(src/update_handler)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include/)
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
+target_link_libraries(${PROJECT_NAME} PRIVATE wininet)
