@@ -20,7 +20,7 @@ cmake_minimum_required(VERSION 4.0.0)
 project(loader VERSION 1.0 LANGUAGES CXX)
 
 set(ORIGINAL_FILENAME_TO_SEARCH "gadmin.dll")
-set(UPDATE_HANDLER_REPOSITORY   "Vadim-Kamalov/GAdmin")
+set(UPDATE_REPOSITORY           "Vadim-Kamalov/GAdmin")
 
 file(GLOB_RECURSE SOURCES *.cpp)
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
@@ -34,5 +34,5 @@ target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     ORIGINAL_FILENAME_TO_SEARCH="${ORIGINAL_FILENAME_TO_SEARCH}"
-    UPDATE_REPOSITORY="${UPDATE_HANDLER_REPOSITORY}"
+    UPDATE_REPOSITORY="${UPDATE_REPOSITORY}"
 )
