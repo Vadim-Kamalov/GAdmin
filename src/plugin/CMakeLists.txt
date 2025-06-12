@@ -39,7 +39,7 @@ include(${CMAKE_SOURCE_DIR}/cmake/libraries.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/compile_flags.cmake)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include)
-set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "gadmin" SUFFIX ".asi")
+set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "gadmin" SUFFIX ".dll")
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
 target_link_libraries(${PROJECT_NAME} PRIVATE
     d3d9

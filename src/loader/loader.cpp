@@ -1,5 +1,6 @@
-#include "update_handler/loader.h"
+#include "loader/loader.h"
 #include <fstream>
+#include <functional>
 #include <libloaderapi.h>
 #include <nlohmann/json.hpp>
 #include <common/network.h>
@@ -13,17 +14,25 @@
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
-auto update_handler::loader::check_updates(const file_information_t& plugin) const -> void {
+auto loader_t::load_plugin(const file_information_t& plugin) -> void {
+    plugin_handle = LoadLibraryA(plugin.path.string().c_str());
+}
+
+auto loader_t::check_updates(const file_information_t& plugin) -> void {
     std::string raw_release_information = common::network::send_get_request(release_information_url);
 
-    if (raw_release_information.empty())
+    if (raw_release_information.empty()) {
+        load_plugin(plugin);
         return;
+    }
 
     nlohmann::json release_information = nlohmann::json::parse(raw_release_information);
     std::string tag_name = release_information["tag_name"];
     
-    if (tag_name.substr(1) == plugin.file_version)
+    if (tag_name.substr(1) == plugin.file_version) {
+        load_plugin(plugin);
         return;
+    }
 
     for (const auto& asset : release_information["assets"]) {
         if (asset["name"] != plugin.original_filename)
@@ -40,6 +49,7 @@ auto update_handler::loader::check_updates(const file_information_t& plugin) con
                     L"Что-то пошло не так при установке обновления. "
                      "Попробуйте установить версию самостоятельно.";
 
+                load_plugin(plugin);
                 MessageBoxW(nullptr, message_text, L"Ошибка!", MB_ICONERROR);
 
                 return;
@@ -60,11 +70,15 @@ auto update_handler::loader::check_updates(const file_information_t& plugin) con
             });
         }
 
+        load_plugin(plugin);
+
         return;
     }
+    
+    load_plugin(plugin);
 }
 
-auto update_handler::loader::update_plugin(const file_information_t& plugin, const std::string_view& download_url) const
+auto loader_t::update_plugin(const file_information_t& plugin, const std::string_view& download_url) const
     -> bool
 {
     try {
@@ -84,7 +98,7 @@ auto update_handler::loader::update_plugin(const file_information_t& plugin, con
     }
 }
 
-auto update_handler::loader::save_release_information(const release_information_t& information) const -> void {
+auto loader_t::save_release_information(const release_information_t& information) const -> void {
     std::filesystem::path current_path = std::filesystem::current_path();
 
     try {
@@ -104,7 +118,7 @@ auto update_handler::loader::save_release_information(const release_information_
     file.write(reinterpret_cast<const char*>(bytes.data()), bytes.size());
 }
 
-auto update_handler::loader::try_get_file_information(const std::filesystem::path& path) const
+auto loader_t::try_get_file_information(const std::filesystem::path& path) const
     -> std::optional<file_information_t>
 {
     std::string filename = path.string().c_str();
@@ -136,7 +150,7 @@ auto update_handler::loader::try_get_file_information(const std::filesystem::pat
     return file_information_t { path, result[0], result[1] };
 }
 
-update_handler::loader::loader() {
+loader_t::loader_t() {
     DisableThreadLibraryCalls(reinterpret_cast<HMODULE>(&__ImageBase));
     for (const auto& entry : std::filesystem::directory_iterator(std::filesystem::current_path())) {
         if (!entry.is_regular_file())
@@ -147,8 +161,15 @@ update_handler::loader::loader() {
         if (!file_information.has_value() || file_information->original_filename != ORIGINAL_FILENAME_TO_SEARCH)
             continue;
 
-        check_updates(*file_information);
+        thread = std::jthread(std::bind_front(&loader_t::check_updates, this, *file_information));
     
         return;
     }
+}
+
+loader_t::~loader_t() noexcept {
+    if (plugin_handle == nullptr)
+        return;
+
+    FreeLibrary(plugin_handle);
 }
