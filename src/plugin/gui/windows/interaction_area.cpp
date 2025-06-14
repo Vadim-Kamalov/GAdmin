@@ -157,11 +157,11 @@ auto plugin::gui::windows::interaction_area::render_stroked_text(ImDrawList* dra
                                                                  const types::color& color, types::zstring_t text) const
     -> void
 {
-    draw_list->AddText(font, font->FontSize, { pos.x + 1, pos.y + 1 }, 0xFF000000, text);
-    draw_list->AddText(font, font->FontSize, { pos.x - 1, pos.y - 1 }, 0xFF000000, text);
-    draw_list->AddText(font, font->FontSize, { pos.x + 1, pos.y - 1 }, 0xFF000000, text);
-    draw_list->AddText(font, font->FontSize, { pos.x - 1, pos.y + 1 }, 0xFF000000, text);
-    draw_list->AddText(font, font->FontSize, pos, *color, text);
+    draw_list->AddText(font, fonts_size, { pos.x + 1, pos.y + 1 }, 0xFF000000, text);
+    draw_list->AddText(font, fonts_size, { pos.x - 1, pos.y - 1 }, 0xFF000000, text);
+    draw_list->AddText(font, fonts_size, { pos.x + 1, pos.y - 1 }, 0xFF000000, text);
+    draw_list->AddText(font, fonts_size, { pos.x - 1, pos.y + 1 }, 0xFF000000, text);
+    draw_list->AddText(font, fonts_size, pos, *color, text);
 }
 
 auto plugin::gui::windows::interaction_area::render_help_text(ImDrawList* draw_list, float radius, const types::color& active_color,
@@ -171,17 +171,17 @@ auto plugin::gui::windows::interaction_area::render_help_text(ImDrawList* draw_l
 
     ImVec2 center = { size_x / 2.0f, size_y / 2.0f };
     ImVec2 spacing = ImGui::GetStyle().ItemSpacing;
-    ImVec2 longest_description_size = bold_font->CalcTextSizeA(bold_font->FontSize, FLT_MAX, 0.0f, get_longest_action_description());
+    ImVec2 longest_description_size = bold_font->CalcTextSizeA(fonts_size, FLT_MAX, 0.0f, get_longest_action_description());
 
     float group_size = std::size(actions_description) / 2.0f + 1;
-    float group_height = (bold_font->FontSize * (group_size + spacing.y)) - spacing.y;
+    float group_height = (fonts_size * (group_size + spacing.y)) - spacing.y;
 
     for (const auto& [ group_index, group ] : actions_description | std::views::enumerate) {
         types::color color = (std::to_underlying(current_search_type) == group_index)
             ? active_color : disabled_color;
         
         for (const auto& [ index, description ] : group | std::views::enumerate) {
-            ImVec2 size = bold_font->CalcTextSizeA(bold_font->FontSize, FLT_MAX, 0.0f, description);
+            ImVec2 size = bold_font->CalcTextSizeA(fonts_size, FLT_MAX, 0.0f, description);
             float y = center.y - (group_height / 2) + ((index - 1) * 20);
             float x = center.x + ((group_index == 0) 
                     ? -radius - 20 - longest_description_size.x
@@ -203,7 +203,7 @@ auto plugin::gui::windows::interaction_area::render_search_description(ImDrawLis
 
     for (const auto& [ index, line ] : lines | std::views::enumerate) {
         ImFont* font = (index == 0) ? regular_font : bold_font;
-        float x = center.x - font->CalcTextSizeA(font->FontSize, FLT_MAX, 0.0f, line.c_str()).x / 2;
+        float x = center.x - font->CalcTextSizeA(fonts_size, FLT_MAX, 0.0f, line.c_str()).x / 2;
         float y = center.y + ((index == 0) ? radius + 20 : -radius - 30);
 
         render_stroked_text(draw_list, font, { x, y }, active_color, line.c_str());
@@ -252,8 +252,8 @@ auto plugin::gui::windows::interaction_area::create(types::not_null<gui_initiali
 
 plugin::gui::windows::interaction_area::interaction_area(types::not_null<gui_initializer*> child)
     : window(child, get_id()),
-      bold_font((*child->fonts->bold)[18]),
-      regular_font((*child->fonts->regular)[18])
+      bold_font(child->fonts->bold),
+      regular_font(child->fonts->regular)
 {
     activation_hotkey = hotkey("Активация кругового меню", key_bind({ 'Z', 0 }, bind_condition::on_alogin));
     child->hotkey_handler->add(activation_hotkey);

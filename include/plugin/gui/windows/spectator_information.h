@@ -13,6 +13,9 @@ namespace plugin::gui::windows {
 
 class spectator_information final : public window {
 private:
+    static constexpr float min_wrap_width = 80;
+    static constexpr float fonts_size = 16;
+
     class row final {
     public:
         using color_updater_t = std::function<types::color()>;
@@ -40,7 +43,10 @@ private:
         explicit row(const std::string_view& label, const std::string_view& value, custom_renderer_t custom_renderer)
             : label(std::move(label)), value(std::move(value)), custom_renderer(custom_renderer) {}
     }; // class row final
-private:
+    
+    ImFont* bold_font;
+    ImFont* regular_font;
+
     auto vehicles_custom_renderer(const std::string_view& value, types::color color) const -> void;
     auto vehicle_information_custom_renderer(const std::string_view&, types::color) const -> void;
     auto nickname_custom_renderer(const std::string_view& value, types::color color) const -> void;
@@ -57,9 +63,9 @@ public:
     auto render() -> void override;
 
     explicit spectator_information(types::not_null<gui_initializer*> child)
-        : window(child, get_id()) {}
-private:
-    static constexpr float min_wrap_width = 80;
+        : window(child, get_id()),
+          bold_font(child->fonts->bold),
+          regular_font(child->fonts->regular) {}
 }; // class spectator_information final : public window
 
 } // namespace plugin::gui::windows

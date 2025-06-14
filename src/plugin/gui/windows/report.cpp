@@ -1,5 +1,6 @@
 #include "plugin/gui/windows/report.h"
 #include "plugin/gui/animation.h"
+#include "plugin/gui/icon.h"
 #include "plugin/gui/notify.h"
 #include "plugin/gui/style.h"
 #include "plugin/gui/widgets/hint.h"
@@ -287,15 +288,15 @@ auto plugin::gui::windows::report::render() -> void {
         {
             ImGui::BeginGroup();
             {
-                widgets::text(bold_font, 0, "{}[{}]", current_report->nickname, current_report->id);
-                ImGui::PushFont(regular_font);
+                widgets::text(bold_font, bold_font_size, 0, "{}[{}]", current_report->nickname, current_report->id);
+                ImGui::PushFont(regular_font, regular_font_size);
                 {
                     ImGui::TextWrapped("%s", current_report->text.c_str());
                 }
                 ImGui::PopFont();
             }
             ImGui::EndGroup();
-            ImGui::PushFont(bold_font);
+            ImGui::PushFont(bold_font, bold_font_size);
             {
                 std::string time_active = get_time_active();
                 ImGui::SameLine(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(time_active.c_str()).x);
@@ -304,7 +305,7 @@ auto plugin::gui::windows::report::render() -> void {
             ImGui::PopFont();
         }
         ImGui::EndChild();
-        ImGui::PushFont(regular_font);
+        ImGui::PushFont(regular_font, regular_font_size);
         {
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
            
@@ -340,8 +341,8 @@ auto plugin::gui::windows::report::render() -> void {
         ImGui::PopFont();
 
         if (ImGui::BeginPopupModal("block_time_selection", nullptr, ImGuiWindowFlags_NoTitleBar)) {
-            widgets::text(bold_font, 0, "Выберите время блокировки");
-            ImGui::PushFont(regular_font);
+            widgets::text(bold_font, bold_font_size, 0, "Выберите время блокировки");
+            ImGui::PushFont(regular_font, regular_font_size);
             {
                 float full_width = ImGui::GetContentRegionAvail().x;
                
@@ -393,8 +394,8 @@ auto plugin::gui::windows::report::create(types::not_null<gui_initializer*> chil
 
 plugin::gui::windows::report::report(types::not_null<gui_initializer*> child)
     : window(child, get_id()),
-      bold_font((*child->fonts->bold)[18]),
-      regular_font((*child->fonts->regular)[16])
+      bold_font(child->fonts->bold),
+      regular_font(child->fonts->regular)
 {
     switch_window_hotkey = hotkey("Открыть/закрыть окно репорта", key_bind({ 'K', 0 }, bind_condition::on_alogin))
         .with_callback(std::bind(&report::switch_window, this));

@@ -61,14 +61,14 @@ auto plugin::gui_initializer::on_samp_initialize() -> void {
 }
 
 auto plugin::gui_initializer::can_initialize_render() const -> bool {
-    return fonts->is_available();
+    return fonts->can_assign_fonts();
 }
 
 auto plugin::gui_initializer::on_initialize() -> void {
     using namespace gui;
     
     ImGui::GetIO().IniFilename = nullptr; 
-    fonts->initialize();
+    fonts->assign_fonts();
     style::apply();
 
     hotkey_handler->add(hotkey("Переключить курсор", key_bind({ 'B', 0 }))
@@ -135,8 +135,4 @@ plugin::gui_initializer::gui_initializer() {
     fonts = std::make_unique<gui::fonts_initializer>();
     hotkey_handler = std::make_unique<gui::hotkey_handler>(this);
     server::spectator::register_hotkeys(hotkey_handler.get());
-}
-
-plugin::gui_initializer::~gui_initializer() noexcept {
-    fonts.reset(nullptr);
 }

@@ -31,6 +31,9 @@ private:
         vehicle_id,
         vehicle_gethere
     }; // enum class search_response : std::uint8_t
+    
+    static constexpr std::uint8_t response_player_offset = std::to_underlying(search_response::player_spectate);
+    static constexpr std::uint8_t response_vehicle_offset = std::to_underlying(search_response::vehicle_repair);
 
     struct search_result final {
         ImVec2 point = { 0, 0 };
@@ -38,6 +41,16 @@ private:
         std::uint16_t id = 0;
         std::string description = "";
     }; // struct search_result final
+
+    static constexpr int action_count_per_type = 5;
+    static constexpr float fonts_size = 18;
+    static constexpr types::zstring_t actions_description[][5] = {
+        { "[2] Следить", "[3] Вылечить", "[4] Открыть статистику",
+          "[5] Открыть /pame", "[6] Телепортировать к себе" },
+
+        { "Починить [2]", "Заспавнить [3]", "Заправить [4]",
+          "Узнать владельца [5]", "Телепортировать к себе [6]" }
+    }; // static constexpr types::zstring_t actions_description[2]
 
     ImFont *bold_font, *regular_font;
     hotkey activation_hotkey;
@@ -71,17 +84,6 @@ public:
     auto render() -> void override;
 
     explicit interaction_area(types::not_null<gui_initializer*> child);
-private:
-    static constexpr int action_count_per_type = 5;
-    static constexpr std::uint8_t response_player_offset = std::to_underlying(search_response::player_spectate);
-    static constexpr std::uint8_t response_vehicle_offset = std::to_underlying(search_response::vehicle_repair);
-    static constexpr types::zstring_t actions_description[][5] = {
-        { "[2] Следить", "[3] Вылечить", "[4] Открыть статистику",
-          "[5] Открыть /pame", "[6] Телепортировать к себе" },
-
-        { "Починить [2]", "Заспавнить [3]", "Заправить [4]",
-          "Узнать владельца [5]", "Телепортировать к себе [6]" }
-    }; // static constexpr types::zstring_t actions_description[2]
 }; // class interaction_area final : public window
 
 } // namespace plugin::gui::windows

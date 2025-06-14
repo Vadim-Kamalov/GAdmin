@@ -34,13 +34,13 @@ auto plugin::gui::windows::kill_list::entry::compute_width(ImFont* bold_font, Im
     float width = 0;
 
     if (with_time)
-        width = bold_font->CalcTextSizeA(bold_font->FontSize, FLT_MAX, 0, get_formatted_time().c_str()).x + 5;
+        width = bold_font->CalcTextSizeA(bold_font_size, FLT_MAX, 0, get_formatted_time().c_str()).x + 5;
 
-    width += bold_font->CalcTextSizeA(bold_font->FontSize, FLT_MAX, 0, std::format("{}[{}]", left.player.nickname, left.player.id).c_str()).x
-        + regular_font->CalcTextSizeA(regular_font->FontSize, FLT_MAX, 0, reason.c_str()).x + 10;
+    width += bold_font->CalcTextSizeA(bold_font_size, FLT_MAX, 0, std::format("{}[{}]", left.player.nickname, left.player.id).c_str()).x
+        + regular_font->CalcTextSizeA(regular_font_size, FLT_MAX, 0, reason.c_str()).x + 10;
 
     if (right.has_value())
-        width += bold_font->CalcTextSizeA(bold_font->FontSize, FLT_MAX, 0, std::format("{}[{}]", right->player.nickname, right->player.id).c_str()).x + 5;
+        width += bold_font->CalcTextSizeA(bold_font_size, FLT_MAX, 0, std::format("{}[{}]", right->player.nickname, right->player.id).c_str()).x + 5;
 
     return width;
 }
@@ -54,7 +54,7 @@ auto plugin::gui::windows::kill_list::get_window_size(bool with_time) const -> I
         if (float width = entries[i].compute_width(bold_font, regular_font, with_time); width > size.x)
             size.x = width;
         
-        size.y += bold_font->FontSize + text_border_size;
+        size.y += bold_font_size + text_border_size;
 
         if (i > 0)
             size.y += ImGui::GetStyle().ItemSpacing.y;
@@ -136,24 +136,25 @@ auto plugin::gui::windows::kill_list::render() -> void {
             ImGui::PushStyleVar(ImGuiStyleVar_Alpha, entry.alpha);
             ImGui::BeginGroup();
             {
-                widgets::text(bold_font, text_border_size, "{}", entry.get_formatted_time());
+                widgets::text(bold_font, bold_font_size, text_border_size, "{}", entry.get_formatted_time());
                 ImGui::SameLine(0, 5);
                 ImGui::PushStyleColor(ImGuiCol_Text, *entry.left.get_color());
                 {
-                    widgets::text(bold_font, text_border_size, "{}[{}]", entry.left.player.nickname, entry.left.player.id);
+                    widgets::text(bold_font, bold_font_size, text_border_size, "{}[{}]", entry.left.player.nickname, entry.left.player.id);
                 }
                 ImGui::PopStyleColor();
                 
                 ImGui::SameLine(0, 5);
                 ImGui::SetCursorPosY(pos_y + 2);
-                widgets::text(regular_font, text_border_size, "{}", entry.reason);
+                widgets::text(regular_font, regular_font_size, text_border_size, "{}", entry.reason);
                 
                 if (entry.right.has_value()) {
                     ImGui::SameLine(0, 5);
                     ImGui::SetCursorPosY(pos_y);
                     ImGui::PushStyleColor(ImGuiCol_Text, *entry.right->get_color());
                     {
-                        widgets::text(bold_font, text_border_size, "{}[{}]", entry.right->player.nickname, entry.right->player.id);
+                        widgets::text(bold_font, bold_font_size, text_border_size, "{}[{}]",
+                                      entry.right->player.nickname, entry.right->player.id);
                     }
                     ImGui::PopStyleColor();
                 }

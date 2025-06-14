@@ -1,4 +1,5 @@
 #include "plugin/gui/windows/spectator_actions.h"
+#include "plugin/gui/icon.h"
 #include "plugin/gui/widgets/button.h"
 #include "plugin/samp/core/menu.h"
 #include "plugin/server/binder.h"
@@ -44,18 +45,18 @@ auto plugin::gui::windows::spectator_actions::render() -> void {
     {
         ImGui::BeginGroup();
         {
-            child->fonts->bold->push(16);
+            ImGui::PushFont(child->fonts->bold, 16);
             {
                 ImGui::TextUnformatted(std::format("{}[{}]", server::spectator::nickname, server::spectator::id).c_str());
             }
             ImGui::PopFont();
-            child->fonts->regular->push(16);
+            ImGui::PushFont(child->fonts->regular, 16);
             {
                 ImGui::SameLine((ImGui::GetWindowWidth() - ImGui::CalcTextSize(center_information.c_str()).x) / 2);
                 ImGui::TextUnformatted(center_information.c_str());
             }
             ImGui::PopFont();
-            child->fonts->bold->push(16);
+            ImGui::PushFont(child->fonts->bold, 16);
             {
                 ImGui::SameLine();
                 ImGui::SetCursorPosX(ImGui::GetWindowWidth() - ImGui::CalcTextSize(left_information.c_str()).x - ImGui::GetStyle().WindowPadding.x);
@@ -83,7 +84,7 @@ auto plugin::gui::windows::spectator_actions::render() -> void {
                     * spacing.x) / (buttons_on_line + offset_corner_buttons);
 
             if (show_corner_buttons) {
-                child->fonts->icon->push(24);
+                ImGui::PushFont(child->fonts->icon, 24);
                 {
                     auto button = widgets::button(ICON_CHEVRON_LEFT "##windows::spectator_actions", { button_width / 2, tall_button_height })
                         .with_draw_flags(ImDrawFlags_RoundCornersLeft);
@@ -101,7 +102,7 @@ auto plugin::gui::windows::spectator_actions::render() -> void {
                     float first_line_pos_y = ImGui::GetCursorPosY();
                     int active_button_count = 0;
 
-                    child->fonts->regular->push(15);
+                    ImGui::PushFont(child->fonts->regular, 15);
                     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0);
                     ImGui::BeginGroup();
                     {
@@ -135,7 +136,7 @@ auto plugin::gui::windows::spectator_actions::render() -> void {
             
             if (show_corner_buttons) {
                 ImGui::SameLine();
-                child->fonts->icon->push(24);
+                ImGui::PushFont(child->fonts->icon, 24);
                 {
                     auto button = widgets::button(ICON_CHEVRON_RIGHT "##windows::spectator_actions", { button_width / 2, tall_button_height })
                         .with_draw_flags(ImDrawFlags_RoundCornersRight);

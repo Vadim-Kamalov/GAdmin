@@ -2,9 +2,10 @@
 #define GADMIN_PLUGIN_GUI_WINDOWS_MAIN_H
 
 #include "plugin/gui/base/window.h"
-#include "plugin/gui/gui.h"
 #include "plugin/types/not_null.h"
 #include "plugin/types/simple.h"
+#include "plugin/gui/icon.h"
+#include "plugin/gui/gui.h"
 
 namespace plugin::gui::windows {
 

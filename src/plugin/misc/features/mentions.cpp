@@ -1,4 +1,5 @@
 #include "plugin/misc/features/mentions.h"
+#include "plugin/gui/icon.h"
 #include "plugin/gui/notify.h"
 #include "plugin/string_utils.h"
 #include "plugin/types/string_iterator.h"

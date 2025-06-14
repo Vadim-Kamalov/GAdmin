@@ -11,12 +11,19 @@ namespace plugin::gui::windows {
 
 class notify final : public window {
 private:
+    static constexpr float icon_font_size = 24;
+    static constexpr float bold_font_size = 18;
+    static constexpr float regular_font_size = 16;
+
     float height = 0;
 
     auto on_send_notification(notification& notification) -> bool;
-    auto get_buttons_max_size(ImFont* font, const notification::buttons_t& buttons) const -> ImVec2;
+    auto get_buttons_max_size(ImFont* font, float font_size, const notification::buttons_t& buttons) const -> ImVec2;
+    
+    auto render_button(const ImVec2& pos, ImFont* font, float font_size, notification& notification,
+                       notification::button& button) const -> void;
+    
     auto render_notification(notification& item) const -> void;
-    auto render_button(const ImVec2& pos, ImFont* font, notification& notification, notification::button& button) const -> void;
 public:
     inline auto get_id() const -> types::zstring_t override;
     static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;

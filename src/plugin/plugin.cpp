@@ -1,4 +1,5 @@
 #include "plugin/plugin.h"
+#include "plugin/gui/icon.h"
 #include "plugin/gui/notify.h"
 #include "plugin/samp/core/net_game.h"
 #include "plugin/samp/events/event.h"

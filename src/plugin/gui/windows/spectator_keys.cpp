@@ -100,7 +100,7 @@ auto plugin::gui::windows::spectator_keys::render() -> void {
             std::size_t new_line_index = keycaps.size() / 2 + static_cast<int>(keycaps.size() % 2 != 0);
 
             for (const auto& [ index, keycap ] : keycaps | std::views::enumerate) {
-                child->fonts->bold->push(15);
+                ImGui::PushFont(child->fonts->bold, 15);
                 {
                     keycap.render();
                 }

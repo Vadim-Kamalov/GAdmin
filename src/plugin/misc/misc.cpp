@@ -8,8 +8,9 @@
 #include "plugin/misc/features/mentions.h"
 #include "plugin/misc/features/nickname_colors.h"
 #include "plugin/misc/features/report_one_color.h"
-#include "plugin/log.h"
 #include "plugin/misc/features/short_commands.h"
+#include "plugin/misc/features/statistics.h"
+#include "plugin/log.h"
 #include <memory>
 
 auto plugin::misc::initializer::on_event(const samp::event_info& event) -> bool {
@@ -38,6 +39,7 @@ plugin::misc::initializer::initializer() {
     features.push_back(std::make_unique<features::death_notify_in_chat>());
     features.push_back(std::make_unique<features::short_commands>());
     features.push_back(std::make_unique<features::fish_eye>());
+    features.push_back(std::make_unique<features::statistics_updater>());
 
     log::info("misc::initializer initialized");
 }

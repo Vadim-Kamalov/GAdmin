@@ -28,15 +28,15 @@ auto plugin::gui::windows::far_chat::compute_window_size() const -> ImVec2 {
 
 auto plugin::gui::windows::far_chat::compute_entry_size(const entry& entry) const -> ImVec2 {
     auto window_configuration = (*configuration)["windows"]["far_chat"];
-    ImVec2 size = { 0, bold->FontSize + text_border_size };
+    ImVec2 size = { 0, bold_font_size + text_border_size };
 
-    size.x += bold->CalcTextSizeA(bold->FontSize, FLT_MAX, 0,
+    size.x += bold->CalcTextSizeA(bold_font_size, FLT_MAX, 0,
         std::format("{}[{}]:", entry.player.nickname, entry.player.id).c_str()).x + spacing_x;
 
-    size.x += regular->CalcTextSizeA(regular->FontSize, FLT_MAX, 0, entry.message.c_str()).x;
+    size.x += regular->CalcTextSizeA(regular_font_size, FLT_MAX, 0, entry.message.c_str()).x;
 
     if (window_configuration["show_time"])
-        size.x += bold->CalcTextSizeA(bold->FontSize, FLT_MAX, 0, entry.time.c_str()).x + spacing_x;
+        size.x += bold->CalcTextSizeA(bold_font_size, FLT_MAX, 0, entry.time.c_str()).x + spacing_x;
 
     return size;
 }
@@ -126,14 +126,14 @@ auto plugin::gui::windows::far_chat::render() -> void {
             ImGui::BeginGroup();
             {
                 if (window_configuration["show_time"]) {
-                    widgets::text(bold, text_border_size, "{}", entry.time);
+                    widgets::text(bold, bold_font_size, text_border_size, "{}", entry.time);
                     ImGui::SameLine(0, 5);
                 }
                 
                 if (window_configuration["clist_color"])
                     ImGui::PushStyleColor(ImGuiCol_Text, *entry.player_color);
 
-                widgets::text(bold, text_border_size, "{}[{}]:", entry.player.nickname, entry.player.id);
+                widgets::text(bold, bold_font_size, text_border_size, "{}[{}]:", entry.player.nickname, entry.player.id);
                 ImGui::SameLine(0, 5);
 
                 if (window_configuration["clist_color"])
@@ -142,7 +142,7 @@ auto plugin::gui::windows::far_chat::render() -> void {
                 ImGui::PushStyleColor(ImGuiCol_Text, *entry.message_color);
                 {
                     ImGui::SetCursorPosY(pos.y + 2);
-                    widgets::text(regular, text_border_size, "{}", entry.message);
+                    widgets::text(regular, regular_font_size, text_border_size, "{}", entry.message);
                 }
                 ImGui::PopStyleColor();
             }

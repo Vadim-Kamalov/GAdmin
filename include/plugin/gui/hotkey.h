@@ -116,6 +116,7 @@ public:
 
 class hotkey final {
 private:
+    static constexpr float fonts_size = 18;
     static constexpr ImVec2 button_size = { 100, 30 };
     static inline const std::vector<std::string> hint_settings = {
         "Всегда", "На /alogin", "Вне /alogin", "В режиме наблюдения",

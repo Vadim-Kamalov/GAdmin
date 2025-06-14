@@ -32,7 +32,6 @@ public:
     auto switch_cursor() -> void;
 
     explicit gui_initializer();
-    ~gui_initializer() noexcept;
 }; // class gui_initializer final
 
 } // namespace plugin

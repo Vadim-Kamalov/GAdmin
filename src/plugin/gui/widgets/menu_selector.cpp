@@ -62,7 +62,7 @@ static auto draw_frame(const ImVec2& size, const ImVec4& color, plugin::types::n
     ImGui::GetWindowDrawList()->AddRectFilled(pos, { pos.x + child->menu_width, pos.y + size.y },
                                               ImGui::GetColorU32(color), rounding, ImDrawFlags_RoundCornersTopLeft);
 
-    gui->fonts->icon->push(24);
+    ImGui::PushFont(gui->fonts->icon, 24);
     {
         ImVec2 icon_size = ImGui::CalcTextSize(ICON_HAMBURGER_M_D);
         ImGui::SetCursorPos({ (size.x - icon_size.x) / 2, (size.y - icon_size.y) / 2 });

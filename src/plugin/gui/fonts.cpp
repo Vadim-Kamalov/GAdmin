@@ -1,93 +1,66 @@
 #include "plugin/gui/fonts.h"
-#include "plugin/log.h"
-#include <common/network.h>
-#include <filesystem>
-#include <list>
+#include "plugin/gui/icon.h"
+#include "common/network.h"
+#include <functional>
+#include <ranges>
 
-auto plugin::gui::basic_font::create(const ImWchar* glyphs) const -> std::unordered_map<float, ImFont*> {
-    std::unordered_map<float, ImFont*> fonts;
+auto plugin::gui::fonts_initializer::get_missing_fonts() const -> std::queue<missing_font> {
+    std::filesystem::path resources = std::filesystem::current_path() / "gadmin" / "resources";
+    std::queue<missing_font> missing_fonts;
 
-    std::filesystem::path path = std::filesystem::current_path() / "gadmin" / "resources" / get_filename();
-    ImFontAtlas* font_atlas = ImGui::GetIO().Fonts;
+    for (const auto& filename : filenames) {
+        std::filesystem::path font_path = resources / filename;
 
-    for (const auto& size : get_sizes())
-        fonts.emplace(size, font_atlas->AddFontFromFileTTF(path.string().c_str(), size, nullptr, glyphs));
+        if (std::filesystem::exists(font_path))
+            continue;
 
-    return fonts;
-}
-
-auto plugin::gui::basic_font::push(std::size_t size) const -> void {
-    ImGui::PushFont((*this)[size]);
-}
-
-auto plugin::gui::basic_font::operator[](std::size_t size) const -> ImFont* {
-    return get_fonts().at(size);
-}
-
-auto plugin::gui::basic_font::text(std::size_t size, types::zstring_t text) const -> void {
-    push(size);
-    ImGui::TextUnformatted(text);
-    ImGui::PopFont();
-}
-
-auto plugin::gui::fonts_initializer::initialize() -> void {
-    light = std::make_unique<fonts::light>();
-    regular = std::make_unique<fonts::regular>();
-    bold = std::make_unique<fonts::bold>();
-    icon = std::make_unique<fonts::icon>();
-}
-
-plugin::gui::fonts_initializer::fonts_initializer() {
-    std::filesystem::path resources_directory = std::filesystem::current_path() / "gadmin" / "resources";
-    std::list<std::string> fonts = { fonts::light::filename, fonts::regular::filename,
-                                       fonts::bold::filename, fonts::icon::filename };
-
-    try {
-        for (auto it = fonts.begin(); it != fonts.end();) {
-            if (std::filesystem::exists(resources_directory / *it)) {
-                it = fonts.erase(it);
-            } else {
-                it++;
-            }
-        }
-
-        if (!fonts.empty()) {
-            downloader_thread = std::jthread([this, resources_directory, fonts](std::stop_token stop_token) {
-                for (const auto& font : fonts) {
-                    if (stop_token.stop_requested()) {
-                        log::info("font download cancelled");
-                        return;
-                    }
-
-                    std::string url = std::format(PROJECT_DATABASE "/resources/{}", font);
-                    std::filesystem::path output = resources_directory / font;
-
-                    if (!common::network::download_file(url, output, stop_token)) {
-                        log::fatal("failed to download \"{}\" file when initializing resources", url);
-                        return;
-                    }
-                }
-    
-                log::info("plugin::gui::fonts_initializer initialized (after downloader_thread)");
-
-                fonts_available = true;
-            });
-            
-            return;
-        }
-        
-        fonts_available = true;
-    } catch (const std::exception& e) {
-        log::fatal("failed to initialize fonts: {}", e.what());
+        missing_fonts.push({ font_path, filename });
     }
 
-    log::info("plugin::gui::fonts_initializer initialized");
+    return missing_fonts;
 }
 
-plugin::gui::fonts_initializer::~fonts_initializer() noexcept {
-    if (!downloader_thread.joinable())
+auto plugin::gui::fonts_initializer::download_missing_fonts() -> void {
+    while (!missing_fonts.empty()) {
+        missing_font& font = missing_fonts.front();
+        
+        common::network::download_file(std::format(PROJECT_DATABASE "/resources/{}", font.filename),
+                                       font.path, network_thread.get_stop_token());
+
+        missing_fonts.pop();
+    }
+}
+
+auto plugin::gui::fonts_initializer::assign_fonts() -> void {
+    ImFontAtlas* font_atlas = ImGui::GetIO().Fonts;
+    ImFont** fonts[] = { &regular, &bold, &light, &icon };
+    
+    std::filesystem::path resources = std::filesystem::current_path() / "gadmin" / "resources";
+
+    for (const auto& [ index, filename ] : filenames | std::views::enumerate) {
+        std::filesystem::path path = resources / filename;
+
+        if (index == icon_font_index) {
+            const ImWchar icon_ranges[] = { ICON_MIN, ICON_MAX, 0 };
+            
+            *fonts[index] = font_atlas->AddFontFromFileTTF(path.string().c_str(), default_font_size, nullptr, icon_ranges);
+            
+            break;
+        }
+
+        *fonts[index] = font_atlas->AddFontFromFileTTF(path.string().c_str(), default_font_size);
+    }
+}
+
+auto plugin::gui::fonts_initializer::can_assign_fonts() const -> bool {
+    return missing_fonts.empty();
+}
+
+plugin::gui::fonts_initializer::fonts_initializer()
+    : missing_fonts(get_missing_fonts())
+{
+    if (missing_fonts.empty())
         return;
 
-    downloader_thread.request_stop();
-    downloader_thread.join();
+    network_thread = std::jthread(std::bind_front(&fonts_initializer::download_missing_fonts, this));
 }

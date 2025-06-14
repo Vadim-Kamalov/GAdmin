@@ -16,13 +16,18 @@ namespace plugin::gui::windows {
 
 class far_chat final : public window {
 private:
+    static constexpr float spacing_x = 5;
+    static constexpr float bold_font_size = 18;
+    static constexpr float regular_font_size = 16;
+    static constexpr std::size_t text_border_size = 1;
+
     struct entry final {
         samp::player player;
         types::color player_color, message_color;
         std::string message, time;
         std::chrono::steady_clock::time_point steady_time;
     }; // struct entry final
-private:
+
     ImFont* regular;
     ImFont* bold;
 
@@ -40,11 +45,8 @@ public:
 
     explicit far_chat(types::not_null<gui_initializer*> child)
         : window(child, get_id()),
-          regular((*child->fonts->regular)[16]),
-          bold((*child->fonts->bold)[18]) {}
-private:
-    static constexpr float spacing_x = 5;
-    static constexpr std::size_t text_border_size = 1;
+          regular(child->fonts->regular),
+          bold(child->fonts->bold) {}
 }; // class far_chat final : public window
 
 } // namespace plugin::gui::windows

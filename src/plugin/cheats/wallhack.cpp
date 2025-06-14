@@ -1,5 +1,6 @@
 #include "plugin/cheats/wallhack.h"
 #include "plugin/samp/core/net_game.h"
+#include "plugin/gui/icon.h"
 #include "plugin/gui/notify.h"
 #include "plugin/samp/player.h"
 #include "plugin/server/spectator.h"
@@ -51,7 +52,7 @@ auto plugin::cheats::wallhack::render(types::not_null<gui_initializer*> child) -
 
     float font_size = cheat_configuration["font_size"];
     ImDrawList* draw_list = ImGui::GetBackgroundDrawList();
-    ImFont* font = (*child->fonts->bold)[18];
+    ImFont* font = child->fonts->bold;
 
     for (const auto& [ player, ped ] : samp::player::get_stream_players()) {
         if (server::spectator::is_active() && player.id == server::spectator::id)

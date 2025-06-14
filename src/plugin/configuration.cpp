@@ -1,9 +1,9 @@
 #include "plugin/configuration.h"
+#include "plugin/types/simple.h"
 #include "plugin/log.h"
 #include <fstream>
 
-nlohmann::json
-plugin::configuration_initializer::main_json = R"json(
+static constexpr plugin::types::zstring_t main_json_content = R"json(
 {
     "user": {
         "nickname": "Администратор",
@@ -216,7 +216,7 @@ plugin::configuration_initializer::main_json = R"json(
         "hotkeys": {}
     }
 }
-)json"_json;
+)json"; // static constexpr plugin::types::zstring_t main_json_content
 
 auto plugin::configuration_initializer::write(const std::filesystem::path& path, const nlohmann::json& json) const -> void {
     if (std::ofstream file = std::ofstream(path, std::ios::out | std::ios::binary)) {
@@ -230,17 +230,23 @@ auto plugin::configuration_initializer::write(const std::filesystem::path& path,
 
 auto plugin::configuration_initializer::get(const std::filesystem::path& path) const -> nlohmann::json {
     std::ifstream file(path, std::ios::binary | std::ios::ate);
-    std::ifstream::pos_type pos = file.tellg();
 
     if (!file) {
         log::fatal("failed to get plugin configuration from \"{}\"", path.string());
         return nullptr;
     }
     
-    std::vector<char> bytes(pos);
+    file.seekg(0, std::ios::end);
+    std::streampos file_size = file.tellg();
+    file.read(0, std::ios::beg);
 
-    file.seekg(0, std::ios::beg);
-    file.read(&bytes[0], pos);
+    std::vector<char> bytes(file_size);
+
+    if (!file.read(bytes.data(), file_size) || bytes.empty()) {
+        log::error("failed to read plugin configuration; default configuration is written");
+        write(path, main_json);
+        return nullptr;
+    }
 
     auto file_json = nlohmann::json::from_msgpack(bytes);
 
@@ -272,10 +278,13 @@ plugin::configuration_initializer::configuration_initializer(const std::filesyst
     : last_time_saved(std::chrono::steady_clock::now()),
       configuration_file(configuration_file)
 {
-    if (!std::filesystem::exists(configuration_file))
+    main_json = nlohmann::json::parse(main_json_content);
+    
+    if (!std::filesystem::exists(configuration_file)) {
         save();
-    else if (nlohmann::json configuration = get(configuration_file); !configuration.is_null())
+    } else if (nlohmann::json configuration = get(configuration_file); !configuration.is_null()) {
         main_json.merge_patch(configuration);
+    }
     
     log::info("plugin::configuration_initializer initialized");
 }

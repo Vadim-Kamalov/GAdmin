@@ -92,25 +92,23 @@ auto plugin::gui::windows::vehicle_selection::render() -> void {
     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, window_alpha / 255.f);
     ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoTitleBar);
     {
-        widgets::text((*child->fonts->bold)[24], 0, "Выберите машину для спавна");
+        widgets::text(child->fonts->bold, 24, 0, "Выберите машину для спавна");
         ImGui::BeginGroup();
         {
-            ImFont *title_font = (*child->fonts->bold)[16], *input_font = (*child->fonts->regular)[18];
-            
             ImVec2 spacing = ImGui::GetStyle().ItemSpacing;
             ImVec2 padding = ImGui::GetStyle().WindowPadding;
 
-            float input_height = input_font->FontSize + ImGui::GetStyle().FramePadding.y * 2;
+            float input_height = 18 /* input font size */ + ImGui::GetStyle().FramePadding.y * 2;
             float buttons_end_x = spacing.x * 3 + input_height * 2;
             float input_width = ImGui::GetWindowWidth() / 2 - padding.x - buttons_end_x;
             float secondary_group_x = input_width + buttons_end_x;
 
-            widgets::text(title_font, 0, "Основной цвет");
+            widgets::text(child->fonts->bold, 16, 0, "Основной цвет");
             ImGui::SameLine(secondary_group_x);
-            widgets::text(title_font, 0, "Дополнительный цвет");
+            widgets::text(child->fonts->bold, 16, 0, "Дополнительный цвет");
         
             ImGui::PushItemWidth(input_width);
-            ImGui::PushFont(input_font);
+            ImGui::PushFont(child->fonts->regular, 18);
             {
                 for (int i = 0; i < 2; i++) {
                     ImGui::BeginGroup();
@@ -128,7 +126,7 @@ auto plugin::gui::windows::vehicle_selection::render() -> void {
                         if (ImGui::InputInt(("##" + id).c_str(), &colors[i], 0))
                             colors[i] = std::clamp(colors[i], 0, 255);
 
-                        child->fonts->bold->push(18);
+                        ImGui::PushFont(child->fonts->bold, 18);
                         {
                             // ImGui::SameLine() breaks Y-position of the text in the button (only): have to do this.
                             ImGui::SetCursorPos({ pos.x + input_width + ImGui::GetStyle().ItemSpacing.x, pos.y });
@@ -166,7 +164,7 @@ auto plugin::gui::windows::vehicle_selection::render() -> void {
         float body_height = ImGui::GetWindowHeight() - ImGui::GetCursorPosY() - ImGui::GetStyle().WindowPadding.y
             - ImGui::GetStyle().ItemSpacing.y - create_button_height;
         
-        child->fonts->bold->push(16);
+        ImGui::PushFont(child->fonts->bold, 16);
         {
             ImVec2 window_padding = ImGui::GetStyle().WindowPadding;
 

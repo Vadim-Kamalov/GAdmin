@@ -23,7 +23,7 @@ auto plugin::gui::widgets::basic_text::render() const -> void {
     ImVec2 pos = ImGui::GetCursorPos();
 
     if (font)
-        ImGui::PushFont(font);
+        ImGui::PushFont(font, font_size);
     
     ImGui::BeginGroup();
     {

@@ -24,7 +24,7 @@ auto plugin::gui::windows::admins::get_window_information() const -> information
 
     float entry_height = 0;
     ImVec2 window_padding = ImGui::GetStyle().WindowPadding;
-    float window_width = title_font->CalcTextSizeA(title_font->FontSize, FLT_MAX, 0, title.c_str()).x
+    float window_width = title_font->CalcTextSizeA(title_font_size, FLT_MAX, 0, title.c_str()).x
         + ImGui::GetStyle().WindowPadding.x * 2;
 
     for (const auto& [ index, admin ] : admins_sorted | std::views::enumerate) {
@@ -36,7 +36,7 @@ auto plugin::gui::windows::admins::get_window_information() const -> information
         if (window_configuration["show_id"])
             std::format_to(std::back_inserter(text), "[{}]", admin.id);
     
-        ImVec2 text_size = entry_font->CalcTextSizeA(entry_font->FontSize, FLT_MAX, 0, text.c_str());
+        ImVec2 text_size = entry_font->CalcTextSizeA(entry_font_size, FLT_MAX, 0, text.c_str());
         float width = text_size.x + ImGui::GetStyle().WindowPadding.x * 2;
     
         if (entry_height == 0)
@@ -81,7 +81,7 @@ auto plugin::gui::windows::admins::render() -> void {
     ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize);
     {
         if (window_configuration["show_title"])
-            widgets::text(title_font, 1, "{}", window_information.title);
+            widgets::text(title_font, title_font_size, 1, "{}", window_information.title);
 
         ImGui::PushStyleColor(ImGuiCol_ScrollbarBg, { 0, 0, 0, 0 });
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, 0 });
@@ -105,7 +105,7 @@ auto plugin::gui::windows::admins::render() -> void {
                     ImGui::SetCursorPosX(pos_x);
                     ImGui::PushStyleColor(ImGuiCol_Text, *entry.color);
                     {
-                        widgets::text(entry_font, 1, "{}", entry.text);
+                        widgets::text(entry_font, entry_font_size, 1, "{}", entry.text);
                     }
                     ImGui::PopStyleColor();
                 }

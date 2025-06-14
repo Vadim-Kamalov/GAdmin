@@ -21,14 +21,10 @@ auto plugin::gui::windows::release_information::markdown_link_callback(ImGui::Ma
 }
 
 auto plugin::gui::windows::release_information::render_markdown(const std::string& markdown) const -> void {
-    ImFont* h1 = (*child->fonts->bold)[24];
-    ImFont* h2 = (*child->fonts->bold)[20];
-    ImFont* h3 = (*child->fonts->bold)[18];
-
     markdown_config.linkCallback = markdown_link_callback;
-    markdown_config.headingFormats[0] = { h1, true };
-    markdown_config.headingFormats[1] = { h2, true };
-    markdown_config.headingFormats[2] = { h3, false };
+    markdown_config.headingFormats[0] = { child->fonts->bold, 24, false };
+    markdown_config.headingFormats[1] = { child->fonts->bold, 20, false };
+    markdown_config.headingFormats[2] = { child->fonts->bold, 18, false };
 
     ImGui::Markdown(markdown.c_str(), markdown.length(), markdown_config);
 }
@@ -47,11 +43,11 @@ auto plugin::gui::windows::release_information::render_title() const -> void {
                     parsed_information->download_count)
     };
 
-    ImVec2 center_text_size = bold_font->CalcTextSizeA(bold_font->FontSize, FLT_MAX, 0.0f, entries_aligned[1].c_str());
+    ImVec2 center_text_size = bold_font->CalcTextSizeA(bold_font_size, FLT_MAX, 0.0f, entries_aligned[1].c_str());
     ImVec2 window_padding = ImGui::GetStyle().WindowPadding;
 
     for (const auto& [ index, entry ] : entries_aligned | std::views::enumerate) {
-        ImVec2 size = (index == 1) ? center_text_size : regular_font->CalcTextSizeA(regular_font->FontSize, FLT_MAX, 0.0f, entry.c_str());
+        ImVec2 size = (index == 1) ? center_text_size : regular_font->CalcTextSizeA(regular_font_size, FLT_MAX, 0.0f, entry.c_str());
         ImVec2 pos = { window_padding.x, (index == 1) ? window_padding.y : window_padding.y + (center_text_size.y - size.y) / 2.0f };
         ImVec4 color = ImGui::GetStyle().Colors[(index == 1) ? ImGuiCol_Text : ImGuiCol_TextDisabled];
 
@@ -129,8 +125,8 @@ auto plugin::gui::windows::release_information::create(types::not_null<gui_initi
 
 plugin::gui::windows::release_information::release_information(types::not_null<gui_initializer*> child)
     : window(child, get_id()),
-      bold_font((*child->fonts->bold)[24]),
-      regular_font((*child->fonts->regular)[18])
+      bold_font(child->fonts->bold),
+      regular_font(child->fonts->regular)
 {
     if (!std::filesystem::exists(file_path))
         return;

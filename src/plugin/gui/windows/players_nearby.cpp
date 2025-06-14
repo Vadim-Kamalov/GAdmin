@@ -43,7 +43,7 @@ auto plugin::gui::windows::players_nearby::get_window_information() const -> inf
         if (auto admin = server::admins::get_admin(player.id); admin.has_value())
             std::format_to(std::back_inserter(new_entry.text), " [{}]", admin->nickname);
     
-        ImVec2 text_size = entry_font->CalcTextSizeA(entry_font->FontSize, FLT_MAX, 0, new_entry.text.c_str());
+        ImVec2 text_size = entry_font->CalcTextSizeA(entry_font_size, FLT_MAX, 0, new_entry.text.c_str());
 
         if (text_size.x > content_size.x)
             content_size.x = text_size.x;
@@ -62,11 +62,11 @@ auto plugin::gui::windows::players_nearby::get_window_information() const -> inf
     
     if (window_configuration["show_title"]) {
         std::string title_label = std::format("{} (всего: {})", title, entries.size());
-        content_size.x = title_font->CalcTextSizeA(title_font->FontSize, FLT_MAX, 0, title_label.c_str()).x;
+        content_size.x = title_font->CalcTextSizeA(title_font_size, FLT_MAX, 0, title_label.c_str()).x;
     }
 
     content_size.x += window_padding.x * 2 + ImGui::GetStyle().ScrollbarSize;
-    content_size.y = show_scrollbar_on * (entry_font->FontSize + spacing_y + text_border_size) - spacing_y + window_padding.y;
+    content_size.y = show_scrollbar_on * (entry_font_size + spacing_y + text_border_size) - spacing_y + window_padding.y;
 
     switch (sort_option) {
         case sort_option_t::length:
@@ -99,7 +99,8 @@ auto plugin::gui::windows::players_nearby::render() -> void {
     ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize);
     {
         if (window_configuration["show_title"])
-            widgets::text(title_font, text_border_size, "{} (всего: {})", title, window_information.entries.size());
+            widgets::text(title_font, title_font_size, text_border_size, "{} (всего: {})",
+                          title, window_information.entries.size());
         
         ImGui::PushStyleColor(ImGuiCol_ScrollbarBg, 0);
         ImGui::SetCursorPosX(0);
@@ -122,7 +123,7 @@ auto plugin::gui::windows::players_nearby::render() -> void {
                     ImGui::SetCursorPosX(pos_x);
                     ImGui::PushStyleColor(ImGuiCol_Text, *entry.color);
                     {
-                        widgets::text(entry_font, text_border_size, "{}", entry.text);
+                        widgets::text(entry_font, entry_font_size, text_border_size, "{}", entry.text);
                     }
                     ImGui::PopStyleColor();
                 }

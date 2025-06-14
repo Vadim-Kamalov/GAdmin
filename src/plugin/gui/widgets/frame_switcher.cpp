@@ -67,15 +67,15 @@ static auto draw_frame(const ImVec2& pos, const ImVec2& size, const frame_switch
 
     plugin::types::zstring_t text = child->frame_labels[std::to_underlying(frame)];
     plugin::types::zstring_t icon = child->frame_icons[std::to_underlying(frame)];
-    ImFont *icon_font = (*gui->fonts->icon)[24], *bold_font = (*gui->fonts->bold)[18];
-    ImVec2 icon_size = icon_font->CalcTextSizeA(icon_font->FontSize, FLT_MAX, 0, icon);
-    ImVec2 text_size = bold_font->CalcTextSizeA(bold_font->FontSize, FLT_MAX, 0, text);
+    ImFont *icon_font = gui->fonts->icon, *bold_font = gui->fonts->bold;
+    ImVec2 icon_size = icon_font->CalcTextSizeA(24, FLT_MAX, 0, icon);
+    ImVec2 text_size = bold_font->CalcTextSizeA(18, FLT_MAX, 0, text);
     ImU32 text_color = ImGui::GetColorU32(it.colors.text);
 
-    draw_list->AddText(icon_font, icon_font->FontSize, { pos.x + (child->menu_min_width - icon_size.x) / 2,
+    draw_list->AddText(icon_font, 24, { pos.x + (child->menu_min_width - icon_size.x) / 2,
                                                          pos.y + (size.y - icon_size.y) / 2 }, text_color, icon);
 
-    draw_list->AddText(bold_font, bold_font->FontSize, { pos.x + child->menu_min_width + ImGui::GetStyle().ItemSpacing.x,
+    draw_list->AddText(bold_font, 18, { pos.x + child->menu_min_width + ImGui::GetStyle().ItemSpacing.x,
                                                          pos.y + (size.y - text_size.y) / 2 }, text_color, text);
 }
 

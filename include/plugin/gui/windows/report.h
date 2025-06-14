@@ -18,6 +18,14 @@ namespace plugin::gui::windows {
 
 class report final : public window {
 private:
+    static constexpr float bold_font_size = 18;
+    static constexpr float regular_font_size = 16;
+    static constexpr float answer_button_height = 30;
+    static constexpr std::size_t max_buttons_per_line = 3;
+    static constexpr std::size_t max_action_buttons_lines = 4;
+    static constexpr std::chrono::milliseconds animation_duration = 500ms;
+    static constexpr int block_time_options[4] = { 10, 30, 60, 90 };
+
     struct report_information_t final {
         std::string nickname;
         std::string text;
@@ -92,6 +100,8 @@ private:
     auto send_response(const dialog_option& option) -> void;
     auto send_input_response(const dialog_option& option) -> void;
     auto close_report() -> void;
+    
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(insert_button, name, insert);
 public:
     inline auto get_id() const -> types::zstring_t override;
     static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
@@ -100,13 +110,6 @@ public:
     auto on_event(const samp::event_info& event) -> bool override;
 
     explicit report(types::not_null<gui_initializer*> child);
-private:
-    static constexpr float answer_button_height = 30;
-    static constexpr std::size_t max_buttons_per_line = 3;
-    static constexpr std::size_t max_action_buttons_lines = 4;
-    static constexpr std::chrono::milliseconds animation_duration = 500ms;
-    static constexpr int block_time_options[4] = { 10, 30, 60, 90 };
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(insert_button, name, insert);
 }; // class report final : public window 
 
 } // namespace plugin::gui::windows

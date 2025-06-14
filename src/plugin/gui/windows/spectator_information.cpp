@@ -16,14 +16,12 @@
 auto plugin::gui::windows::spectator_information::vehicles_custom_renderer(const std::string_view& value, types::color color) const
     -> void
 {
-    ImFont* font = (*child->fonts->regular)[16];
-    
     if (value == "Отсутствует")
-        return render_centered_text(value, font, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
+        return render_centered_text(value, regular_font, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
 
     ImGui::BeginGroup();
     {
-        render_centered_text(value, font, ImGui::ColorConvertU32ToFloat4(*color));
+        render_centered_text(value, regular_font, ImGui::ColorConvertU32ToFloat4(*color));
 
         ImVec2 start = ImGui::GetItemRectMin(), end = ImGui::GetItemRectMax();
         ImDrawList* draw_list = ImGui::GetWindowDrawList();
@@ -32,10 +30,10 @@ auto plugin::gui::windows::spectator_information::vehicles_custom_renderer(const
         std::string vehicle_id;
     
         float current_pos_x = start.x;
-        float space_width = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0, " ").x;
+        float space_width = regular_font->CalcTextSizeA(fonts_size, FLT_MAX, 0, " ").x;
 
         while (std::getline(stream, vehicle_id, ' ')) {
-            ImVec2 size = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0, vehicle_id.c_str());
+            ImVec2 size = regular_font->CalcTextSizeA(fonts_size, FLT_MAX, 0, vehicle_id.c_str());
             ImVec2 line_start = { current_pos_x, end.y }, line_end = { current_pos_x + size.x, end.y + 2 };
 
             if (ImGui::IsMouseHoveringRect({ line_start.x, start.y }, line_end)) {
@@ -54,16 +52,15 @@ auto plugin::gui::windows::spectator_information::vehicles_custom_renderer(const
 auto plugin::gui::windows::spectator_information::vehicle_information_custom_renderer(const std::string_view&, types::color) const
     -> void
 {
-    ImFont* font = (*child->fonts->regular)[16];
     samp::vehicle vehicle = server::spectator::player.get_vehicle();
 
     if (!vehicle.is_available())
-        return render_centered_text("Недоступно", font, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
+        return render_centered_text("Недоступно", regular_font, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
 
     std::string engine = "Заглушен", doors = "Открыты";
     ImVec4 engine_color = ImGui::ColorConvertU32ToFloat4(*style::accent_colors.red);
     ImVec4 doors_color = ImGui::ColorConvertU32ToFloat4(*style::accent_colors.green);
-    ImVec2 text_size = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0, std::format("{} / {}", engine, doors).c_str());
+    ImVec2 text_size = regular_font->CalcTextSizeA(fonts_size, FLT_MAX, 0, std::format("{} / {}", engine, doors).c_str());
 
     if (vehicle.is_engine_active()) {
         engine = "Заведен";
@@ -75,9 +72,10 @@ auto plugin::gui::windows::spectator_information::vehicle_information_custom_ren
         doors_color = ImGui::ColorConvertU32ToFloat4(*style::accent_colors.red);
     }
 
-    ImGui::SetCursorPosX((ImGui::GetCursorPosX() + (ImGui::GetContentRegionAvail().x / 2)) - text_size.x / 2);
-    ImGui::PushFont(font);
+    ImGui::PushFont(regular_font, fonts_size);
     {
+        float text_size_x = ImGui::CalcTextSize(std::format("{} / {}", engine, doors).c_str()).x;
+        ImGui::SetCursorPosX((ImGui::GetCursorPosX() + (ImGui::GetContentRegionAvail().x / 2)) - text_size_x / 2);
         ImGui::TextColored(engine_color, "%s", engine.c_str());
         ImGui::SameLine(0, 0);
         ImGui::TextUnformatted(" / ");
@@ -97,7 +95,7 @@ auto plugin::gui::windows::spectator_information::render_centered_text(const std
     text.erase(0, text.find_first_not_of(' '));
     text.erase(text.find_last_not_of(' ') + 1);
 
-    ImVec2 size = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0, text.c_str());
+    ImVec2 size = font->CalcTextSizeA(fonts_size, FLT_MAX, 0, text.c_str());
     float column_width = ImGui::GetContentRegionAvail().x;
 
     if (size.x >= column_width && column_width >= min_wrap_width && text.contains(' ')) {
@@ -110,7 +108,7 @@ auto plugin::gui::windows::spectator_information::render_centered_text(const std
                 return;
 
             text = match.get<1>().str();
-            size = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0, text.c_str());
+            size = font->CalcTextSizeA(fonts_size, FLT_MAX, 0, text.c_str());
         }
 
         render_centered_text(text, font);
@@ -120,7 +118,7 @@ auto plugin::gui::windows::spectator_information::render_centered_text(const std
     }
 
     ImGui::SetCursorPosX((ImGui::GetCursorPosX() + (column_width / 2)) - size.x / 2);
-    ImGui::PushFont(font);
+    ImGui::PushFont(font, fonts_size);
     {
         ImGui::TextColored(color, "%s", text.c_str());
     }
@@ -136,7 +134,7 @@ auto plugin::gui::windows::spectator_information::nickname_custom_renderer(const
         return it.id == server::spectator::id;
     }) != admins.end();
 
-    render_centered_text(text, (*child->fonts->regular)[16], ImGui::ColorConvertU32ToFloat4(
+    render_centered_text(text, regular_font, ImGui::ColorConvertU32ToFloat4(
         (spectating_administrator) ? *style::accent_colors.red : *color));
     
     widgets::hint::render_as_guide("Красный цвет означает, что вы следите\nза администратором.", spectating_administrator);
@@ -239,11 +237,9 @@ auto plugin::gui::windows::spectator_information::render() -> void {
     {
         if (ImGui::BeginTable("windows::spectator_information::table", 2)) {
             for (auto& row : rows) {
-                ImFont* label_font = (*child->fonts->bold)[16], *value_font = (*child->fonts->regular)[16];
-
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
-                render_centered_text(row.label, label_font);
+                render_centered_text(row.label, bold_font);
                 ImGui::TableSetColumnIndex(1);
 
                 if (row.is_custom_renderer_available())
@@ -255,7 +251,7 @@ auto plugin::gui::windows::spectator_information::render() -> void {
                     if (row.value == "Отсутствует")
                         row.color = ImGui::GetColorU32(ImGuiCol_TextDisabled);
 
-                    render_centered_text(row.value, value_font, ImGui::ColorConvertU32ToFloat4(*row.color));
+                    render_centered_text(row.value, regular_font, ImGui::ColorConvertU32ToFloat4(*row.color));
                 }
             }
             ImGui::EndTable();

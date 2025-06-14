@@ -4,6 +4,8 @@
 #include "plugin/gui/widgets/button.h"
 #include "plugin/gui/widgets/frame_switcher.h"
 #include "plugin/gui/widgets/menu_selector.h"
+#include "plugin/gui/widgets/text.h"
+#include "plugin/log.h"
 #include <imgui.h>
 #include <windows.h>
 
@@ -22,18 +24,22 @@ auto plugin::gui::windows::main::render_menu() -> void {
         ImGui::SetCursorPos({ menu_min_width + ImGui::GetStyle().ItemSpacing.x, ImGui::GetStyle().WindowPadding.y });
         ImGui::BeginGroup();
         {
-            ImFont *left = (*child->fonts->bold)[24], *right = (*child->fonts->light)[18];
-                
-            float left_width = left->CalcTextSizeA(left->FontSize, FLT_MAX, 0, "GAdmin").x,
-                  right_width = right->CalcTextSizeA(right->FontSize, FLT_MAX, 0, "v" PROJECT_VERSION).x;
+            static constexpr float left_font_size = 24;
+            static constexpr float right_font_size = 18;
+
+            ImFont* left = child->fonts->bold;
+            ImFont* right = child->fonts->light;
+
+            float left_width = left->CalcTextSizeA(left_font_size, FLT_MAX, 0, "GAdmin").x,
+                  right_width = right->CalcTextSizeA(right_font_size, FLT_MAX, 0, "v" PROJECT_VERSION).x;
 
             ImGui::SetCursorPosX((menu_max_width - left_width - right_width - 5) / 2 + ImGui::GetStyle().WindowPadding.x);
             ImGui::BeginGroup();
             {
-                child->fonts->bold->text(24, "GAdmin");
+                widgets::text(left, left_font_size, 0, "GAdmin");
                 ImGui::SameLine(0, 5);
                 ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 4);
-                child->fonts->light->text(18, "v" PROJECT_VERSION);
+                widgets::text(right, right_font_size, 0, "v" PROJECT_VERSION);
             }
             ImGui::EndGroup();
             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 5, 5 });

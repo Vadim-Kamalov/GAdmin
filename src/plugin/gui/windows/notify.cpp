@@ -19,9 +19,9 @@ auto plugin::gui::windows::notify::on_send_notification(notification& notificati
     return true;
 }
 
-auto plugin::gui::windows::notify::get_buttons_max_size(ImFont* font, const notification::buttons_t& buttons) const -> ImVec2 {
-    ImVec2 first_size = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0, buttons.first.name.c_str());
-    ImVec2 second_size = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0, buttons.second.name.c_str());
+auto plugin::gui::windows::notify::get_buttons_max_size(ImFont* font, float font_size, const notification::buttons_t& buttons) const -> ImVec2 {
+    ImVec2 first_size = font->CalcTextSizeA(font_size, FLT_MAX, 0, buttons.first.name.c_str());
+    ImVec2 second_size = font->CalcTextSizeA(font_size, FLT_MAX, 0, buttons.second.name.c_str());
 
     if (second_size.x > first_size.x)
         first_size = second_size;
@@ -32,47 +32,50 @@ auto plugin::gui::windows::notify::get_buttons_max_size(ImFont* font, const noti
 auto plugin::gui::windows::notify::render_notification(notification& item) const -> void {
     ImVec2 cursor_pos = ImGui::GetCursorScreenPos();
     ImU32 text_color = ImGui::GetColorU32(ImGuiCol_Text);
-    ImFont *icon = (*child->fonts->icon)[24], *bold = (*child->fonts->bold)[18], *regular = (*child->fonts->regular)[16];
     ImDrawList* draw_list = ImGui::GetForegroundDrawList();
+    
+    ImFont* icon = child->fonts->icon;
+    ImFont* bold = child->fonts->bold;
+    ImFont* regular = child->fonts->regular;
 
     draw_list->AddRectFilled(cursor_pos, { cursor_pos.x + notification_size[0], cursor_pos.y + notification_size[1] },
                              ImGui::GetColorU32(ImGuiCol_WindowBg), ImGui::GetStyle().ChildRounding);
 
-    ImVec2 icon_size = icon->CalcTextSizeA(icon->FontSize, FLT_MAX, 0, item.icon);
+    ImVec2 icon_size = icon->CalcTextSizeA(icon_font_size, FLT_MAX, 0, item.icon);
     ImVec2 icon_pos = { cursor_pos.x + 12, cursor_pos.y + (notification_size[1] - icon_size.y) / 2 };
 
-    draw_list->AddText(icon, icon->FontSize, icon_pos, text_color, item.icon);
+    draw_list->AddText(icon, icon_font_size, icon_pos, text_color, item.icon);
 
     ImVec2 buttons_size = { 0, 0 };
     ImVec2 item_spacing = ImGui::GetStyle().ItemSpacing;
     float wrap_width = notification_size[0] - icon_size.x - 22;
 
     if (item.buttons.has_value()) {
-        buttons_size = get_buttons_max_size(regular, *item.buttons);
+        buttons_size = get_buttons_max_size(regular, regular_font_size, *item.buttons);
         wrap_width -= buttons_size.x + item_spacing.x * 2 + 10;
     }
 
-    ImVec2 title_size = bold->CalcTextSizeA(bold->FontSize, FLT_MAX, 0, item.title.c_str());
-    ImVec2 description_size = regular->CalcTextSizeA(regular->FontSize, FLT_MAX, wrap_width, item.description.c_str());
+    ImVec2 title_size = bold->CalcTextSizeA(bold_font_size, FLT_MAX, 0, item.title.c_str());
+    ImVec2 description_size = regular->CalcTextSizeA(regular_font_size, FLT_MAX, wrap_width, item.description.c_str());
     ImVec2 group_pos = { icon_pos.x + icon_size.x + 10, cursor_pos.y + (notification_size[1] - title_size.y - description_size.y - item_spacing.y) / 2 };
 
-    draw_list->AddText(bold, bold->FontSize, group_pos, text_color, item.title.c_str());
-    draw_list->AddText(regular, regular->FontSize, { group_pos.x, group_pos.y + title_size.y + item_spacing.y },
+    draw_list->AddText(bold, bold_font_size, group_pos, text_color, item.title.c_str());
+    draw_list->AddText(regular, regular_font_size, { group_pos.x, group_pos.y + title_size.y + item_spacing.y },
                        text_color, item.description.c_str(), nullptr, wrap_width);
 
     if (item.buttons.has_value()) {
         ImVec2 start = { cursor_pos.x + notification_size[0] - item_spacing.x - buttons_size.x - 10, 
                          cursor_pos.y + (notification_size[1] - buttons_size.y * 2) / 2 - item_spacing.y };
         
-        render_button(start, regular, item, item.buttons->first);
-        render_button({ start.x, start.y + buttons_size.y + item_spacing.y }, regular, item, item.buttons->second);
+        render_button(start, regular, regular_font_size, item, item.buttons->first);
+        render_button({ start.x, start.y + buttons_size.y + item_spacing.y }, regular, regular_font_size, item, item.buttons->second);
     }
 
     ImGui::Dummy({ notification_size[0], notification_size[1] });
 }
 
-auto plugin::gui::windows::notify::render_button(const ImVec2& pos, ImFont* font, notification& notification, notification::button& button) const
-    -> void
+auto plugin::gui::windows::notify::render_button(const ImVec2& pos, ImFont* font, float font_size, notification& notification,
+                                                 notification::button& button) const -> void
 {
     if (!button.backend.has_value()) {
         notification::button::backend_t backend;
@@ -81,11 +84,11 @@ auto plugin::gui::windows::notify::render_button(const ImVec2& pos, ImFont* font
     }
 
     ImDrawList* draw_list = ImGui::GetForegroundDrawList();
-    ImVec2 text_size = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0, button.name.c_str());
+    ImVec2 text_size = font->CalcTextSizeA(font_size, FLT_MAX, 0, button.name.c_str());
     bool hovering = ImGui::IsMouseHoveringRect(pos, { pos.x + text_size.x, pos.y + text_size.y });
     auto now = std::chrono::steady_clock::now();
 
-    draw_list->AddText(font, font->FontSize, pos, ImGui::ColorConvertFloat4ToU32(button.backend->color), button.name.c_str());
+    draw_list->AddText(font, font_size, pos, ImGui::ColorConvertFloat4ToU32(button.backend->color), button.name.c_str());
 
     if (hovering && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
         button.backend->time[0] = button.backend->clicked_time = now;

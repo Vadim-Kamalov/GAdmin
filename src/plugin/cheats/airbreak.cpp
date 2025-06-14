@@ -2,6 +2,7 @@
 #include "plugin/game/camera.h"
 #include "plugin/game/pad.h"
 #include "plugin/game/ped.h"
+#include "plugin/gui/icon.h"
 #include "plugin/gui/notify.h"
 #include "plugin/plugin.h"
 #include "plugin/samp/utils.h"

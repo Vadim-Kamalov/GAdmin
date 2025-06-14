@@ -16,6 +16,12 @@ namespace plugin::gui::windows {
 
 class kill_list final : public window {
 private:
+    static constexpr float bold_font_size = 18;
+    static constexpr float regular_font_size = 16;
+    static constexpr std::chrono::milliseconds push_animation_duration = 300ms;
+    static constexpr std::chrono::milliseconds alpha_change_duration = 300ms;
+    static constexpr std::uint8_t text_border_size = 1;
+
     struct entry final {
         struct side final {
             samp::player player;
@@ -33,11 +39,7 @@ private:
    
         auto get_formatted_time() const -> std::string;
         auto compute_width(ImFont* bold_font, ImFont* regular_font, bool with_time) const -> float;
-    }; // struct entry
-private:
-    static constexpr std::chrono::milliseconds push_animation_duration = 300ms;
-    static constexpr std::chrono::milliseconds alpha_change_duration = 300ms;
-    static constexpr std::uint8_t text_border_size = 1;
+    }; // struct entry final
 
     ImFont *bold_font, *regular_font;
     ImVec2 window_size = { 0, 0 };
@@ -56,8 +58,8 @@ public:
 
     explicit kill_list(types::not_null<gui_initializer*> child)
         : window(child, get_id()),
-          bold_font((*child->fonts->bold)[18]),
-          regular_font((*child->fonts->regular)[16]) {}
+          bold_font(child->fonts->bold),
+          regular_font(child->fonts->regular) {}
 }; // class kill_list : public window
 
 } // namespace plugin::gui::windows

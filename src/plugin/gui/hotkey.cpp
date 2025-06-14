@@ -84,27 +84,27 @@ auto plugin::gui::hotkey::hint_renderer() -> void {
     
     auto& saved_hotkeys = (*configuration)["internal"]["hotkeys"];
 
-    ImFont* bold_font = (*handler->child->fonts->bold)[18];
-    ImFont* regular_font = (*handler->child->fonts->regular)[18];
+    ImFont* bold_font = handler->child->fonts->bold;
+    ImFont* regular_font = handler->child->fonts->regular;
 
     float window_width = std::max(ImGui::GetWindowWidth(), 200.0f);
     float item_full_width = window_width - ImGui::GetStyle().WindowPadding.x * 2;
 
-    widgets::text(bold_font, 0, "{}", label);
+    widgets::text(bold_font, fonts_size, 0, "{}", label);
     ImGui::BeginGroup();
     {
-        widgets::text(bold_font, 0, "Клавиши:");
+        widgets::text(bold_font, fonts_size, 0, "Клавиши:");
         ImGui::SameLine();
-        widgets::text(regular_font, 0, "{}", bind.to_string());
+        widgets::text(regular_font, fonts_size, 0, "{}", bind.to_string());
     }
     ImGui::EndGroup();
-    ImGui::PushFont(bold_font);
+    ImGui::PushFont(bold_font, fonts_size);
     {
         ImGui::SetCursorPosX((window_width - ImGui::CalcTextSize("Условия активации").x) / 2);
         ImGui::TextUnformatted("Условия активации");
     }
     ImGui::PopFont();
-    ImGui::PushFont(regular_font);
+    ImGui::PushFont(regular_font, fonts_size);
     {
         for (std::uint8_t i = 0; i < hint_settings.size(); i++) {
             types::setter<bool> setter = types::setter<bool>::from_proxy(bind.conditions[i]);
@@ -116,7 +116,7 @@ auto plugin::gui::hotkey::hint_renderer() -> void {
     }
     ImGui::PopFont();
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() - ImGui::GetStyle().ItemSpacing.y + ImGui::GetStyle().WindowPadding.y);
-    ImGui::PushFont(regular_font);
+    ImGui::PushFont(regular_font, fonts_size);
     {
         if (widgets::button("Сбросить##" + label, { item_full_width, 30 }).render()) {
             saved_hotkeys[label] = 0;

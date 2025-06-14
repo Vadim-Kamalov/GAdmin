@@ -15,6 +15,9 @@ class players_nearby final : public window {
 public:
     enum class sort_option_t { disabled, length, distance, id };
 private:
+    static constexpr float title_font_size = 18;
+    static constexpr float entry_font_size = 16;
+
     struct entry final {
         float width = 0;
         float distance = 0;
@@ -28,7 +31,8 @@ private:
         std::deque<entry> entries;
     }; // struct information_t final
 
-    ImFont *entry_font, *title_font;
+    ImFont* title_font;
+    ImFont* entry_font;
 
     auto get_window_information() const -> information_t;
 public:
@@ -39,8 +43,8 @@ public:
 
     explicit players_nearby(types::not_null<gui_initializer*> child)
         : window(child, get_id()),
-          entry_font((*child->fonts->regular)[16]),
-          title_font((*child->fonts->bold)[18]) {}
+          title_font(child->fonts->bold),
+          entry_font(child->fonts->regular) {}
 private:
     static constexpr std::size_t text_border_size = 1;
     static constexpr types::zstring_t title = "Игроки в зоне стрима";

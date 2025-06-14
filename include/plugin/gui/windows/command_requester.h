@@ -50,6 +50,7 @@ private:
         command_t command;
     }; // struct request_t final
 
+    static constexpr float fonts_size = 18;
     static const std::vector<command_t> commands;
 
     std::chrono::steady_clock::time_point time_request_sent;

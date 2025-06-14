@@ -33,6 +33,8 @@ namespace plugin::cheats {
 /// @inherits basic_cheat
 class clickwarp final : public basic_cheat {
 private:
+    static constexpr float font_size = 18;
+
     struct teleport_information_t {
         types::vector_3d coordinates;
         game::vehicle vehicle_to_jump;

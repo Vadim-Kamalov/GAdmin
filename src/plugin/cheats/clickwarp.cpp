@@ -16,7 +16,7 @@ auto plugin::cheats::clickwarp::stop_selecting_place() -> void {
     teleport_information = {};
 }
 
-auto plugin::cheats::clickwarp::on_alogin_new_state(bool state) -> void{
+auto plugin::cheats::clickwarp::on_alogin_new_state(bool state) -> void {
     if (state || !selecting_place_to_warp)
         return;
 
@@ -109,11 +109,11 @@ auto plugin::cheats::clickwarp::render(types::not_null<gui_initializer*> child) 
 
     teleport_information = teleport_information_t { pos_diff, game::vehicle(0) };
     
-    ImFont* font = (*child->fonts->bold)[18];
+    ImFont* font = child->fonts->bold;
     ImDrawList* draw_list = ImGui::GetBackgroundDrawList();
 
     std::string text = std::format("{:0.2f}m", player_ped.get_position().get_distance_to(pos_diff));
-    ImVec2 distance_text_size = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0.0f, text.c_str());
+    ImVec2 distance_text_size = font->CalcTextSizeA(font_size, FLT_MAX, 0.0f, text.c_str());
     types::color color = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_Text]);
 
     if (vehicle && !vehicle.has_driver() && !player_ped.get_vehicle()) {
@@ -130,9 +130,9 @@ auto plugin::cheats::clickwarp::render(types::not_null<gui_initializer*> child) 
     {
         std::stringstream stream(text);
         for (std::string line; std::getline(stream, line);) {
-            ImVec2 text_size = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0.0f, line.c_str());
+            ImVec2 text_size = font->CalcTextSizeA(font_size, FLT_MAX, 0.0f, line.c_str());
 
-            draw_list->AddText(font, font->FontSize, { text_pos.x - text_size.x / 2, text_pos.y },
+            draw_list->AddText(font, font_size, { text_pos.x - text_size.x / 2, text_pos.y },
                                *color, line.c_str());
 
             text_pos.y += text_size.y + ImGui::GetStyle().ItemSpacing.y;

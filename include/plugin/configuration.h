@@ -11,7 +11,7 @@ class configuration_initializer final {
 private:
     std::filesystem::path configuration_file;
     
-    static nlohmann::json main_json;
+    static inline nlohmann::json main_json;
     mutable std::chrono::steady_clock::time_point last_time_saved;
 
     auto write(const std::filesystem::path& path, const nlohmann::json& json) const -> void;

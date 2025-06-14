@@ -11,8 +11,11 @@ namespace plugin::gui::windows {
 
 class admins final : public window {
 private:
-    ImFont* entry_font;
+    static constexpr float title_font_size = 18;
+    static constexpr float entry_font_size = 16;
+
     ImFont* title_font;
+    ImFont* entry_font;
 
     struct entry_t final {
         std::string text;
@@ -36,8 +39,8 @@ public:
 
     explicit admins(types::not_null<gui_initializer*> child)
         : window(child, get_id()),
-          entry_font((*child->fonts->regular)[16]),
-          title_font((*child->fonts->bold)[18]) {}
+          title_font(child->fonts->bold),
+          entry_font(child->fonts->regular) {}
 }; // class admins final : public window
 
 } // namespace plugin::gui::windows

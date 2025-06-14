@@ -120,7 +120,7 @@ auto d3d9_present_hooked(const decltype(d3d9_present_hook)&, IDirect3DDevice9* d
     ImGui::NewFrame();
 
     plugin_to_load->on_frame();
-    
+
     ImGui::EndFrame();
     ImGui::Render();
     ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());

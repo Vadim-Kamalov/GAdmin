@@ -5,6 +5,7 @@
 #include "plugin/samp/core/input.h"
 #include "plugin/samp/core/user.h"
 #include "plugin/server/user.h"
+#include "plugin/gui/icon.h"
 #include "plugin/gui/notify.h"
 #include "plugin/game/game.h"
 #include "plugin/plugin.h"
@@ -266,7 +267,7 @@ auto plugin::gui::windows::command_requester::render() -> void {
 
     ImVec2 padding = ImGui::GetStyle().WindowPadding;
     auto [ size_x, size_y ] = game::get_screen_resolution();
-    float window_height = bold_font->FontSize + padding.y * 2;
+    float window_height = fonts_size + padding.y * 2;
 
     auto time_to_hide_ms = std::chrono::duration_cast<std::chrono::milliseconds>(5s - (now - time_request_sent));
     std::string timer = std::format("Запрос истекает через {:.1f} секунд", time_to_hide_ms.count() / 1000.f);
@@ -278,13 +279,13 @@ auto plugin::gui::windows::command_requester::render() -> void {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
     ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
     {
-        ImGui::PushFont(regular_font);
+        ImGui::PushFont(regular_font, fonts_size);
         {
             ImGui::TextUnformatted(std::format("Запрос команды от {} · Принять - {}",
                                                current_request->sender_nickname,
                                                approve_request_hotkey.bind).c_str());
 
-            ImGui::PushFont(bold_font);
+            ImGui::PushFont(bold_font, fonts_size);
             {
                 ImGui::SameLine((size_x - ImGui::CalcTextSize(current_request->full_command.c_str()).x) / 2);
                 ImGui::TextUnformatted(current_request->full_command.c_str());
@@ -320,8 +321,8 @@ auto plugin::gui::windows::command_requester::create(types::not_null<gui_initial
 
 plugin::gui::windows::command_requester::command_requester(types::not_null<gui_initializer*> child)
     : window(child, get_id()),
-      regular_font((*child->fonts->regular)[18]),
-      bold_font((*child->fonts->bold)[18])
+      regular_font(child->fonts->regular),
+      bold_font(child->fonts->bold)
 {
     approve_request_hotkey = hotkey("Принятие формы", key_bind({ 'L', 0 }, bind_condition::on_alogin))
         .with_callback([this](auto) { approve_request(); });

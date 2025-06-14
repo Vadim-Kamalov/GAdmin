@@ -34,7 +34,9 @@ namespace plugin::gui::widgets {
 struct basic_text final {
     types::zstring_t text;
     std::uint8_t border_size = 0;
+    
     ImFont* font;
+    float font_size;
 
     /// @struct colors_t
     /// @brief Contains color settings for the text.
@@ -54,18 +56,19 @@ struct basic_text final {
 /// @param fmt The format string.
 /// @param args The arguments to format.
 template<typename... Args>
-auto text(ImFont* font, std::uint8_t border_size, std::format_string<Args...> fmt, Args&&... args) noexcept -> void;
+auto text(ImFont* font, float font_size, std::uint8_t border_size, std::format_string<Args...> fmt, Args&&... args) noexcept -> void;
 
 } // namespace plugin::gui::widgets
 
 template<typename... Args>
-auto plugin::gui::widgets::text(ImFont* font, std::uint8_t border_size, std::format_string<Args...> fmt, Args&&... args)
+auto plugin::gui::widgets::text(ImFont* font, float font_size, std::uint8_t border_size, std::format_string<Args...> fmt, Args&&... args)
     noexcept -> void
 {
     basic_text {
         .text = std::format(fmt, std::forward<Args>(args)...).c_str(),
         .border_size = border_size,
-        .font = font
+        .font = font,
+        .font_size = font_size
     }.render();
 }
 
