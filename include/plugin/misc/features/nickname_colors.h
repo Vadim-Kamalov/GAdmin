@@ -8,6 +8,7 @@
 #include <deque>
 #include <thread>
 #include <vector>
+#include <chrono>
 
 namespace plugin::misc {
 namespace features {
@@ -22,14 +23,16 @@ public:
     static inline std::deque<entry_t> entries;
 private:
     std::jthread downloader_thread;
+    std::chrono::steady_clock::time_point time_updated_nickname_colors;
 
+    auto write_nickname_colors() -> void;
     auto on_server_message(const samp::event<samp::event_id::server_message>& message) -> bool;
     auto append_entries(nlohmann::json& object) -> void;
 public:
     auto on_event(const samp::event_info& event) -> bool override;
+    auto main_loop() -> void override;
 
     explicit nickname_colors();
-    ~nickname_colors() noexcept;
 }; // class nickname_colors final : public feature
 
 } // namespace features

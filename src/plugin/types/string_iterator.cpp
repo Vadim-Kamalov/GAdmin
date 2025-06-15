@@ -14,3 +14,9 @@ auto plugin::types::string_iterator::consume()
 {
     return input[index++];
 }
+
+auto plugin::types::string_iterator::remaining()
+    -> std::string
+{
+    return input.substr(index);
+}

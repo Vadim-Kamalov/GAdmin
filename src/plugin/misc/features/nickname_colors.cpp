@@ -3,8 +3,23 @@
 #include "plugin/log.h"
 #include "plugin/plugin.h"
 #include <common/network.h>
+#include <functional>
 #include <algorithm>
 #include <ctre.hpp>
+
+auto plugin::misc::features::nickname_colors::write_nickname_colors() -> void {
+    std::string nickname_colors = common::network::fetch_file_content(PROJECT_DATABASE "/nickname-colors.json",
+                                                                      downloader_thread.get_stop_token());
+
+    if (nickname_colors.empty()) {
+        log::error("failed to fetch [PROJECT_DATABASE \"/nickname-colors.json\"]: nickname_colors.empty() => true");
+        return;
+    }
+
+    nlohmann::json json = nlohmann::json::parse(nickname_colors);
+    append_entries(json["contributors"]);
+    append_entries(json["sponsors"]);
+}
 
 auto plugin::misc::features::nickname_colors::on_server_message(const samp::event<samp::event_id::server_message>& message) -> bool {
     static constexpr ctll::fixed_string message_pattern = R"(^\[A\] (\S+)(\[\d+\].*))";
@@ -61,27 +76,22 @@ auto plugin::misc::features::nickname_colors::on_event(const samp::event_info& e
     return true;
 }
 
-plugin::misc::features::nickname_colors::nickname_colors() {
-    downloader_thread = std::jthread([this](std::stop_token stop_token) {
-        std::string nickname_colors = common::network::fetch_file_content(PROJECT_DATABASE "/nickname-colors.json", stop_token);
+auto plugin::misc::features::nickname_colors::main_loop() -> void {
+    using namespace std::chrono_literals;
 
-        if (nickname_colors.empty()) {
-            log::error("failed to fetch [PROJECT_DATABASE \"/nickname-colors.json\"]: nickname_colors.empty() => true");
-            return;
-        }
+    auto now = std::chrono::steady_clock::now();
 
-        nlohmann::json json = nlohmann::json::parse(nickname_colors);
+    if (now - time_updated_nickname_colors < 5min)
+        return;
 
-        append_entries(json["contributors"]);
-        append_entries(json["sponsors"]);
-    });
+    time_updated_nickname_colors = now;
+    downloader_thread = std::jthread(std::bind_front(&nickname_colors::write_nickname_colors, this));
 }
 
-plugin::misc::features::nickname_colors::~nickname_colors() noexcept {
-    if (downloader_thread.joinable()) {
-        downloader_thread.request_stop();
-        downloader_thread.join();
-    }
+plugin::misc::features::nickname_colors::nickname_colors()
+    : time_updated_nickname_colors(std::chrono::steady_clock::now())
+{
+    downloader_thread = std::jthread(std::bind_front(&nickname_colors::write_nickname_colors, this));
 }
 
 auto plugin::misc::get_nickname_colors() noexcept -> std::deque<features::nickname_colors::entry_t>& {

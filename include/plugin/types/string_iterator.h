@@ -13,6 +13,7 @@ protected:
 public:
     auto current() const -> std::optional<unsigned char>;
     auto consume() -> unsigned char;
+    auto remaining() -> std::string;
 
     template<typename callback_until>
     auto skip(callback_until until) -> void;

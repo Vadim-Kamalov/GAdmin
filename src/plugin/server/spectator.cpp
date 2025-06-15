@@ -344,6 +344,8 @@ auto plugin::server::spectator::assign(std::uint16_t new_id) noexcept -> void {
     checking_statistics = true;
     camera_switch_state = camera_switch_state_t::none;
     last_checked = now;
+
+    information.total_shots = information.hit_shots = 0;
 }
 
 auto plugin::server::spectator::get_information() noexcept -> spectator_information {
@@ -420,6 +422,9 @@ auto plugin::server::spectator::register_hotkeys(types::not_null<gui::hotkey_han
     using namespace gui;
 
     static hotkey hotkeys[] = {
+        hotkey("Выйти из /sp", key_bind({ 'U', 0 }, bind_condition::in_spectator))
+            .with_callback([](auto&) { send_menu_option<menu_option::exit>(); }),
+
         hotkey("Переключить /sp", key_bind({ 'I', 0 }, bind_condition::in_spectator))
             .with_callback([](auto&) { send_menu_option<menu_option::reload>(); }),
         

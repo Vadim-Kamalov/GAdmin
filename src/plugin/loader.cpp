@@ -44,9 +44,9 @@ public:
 
     ~loader_t() {
         plugin_to_load.reset(nullptr);
-        ImGui::DestroyContext();
         ImGui_ImplDX9_Shutdown();
         ImGui_ImplWin32_Shutdown();
+        ImGui::DestroyContext();
     }
 } loader;
 
@@ -106,7 +106,16 @@ auto d3d9_present_hooked(const decltype(d3d9_present_hook)&, IDirect3DDevice9* d
         return {};
 
     if (!imgui_initialized) {
+        ImGui_ImplWin32_EnableDpiAwareness();
+
+        float main_scale = ImGui_ImplWin32_GetDpiScaleForMonitor(MonitorFromPoint({ 0, 0 }, MONITOR_DEFAULTTOPRIMARY));
+
         ImGui::CreateContext();
+
+        ImGuiStyle& style = ImGui::GetStyle();
+        style.ScaleAllSizes(main_scale);
+        style.FontScaleDpi = main_scale;
+
         ImGui_ImplWin32_Init(plugin::game::get_window());
         ImGui_ImplDX9_Init(device);
 
