@@ -208,6 +208,16 @@ static constexpr plugin::types::zstring_t main_json_content = R"json(
         "fish_eye": {
             "use": true,
             "fov": 101
+        },
+
+        "message_hider": {
+            "use": false,
+            "hide_anticheat": false,
+            "hide_punishments": false,
+            "hide_player_actions": false,
+            "hide_complaints": false,
+            "hide_questions": false,
+            "hide_admin_actions": false
         }
     },
 

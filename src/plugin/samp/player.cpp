@@ -32,7 +32,7 @@ auto plugin::samp::player::is_available() const -> bool {
     return valid;
 }
 
-auto plugin::samp::player::get_stream_players() -> std::deque<plugin::samp::player::stream_entry_t> {
+auto plugin::samp::player::get_stream_players() -> std::deque<stream_entry_t> {
     std::deque<stream_entry_t> players;
 
     for (id_t stream_id = 0; stream_id <= SERVER_MAX_PLAYERS; stream_id++) {

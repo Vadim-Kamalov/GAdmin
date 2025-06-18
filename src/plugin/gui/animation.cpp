@@ -36,7 +36,7 @@ auto plugin::gui::animation::bring_to(const ImVec4& from, const ImVec4& to, std:
             from.x + (count * (to.x - from.x) / 100),
             from.y + (count * (to.y - from.y) / 100),
             from.z + (count * (to.z - from.z) / 100),
-    from.w + (count * (to.w - from.w) / 100)
+            from.w + (count * (to.w - from.w) / 100)
         };
     }
 

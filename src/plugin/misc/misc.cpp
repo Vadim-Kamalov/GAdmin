@@ -10,6 +10,7 @@
 #include "plugin/misc/features/report_one_color.h"
 #include "plugin/misc/features/short_commands.h"
 #include "plugin/misc/features/statistics.h"
+#include "plugin/misc/features/message_hider.h"
 #include "plugin/log.h"
 #include <memory>
 
@@ -40,6 +41,7 @@ plugin::misc::initializer::initializer() {
     features.push_back(std::make_unique<features::short_commands>());
     features.push_back(std::make_unique<features::fish_eye>());
     features.push_back(std::make_unique<features::statistics_updater>());
+    features.push_back(std::make_unique<features::message_hider>());
 
     log::info("misc::initializer initialized");
 }
