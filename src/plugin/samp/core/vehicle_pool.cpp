@@ -34,3 +34,20 @@ auto plugin::samp::vehicle_pool::get_id(const vehicle& vehicle)
 
     return std::unexpected(error::vehicle_not_found);
 }
+
+auto plugin::samp::vehicle_pool::get_stream()
+    noexcept -> std::deque<std::pair<std::uint16_t, vehicle>>
+{
+    std::deque<std::pair<std::uint16_t, vehicle>> stream;
+
+    for (std::uint16_t id = 0; id < max_vehicles; id++) {
+        auto vehicle = get_vehicle(id);
+
+        if (!vehicle.has_value())
+            continue;
+    
+        stream.emplace_back(id, *vehicle);
+    }
+
+    return stream;
+}

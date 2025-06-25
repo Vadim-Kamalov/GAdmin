@@ -4,6 +4,7 @@
 #include "plugin/samp/core/vehicle.h"
 #include "plugin/types/address.h"
 #include <cstdint>
+#include <deque>
 #include <expected>
 
 namespace plugin {
@@ -28,6 +29,7 @@ private:
 public:
     static auto get_vehicle(std::uint16_t id) noexcept -> std::expected<vehicle, error>;
     static auto get_id(const vehicle& vehicle) noexcept -> std::expected<std::uint16_t, error>;
+    static auto get_stream() noexcept -> std::deque<std::pair<std::uint16_t, vehicle>>;
 public:
     static constexpr std::uint16_t max_vehicles = 2000;
 }; // class vehicle_pool final

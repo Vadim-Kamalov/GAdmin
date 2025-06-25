@@ -5,6 +5,7 @@
 #include "plugin/misc/features/display_id_in_chat.h"
 #include "plugin/misc/features/fish_eye.h"
 #include "plugin/misc/features/hide_addresses.h"
+#include "plugin/misc/features/information_render.h"
 #include "plugin/misc/features/mentions.h"
 #include "plugin/misc/features/nickname_colors.h"
 #include "plugin/misc/features/report_one_color.h"
@@ -24,9 +25,19 @@ auto plugin::misc::initializer::on_event(const samp::event_info& event) -> bool 
     return true;
 }
 
+auto plugin::misc::initializer::render(types::not_null<gui_initializer*> child) -> void {
+    for (const auto& feature : features)
+        feature->render(child);
+}
+
 auto plugin::misc::initializer::main_loop() -> void {
     for (const auto& feature : features)
         feature->main_loop();
+}
+
+auto plugin::misc::initializer::on_samp_initialize() -> void {
+    for (const auto& feature : features)
+        feature->on_samp_initialize();
 }
 
 plugin::misc::initializer::initializer() {
@@ -41,6 +52,7 @@ plugin::misc::initializer::initializer() {
     features.push_back(std::make_unique<features::short_commands>());
     features.push_back(std::make_unique<features::fish_eye>());
     features.push_back(std::make_unique<features::statistics_updater>());
+    features.push_back(std::make_unique<features::information_render>());
     features.push_back(std::make_unique<features::message_hider>());
 
     log::info("misc::initializer initialized");

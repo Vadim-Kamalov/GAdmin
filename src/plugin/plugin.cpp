@@ -68,6 +68,7 @@ auto plugin::plugin_initializer::on_render_initialize() -> void {
 auto plugin::plugin_initializer::on_frame() -> void {
     gui->render();
     cheats_initializer->render();
+    misc_initializer->render(gui.get());
 }
 
 auto plugin::plugin_initializer::on_message(unsigned int message, WPARAM wparam, LPARAM lparam) -> bool {
@@ -91,6 +92,7 @@ auto plugin::plugin_initializer::on_samp_initialize() -> void {
     }
 
     gui->on_samp_initialize();
+    misc_initializer->on_samp_initialize();
 
     notify::send(notification("GAdmin v" PROJECT_VERSION " успешно запущен!",
                               "Плагин инициализирован и готов для использования.",

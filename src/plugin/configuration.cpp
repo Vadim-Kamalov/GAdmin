@@ -218,6 +218,21 @@ static constexpr plugin::types::zstring_t main_json_content = R"json(
             "hide_complaints": false,
             "hide_questions": false,
             "hide_admin_actions": false
+        },
+
+        "gun_info": {
+            "use": true,
+            "font_size": 16
+        },
+
+        "car_info": {
+            "use": true,
+            "font_size": 16
+        },
+
+        "admin_info": {
+            "use": true,
+            "font_size": 16
         }
     },
 

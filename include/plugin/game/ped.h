@@ -55,7 +55,7 @@ public:
 
     /// @enum bone
     /// @brief Enumeration of bone identifiers.
-    enum bone { head = 6 };
+    enum bone { torso = 3, head = 6 };
 private:
     static inline types::address<signatures::teleport> teleport_address = 0x5E4110;
     static inline types::address<signatures::get_bone_position> get_bone_position_address = 0x5E4280;

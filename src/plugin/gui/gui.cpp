@@ -66,8 +66,7 @@ auto plugin::gui_initializer::can_initialize_render() const -> bool {
 
 auto plugin::gui_initializer::on_initialize() -> void {
     using namespace gui;
-    
-    ImGui::GetIO().IniFilename = nullptr; 
+ 
     fonts->assign_fonts();
     style::apply();
 

@@ -32,11 +32,16 @@ namespace plugin::game {
 /// @brief Represents a vehicle in the game.
 class vehicle final : public placeable {
 private:
+    static inline types::offset<float> health_offset = 0x4C0;
     static inline types::offset<std::uintptr_t> driver_offset = 0x460;
 public:
     /// @brief Checks if the vehicle has a driver.
     /// @return True if the vehicle has a driver, false otherwise.
-    bool has_driver() const;
+    auto has_driver() const -> bool;
+
+    /// @brief Gets the vehicle health.
+    /// @return Vehicle health.
+    auto get_health() const -> float;
 
     /// @brief Constructor for the vehicle class using the placeable constructor.
     using placeable::placeable;

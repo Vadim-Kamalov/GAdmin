@@ -1,6 +1,7 @@
 #ifndef GADMIN_PLUGIN_MISC_BASE_FEATURE_H
 #define GADMIN_PLUGIN_MISC_BASE_FEATURE_H
 
+#include "plugin/gui/gui.h"
 #include "plugin/samp/events/event.h"
 #include <memory>
 
@@ -10,6 +11,8 @@ class feature {
 public:
     virtual ~feature() = default;
     virtual auto on_event(const samp::event_info& event) -> bool;
+    virtual auto render(types::not_null<gui_initializer*> child) -> void;
+    virtual auto on_samp_initialize() -> void;
     virtual auto main_loop() -> void;
 }; // class feature
 
