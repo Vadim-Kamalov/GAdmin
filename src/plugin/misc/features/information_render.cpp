@@ -38,7 +38,7 @@ auto plugin::misc::features::information_render::render_cars_information(ImDrawL
 
         std::deque<text_object> objects_on_first_line = {
             { "HP: ", default_color, bold_font },
-            { std::to_string(game_vehicle.get_health()), status_color[0], regular_font },
+            { std::to_string(static_cast<int>(game_vehicle.get_health())), status_color[0], regular_font },
             { " · ", default_color, bold_font },
             { (vehicle_locked) ? "Closed" : "Opened", status_color[vehicle_locked], regular_font },
             { " · ", default_color, bold_font },
