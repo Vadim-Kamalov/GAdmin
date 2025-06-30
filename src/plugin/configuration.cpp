@@ -210,6 +210,11 @@ static constexpr plugin::types::zstring_t main_json_content = R"json(
             "fov": 101
         },
 
+        "zoom_spectator_camera": {
+            "use": true,
+            "step": 5
+        },
+
         "message_hider": {
             "use": false,
             "hide_anticheat": false,

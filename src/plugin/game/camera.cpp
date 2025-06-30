@@ -4,6 +4,10 @@
 #include <d3dx9math.h>
 #include <cstring>
 
+auto plugin::game::camera::get_fov() noexcept -> float {
+    return find_fov_address(*instance_address);
+}
+
 auto plugin::game::camera::lerp_fov(float zoom_in_factor, float zoom_out_factor, float time_limit, bool ease)
     noexcept -> void
 {

@@ -78,6 +78,9 @@ auto plugin::plugin_initializer::on_message(unsigned int message, WPARAM wparam,
     if (!cheats_initializer->on_event(message, wparam, lparam))
         return false;
 
+    if (!misc_initializer->on_event(message, wparam, lparam))
+        return false;
+
     return true;
 }
 

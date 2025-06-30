@@ -32,6 +32,9 @@ namespace signatures {
 /// @brief Function pointer type for linear interpolation of the field of view.
 using lerp_fov = void(__thiscall*)(std::uintptr_t, float, float, float, bool);
 
+/// @brief Function pointer type for finding the active camera's FOV.
+using find_fov = float(__thiscall*)(std::uintptr_t);
+
 } // namespace signatures
 
 namespace game {
@@ -49,11 +52,16 @@ private:
     static inline types::address<std::uintptr_t> instance_address = 0xB6F028;
     static inline types::offset<std::uint8_t> active_camera_index_offset = 0x59;
     static inline types::address<signatures::lerp_fov> lerp_fov_address = 0x50D280;
+    static inline types::address<signatures::find_fov> find_fov_address = 0x50AD20;
     static inline types::address<types::vector_3d> front_camera_address = 0xB6F32C;
     static inline types::address<types::vector_3d> source_camera_address = 0xB6F338;
-    
+
     static auto get_active_camera() noexcept -> active_camera;
 public:
+    /// @brief Gets the FOV from the active camera.
+    /// @return Active camera's FOV.
+    static auto get_fov() noexcept -> float;
+
     /// @brief Linearly interpolates the field of view.
     /// @param zoom_in_factor Factor to zoom in.
     /// @param zoom_out_factor Factor to zoom out.

@@ -25,6 +25,14 @@ auto plugin::misc::initializer::on_event(const samp::event_info& event) -> bool 
     return true;
 }
 
+auto plugin::misc::initializer::on_event(unsigned int message, WPARAM wparam, LPARAM lparam) -> bool {
+    for (const auto& feature : features)
+        if (!feature->on_event(message, wparam, lparam))
+            return false;
+
+    return true;
+}
+
 auto plugin::misc::initializer::render(types::not_null<gui_initializer*> child) -> void {
     for (const auto& feature : features)
         feature->render(child);

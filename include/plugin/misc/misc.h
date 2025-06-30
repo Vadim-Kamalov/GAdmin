@@ -12,6 +12,7 @@ private:
     std::deque<feature_ptr_t> features;
 public:
     auto on_event(const samp::event_info& event) -> bool;
+    auto on_event(unsigned int message, WPARAM wparam, LPARAM lparam) -> bool;
     auto render(types::not_null<gui_initializer*> child) -> void;
     auto main_loop() -> void;
     auto on_samp_initialize() -> void;
