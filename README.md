@@ -56,7 +56,7 @@ contribute.
 ## Support the Project
 
 GAdmin is 100% community-built. Please become a part of keeping our project alive and thriving with a donation
-if you believe in the project. If you want, you can contact the sole maintainer: @defaultzone.
+if you believe in the project. If you want, you can contact the sole maintainer: [@defaultzone](https://github.com/defaultzone).
 
 > Project supporters have the right to receive a color for their nickname in the game chat (/a).
 
