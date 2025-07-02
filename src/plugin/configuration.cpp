@@ -238,6 +238,12 @@ static constexpr plugin::types::zstring_t main_json_content = R"json(
         "admin_info": {
             "use": true,
             "font_size": 16
+        },
+        
+        "auto_alogout": {
+            "use": true,
+            "seconds_until_warning": 90,
+            "seconds_until_alogout": 120
         }
     },
 

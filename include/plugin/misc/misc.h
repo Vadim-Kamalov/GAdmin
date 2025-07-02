@@ -13,6 +13,7 @@ private:
 public:
     auto on_event(const samp::event_info& event) -> bool;
     auto on_event(unsigned int message, WPARAM wparam, LPARAM lparam) -> bool;
+    auto on_alogin_new_state(bool state) -> void;
     auto render(types::not_null<gui_initializer*> child) -> void;
     auto main_loop() -> void;
     auto on_samp_initialize() -> void;

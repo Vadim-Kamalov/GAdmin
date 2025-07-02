@@ -9,6 +9,7 @@ auto plugin::server::user::set_alogin_status(bool status) -> void {
     on_alogin = status;
 
     cheats_initializer->on_alogin_new_state(status);
+    misc_initializer->on_alogin_new_state(status);
 
     if (status)
         return;

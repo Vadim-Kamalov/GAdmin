@@ -1,5 +1,6 @@
 #include "plugin/misc/misc.h"
 #include "plugin/misc/features/auto_aa_command.h"
+#include "plugin/misc/features/auto_alogout.h"
 #include "plugin/misc/features/auto_login.h"
 #include "plugin/misc/features/death_notify_in_chat.h"
 #include "plugin/misc/features/display_id_in_chat.h"
@@ -33,6 +34,11 @@ auto plugin::misc::initializer::on_event(unsigned int message, WPARAM wparam, LP
     return true;
 }
 
+auto plugin::misc::initializer::on_alogin_new_state(bool state) -> void {
+    for (const auto& feature : features)
+        feature->on_alogin_new_state(state);
+}
+
 auto plugin::misc::initializer::render(types::not_null<gui_initializer*> child) -> void {
     for (const auto& feature : features)
         feature->render(child);
@@ -62,6 +68,7 @@ plugin::misc::initializer::initializer() {
     features.push_back(std::make_unique<features::statistics_updater>());
     features.push_back(std::make_unique<features::information_render>());
     features.push_back(std::make_unique<features::message_hider>());
+    features.push_back(std::make_unique<features::auto_alogout>());
 
     log::info("misc::initializer initialized");
 }
