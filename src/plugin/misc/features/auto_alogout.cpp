@@ -65,6 +65,9 @@ auto plugin::misc::features::auto_alogout::on_alogin_new_state(bool state) -> vo
 auto plugin::misc::features::auto_alogout::main_loop() -> void {
     auto feature_configuration = (*configuration)["misc"]["auto_alogout"];
 
+    if (!feature_configuration["use"])
+        return;
+
     if (!server::user::is_on_alogin() || (!game::is_menu_opened() && game_focused)) {
         if (seconds_inactive != 0s) {
             seconds_inactive = 0s;

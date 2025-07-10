@@ -35,12 +35,15 @@ add_library(${PROJECT_NAME} SHARED
     ${CMAKE_SOURCE_DIR}/src/raknet/bit_stream.cpp
 )
 
+include(${CMAKE_SOURCE_DIR}/cmake/options/use_embedded_message_pack.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/options/use_upx.cmake)
+
 include(${CMAKE_SOURCE_DIR}/cmake/libraries.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/compile_flags.cmake)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include)
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "gadmin" SUFFIX ".dll")
-target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_26)
 target_link_libraries(${PROJECT_NAME} PRIVATE
     d3d9
     d3dx9

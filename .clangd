@@ -1,3 +1,6 @@
 CompileFlags:
-  Add: [-std=c++23, -D__cpp_concepts=202002L, -xc++]
+  Add: [-std=c++26, -D__cpp_concepts=202002L, -xc++]
   CompilationDatabase: build/
+
+Diagnostics:
+  Suppress: -Wc23-extensions

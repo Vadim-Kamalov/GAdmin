@@ -117,7 +117,6 @@ public:
 class hotkey final {
 private:
     static constexpr float fonts_size = 18;
-    static constexpr ImVec2 button_size = { 100, 30 };
     static inline const std::vector<std::string> hint_settings = {
         "Всегда", "На /alogin", "Вне /alogin", "В режиме наблюдения",
         "Вне режима наблюдения", "При включенном курсоре",
@@ -134,17 +133,19 @@ private:
     hotkey_handler* handler;
     key_bind new_bind;
 
-    auto truncate_text_in_button(const std::string_view& text) const -> std::string;
+    auto truncate_text_in_button(float button_width, const std::string_view& text) const -> std::string;
     auto hint_renderer() -> void;
     auto hint_condition() -> bool;
-public:
-    using callback_t = std::function<void(hotkey&)>;
 public: 
+    static constexpr ImVec2 default_button_size = { 100, 30 };
+    
+    using callback_t = std::function<void(hotkey&)>;
+    
     std::string label = "";
     key_bind bind;
     callback_t callback = [](hotkey&) {};
 
-    auto render() -> void;
+    auto render(const ImVec2& size = default_button_size) -> void;
     
     inline auto with_callback(callback_t new_callback) -> hotkey&;
     inline auto with_handler(hotkey_handler* new_handler) -> hotkey&;

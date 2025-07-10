@@ -16,14 +16,16 @@
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
-cmake_minimum_required(VERSION 4.0.0)
-project(common LANGUAGES CXX)
+if(USE_UPX)
+    find_program(UPX upx)
+    
+    if(NOT UPX)
+        message(FATAL_ERROR "upx command not found. Please ensure msgpack-cli is installed and mpk is in your PATH.")
+    endif()
 
-file(GLOB_RECURSE SOURCES *.cpp)
-add_library(${PROJECT_NAME} STATIC ${SOURCES})
-
-include(${CMAKE_SOURCE_DIR}/cmake/compile_flags.cmake)
-
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include/)
-target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_26)
-target_link_libraries(${PROJECT_NAME} PRIVATE wininet)
+    add_custom_command(
+        TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${UPX} --best $<TARGET_FILE:${PROJECT_NAME}>
+        COMMENT "Compressing ${PROJECT_NAME} with UPX"
+    )
+endif()

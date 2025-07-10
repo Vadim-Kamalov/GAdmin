@@ -17,15 +17,32 @@ you want: every setting has its own configuration options.
 
 ## Building the Code
 
-The project is written using C++23 standards and is only for the GCC (MinGW) compiler, either version
-`14.2.0` or any later version. To build the code, you will also need to have CMake version 4.0.0. Note
+The project is written using C++26 standards and is only for the GCC (MinGW) compiler, either version
+`15.1.0` or any later version. To build the code, you will also need to have CMake version 4.0.0. Note
 that we have two targets that will be compiled: `gadmin-loader.asi` (loads `gadmin.dll` and checks for
 available updates to make suggestions to install if there are any) and `gadmin.dll` (if you want, you can
 rename it to `gadmin.asi` and remove the loader to load independently from it).
 
+We also have CMake options to significantly reduce the size of the binaries when compiling for release:
+
+- `USE_EMBEDDED_MESSAGE_PACK`: We use the content of the JSON files from the `embed/` directory
+   directly in the code by employing the `#embed` preprocessor directive from C++26. Converting these files
+   to MessagePack format can reduce the binary size. When using this option, ensure you have installed
+   [`msgpack-cli`](https://github.com/pluots/mpk) and that the `mpk` command is set in your `PATH`.
+
+- `USE_UPX`: UPX is an advanced executable file compressor that can reduce the size of a binary by
+  approximately 50%-70% while preserving its functionality. Note that it can significantly slow down
+  the compilation time. When using this option, ensure you have installed
+  [`upx`](https://github.com/upx/upx/releases/latest) and that the command is set in your `PATH`.
+
+By default, when building for the release target, we add compiler and linker flags to optimize and reduce
+binary sizes. We support two build targets: `Debug` and `Release`. Debug binaries will compile faster but will
+be significantly larger (around ~150MB). You can set the build target by adding `-DCMAKE_BUILD_TYPE=<your target>`
+to the first command below.
+
 ```bash
-# Configure the project.
-cmake -B build/
+# Configure the project with the options set to reduce binary size.
+cmake -B build/ -DUSE_EMBEDDED_MESSAGE_PACK=ON -DUSE_UPX=ON
 
 # Compile source files.
 cmake --build build/

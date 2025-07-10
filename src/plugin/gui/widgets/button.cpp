@@ -1,4 +1,5 @@
 #include "plugin/gui/widgets/button.h"
+#include "imgui.h"
 #include "plugin/string_utils.h"
 
 auto plugin::gui::widgets::button::register_in_pool() const -> void {
@@ -75,9 +76,7 @@ auto plugin::gui::widgets::button::render() -> bool {
         ImVec2 text_pos = { start.x + ((size.x - text_size.x) * text_align.x),
                             start.y + ((size.y - text_size.y) * text_align.y) };
 
-        ImGui::SetCursorScreenPos(text_pos);
-        ImGui::TextUnformatted(text.c_str());
-        ImGui::SetCursorScreenPos(start);
+        draw_list->AddText(text_pos, ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_Text]), text.c_str());
     }
 
     bool result = false;

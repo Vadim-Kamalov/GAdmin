@@ -42,13 +42,13 @@ auto plugin::gui::key_bind::to_string() const -> std::string {
     return result;
 }
 
-auto plugin::gui::hotkey::truncate_text_in_button(const std::string_view& text) const -> std::string {
+auto plugin::gui::hotkey::truncate_text_in_button(float button_width, const std::string_view& text) const -> std::string {
     std::string output(text);
     std::string ellipsis = " ...";
 
     ImVec2 size = ImGui::CalcTextSize(output.c_str());
     ImVec2 padding = ImGui::GetStyle().FramePadding;
-    float available_width = button_size.x - padding.x * 2;
+    float available_width = button_width - padding.x * 2;
 
     if (available_width >= size.x)
         return output;
@@ -126,11 +126,11 @@ auto plugin::gui::hotkey::hint_renderer() -> void {
     ImGui::PopFont();
 }
 
-auto plugin::gui::hotkey::render() -> void {
+auto plugin::gui::hotkey::render(const ImVec2& size) -> void {
     auto now = std::chrono::steady_clock::now();
     auto saved_hotkeys = (*configuration)["internal"]["hotkeys"];
 
-    widgets::button button(bind.to_string(), label, button_size);
+    widgets::button button(bind.to_string(), label, size);
 
     if (changing && !handler->changing_any_hotkey) {
         changing = false;
@@ -163,7 +163,7 @@ auto plugin::gui::hotkey::render() -> void {
     if (!changing && already_registered)
         already_registered = false;
 
-    button.label = truncate_text_in_button(button.label);
+    button.label = truncate_text_in_button(size.x, button.label);
 
     if (button.render() && !handler->changing_any_hotkey) {
         handler->changing_any_hotkey = changing = true;

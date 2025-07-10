@@ -254,6 +254,9 @@ auto plugin::server::spectator::on_passenger_synchronization(const samp::packet<
         send_menu_option<menu_option::reload>();
         clear_keys_down();
     }
+    
+    last_synchronization = samp::synchronization_type::passenger;
+    camera_switch_state = camera_switch_state_t::vehicle;
 
     if (platform == platform_t::mobile)
         return true;
@@ -271,9 +274,6 @@ auto plugin::server::spectator::on_passenger_synchronization(const samp::packet<
     SET_KEY_STATE(f, synchronization.keys_data & 0x10);
     SET_KEY_STATE(up, synchronization.up_down_keys == 0xFF80);
     SET_KEY_STATE(down, synchronization.up_down_keys == 0x80);
-
-    last_synchronization = samp::synchronization_type::passenger;
-    camera_switch_state = camera_switch_state_t::vehicle;
 
     return true;
 }
@@ -422,10 +422,10 @@ auto plugin::server::spectator::register_hotkeys(types::not_null<gui::hotkey_han
     using namespace gui;
 
     static hotkey hotkeys[] = {
-        hotkey("Выйти из /sp", key_bind({ 'U', 0 }, bind_condition::in_spectator))
+        hotkey("Выйти из /sp", key_bind({ 'I', 0 }, bind_condition::in_spectator))
             .with_callback([](auto&) { send_menu_option<menu_option::exit>(); }),
 
-        hotkey("Переключить /sp", key_bind({ 'I', 0 }, bind_condition::in_spectator))
+        hotkey("Переключить /sp", key_bind({ 'U', 0 }, bind_condition::in_spectator))
             .with_callback([](auto&) { send_menu_option<menu_option::reload>(); }),
         
         hotkey("Следующий игрок в /sp", key_bind({ VK_RIGHT, 0 }, bind_condition::in_spectator))

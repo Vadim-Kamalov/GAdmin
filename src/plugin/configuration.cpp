@@ -3,256 +3,15 @@
 #include "plugin/log.h"
 #include <fstream>
 
-static constexpr plugin::types::zstring_t main_json_content = R"json(
-{
-    "user": {
-        "nickname": "Администратор",
-        "level": 0
-    },
+static constexpr std::uint8_t configuration_bytes[] = {
 
-    "windows": {
-        "admins": {
-            "use": true,
-            "show_title": true,
-            "show_count": false,
-            "show_id": true,
-            "show_level": true,
-            "show_scrollbar_on": 10,
-            "sort_by": "level",
-            "align": "left"
-        },
+#ifdef USE_EMBEDDED_MESSAGE_PACK
+#embed "../../embed/configuration.mpk"
+#else
+#embed "../../embed/configuration.json"
+#endif // USE_EMBEDDED_MESSAGE_PACK
 
-        "notify": {
-            "use": true,
-            "max_count": 5,
-            "align": "right"
-        },
-                
-        "spectator_information": {
-            "use": true,
-            "row_order": [
-                "Игрок",
-                "Пинг",
-                "Платформа",
-                "Время слежки",
-                "ID аккаунта",
-                "Дата регистрации",
-                "Наличные/банк",
-                "Здоровье/броня",
-                "Фракция",
-                "Должность",
-                "Машина(-ы)",
-                "Стадия",
-                "VIP статус",
-                "Предупреждения",
-                "Модульный мир",
-                "Тек./макс. скорость",
-                "Выстрелы/попадания",
-                "Машина",
-                "Двигатель/двери"
-            ]
-        },
-
-        "spectator_actions": {
-            "use": true,
-            "show_corner_buttons": true,
-            "buttons": [
-                { "use": true, "name": "*Вы тут?*", "action": "/ans ${{ SPECTATOR_ID }} Вы тут? Ответ в /b или /pm ${{ USER_ID }}" },
-                { "use": true, "name": "AHEAL", "action": "/aheal ${{ SPECTATOR_ID }}" },
-                { "use": true, "name": "ANS", "action": "^/ans ${{ SPECTATOR_ID }} " },
-                { "use": true, "name": "STATS", "action": 3 },
-                { "use": true, "name": "AFRISK", "action": 5 },
-                { "use": true, "name": "PAME", "action": "/pame ${{ SPECTATOR_ID }}" },
-                { "use": true, "name": "WARN", "action": "^/warn ${{ SPECTATOR_ID }}" },
-                { "use": true, "name": "SLAP", "action": "/slap ${{ SPECTATOR_ID }}" },
-                { "use": true, "name": "SWITCH", "action": 1 },
-                { "use": true, "name": "GETBUYCAR", "action": "^/getbuycar " },
-                { "use": true, "name": "BAN", "action": "^/ban ${{ SPECTATOR_ID }}" },
-                { "use": true, "name": "KICK", "action": "^/kick ${{ SPECTATOR_ID }}" },
-                { "use": true, "name": "BMUTE", "action": "^/bmute ${{ SPECTATOR_ID }}" },
-                { "use": true, "name": "EXIT", "action": 6 },
-                { "use": true, "name": "ASPAWN", "action": "/aspawn ${{ SPECTATOR_ID }}" },
-                { "use": true, "name": "PK", "action": "/pk ${{ SPECTATOR_ID }}" }
-            ]
-        },
-
-        "kill_list": {
-            "use": true,
-            "show_time": true,
-            "clist_color": true,
-            "align": "left",
-            "max_count": 5
-        },
-
-        "far_chat": {
-            "use": true,
-            "duplicates_delay_ms": 1200,
-            "max_count": 5,
-            "show_time": true,
-            "clist_color": true,
-            "align": "left"
-        },
-
-        "players_nearby": {
-            "use": true,
-            "max_count": 10,
-            "show_distance": true,
-            "show_title": true,
-            "clist_color": true,
-            "align": "left",
-            "sort_by": "distance"
-        },
-
-        "report": {
-            "use": true,
-            "notify": true,
-            "sound_notify": true,
-            "insert_buttons": [
-                { "name": "Приятной игры!", "insert": "Приятной игры!" },
-                { "name": "Передал", "insert": "Передал." },
-                { "name": "Нет тех.причины", "insert": "Нет технической причины." },
-                { "name": "Пишите на форум", "insert": "Пишите жалобу на форум, туда со всеми доказательствами." },
-                { "name": "Слежу", "insert": "Слежу за игроком." },
-                { "name": "Следите за новостями", "insert": "Следите за новостями." }
-            ]
-        },
-
-        "interaction_area": {
-            "use": true,
-            "radius": 300
-        },
-
-        "spectator_keys": { "use": true },
-        "vehicle_selection": { "use": true }
-    },
-
-    "cheats": {
-        "airbreak": {
-            "use": true,
-            "speed": 1.0
-        },
-
-        "wallhack": {
-            "use": true,
-            "custom_render": true,
-            "font_size": 18
-        },
-
-        "tracers": {
-            "use": true,
-            "only_from_spectator": false,
-            "seconds_to_hide": 15,
-            "limit": 15
-        },
-                
-        "clickwarp": { "use": true }
-    },
-
-    "misc": {
-        "hide_spectator_text_draws": true,
-        "hide_spectator_menu": true,
-        "hide_addresses": true,
-        "nickname_colors": true,
-        "auto_aa_command": true,
-        "display_id_in_chat": true,
-
-        "auto_login": {
-            "use": true,
-            "account_password": "",
-            "alogin_password": ""
-        },
-
-        "command_requester": {
-            "use": true,
-            "notify_by_window": true,
-            "sound_notify": true
-        },
-
-        "mentions": {
-            "use": true,
-            "sound_notify": true,
-            "color": "FFB6864A"
-        },
-
-        "report_one_color": {
-            "use": true,
-            "color": "FF00FFFF"
-        },
-
-        "death_notify_in_chat": {
-            "use": true,
-            "color": "FFAFAFAF"
-        },
-
-        "short_commands": {
-            "use": true,
-            "commands": {
-                "vr": "vrepair {}",
-                "as": "aspawn {}",
-                "ah": "aheal {}",
-                "af": "afrisk {}",
-                "uf": "unfreeze {}",
-                "g": "goto {}",
-                "gh": "gethere {}",
-                "gc": "getcar {}",
-                "gbc": "getbuycar {}",
-                "pt": "ptop {}",
-                "jb": "ans {} Пишите жалобу на форум, туда со всем доказательствами",
-                "asl": "ans {} Слежу за игроком",
-                "ar": "kick {} AFK on ROAD",
-                "ak": "kick {} AFK without ESC",
-                "ap": "kick {} AFK public place"
-            }
-        },
-        
-        "fish_eye": {
-            "use": true,
-            "fov": 101
-        },
-
-        "zoom_spectator_camera": {
-            "use": true,
-            "step": 5
-        },
-
-        "message_hider": {
-            "use": false,
-            "hide_anticheat": false,
-            "hide_punishments": false,
-            "hide_player_actions": false,
-            "hide_complaints": false,
-            "hide_questions": false,
-            "hide_admin_actions": false
-        },
-
-        "gun_info": {
-            "use": true,
-            "font_size": 16
-        },
-
-        "car_info": {
-            "use": true,
-            "font_size": 16
-        },
-
-        "admin_info": {
-            "use": true,
-            "font_size": 16
-        },
-        
-        "auto_alogout": {
-            "use": true,
-            "seconds_until_warning": 90,
-            "seconds_until_alogout": 120
-        }
-    },
-
-    "internal": {
-        "guide_hints": [],
-        "hotkeys": {}
-    }
-}
-)json"; // static constexpr plugin::types::zstring_t main_json_content
+}; // static constexpr std::uint8_t configuration_bytes[]
 
 auto plugin::configuration_initializer::write(const std::filesystem::path& path, const nlohmann::json& json) const -> void {
     if (std::ofstream file = std::ofstream(path, std::ios::out | std::ios::binary)) {
@@ -309,8 +68,12 @@ plugin::configuration_initializer::configuration_initializer(const std::filesyst
     : last_time_saved(std::chrono::steady_clock::now()),
       configuration_file(configuration_file)
 {
-    main_json = nlohmann::json::parse(main_json_content);
-    
+#ifdef USE_EMBEDDED_MESSAGE_PACK
+    main_json = nlohmann::json::from_msgpack(configuration_bytes);
+#else
+    main_json = nlohmann::json::parse(configuration_bytes, nullptr, true, true);
+#endif
+
     if (!std::filesystem::exists(configuration_file)) {
         save();
     } else if (nlohmann::json configuration = get(configuration_file); !configuration.is_null()) {

@@ -30,9 +30,11 @@ include(${CMAKE_SOURCE_DIR}/cmake/compile_flags.cmake)
 target_link_libraries(${PROJECT_NAME} PRIVATE wininet version nlohmann_json::nlohmann_json common)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include)
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "gadmin-loader" SUFFIX ".asi")
-target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_23)
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_26)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     ORIGINAL_FILENAME_TO_SEARCH="${ORIGINAL_FILENAME_TO_SEARCH}"
     UPDATE_REPOSITORY="${UPDATE_REPOSITORY}"
 )
+
+include(${CMAKE_SOURCE_DIR}/cmake/options/use_upx.cmake)
