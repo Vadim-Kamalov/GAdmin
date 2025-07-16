@@ -16,9 +16,9 @@ auto plugin::gui::windows::vehicle_selection::on_send_command(const samp::out_ev
 {
     static constexpr ctll::fixed_string command_pattern = "/veh\\s*";
 
-    auto window_configuration = (*configuration)["windows"]["vehicle_selection"];
+    bool use = (*configuration)["windows"]["vehicle_selection"];
 
-    if (!window_configuration["use"] || !server::user::is_on_alogin() || !ctre::match<command_pattern>(event.command))
+    if (!use || !server::user::is_on_alogin() || !ctre::match<command_pattern>(event.command))
         return true;
 
     if (active)

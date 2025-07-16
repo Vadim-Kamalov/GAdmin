@@ -30,7 +30,7 @@ if(USE_EMBEDDED_MESSAGE_PACK)
 
         add_custom_command(
             OUTPUT ${OUTPUT_FILE}
-            COMMAND mpk ${FILE} -m > ${OUTPUT_FILE}
+            COMMAND mpk -m ${FILE} > ${OUTPUT_FILE}
             DEPENDS ${FILE}
             COMMENT "Building MessagePack file ${OUTPUT_FILE}"
         )

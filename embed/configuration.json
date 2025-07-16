@@ -51,7 +51,7 @@
             "use": true,
             "show_corner_buttons": true,
             "buttons": [
-                { "use": true, "name": "*Вы тут?*", "action": "/ans ${{ SPECTATOR_ID }} Вы тут? Ответ в /b или /pm ${{ USER_ID }}" },
+                { "use": true, "name": "*Вы тут?*", "action": "/ans ${{ SPECTATOR_ID }} Вы тут? Ответ в /ask или /rep" },
                 { "use": true, "name": "AHEAL", "action": "/aheal ${{ SPECTATOR_ID }}" },
                 { "use": true, "name": "ANS", "action": "^/ans ${{ SPECTATOR_ID }} " },
                 { "use": true, "name": "STATS", "action": 3 },
@@ -116,8 +116,8 @@
             "radius": 300
         },
 
-        "spectator_keys": { "use": true },
-        "vehicle_selection": { "use": true }
+        "spectator_keys": true,
+        "vehicle_selection": true
     },
 
     "cheats": {
@@ -139,7 +139,7 @@
             "limit": 15
         },
                 
-        "clickwarp": { "use": true }
+        "clickwarp": true
     },
 
     "misc": {

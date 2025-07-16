@@ -33,7 +33,7 @@ auto plugin::gui::widgets::toggle_button::render() -> bool {
         }
 
         if (std::string text = string_utils::truncate_until_hashtag(label); !text.empty()) {
-            ImGui::SetCursorScreenPos({ pos.x + size.x + ImGui::GetStyle().ItemSpacing.x * 2,
+            ImGui::SetCursorScreenPos({ pos.x + size.x + ImGui::GetStyle().ItemSpacing.x,
                                         pos.y + (size.y - ImGui::CalcTextSize(text.c_str()).y) / 2 });
             ImGui::TextUnformatted(text.c_str());
         }

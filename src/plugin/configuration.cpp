@@ -71,7 +71,7 @@ plugin::configuration_initializer::configuration_initializer(const std::filesyst
 #ifdef USE_EMBEDDED_MESSAGE_PACK
     main_json = nlohmann::json::from_msgpack(configuration_bytes);
 #else
-    main_json = nlohmann::json::parse(configuration_bytes, nullptr, true, true);
+    main_json = nlohmann::json::parse(configuration_bytes);
 #endif
 
     if (!std::filesystem::exists(configuration_file)) {

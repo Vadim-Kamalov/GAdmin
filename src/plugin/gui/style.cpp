@@ -69,4 +69,5 @@ auto plugin::gui::style::apply() noexcept -> void {
     style.Colors[ImGuiCol_ResizeGrip] = none;
     style.Colors[ImGuiCol_ResizeGripActive] = none;
     style.Colors[ImGuiCol_ResizeGripHovered] = none;
+    style.Colors[ImGuiCol_ModalWindowDimBg] = { 0, 0, 0, 0.5 };
 }

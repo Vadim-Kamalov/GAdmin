@@ -1,0 +1,308 @@
+{
+    "windows": {
+        "_name": "Окна",
+        "admins": {
+            "_type": "subsection",
+            "_name": "Администрация онлайн",
+            "show_title": { "_type": "bool", "_name": "Отображать заголовок" },
+            "show_count": { "_type": "bool", "_name": "Отображать количество" },
+            "show_id": { "_type": "bool", "_name": "Отображать ID" },
+            "show_level": { "_type": "bool", "_name": "Отображать уровень" },
+            "show_scrollbar_on": {
+                "_type": "intrange",
+                "_name": "Количество администраторов до появления заголовка",
+                "_config": [ 0, 100 ]
+            },
+            "sort_by": {
+                "_type": "variant",
+                "_name": "Сортировать по",
+                "_config": [
+                    [ "disabled", "Отключено" ],
+                    [ "length", "Длине никнейма" ],
+                    [ "id", "ID" ],
+                    [ "level", "Уровню" ]
+                ]
+            },
+            "align": {
+                "_type": "variant",
+                "_name": "Выравнивание по",
+                "_config": [
+                    [ "left", "Левому краю" ],
+                    [ "center", "Центру" ],
+                    [ "right", "Правому краю" ]
+                ]
+            }
+        },
+        "notify": {
+            "_type": "subsection",
+            "_name": "Оповещения",
+            "max_count": {
+                "_type": "intrange",
+                "_name": "Максимальное количество оповещений",
+                "_config": [ 0, 20 ]
+            },
+            "align": {
+                "_type": "variant",
+                "_name": "Выравнивание по",
+                "_config": [
+                    [ "left", "Левому краю" ],
+                    [ "center", "Центру" ],
+                    [ "right", "Правому краю" ]
+                ]
+            }
+        },
+        "spectator_information": {
+            "_type": "subsection",
+            "_name": "Информация об игроке в /sp",
+            "row_order": { "_type": "custom", "_name": "Порядок столбцов" }
+        },
+        "spectator_actions": {
+            "_type": "subsection",
+            "_name": "Действия в /sp",
+            "show_corner_buttons": { "_type": "bool", "_name": "Отображать боковые кнопки" }
+        },
+        "kill_list": {
+            "_type": "subsection",
+            "_name": "Килл-лист",
+            "show_time": { "_type": "bool", "_name": "Отображать время смерти" },
+            "clist_color": { "_type": "bool", "_name": "Цвет никнейма по клисту" },
+            "align": {
+                "_type": "variant",
+                "_name": "Выравнивание по",
+                "_config": [
+                    [ "left", "Левому краю" ],
+                    [ "center", "Центру" ],
+                    [ "right", "Правому краю" ]
+                ]
+            },
+            "max_count": {
+                "_type": "intrange",
+                "_name": "Максимальное количество строк",
+                "_config": [ 0, 50 ]
+            }
+        },
+        "far_chat": {
+            "_type": "subsection",
+            "_name": "Дальний чат",
+            "duplicates_delay_ms": {
+                "_type": "intrange",
+                "_name": "Задержка между повторяющимися сообщениями",
+                "_config": [ 0, 10000 ]
+            },
+            "max_count": {
+                "_type": "intrange",
+                "_name": "Максимальное количество строк",
+                "_config": [ 0, 50 ]
+            },
+            "show_time": { "_type": "bool", "_name": "Отображать время" },
+            "clist_color": { "_type": "bool", "_name": "Цвет никнейма по клисту" },
+             "align": {
+                "_type": "variant",
+                "_name": "Выравнивание по",
+                "_config": [
+                    [ "left", "Левому краю" ],
+                    [ "center", "Центру" ],
+                    [ "right", "Правому краю" ]
+                ]
+            }
+        },
+        "players_nearby": {
+            "_type": "subsection",
+            "_name": "Список игроков в зоне прорисовки",
+            "max_count": {
+                "_type": "intrange",
+                "_name": "Максимальное количество строк",
+                "_config": [ 0, 50 ]
+            },
+            "show_distance": { "_type": "bool", "_name": "Отображать расстояние" },
+            "show_title": { "_type": "bool", "_name": "Отображать заголовок" },
+            "clist_color": { "_type": "bool", "_name": "Цвет никнейма по клисту" },
+             "align": {
+                "_type": "variant",
+                "_name": "Выравнивание по",
+                "_config": [
+                    [ "left", "Левому краю" ],
+                    [ "center", "Центру" ],
+                    [ "right", "Правому краю" ]
+                ]
+            },
+            "sort_by": {
+                "_type": "variant",
+                "_name": "Сортировать по",
+                "_config": [
+                    [ "disabled", "Отключено" ],
+                    [ "length", "Длине никнейма" ],
+                    [ "distance", "Расстоянию" ],
+                    [ "id", "ID" ]
+                ]
+            }
+        },
+        "report": {
+            "_type": "subsection",
+            "_name": "Улучшенный /greport",
+            "notify": { "_type": "bool", "_name": "Показывать оповещение" },
+            "sound_notify": { "_type": "bool", "_name": "Звуковое оповещение" },
+            "insert_buttons": { "_type": "custom", "_name": "Шаблоны" }
+        },
+        "interaction_area": {
+            "_type": "subsection",
+            "_name": "Круговая панель",
+            "radius": {
+                "_type": "intrange",
+                "_name": "Радиус",
+                "_config": [ 100, 1000 ]
+            }
+        },
+        "spectator_keys": { "_type": "bool", "_name": "Клавиши игрока в /sp" },
+        "vehicle_selection": { "_type": "bool", "_name": "Панель спавна машин" }
+    },
+    "cheats": {
+        "_name": "Читы",
+        "airbreak": {
+            "_type": "subsection",
+            "_name": "AirBreak",
+            "speed": {
+                "_type": "floatrange",
+                "_name": "Скорость",
+                "_config": [ 0.0, 50.0 ]
+            }
+        },
+        "wallhack": {
+            "_type": "subsection",
+            "_name": "WallHack",
+            "custom_render": { "_type": "bool", "_name": "ImGui отрисовка" },
+            "font_size": {
+                "_type": "intrange",
+                "_name": "Размер шрифта",
+                "_config": [ 1, 255 ]
+            }
+        },
+        "tracers": {
+            "_type": "subsection",
+            "_name": "Трассера",
+            "only_from_spectator": { "_type": "bool", "_name": "Отображать только от игрока в /sp" },
+            "seconds_to_hide": {
+                "_type": "intrange",
+                "_name": "Секунды до исчезновения",
+                "_config": [ 1, 300 ]
+            },
+            "limit": {
+                "_type": "intrange",
+                "_name": "Максимальное количество трассеров",
+                "_config": [ 1, 255 ]
+            }
+        },
+        "clickwarp": { "_type": "bool", "_name": "ClickWarp" }
+    },
+    "misc": {
+        "_name": "Прочее",
+        "hide_spectator_text_draws": { "_type": "bool", "_name": "Скрывать серверные текстдравы в /sp" },
+        "hide_spectator_menu": { "_type": "bool", "_name": "Скрывать серверную панель в /sp" },
+        "hide_addresses": { "_type": "bool", "_name": "Скрывать IP-аддресса" },
+        "nickname_colors": { "_type": "bool", "_name": "Цветные никнеймы в /a" },
+        "auto_aa_command": { "_type": "bool", "_name": "Автоматический /aa" },
+        "display_id_in_chat": { "_type": "bool", "_name": "Отображать ID в IC чате" },
+        "auto_login": {
+            "_type": "subsection",
+            "_name": "Автоматическая авторизация",
+            "account_password": { "_type": "input", "_name": "Пароль от аккаунта" },
+            "alogin_password": { "_type": "input", "_name": "Пароль от /alogin" }
+        },
+        "command_requester": {
+            "_type": "subsection",
+            "_name": "Запросы команд в /a",
+            "notify_by_window": { "_type": "bool", "_name": "Оповещать ImGui окном" },
+            "sound_notify": { "_type": "bool", "_name": "Звуковое оповещение" }
+        },
+        "mentions": {
+            "_type": "subsection",
+            "_name": "Упоминания в /a",
+            "sound_notify": { "_type": "bool", "_name": "Звуковое оповещение" },
+            "color": { "_type": "color", "_name": "Цвет" }
+        },
+        "report_one_color": {
+            "_type": "subsection",
+            "_name": "Репорт одного цвета",
+            "color": { "_type": "color", "_name": "Цвет" }
+        },
+        "death_notify_in_chat": {
+            "_type": "subsection",
+            "_name": "Оповещения смертей в чате",
+            "color": { "_type": "color", "_name": "Цвет" }
+        },
+        "short_commands": {
+            "_type": "subsection",
+            "_name": "Сокращенные команды",
+            "commands": { "_type": "custom", "_name": "Команды" }
+        },
+        "fish_eye": {
+            "_type": "subsection",
+            "_name": "Рыбий глаз",
+            "fov": {
+                "_type": "intrange",
+                "_name": "Отдаление",
+                "_config": [ 70, 150 ]
+            }
+        },
+        "zoom_spectator_camera": {
+            "_type": "subsection",
+            "_name": "Отдаление камеры в /sp",
+            "step": {
+                "_type": "intrange",
+                "_name": "Шаг",
+                "_config": [ 1, 10 ]
+            }
+        },
+        "message_hider": {
+            "_type": "subsection",
+            "_name": "Скрытие сообщений",
+            "hide_anticheat": { "_type": "bool", "_name": "Античит" },
+            "hide_punishments": { "_type": "bool", "_name": "Наказания" },
+            "hide_player_actions": { "_type": "bool", "_name": "Действия игроков" },
+            "hide_complaints": { "_type": "bool", "_name": "Жалобы" },
+            "hide_questions": { "_type": "bool", "_name": "Вопросы" },
+            "hide_admin_actions": { "_type": "bool", "_name": "Действия администраторов" }
+        },
+        "gun_info": {
+            "_type": "subsection",
+            "_name": "Отображение оружие игрока",
+            "font_size": {
+                "_type": "intrange",
+                "_name": "Размер шрифта",
+                "_config": [ 1, 255 ]
+            }
+        },
+        "car_info": {
+            "_type": "subsection",
+            "_name": "Отображение информации о машине",
+            "font_size": {
+                "_type": "intrange",
+                "_name": "Размер шрифта",
+                "_config": [ 1, 255 ]
+            }
+        },
+        "admin_info": {
+            "_type": "subsection",
+            "_name": "Отображение администраторов",
+            "font_size": {
+                "_type": "intrange",
+                "_name": "Размер шрифта",
+                "_config": [ 1, 255 ]
+            }
+        },
+        "auto_alogout": {
+            "_type": "subsection",
+            "_name": "Автоматический /alogout",
+            "seconds_until_warning": {
+                "_type": "intrange",
+                "_name": "Секунд до предупреждения",
+                "_config": [ 10, 300 ]
+            },
+            "seconds_until_alogout": {
+                "_type": "intrange",
+                "_name": "Секунд до /alogout",
+                "_config": [ 20, 300 ]
+            }
+        }
+    }
+}

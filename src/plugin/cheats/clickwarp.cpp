@@ -24,9 +24,9 @@ auto plugin::cheats::clickwarp::on_alogin_new_state(bool state) -> void {
 }
 
 auto plugin::cheats::clickwarp::on_event(unsigned int message, WPARAM wparam, LPARAM lparam) -> bool {
-    auto cheat_configuration = (*configuration)["cheats"]["clickwarp"];
+    bool use = (*configuration)["cheats"]["clickwarp"];
 
-    if (!cheat_configuration["use"] || !server::user::is_on_alogin() || server::spectator::is_active())
+    if (!use || !server::user::is_on_alogin() || server::spectator::is_active())
        return true;
 
     switch (message) {

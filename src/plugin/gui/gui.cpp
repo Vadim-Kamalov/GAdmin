@@ -6,7 +6,7 @@
 #include "plugin/gui/windows/far_chat.h"
 #include "plugin/gui/windows/interaction_area.h"
 #include "plugin/gui/windows/kill_list.h"
-#include "plugin/gui/windows/main.h"
+#include "plugin/gui/windows/main/initializer.h"
 #include "plugin/gui/windows/notify.h"
 #include "plugin/gui/windows/players_nearby.h"
 #include "plugin/gui/windows/release_information.h"
@@ -90,6 +90,11 @@ auto plugin::gui_initializer::on_initialize() -> void {
 }
 
 auto plugin::gui_initializer::render() const -> void {
+#ifndef NDEBUG
+    ImGui::ShowDebugLogWindow();
+    ImGui::ShowMetricsWindow();
+#endif // NDEBUG
+
     for (const auto& window : registered_windows) {
         if (!window->can_render() || (game::is_menu_opened() && !window->render_on_game_paused()))
             continue;

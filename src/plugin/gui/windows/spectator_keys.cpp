@@ -78,9 +78,9 @@ auto plugin::gui::windows::spectator_keys::get_keycaps(const samp::synchronizati
 }
 
 auto plugin::gui::windows::spectator_keys::render() -> void {
-    auto window_configuration = (*configuration)["windows"]["spectator_keys"];
+    bool use = (*configuration)["windows"]["spectator_keys"];
 
-    if (!window_configuration["use"] || !server::spectator::is_active())
+    if (!use || !server::spectator::is_active())
         return;
 
     ImGui::SetNextWindowSize({ 0, 0 });

@@ -1,0 +1,43 @@
+#ifndef GADMIN_PLUGIN_GUI_WINDOWS_MAIN_INITIALIZER_H
+#define GADMIN_PLUGIN_GUI_WINDOWS_MAIN_INITIALIZER_H
+
+#include "plugin/gui/windows/main/frames/frames.h"
+#include "plugin/gui/windows/main/base/frame.h"
+#include "plugin/gui/base/window.h"
+#include "plugin/types/not_null.h"
+#include "plugin/types/simple.h"
+#include <imgui.h>
+
+namespace plugin::gui::windows::main {
+
+class initializer final : public window {
+private:
+    std::array<frame_ptr_t, frames_count> frames;
+
+    auto render_active_frame() -> void;
+public:
+    static constexpr ImVec2 default_window_size = { 700, 455 };
+
+    frame active_frame = frame::home;
+    std::pair<float, float> screen_size;
+    
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar;
+    ImVec2 window_padding = { 0, 0 };
+    ImVec2 window_size = default_window_size;
+
+    inline auto get_id() const -> types::zstring_t override;
+
+    auto render() -> void override;
+
+    explicit initializer(types::not_null<gui_initializer*> child);
+}; // class initializer final : public window
+
+auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
+
+} // namespace plugin::gui::windows::main
+
+inline auto plugin::gui::windows::main::initializer::get_id() const -> types::zstring_t {
+    return "windows::main::initializer";
+}
+
+#endif // GADMIN_PLUGIN_GUI_WINDOWS_MAIN_INITIALIZER_H
