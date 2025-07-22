@@ -1,14 +1,17 @@
 #ifndef GADMIN_PLUGIN_GUI_WINDOWS_MAIN_CUSTOM_SETTINGS_REPORT_H
 #define GADMIN_PLUGIN_GUI_WINDOWS_MAIN_CUSTOM_SETTINGS_REPORT_H
 
-#include "plugin/gui/windows/main/base/custom_setting.h"
+#include "plugin/gui/windows/main/custom_settings/double_line_input.h"
 
 namespace plugin::gui::windows::main::custom_settings {
 
-class report final : public basic_custom_setting {
+class report final : public double_line_input {
 public:
     inline auto get_id() const -> types::zstring_t override;
-    auto render(nlohmann::json& setter) -> void override;
+
+    explicit report()
+        : double_line_input({ "name", "insert" },
+                            { "Название кнопки", "Текст для вставки" }) {}
 }; // class report final : public basic_custom_setting
 
 } // namespace plugin::gui::windows::main::custom_settings

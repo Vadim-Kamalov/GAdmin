@@ -1,7 +1,6 @@
 #ifndef GADMIN_PLUGIN_GUI_WINDOWS_MAIN_FRAMES_SETTINGS_H
 #define GADMIN_PLUGIN_GUI_WINDOWS_MAIN_FRAMES_SETTINGS_H
 
-#include "plugin/gui/windows/main/base/custom_setting.h"
 #include "plugin/gui/windows/main/initializer.h"
 #include "plugin/gui/windows/main/base/frame.h"
 #include "plugin/types/not_null.h"
@@ -15,8 +14,7 @@ private:
     static constexpr float section_title_font_size = 24;
     static constexpr float common_text_size = 18;
     static constexpr float color_border_size = 3;
-
-    static const std::vector<custom_setting_ptr_t> custom_settings;
+    static constexpr float close_button_height = 30;
 
     nlohmann::ordered_json options;
     types::not_null<initializer*> child;
@@ -27,7 +25,7 @@ private:
 
     auto render_section_items(const std::string& key, nlohmann::ordered_json& items) -> void;
     
-    auto render_subsection(const std::string_view& subsection_key, const std::string_view& subsection_name,
+    auto render_subsection(const std::string_view& subsection_key, const std::string& subsection_name,
                            nlohmann::json& item_configuration, nlohmann::ordered_json& item) -> void;
 
     template<typename T> requires std::is_integral_v<T> || std::is_floating_point_v<T>
@@ -36,6 +34,7 @@ private:
     auto render_variant(const std::string& label, nlohmann::ordered_json& config, std::string& setter) const -> void;
     auto render_color(const std::string& label, nlohmann::json& setter) const -> void;
     auto render_custom(const std::string_view& id, nlohmann::json& setter) const -> void;
+    auto render_boolean(const std::string_view& label, nlohmann::ordered_json& config, bool& setter) const -> void;
 public:
     enum class item_type : std::uint8_t {
         subsection,

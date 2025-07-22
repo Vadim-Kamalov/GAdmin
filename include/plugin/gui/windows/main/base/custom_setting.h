@@ -1,6 +1,7 @@
 #ifndef GADMIN_PLUGIN_GUI_WINDOWS_MAIN_BASE_CUSTOM_SETTING_H
 #define GADMIN_PLUGIN_GUI_WINDOWS_MAIN_BASE_CUSTOM_SETTING_H
 
+#include "plugin/gui/gui.h"
 #include "plugin/types/simple.h"
 #include <nlohmann/json.hpp>
 #include <memory>
@@ -11,7 +12,7 @@ class basic_custom_setting {
 public:
     virtual ~basic_custom_setting() = default;
     virtual auto get_id() const -> types::zstring_t = 0;
-    virtual auto render(nlohmann::json& setter) -> void = 0;
+    virtual auto render(types::not_null<gui_initializer*> gui, nlohmann::json& setter) -> void = 0;
 }; // class basic_custom_setting
 
 using custom_setting_ptr_t = std::unique_ptr<basic_custom_setting>;

@@ -46,7 +46,6 @@
                 "_name": "Выравнивание по",
                 "_config": [
                     [ "left", "Левому краю" ],
-                    [ "center", "Центру" ],
                     [ "right", "Правому краю" ]
                 ]
             }
@@ -59,7 +58,8 @@
         "spectator_actions": {
             "_type": "subsection",
             "_name": "Действия в /sp",
-            "show_corner_buttons": { "_type": "bool", "_name": "Отображать боковые кнопки" }
+            "show_corner_buttons": { "_type": "bool", "_name": "Отображать боковые кнопки" },
+            "buttons": { "_type": "custom", "_name": "Кнопки" }
         },
         "kill_list": {
             "_type": "subsection",
@@ -142,7 +142,7 @@
             "_name": "Улучшенный /greport",
             "notify": { "_type": "bool", "_name": "Показывать оповещение" },
             "sound_notify": { "_type": "bool", "_name": "Звуковое оповещение" },
-            "insert_buttons": { "_type": "custom", "_name": "Шаблоны" }
+            "insert_buttons": { "_type": "custom", "_name": "Шаблоны (название - текст вставки)" }
         },
         "interaction_area": {
             "_type": "subsection",
@@ -170,7 +170,11 @@
         "wallhack": {
             "_type": "subsection",
             "_name": "WallHack",
-            "custom_render": { "_type": "bool", "_name": "ImGui отрисовка" },
+            "custom_render": {
+                "_type": "bool",
+                "_name": "ImGui отрисовка",
+                "_config": "cheats::wallhack"
+            },
             "font_size": {
                 "_type": "intrange",
                 "_name": "Размер шрифта",
@@ -198,7 +202,7 @@
         "_name": "Прочее",
         "hide_spectator_text_draws": { "_type": "bool", "_name": "Скрывать серверные текстдравы в /sp" },
         "hide_spectator_menu": { "_type": "bool", "_name": "Скрывать серверную панель в /sp" },
-        "hide_addresses": { "_type": "bool", "_name": "Скрывать IP-аддресса" },
+        "hide_addresses": { "_type": "bool", "_name": "Скрывать IP-адреса" },
         "nickname_colors": { "_type": "bool", "_name": "Цветные никнеймы в /a" },
         "auto_aa_command": { "_type": "bool", "_name": "Автоматический /aa" },
         "display_id_in_chat": { "_type": "bool", "_name": "Отображать ID в IC чате" },
@@ -233,7 +237,10 @@
         "short_commands": {
             "_type": "subsection",
             "_name": "Сокращенные команды",
-            "commands": { "_type": "custom", "_name": "Команды" }
+            "commands": {
+                "_type": "custom",
+                "_name": "Команды (символы \"{}\" заменяются на все аргументы команды)"
+            }
         },
         "fish_eye": {
             "_type": "subsection",

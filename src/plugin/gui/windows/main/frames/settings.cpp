@@ -1,9 +1,17 @@
 #include "plugin/gui/windows/main/frames/settings.h"
+#include "plugin/cheats/wallhack.h"
+#include "plugin/gui/widgets/button.h"
 #include "plugin/gui/widgets/text_button.h"
 #include "plugin/gui/widgets/toggle_button.h"
 #include "plugin/gui/widgets/text.h"
+#include "plugin/gui/windows/main/custom_settings/report.h"
+#include "plugin/gui/windows/main/custom_settings/short_commands.h"
+#include "plugin/gui/windows/main/custom_settings/spectator_actions.h"
+#include "plugin/gui/windows/main/custom_settings/spectator_information.h"
+#include "plugin/game/game.h"
 #include "plugin/plugin.h"
 #include <misc/cpp/imgui_stdlib.h>
+#include <unordered_map>
 #include <algorithm>
 
 static constexpr std::uint8_t options_bytes[] = {
@@ -16,17 +24,20 @@ static constexpr std::uint8_t options_bytes[] = {
 
 }; // static constexpr std::uint8_t options_bytes[]
 
-const std::vector<plugin::gui::windows::main::custom_setting_ptr_t>
-plugin::gui::windows::main::frames::settings::custom_settings = {
-
-}; // plugin::gui::windows::main::frames::settings::custom_settings
-
 auto plugin::gui::windows::main::frames::settings::render_section_items(const std::string& key, nlohmann::ordered_json& items) -> void {
-    for (auto& [ item_key, item ] : items.items()) {
+    std::size_t half_items_count = items.size() / 2;
+
+    ImGui::BeginGroup();
+
+    for (auto it = items.begin(); it != items.end(); it++) {
+        std::size_t index = std::distance(items.begin(), it);
+        const std::string& item_key = it.key();
+    
         if (item_key.starts_with('_'))
             continue;
 
-        auto& item_configuration = (*configuration)[key][item_key];
+        nlohmann::ordered_json& item = it.value();
+        nlohmann::json& item_configuration = (*configuration)[key][item_key];
         item_type type = item["_type"];
         bool* configuration_value = nullptr;
 
@@ -56,16 +67,29 @@ auto plugin::gui::windows::main::frames::settings::render_section_items(const st
             ImGui::SameLine();
             render_subsection(item_key, name, item_configuration, item);
         }
+
+        if (index != half_items_count)
+            continue;
+
+        ImGui::EndGroup();
+        ImGui::SameLine();
+        ImGui::BeginGroup();
     }
+
+    ImGui::EndGroup();
 }
 
-auto plugin::gui::windows::main::frames::settings::render_subsection(const std::string_view& subsection_key, const std::string_view& subsection_name,
+auto plugin::gui::windows::main::frames::settings::render_subsection(const std::string_view& subsection_key, const std::string& subsection_name,
                                                                      nlohmann::json& item_configuration, nlohmann::ordered_json& item) -> void
 {
     if (!widgets::text_button(subsection_name).render())
         return;
 
     popup_renderer = [=, this, &item_configuration, &item] {
+        float region_avail_x = ImGui::GetContentRegionAvail().x;
+        
+        widgets::text(bold_font, section_title_font_size, 0, "{}", subsection_name);
+
         for (auto& [ key, option ] : item.items()) {
             if (key.starts_with('_'))
                 continue;
@@ -92,10 +116,10 @@ auto plugin::gui::windows::main::frames::settings::render_subsection(const std::
                                              std::make_pair(config[0], config[1]));
                         break;
                     case item_type::boolean:
-                        widgets::toggle_button(option_label, item_configuration[key].get_ref<bool&>()).render();
+                        render_boolean(option_label, config, item_configuration[key].get_ref<bool&>());
                         break;
                     case item_type::input:
-                        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+                        ImGui::SetNextItemWidth(region_avail_x);
                         ImGui::InputText(option_label.c_str(), item_configuration[key].get_ptr<std::string*>());
                         break;
                     case item_type::variant:
@@ -113,8 +137,20 @@ auto plugin::gui::windows::main::frames::settings::render_subsection(const std::
             }
             ImGui::PopFont();
         }
+        
+        ImGui::PushFont(bold_font, common_text_size);
+        {
+            if (widgets::button("Закрыть##main::frames::settings", { region_avail_x, close_button_height }).render()) {
+                ImGui::CloseCurrentPopup();
+            }
+        }
+        ImGui::PopFont();
     };
     
+    auto [ size_x, size_y ] = game::get_screen_resolution();
+
+    ImGui::SetNextWindowSize({ 500, 0 });
+    ImGui::SetNextWindowPos({ size_x / 2.0f, size_y / 2.0f }, ImGuiCond_Always, { 0.5, 0.5 });
     ImGui::OpenPopup("main::frames::settings");
 }
 
@@ -194,15 +230,33 @@ auto plugin::gui::windows::main::frames::settings::render_color(const std::strin
 }
 
 auto plugin::gui::windows::main::frames::settings::render_custom(const std::string_view& id, nlohmann::json& setter) const -> void {
+    static auto custom_settings = std::to_array<custom_setting_ptr_t>({
+        std::make_unique<custom_settings::report>(),
+        std::make_unique<custom_settings::short_commands>(),
+        std::make_unique<custom_settings::spectator_information>(),
+        std::make_unique<custom_settings::spectator_actions>()
+    }); // static auto custom_settings = std::to_array<custom_setting_ptr_t>({ ... })
+
     auto custom_setting = std::find_if(custom_settings.begin(), custom_settings.end(),
         [&id](const custom_setting_ptr_t& setting) { return setting->get_id() == id; });
 
     if (custom_setting == custom_settings.end()) {
-        log::fatal("settings::render_custom [with `id` = {}]: custom_setting_ptr_t is not found", id);
+        log::fatal("settings::render_custom [with id = {}]: custom_setting_ptr_t is not found", id);
         return;
     }
 
-    (*custom_setting)->render(setter);
+    (*custom_setting)->render(child->child, setter);
+}
+
+auto plugin::gui::windows::main::frames::settings::render_boolean(const std::string_view& label, nlohmann::ordered_json& config, bool& setter) const -> void {
+    static std::unordered_map<std::string, std::function<void(bool&)>> events = {
+        { "cheats::wallhack", [](bool& state) { cheats::wallhack::set_samp_render_state(state); }}
+    }; // static std::unorederd_map<std::string, std::function<void(bool&)>> events
+
+    if (!widgets::toggle_button(label, setter).render() || config.is_null())
+        return;
+
+    events[config](setter);
 }
 
 auto plugin::gui::windows::main::frames::settings::render() -> void {
@@ -217,10 +271,16 @@ auto plugin::gui::windows::main::frames::settings::render() -> void {
         ImGui::PopFont();
     }
 
-    if (ImGui::BeginPopupModal("main::frames::settings")) {
-        popup_renderer();
-        ImGui::EndPopup();
+    ImGui::Dummy(child->window_padding);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, child->window_padding);
+    {
+        auto flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize;
+        if (ImGui::BeginPopupModal("main::frames::settings", nullptr, flags)) {
+            popup_renderer();
+            ImGui::EndPopup();
+        }
     }
+    ImGui::PopStyleVar();
 }
 
 plugin::gui::windows::main::frames::settings::settings(types::not_null<initializer*> child)

@@ -180,23 +180,22 @@
 
         "short_commands": {
             "use": true,
-            "commands": {
-                "vr": "vrepair {}",
-                "as": "aspawn {}",
-                "ah": "aheal {}",
-                "af": "afrisk {}",
-                "uf": "unfreeze {}",
-                "g": "goto {}",
-                "gh": "gethere {}",
-                "gc": "getcar {}",
-                "gbc": "getbuycar {}",
-                "pt": "ptop {}",
-                "jb": "ans {} Пишите жалобу на форум, туда со всем доказательствами",
-                "asl": "ans {} Слежу за игроком",
-                "ar": "kick {} AFK on ROAD",
-                "ak": "kick {} AFK without ESC",
-                "ap": "kick {} AFK public place"
-            }
+            "commands": [
+                { "command": "vr", "replacement": "vrepair {}" },
+                { "command": "ah", "replacement": "aspawn {}" },
+                { "command": "af", "replacement": "aheal {}" },
+                { "command": "uf", "replacement": "unfreeze {}" },
+                { "command": "g", "replacement": "goto {}" },
+                { "command": "gh", "replacement": "gethere {}" },
+                { "command": "gc", "replacement": "getcar {}" },
+                { "command": "gbc", "replacement": "getbuycar {}" },
+                { "command": "pt", "replacement": "ptop {}" },
+                { "command": "jb", "replacement": "ans {} Пишите жалобу на форум, туда со всем доказательствами" },
+                { "command": "asl", "replacement": "ans {} Слежу за игроком" },
+                { "command": "ar", "replacement": "kick {} AFK on ROAD" },
+                { "command": "ak", "replacement": "kick {} AFK without ESC" },
+                { "command": "ap", "replacement": "kick {} AFK public place" }
+            ]
         },
         
         "fish_eye": {

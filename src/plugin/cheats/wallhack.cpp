@@ -12,7 +12,7 @@ auto plugin::cheats::wallhack::set_wallhack_state(bool state) -> void {
     if (cheat_active == state)
         return;
     
-    auto cheat_configuration = (*configuration)["cheats"]["wallhack"];
+    auto& cheat_configuration = (*configuration)["cheats"]["wallhack"];
     
     if (!cheat_configuration["use"])
         return;
@@ -22,9 +22,7 @@ auto plugin::cheats::wallhack::set_wallhack_state(bool state) -> void {
     if (cheat_configuration["custom_render"])
         return;
 
-    samp::server_settings settings = samp::net_game::get_server_settings();
-    settings.set_name_tags_render_behind_wall(!state);
-    settings.set_name_tags_render_distance((state) ? render_distance : SERVER_NAME_TAGS_DISTANCE);
+    set_samp_render_state(!state, false);
 }
 
 auto plugin::cheats::wallhack::hotkey_callback(gui::hotkey& hotkey) -> void {
@@ -40,12 +38,26 @@ auto plugin::cheats::wallhack::hotkey_callback(gui::hotkey& hotkey) -> void {
     gui::notify::send(gui::notification(notify_title, notify_description, ICON_INFO));
 }
 
+auto plugin::cheats::wallhack::set_samp_render_state(bool state, bool ensure_usage_valid) noexcept -> void {
+    if (ensure_usage_valid && !server::user::is_on_alogin() && !(*configuration)["cheats"]["wallhack"]["use"])
+        return;
+
+    samp::server_settings settings = samp::net_game::get_server_settings();
+    settings.set_name_tags_render_behind_wall(state);
+    settings.set_name_tags_render_distance((state) ? SERVER_NAME_TAGS_DISTANCE : render_distance);
+}
+
 auto plugin::cheats::wallhack::register_hotkeys(types::not_null<gui::hotkey_handler*> handler) -> void {
     handler->add(hotkey);
 }
 
 auto plugin::cheats::wallhack::render(types::not_null<gui_initializer*> child) -> void {
-    auto cheat_configuration = (*configuration)["cheats"]["wallhack"];
+    auto& cheat_configuration = (*configuration)["cheats"]["wallhack"];
+
+    if (!cheat_configuration["use"]) {
+        set_wallhack_state(false);
+        return;
+    }
 
     if (!cheat_active || !cheat_configuration["custom_render"] || game::is_menu_opened())
         return;

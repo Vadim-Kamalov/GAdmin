@@ -111,11 +111,13 @@ auto plugin::gui::windows::spectator_actions::render() -> void {
                                 continue;
 
                             bool tall_button = ++active_button_count == size && has_tall_button;
+                            widgets::button button_widget(button.name, "spectator_actions_button:" + std::to_string(index),
+                                                         { button_width, (tall_button) ? tall_button_height : button_height });
 
                             if (tall_button)
                                 ImGui::SetCursorPosY(first_line_pos_y);
 
-                            if (widgets::button(button.name, { button_width, (tall_button) ? tall_button_height : button_height }).render()) {
+                            if (button_widget.render()) {
                                 if (std::holds_alternative<int>(button.action)) {
                                     samp::menu::select(std::get<int>(button.action));
                                 } else {

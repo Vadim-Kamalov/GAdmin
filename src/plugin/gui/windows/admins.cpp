@@ -95,7 +95,7 @@ auto plugin::gui::windows::admins::render() -> void {
 
             while (clipper.Step()) {
                 for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++) {
-                    entry_t entry = window_information.entries[i];
+                    entry_t& entry = window_information.entries[i];
                     float pos_x = window_padding_x;
 
                     if (std::string align = window_configuration["align"]; align != "left")

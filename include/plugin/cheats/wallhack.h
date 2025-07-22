@@ -42,6 +42,11 @@ private:
     /// @param hotkey Reference to the triggering hotkey
     auto hotkey_callback(gui::hotkey& hotkey) -> void;
 public:
+    /// @brief Render nametags for wallhack implementation using default SAMP's methods.
+    /// @param state New render state.
+    /// @param ensure_usage_valid Ensure user's on /alogin and cheat is enabled in a configuration.
+    static auto set_samp_render_state(bool state, bool ensure_usage_valid = true) noexcept -> void;
+
     /// @brief Registers hotkeys for wallhack functionality
     /// @param handler Pointer to the hotkey handler
     /// @override

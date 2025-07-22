@@ -6,9 +6,12 @@
 namespace plugin::gui::windows::main::custom_settings {
 
 class spectator_information final : public basic_custom_setting {
+private:
+    static constexpr float button_width = 100;
+    static constexpr float button_border_size = 1;
 public:
     inline auto get_id() const -> types::zstring_t override;
-    auto render(nlohmann::json& setter) -> void override;
+    auto render(types::not_null<gui_initializer*>, nlohmann::json& setter) -> void override;
 }; // class spectator_information final : public basic_custom_setting
 
 } // namespace plugin::gui::windows::main::custom_settings

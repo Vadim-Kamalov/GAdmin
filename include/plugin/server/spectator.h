@@ -71,6 +71,16 @@ public:
         frisk,
         exit
     }; // enum class menu_option : std::uint8_t
+
+    static constexpr types::zstring_t menu_option_descriptions[] = {
+        "Следующий игрок",                  ///< menu_option::next
+        "Обновить /sp",                     ///< menu_option::reload
+        "Предыдущий игрок",                 ///< menu_option::back
+        "Открыть статистику игрока",        ///< menu_option::statistics
+        "Открыть активные сессии игрока",   ///< menu_option::sessions
+        "Открыть инвентарь игрока",         ///< menu_option::frisk
+        "Покинуть /sp"                      ///< menu_option::exit
+    }; // static constexpr types::zstring_t menu_option_descriptions[]
 public:
     static inline std::string nickname = "";
     static inline std::uint16_t id = SERVER_MAX_PLAYERS + 1;
