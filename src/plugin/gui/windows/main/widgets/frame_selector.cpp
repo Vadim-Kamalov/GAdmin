@@ -51,18 +51,11 @@ auto plugin::gui::windows::main::widgets::frame_selector::render_missing_rect() 
 }
 
 auto plugin::gui::windows::main::widgets::frame_selector::render() -> void {
-    float position_y = ImGui::GetScrollY();
-
-    if (want_reset_position_y) {
-        position_y = 0.0f;
-        want_reset_position_y = false;
-    }
-
     update_state_width();
-    ImGui::SetCursorPos({ 0, position_y });
     ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 0);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 10, 10 });
-    ImGui::BeginChild("windows::main::menu", { width, child->window_size.y }, true);
+    ImGui::SetCursorPosY(0);
+    ImGui::BeginChild("windows::main::menu", { width, child->window_size.y }, ImGuiChildFlags_Borders, child->window_flags);
     {
         ImGui::SetCursorPos({ 0, 0 });
         widgets::frame_selector_toggle::instance(this).render();

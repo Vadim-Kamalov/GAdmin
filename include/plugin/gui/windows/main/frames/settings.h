@@ -3,6 +3,8 @@
 
 #include "plugin/gui/windows/main/initializer.h"
 #include "plugin/gui/windows/main/base/frame.h"
+#include "plugin/gui/windows/main/widgets/submenu.h"
+#include "plugin/gui/windows/main/widgets/popup.h"
 #include "plugin/types/not_null.h"
 #include "plugin/types/simple.h"
 #include <nlohmann/json.hpp>
@@ -16,9 +18,12 @@ private:
     static constexpr float color_border_size = 3;
     static constexpr float close_button_height = 30;
 
+    widgets::submenu submenu = widgets::submenu("Настройки##frames::settings");
+    widgets::popup popup = widgets::popup("frames::settings::popup");
+
     nlohmann::ordered_json options;
     types::not_null<initializer*> child;
-    std::function<void()> popup_renderer = []{};
+    std::string guide_hint_id = "";
 
     ImFont* bold_font = nullptr;
     ImFont* regular_font = nullptr;

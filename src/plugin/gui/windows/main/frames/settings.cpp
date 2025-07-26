@@ -1,6 +1,6 @@
 #include "plugin/gui/windows/main/frames/settings.h"
 #include "plugin/cheats/wallhack.h"
-#include "plugin/gui/widgets/button.h"
+#include "plugin/gui/widgets/hint.h"
 #include "plugin/gui/widgets/text_button.h"
 #include "plugin/gui/widgets/toggle_button.h"
 #include "plugin/gui/widgets/text.h"
@@ -8,7 +8,6 @@
 #include "plugin/gui/windows/main/custom_settings/short_commands.h"
 #include "plugin/gui/windows/main/custom_settings/spectator_actions.h"
 #include "plugin/gui/windows/main/custom_settings/spectator_information.h"
-#include "plugin/game/game.h"
 #include "plugin/plugin.h"
 #include <misc/cpp/imgui_stdlib.h>
 #include <unordered_map>
@@ -25,18 +24,10 @@ static constexpr std::uint8_t options_bytes[] = {
 }; // static constexpr std::uint8_t options_bytes[]
 
 auto plugin::gui::windows::main::frames::settings::render_section_items(const std::string& key, nlohmann::ordered_json& items) -> void {
-    std::size_t half_items_count = items.size() / 2;
-
-    ImGui::BeginGroup();
-
-    for (auto it = items.begin(); it != items.end(); it++) {
-        std::size_t index = std::distance(items.begin(), it);
-        const std::string& item_key = it.key();
-    
+    for (const auto& [ item_key, item ] : items.items()) {
         if (item_key.starts_with('_'))
             continue;
 
-        nlohmann::ordered_json& item = it.value();
         nlohmann::json& item_configuration = (*configuration)[key][item_key];
         item_type type = item["_type"];
         bool* configuration_value = nullptr;
@@ -61,34 +52,34 @@ auto plugin::gui::windows::main::frames::settings::render_section_items(const st
         std::string name = item["_name"];
         std::string label = ((type == item_type::subsection) ? "##" + name : name + "##") + item_key;
 
-        widgets::toggle_button(label, *configuration_value).render();
+        gui::widgets::toggle_button(label, *configuration_value).render();
 
-        if (type == item_type::subsection) {
-            ImGui::SameLine();
-            render_subsection(item_key, name, item_configuration, item);
-        }
-
-        if (index != half_items_count)
+        if (type != item_type::subsection)
             continue;
 
-        ImGui::EndGroup();
         ImGui::SameLine();
-        ImGui::BeginGroup();
+        render_subsection(item_key, name, item_configuration, item);
     }
-
-    ImGui::EndGroup();
 }
 
 auto plugin::gui::windows::main::frames::settings::render_subsection(const std::string_view& subsection_key, const std::string& subsection_name,
                                                                      nlohmann::json& item_configuration, nlohmann::ordered_json& item) -> void
 {
-    if (!widgets::text_button(subsection_name).render())
+    bool button_clicked = gui::widgets::text_button(subsection_name).render();
+
+    if (guide_hint_id.empty())
+        guide_hint_id = subsection_key;
+
+    if (guide_hint_id == subsection_key)
+        gui::widgets::hint::render_as_guide("Нажмите на текст, чтобы открыть детальную настройку");
+
+    if (!button_clicked)
         return;
 
-    popup_renderer = [=, this, &item_configuration, &item] {
+    popup.set_renderer([=, this, &item_configuration, &item] {
         float region_avail_x = ImGui::GetContentRegionAvail().x;
         
-        widgets::text(bold_font, section_title_font_size, 0, "{}", subsection_name);
+        gui::widgets::text(bold_font, section_title_font_size, 0, "{}", subsection_name);
 
         for (auto& [ key, option ] : item.items()) {
             if (key.starts_with('_'))
@@ -100,7 +91,7 @@ auto plugin::gui::windows::main::frames::settings::render_subsection(const std::
             nlohmann::ordered_json config = option["_config"];
 
             if (option_type != item_type::boolean) {
-                widgets::text(bold_font, common_text_size, 0, "{}", option_name);
+                gui::widgets::text(bold_font, common_text_size, 0, "{}", option_name);
                 option_label.insert(0, "##");
             }
 
@@ -137,21 +128,9 @@ auto plugin::gui::windows::main::frames::settings::render_subsection(const std::
             }
             ImGui::PopFont();
         }
-        
-        ImGui::PushFont(bold_font, common_text_size);
-        {
-            if (widgets::button("Закрыть##main::frames::settings", { region_avail_x, close_button_height }).render()) {
-                ImGui::CloseCurrentPopup();
-            }
-        }
-        ImGui::PopFont();
-    };
-    
-    auto [ size_x, size_y ] = game::get_screen_resolution();
+    });
 
-    ImGui::SetNextWindowSize({ 500, 0 });
-    ImGui::SetNextWindowPos({ size_x / 2.0f, size_y / 2.0f }, ImGuiCond_Always, { 0.5, 0.5 });
-    ImGui::OpenPopup("main::frames::settings");
+    popup.open();
 }
 
 auto plugin::gui::windows::main::frames::settings::render_variant(const std::string& label, nlohmann::ordered_json& config, std::string& setter) const
@@ -253,34 +232,17 @@ auto plugin::gui::windows::main::frames::settings::render_boolean(const std::str
         { "cheats::wallhack", [](bool& state) { cheats::wallhack::set_samp_render_state(state); }}
     }; // static std::unorederd_map<std::string, std::function<void(bool&)>> events
 
-    if (!widgets::toggle_button(label, setter).render() || config.is_null())
+    if (!gui::widgets::toggle_button(label, setter).render() || config.is_null())
         return;
 
     events[config](setter);
 }
 
 auto plugin::gui::windows::main::frames::settings::render() -> void {
-    for (auto& [ key, section_items ] : options.items()) {
-        widgets::text(bold_font, section_title_font_size, 0, "{}", section_items["_name"].get<std::string>());
-        ImGui::PushFont(regular_font, common_text_size);
-        ImGui::BeginGroup();
-        {
-            render_section_items(key, section_items);
-        }
-        ImGui::EndGroup();
-        ImGui::PopFont();
-    }
-
-    ImGui::Dummy(child->window_padding);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, child->window_padding);
-    {
-        auto flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize;
-        if (ImGui::BeginPopupModal("main::frames::settings", nullptr, flags)) {
-            popup_renderer();
-            ImGui::EndPopup();
-        }
-    }
-    ImGui::PopStyleVar();
+    submenu.render_menu(child);
+    ImGui::SameLine();
+    submenu.render_current_frame(child);
+    popup.render(child);
 }
 
 plugin::gui::windows::main::frames::settings::settings(types::not_null<initializer*> child)
@@ -293,4 +255,27 @@ plugin::gui::windows::main::frames::settings::settings(types::not_null<initializ
 #else
     options = nlohmann::ordered_json::parse(options_bytes);
 #endif // USE_EMBEDDED_MESSAGE_PACK
+
+    for (auto& [ key, section ] : options.items()) {
+        submenu.add_entry(section["_name"].get<std::string>() + "##" + key,
+                          std::make_any<nlohmann::ordered_json&>(section));
+    }
+
+    submenu.set_frame_renderer([this](const std::string_view& label, std::any& payload) {
+        std::size_t pos = label.find("##");
+
+        [[assume(pos != std::string_view::npos)]];
+        
+        std::string name = std::string(label.substr(0, pos));
+        std::string key = std::string(label.substr(pos + 2));
+
+        gui::widgets::text(bold_font, section_title_font_size, 0, "{}", name);
+        ImGui::PushFont(regular_font, common_text_size);
+        ImGui::BeginGroup();
+        {
+            render_section_items(key, std::any_cast<nlohmann::ordered_json&>(payload));
+        }
+        ImGui::EndGroup();
+        ImGui::PopFont();
+    });
 }

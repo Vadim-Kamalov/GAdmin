@@ -19,6 +19,37 @@ auto plugin::gui::windows::main::initializer::render_active_frame() -> void {
     frames[std::to_underlying(active_frame)]->render();
 }
 
+auto plugin::gui::windows::main::initializer::handle_window_moving() -> void {
+    if (!ImGui::IsMouseDown(ImGuiMouseButton_Left) || !(window_flags & ImGuiWindowFlags_NoMouseInputs)
+        || (!moving_window && ImGui::GetIO().WantCaptureMouse))
+    {
+        moving_window = false;
+        return;
+    }
+    
+    ImVec2 mouse_pos = ImGui::GetMousePos();
+    ImVec2 window_end = { window_pos.x + window_size.x, window_pos.y + window_size.y };
+
+    if (!moving_window && (mouse_pos.x < window_pos.x || mouse_pos.x > window_end.x ||
+        mouse_pos.y < window_pos.y || mouse_pos.y > window_end.y))       
+    {
+        return;
+    }
+    
+    moving_window = true;
+
+    ImVec2 mouse_delta = ImGui::GetIO().MouseDelta;
+
+    if (mouse_delta.x == 0.0f && mouse_delta.y == 0.0f)
+        return;
+
+    ImGui::GetIO().WantCaptureMouse = false;
+    window_pos.x += mouse_delta.x;
+    window_pos.y += mouse_delta.y;
+
+    ImGui::SetWindowPos(get_id(), window_pos);
+}
+
 auto plugin::gui::windows::main::initializer::render() -> void {
     screen_size = game::get_screen_resolution();
     window_padding = ImGui::GetStyle().WindowPadding;
@@ -28,20 +59,35 @@ auto plugin::gui::windows::main::initializer::render() -> void {
     ImGui::Begin(get_id(), nullptr, window_flags);
     {
         window_size = ImGui::GetWindowSize();
+        window_pos = ImGui::GetWindowPos();
         
         auto& frame_selector = widgets::frame_selector::instance(this);
+        ImU32 child_bg_color = ImGui::GetColorU32(ImGuiCol_ChildBg);
+        ImU32 window_bg_color = ImGui::GetColorU32(ImGuiCol_WindowBg);
 
-        ImGui::SetCursorPos({ frame_selector.state_width.first + window_padding.x, window_padding.y });
-        ImGui::BeginGroup();
+        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, window_items_alpha / 255.0f);
         {
-            render_active_frame();
+            ImGui::SetCursorPosX(frame_selector.state_width.first);
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, window_padding);
+            ImGui::PushStyleColor(ImGuiCol_ChildBg, window_bg_color);
+            ImGui::BeginChild("windows::main::active_frame", { 0, 0 }, ImGuiChildFlags_AlwaysUseWindowPadding, window_flags);
+            {
+                ImGui::PushStyleColor(ImGuiCol_ChildBg, child_bg_color);
+                {
+                    render_active_frame();
+                }
+                ImGui::PopStyleColor();
+            }
+            ImGui::EndChild();
+            ImGui::PopStyleVar();
+            ImGui::PopStyleColor();
+            frame_selector.render();
         }
-        ImGui::EndGroup();
-
-        frame_selector.render();
+        ImGui::PopStyleVar();
     }
     ImGui::End();
     ImGui::PopStyleVar();
+    handle_window_moving();
 }
 
 plugin::gui::windows::main::initializer::initializer(types::not_null<gui_initializer*> child)

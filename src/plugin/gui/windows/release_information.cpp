@@ -2,6 +2,7 @@
 #include "plugin/gui/widgets/button.h"
 #include "plugin/gui/animation.h"
 #include "plugin/game/game.h"
+#include "plugin/gui/widgets/markdown.h"
 #include "plugin/log.h"
 #include <fstream>
 #include <ranges>
@@ -9,25 +10,6 @@
 
 std::filesystem::path
 plugin::gui::windows::release_information::file_path = std::filesystem::current_path() / "gadmin" / "release_information.mpk";
-
-auto plugin::gui::windows::release_information::markdown_link_callback(ImGui::MarkdownLinkCallbackData data)
-    noexcept -> void
-{
-    if (data.isImage)
-        return;
-
-    std::string url(data.link, data.linkLength);
-    ShellExecuteA(nullptr, "open", url.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
-}
-
-auto plugin::gui::windows::release_information::render_markdown(const std::string& markdown) const -> void {
-    markdown_config.linkCallback = markdown_link_callback;
-    markdown_config.headingFormats[0] = { child->fonts->bold, 24, false };
-    markdown_config.headingFormats[1] = { child->fonts->bold, 20, false };
-    markdown_config.headingFormats[2] = { child->fonts->bold, 18, false };
-
-    ImGui::Markdown(markdown.c_str(), markdown.length(), markdown_config);
-}
 
 auto plugin::gui::windows::release_information::render_title() const -> void {
     std::array<std::string, 3> entries_aligned = {
@@ -104,14 +86,14 @@ auto plugin::gui::windows::release_information::render() -> void {
     ImGui::Begin(get_id(), nullptr, window_flags);
     {
         render_title();
-        render_markdown(parsed_information->body);
+        widgets::markdown(parsed_information->body, child->fonts->bold).render();
 
         if (widgets::button("Закрыть##windows::release_information", { ImGui::GetContentRegionAvail().x, 30 })
                 .with_durations({ 200ms, 0ms, 0ms })
                 .render() && !closing)
         {
             close_window();
-    }
+        }
     }
     ImGui::End();
     ImGui::PopStyleVar();

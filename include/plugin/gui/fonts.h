@@ -11,7 +11,7 @@ namespace plugin::gui {
 
 class fonts_initializer final {
 private:
-    static constexpr float default_font_size = 16.0f;
+    static constexpr float default_font_size = 18.0f;
     static constexpr std::uint8_t icon_font_index = 3;
     static constexpr types::zstring_t filenames[4] = {
         "notosans-regular.ttf", ///< ImFont* regular;

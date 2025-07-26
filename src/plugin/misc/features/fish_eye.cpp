@@ -9,7 +9,7 @@ auto plugin::misc::features::fish_eye::on_event(unsigned int message, WPARAM wpa
     if (message != WM_MOUSEWHEEL)
         return true;
     
-    auto spectator_camera_zoom_configuration = (*configuration)["misc"]["zoom_spectator_camera"];
+    auto spectator_camera_zoom_configuration = (*configuration)["spectator_mode"]["zoom_camera"];
 
     if (!spectator_camera_zoom_configuration["use"] || !server::spectator::is_active())
         return true;
@@ -28,7 +28,7 @@ auto plugin::misc::features::fish_eye::on_event(unsigned int message, WPARAM wpa
 
 auto plugin::misc::features::fish_eye::main_loop() -> void {
     auto global_fov_configuration = (*configuration)["misc"]["fish_eye"];
-    auto spectator_camera_zoom_configuration = (*configuration)["misc"]["zoom_spectator_camera"];
+    auto spectator_camera_zoom_configuration = (*configuration)["spectator_mode"]["zoom_camera"];
     
     bool change_spectator_camera_fov = spectator_camera_zoom_configuration["use"];
     bool change_global_fov = global_fov_configuration["use"];

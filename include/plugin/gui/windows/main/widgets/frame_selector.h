@@ -32,7 +32,6 @@ public:
     std::pair<float, float> state_width;
 
     float width = state_width.first;
-    bool want_reset_position_y = false;
     bool state = false;
 
     auto render() -> void;

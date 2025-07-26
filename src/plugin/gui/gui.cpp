@@ -90,17 +90,17 @@ auto plugin::gui_initializer::on_initialize() -> void {
 }
 
 auto plugin::gui_initializer::render() const -> void {
-#ifndef NDEBUG
-    ImGui::ShowDebugLogWindow();
-    ImGui::ShowMetricsWindow();
-#endif // NDEBUG
-
     for (const auto& window : registered_windows) {
         if (!window->can_render() || (game::is_menu_opened() && !window->render_on_game_paused()))
             continue;
 
         window->render();
     }
+
+#ifndef NDEBUG
+    ImGui::ShowDebugLogWindow();
+    ImGui::ShowMetricsWindow();
+#endif // NDEBUG
 }
 
 auto plugin::gui_initializer::main_loop() -> void {

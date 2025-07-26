@@ -65,7 +65,7 @@ auto plugin::gui::windows::main::custom_settings::spectator_actions::render_line
 }
 
 auto plugin::gui::windows::main::custom_settings::spectator_actions::render(types::not_null<gui_initializer*> gui, nlohmann::json& setter) -> void {
-    ImGui::BeginChild(get_id(), { 0, 400.0f }, ImGuiChildFlags_AlwaysUseWindowPadding);
+    ImGui::BeginChild(get_id(), { 450.0f, 400.0f }, ImGuiChildFlags_AlwaysUseWindowPadding);
     {
         float width = ImGui::GetContentRegionAvail().x;
         float font_size = ImGui::GetFontSize();

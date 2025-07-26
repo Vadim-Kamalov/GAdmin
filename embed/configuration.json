@@ -143,8 +143,6 @@
     },
 
     "misc": {
-        "hide_spectator_text_draws": true,
-        "hide_spectator_menu": true,
         "hide_addresses": true,
         "nickname_colors": true,
         "auto_aa_command": true,
@@ -203,11 +201,6 @@
             "fov": 101
         },
 
-        "zoom_spectator_camera": {
-            "use": true,
-            "step": 5
-        },
-
         "message_hider": {
             "use": false,
             "hide_anticheat": false,
@@ -237,6 +230,15 @@
             "use": true,
             "seconds_until_warning": 90,
             "seconds_until_alogout": 120
+        }
+    },
+
+    "spectator_mode": {
+        "hide_text_draws": true,
+        "hide_menu": true,
+        "zoom_camera": {
+            "use": true,
+            "step": 5
         }
     },
 

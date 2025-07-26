@@ -13,16 +13,20 @@ namespace plugin::gui::windows::main {
 class initializer final : public window {
 private:
     std::array<frame_ptr_t, frames_count> frames;
+    bool moving_window = false;
 
     auto render_active_frame() -> void;
+    auto handle_window_moving() -> void;
 public:
-    static constexpr ImVec2 default_window_size = { 700, 455 };
+    static constexpr ImVec2 default_window_size = { 800, 500 };
 
     frame active_frame = frame::home;
     std::pair<float, float> screen_size;
     
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar;
+    std::uint8_t window_items_alpha = 255;
     ImVec2 window_padding = { 0, 0 };
+    ImVec2 window_pos = { 0, 0 };
     ImVec2 window_size = default_window_size;
 
     inline auto get_id() const -> types::zstring_t override;

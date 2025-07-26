@@ -7,15 +7,15 @@ auto plugin::gui::windows::main::widgets::frame_switcher::update_button_size() -
 }
 
 auto plugin::gui::windows::main::widgets::frame_switcher::update_current_color() -> void {
-    types::color clicked_color = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_FrameBgActive]);
+    types::color clicked_color = ImGui::GetColorU32(ImGuiCol_FrameBgActive);
 
     if (child->child->active_frame == switch_frame) {
         current_color = animation::bring_to(current_color, clicked_color, time_clicked, click_animation_duration);
         return;
     }
 
-    types::color hovered_color = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_FrameBgHovered]);
-    types::color background_color = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_ChildBg]);
+    types::color hovered_color = ImGui::GetColorU32(ImGuiCol_FrameBgHovered);
+    types::color background_color = ImGui::GetColorU32(ImGuiCol_ChildBg);
     
     auto now = std::chrono::steady_clock::now();
     bool hovered = ImGui::IsItemHovered() || now - (time_clicked + click_animation_duration) < 0ms;
@@ -33,7 +33,7 @@ auto plugin::gui::windows::main::widgets::frame_switcher::render_button() -> voi
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
     ImVec2 start = ImGui::GetItemRectMin(), end = ImGui::GetItemRectMax();
     ImVec2 size = ImGui::GetItemRectSize(), spacing = ImGui::GetStyle().ItemSpacing;
-    ImU32 text_color = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_Text]);
+    ImU32 text_color = ImGui::GetColorU32(ImGuiCol_Text);
     std::uint8_t frame_index = std::to_underlying(switch_frame);
 
     draw_list->AddRectFilled(start, end, *current_color);
@@ -59,7 +59,6 @@ auto plugin::gui::windows::main::widgets::frame_switcher::render() -> void {
     if (ImGui::InvisibleButton(button_id.c_str(), button_size)) {
         time_clicked = std::chrono::steady_clock::now();
         child->child->active_frame = switch_frame;
-        child->want_reset_position_y = true;
     }
 
     update_current_color();

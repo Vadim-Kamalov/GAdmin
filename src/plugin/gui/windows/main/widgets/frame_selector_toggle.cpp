@@ -1,8 +1,8 @@
 #include "plugin/gui/windows/main/widgets/frame_selector_toggle.h"
 
 auto plugin::gui::windows::main::widgets::frame_selector_toggle::handle_hover_animation() -> void {
-    types::color hovered_color = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered]);
-    types::color background_color = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_ChildBg]);
+    types::color hovered_color = ImGui::GetColorU32(ImGuiCol_ButtonHovered);
+    types::color background_color = ImGui::GetColorU32(ImGuiCol_ChildBg);
     
     hover_info.update();
 

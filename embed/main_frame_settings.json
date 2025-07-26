@@ -184,7 +184,6 @@
         "tracers": {
             "_type": "subsection",
             "_name": "Трассера",
-            "only_from_spectator": { "_type": "bool", "_name": "Отображать только от игрока в /sp" },
             "seconds_to_hide": {
                 "_type": "intrange",
                 "_name": "Секунды до исчезновения",
@@ -200,8 +199,6 @@
     },
     "misc": {
         "_name": "Прочее",
-        "hide_spectator_text_draws": { "_type": "bool", "_name": "Скрывать серверные текстдравы в /sp" },
-        "hide_spectator_menu": { "_type": "bool", "_name": "Скрывать серверную панель в /sp" },
         "hide_addresses": { "_type": "bool", "_name": "Скрывать IP-адреса" },
         "nickname_colors": { "_type": "bool", "_name": "Цветные никнеймы в /a" },
         "auto_aa_command": { "_type": "bool", "_name": "Автоматический /aa" },
@@ -249,15 +246,6 @@
                 "_type": "intrange",
                 "_name": "Отдаление",
                 "_config": [ 70, 150 ]
-            }
-        },
-        "zoom_spectator_camera": {
-            "_type": "subsection",
-            "_name": "Отдаление камеры в /sp",
-            "step": {
-                "_type": "intrange",
-                "_name": "Шаг",
-                "_config": [ 1, 10 ]
             }
         },
         "message_hider": {
@@ -309,6 +297,20 @@
                 "_type": "intrange",
                 "_name": "Секунд до /alogout",
                 "_config": [ 20, 300 ]
+            }
+        }
+    },
+    "spectator_mode": {
+        "_name": "Режим наблюдения",
+        "hide_text_draws": { "_type": "bool", "_name": "Скрывать серверные текстдравы" },
+        "hide_menu": { "_type": "bool", "_name": "Скрывать серверную панель" },
+        "zoom_camera": {
+            "_type": "subsection",
+            "_name": "Отдаление камеры на колесо мыши",
+            "step": {
+                "_type": "intrange",
+                "_name": "Шаг",
+                "_config": [ 1, 10 ]
             }
         }
     }

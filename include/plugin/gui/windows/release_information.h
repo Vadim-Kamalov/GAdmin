@@ -6,7 +6,6 @@
 #include "plugin/types/not_null.h"
 #include "plugin/types/simple.h"
 #include <nlohmann/json.hpp>
-#include <imgui_markdown.h>
 #include <filesystem>
 #include <chrono>
 
@@ -20,7 +19,6 @@ private:
     static constexpr float regular_font_size = 18;
 
     static constexpr std::chrono::milliseconds animation_duration = 500ms;
-    static inline ImGui::MarkdownConfig markdown_config;
     static std::filesystem::path file_path;
 
     struct parsed_information_t final {
@@ -43,8 +41,6 @@ private:
     ImFont *bold_font, *regular_font;
     std::optional<parsed_information_t> parsed_information;
 
-    static auto markdown_link_callback(ImGui::MarkdownLinkCallbackData data) noexcept -> void;
-    auto render_markdown(const std::string& markdown) const -> void;
     auto render_title() const -> void;
     auto close_window() -> void;
 public:

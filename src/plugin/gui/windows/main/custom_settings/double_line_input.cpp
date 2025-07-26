@@ -10,7 +10,7 @@ auto plugin::gui::windows::main::custom_settings::double_line_input::render(type
     float items_count = setter.size();
     float child_height = window_padding.y * 2 + placeholder_font_size + (frame_height + item_spacing.y) * items_count;
 
-    ImGui::BeginChild(get_id(), { 0, child_height }, ImGuiChildFlags_AlwaysUseWindowPadding);
+    ImGui::BeginChild(get_id(), { 450.0f, child_height }, ImGuiChildFlags_AlwaysUseWindowPadding);
     {
         float half_item_width = (ImGui::GetContentRegionAvail().x - item_spacing.x) / 2.0f;
 

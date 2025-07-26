@@ -18,7 +18,7 @@ auto plugin::server::spectator::on_show_text_draw(const samp::event<samp::event_
     static constexpr types::zstring_t dirty_body = "2282282~n~$400000~n~90 MP/H~n~100/20~n~M4A1/Pustinniy Orel~n~999 ms~n~127.23.42.123";
     static constexpr ctll::fixed_string text_draw_id_pattern = "~y~\\((\\d+)\\)";
 
-    bool hide = (*configuration)["misc"]["hide_spectator_text_draws"];
+    bool hide = (*configuration)["spectator_mode"]["hide_text_draws"];
 
     // These values of `text_draw.text` received only once after the user had entered the spectator mode; these texts
     // don't visible for the user. (because the server immediately changes it in `samp::event_id::set_text_draw_string`?)
@@ -366,7 +366,7 @@ auto plugin::server::spectator::on_event(const samp::event_info& event) -> bool 
         else if (event == samp::event_id::remove_3d_text)
             return on_remove_3d_text(event.create<samp::event_id::remove_3d_text>());
         else if (event == samp::event_id::show_menu)
-            return !(*configuration)["misc"]["hide_spectator_menu"];
+            return !(*configuration)["spectator_mode"]["hide_menu"];
         else if (event == samp::event_id::show_dialog) {
             if (auto dialog_event = event.create<samp::event_id::show_dialog>()) {
                 return on_show_dialog(dialog_event);
