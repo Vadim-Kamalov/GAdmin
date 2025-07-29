@@ -25,6 +25,7 @@ set(SERVER_NAME_TAGS_DISTANCE "20")
 set(SERVER_MAX_PLAYERS        "600")
 set(PROJECT_REPOSITORY        "https://github.com/Vadim-Kamalov/GAdmin/tree/plugin")
 set(PROJECT_DATABASE          "https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/refs/heads/plugin")
+set(PROJECT_COPYRIGHT_YEARS   "2023-2025")
 
 configure_file(version.rc.in ${CMAKE_BINARY_DIR}/plugin_version.rc)
 file(GLOB_RECURSE SOURCES *.cpp)
@@ -64,4 +65,5 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     SERVER_COMMAND_DELAY_MS=${SERVER_COMMAND_DELAY_MS}
     SERVER_MAX_PLAYERS=${SERVER_MAX_PLAYERS}
     SERVER_NAME_TAGS_DISTANCE=${SERVER_NAME_TAGS_DISTANCE}
+    PROJECT_COPYRIGHT_YEARS="${PROJECT_COPYRIGHT_YEARS}"
 )

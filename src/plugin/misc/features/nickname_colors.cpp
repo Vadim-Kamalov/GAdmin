@@ -15,6 +15,9 @@ auto plugin::misc::features::nickname_colors::write_nickname_colors() -> void {
         log::error("failed to fetch [PROJECT_DATABASE \"/nickname-colors.json\"]: nickname_colors.empty() => true");
         return;
     }
+    
+    if (!entries.empty())
+        entries.clear();
 
     nlohmann::json json = nlohmann::json::parse(nickname_colors);
     append_entries(json["contributors"]);
@@ -33,6 +36,9 @@ auto plugin::misc::features::nickname_colors::on_server_message(const samp::even
         if (auto entry = std::find_if(entries.begin(), entries.end(), [nickname](const entry_t& entry) {
             return entry.nickname == nickname;
         }); entry != entries.end()) {
+            if (entry->colors[0] == 0xAA33AA33)
+                return true;
+
             types::color random_color = *common_utils::select_randomly(entry->colors.begin(), entry->colors.end());
             std::string color = std::format("{:06X}", random_color.cast<types::color_type::rgba>()).substr(0, 6);
             std::string new_nickname = std::format("{{{}}}{}{{33AA33}}", color, nickname.str());
@@ -46,6 +52,11 @@ auto plugin::misc::features::nickname_colors::on_server_message(const samp::even
 
 auto plugin::misc::features::nickname_colors::append_entries(nlohmann::json& object) -> void {
     for (const auto& [ key, value ] : object.items()) {
+        if (value.is_null()) {
+            entries.push_back({ key, { 0xAA33AA33 }});
+            continue;
+        }
+
         if (value.is_array()) {
             std::vector<types::color> colors;
 
