@@ -4,90 +4,94 @@
 #include "plugin/server/admins.h"
 #include "plugin/server/user.h"
 #include "plugin/plugin.h"
-#include <ranges>
 
-auto plugin::gui::windows::admins::get_window_information() const -> information_t {
-    auto window_configuration = (*configuration)["windows"]["admins"];
+auto plugin::gui::windows::admins::get_window_information() const -> window_information_t {
+    auto& window_configuration = (*configuration)["windows"]["admins"];
+    window_information_t information;
+
+    if (!window_configuration["use"] || !server::user::is_on_alogin())
+        return information;
+
     server::admin::sort_option sort_option = window_configuration["sort_by"];
-    std::size_t show_scrollbar_on = window_configuration["show_scrollbar_on"];
+    std::vector<server::admin> admins = server::admins::list;
+    server::admin::sort(admins, sort_option);
     
-    std::vector<server::admin> admins_sorted = server::admins::list;
-    std::vector<entry_t> entries(admins_sorted.size());
-    std::string title = "Список администраторов";
-    {
-        if (window_configuration["show_count"]) {
-            std::format_to(std::back_inserter(title), " (всего: {})", admins_sorted.size());
-        }   
+    widgets::aligner::mode_t align_mode = window_configuration["align"];
+    bool use_nickname_colors = (*configuration)["misc"]["nickname_colors"];
+    bool show_title = window_configuration["show_title"];
+    bool show_level = window_configuration["show_level"];
+    bool show_id = window_configuration["show_id"];
+
+    if (show_title) {
+        information.title = "Список администраторов";
+
+        if (window_configuration["show_count"])
+            std::format_to(std::back_inserter(information.title), " (всего: {})", admins.size());
+
+        information.window_width = title_font->CalcTextSizeA(title_font_size, FLT_MAX, 0.0f, information.title.c_str()).x
+            + border_size * 2;
     }
-    
-    server::admin::sort(admins_sorted, sort_option);
 
-    float entry_height = 0;
-    ImVec2 window_padding = ImGui::GetStyle().WindowPadding;
-    float window_width = title_font->CalcTextSizeA(title_font_size, FLT_MAX, 0, title.c_str()).x
-        + ImGui::GetStyle().WindowPadding.x * 2;
+    for (const auto& admin : admins) {
+        entry_t entry = { .color = ImGui::GetColorU32(ImGuiCol_Text), .text = admin.nickname };
 
-    for (const auto& [ index, admin ] : admins_sorted | std::views::enumerate) {
-        std::string text = admin.nickname;
+        if (show_level)
+            entry.text = std::format("[LVL: {}] {}", admin.level, admin.nickname);
+
+        if (show_id)
+            std::format_to(std::back_inserter(entry.text), "[{}]", admin.id);
+
+        float width = entry_font->CalcTextSizeA(entry_font_size, FLT_MAX, 0.0f, entry.text.c_str()).x
+            + border_size * 2;
         
-        if (window_configuration["show_level"])
-            text = std::format("[LVL: {}] {}", admin.level, admin.nickname);
+        if (information.window_width < width)
+            information.window_width = width;
 
-        if (window_configuration["show_id"])
-            std::format_to(std::back_inserter(text), "[{}]", admin.id);
-    
-        ImVec2 text_size = entry_font->CalcTextSizeA(entry_font_size, FLT_MAX, 0, text.c_str());
-        float width = text_size.x + ImGui::GetStyle().WindowPadding.x * 2;
-    
-        if (entry_height == 0)
-            entry_height = text_size.y;
+        entry.aligner = widgets::aligner(align_mode, width);
 
-        if (window_width < width)
-            window_width = width;
-        
-        types::color color = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_Text]);
-        
-        if ((*configuration)["misc"]["nickname_colors"]) {
+        if (use_nickname_colors) {
             auto& nickname_colors = misc::get_nickname_colors();
             if (auto it = std::find_if(nickname_colors.begin(), nickname_colors.end(), [admin](const auto& entry) {
                 return entry.nickname == admin.nickname;
             }); it != nickname_colors.end()) {
-                color = it->colors[0];
+                entry.color = it->colors[0];
             }
         }
 
-        entries[index] = { text, color, text_size.x };
+        information.entries.push_back(entry);
     }
     
-    std::size_t items = std::min(entries.size(), show_scrollbar_on);
-    float content_height = entry_height * items + entry_height
-        + ImGui::GetStyle().ItemSpacing.y * items - window_padding.y;
+    std::size_t show_scrollbar_on = window_configuration["show_scrollbar_on"];
+    std::size_t entry_count = std::min(information.entries.size(), show_scrollbar_on);
+    float item_spacing_y = ImGui::GetStyle().ItemSpacing.y;
 
-    return { window_width, content_height, title, entries };
+    information.scroll_area_height = (entry_font_size + item_spacing_y) * entry_count - item_spacing_y;
+    information.window_width += ImGui::GetStyle().WindowPadding.x * 2;
+    information.render = true;
+
+    if (show_scrollbar_on < information.entries.size())
+        information.window_width += ImGui::GetStyle().ScrollbarSize;
+
+    return information;
 }
 
 auto plugin::gui::windows::admins::render() -> void {
-    auto window_configuration = (*configuration)["windows"]["admins"];
+    window_information_t window_information = get_window_information();
 
-    if (!window_configuration["use"] || !server::user::is_on_alogin())
+    if (!window_information.render)
         return;
-  
-    information_t window_information = get_window_information();
-    float window_padding_x = ImGui::GetStyle().WindowPadding.x;
 
     ImGui::SetNextWindowBgAlpha(0);
+    ImGui::SetNextWindowSize({ window_information.window_width, 0 });
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
-    ImGui::SetNextWindowSize({ window_information.width, 0 });
     ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize);
     {
-        if (window_configuration["show_title"])
-            widgets::text(title_font, title_font_size, 1, "{}", window_information.title);
+        if (!window_information.title.empty())
+            widgets::text(title_font, title_font_size, border_size, "{}", window_information.title);
 
-        ImGui::PushStyleColor(ImGuiCol_ScrollbarBg, { 0, 0, 0, 0 });
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, 0 });
         ImGui::SetNextWindowBgAlpha(0);
-        ImGui::SetCursorPosX(0);
-        ImGui::BeginChild("windows::admins::content", { ImGui::GetWindowWidth(), window_information.content_height });
+        ImGui::PushStyleColor(ImGuiCol_ScrollbarBg, { 0, 0, 0, 0 });
+        ImGui::BeginChild("windows::admins::content", { 0, window_information.scroll_area_height });
         {
             ImGuiListClipper clipper;
 
@@ -96,16 +100,10 @@ auto plugin::gui::windows::admins::render() -> void {
             while (clipper.Step()) {
                 for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++) {
                     entry_t& entry = window_information.entries[i];
-                    float pos_x = window_padding_x;
-
-                    if (std::string align = window_configuration["align"]; align != "left")
-                        pos_x = (align == "right") ? ImGui::GetContentRegionAvail().x - entry.width
-                            : (ImGui::GetContentRegionAvail().x - entry.width) / 2;
-                
-                    ImGui::SetCursorPosX(pos_x);
                     ImGui::PushStyleColor(ImGuiCol_Text, *entry.color);
                     {
-                        widgets::text(entry_font, entry_font_size, 1, "{}", entry.text);
+                        entry.aligner.align_next_item(0);
+                        widgets::text(entry_font, entry_font_size, border_size, "{}", entry.text);
                     }
                     ImGui::PopStyleColor();
                 }
@@ -113,7 +111,6 @@ auto plugin::gui::windows::admins::render() -> void {
         }
         ImGui::EndChild();
         ImGui::PopStyleColor();
-        ImGui::PopStyleVar();
     }
     ImGui::End();
     ImGui::PopStyleVar();

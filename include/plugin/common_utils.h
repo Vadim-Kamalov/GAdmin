@@ -8,6 +8,8 @@ namespace plugin {
 
 class common_utils final {
 public:
+    static auto get_current_timestamp() noexcept -> std::string;
+
     template<typename iterator, typename random_generator>
     static auto select_randomly(iterator start, iterator end, random_generator& g) -> iterator;
 

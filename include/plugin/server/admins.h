@@ -47,7 +47,7 @@ NLOHMANN_JSON_SERIALIZE_ENUM(admin::sort_option, {
     { admin::sort_option::disabled, "disabled" },
     { admin::sort_option::length, "length" },
     { admin::sort_option::id, "id" },
-    { admin::sort_option::level, "level" },
+    { admin::sort_option::level, "level" }
 })
 
 } // namespace plugin::server

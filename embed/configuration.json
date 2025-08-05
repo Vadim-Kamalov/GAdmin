@@ -73,6 +73,7 @@
         "kill_list": {
             "use": true,
             "show_time": true,
+            "show_title": true,
             "clist_color": true,
             "align": "left",
             "max_count": 5
@@ -84,7 +85,8 @@
             "max_count": 5,
             "show_time": true,
             "clist_color": true,
-            "align": "left"
+            "show_title": true,
+            "width": 700
         },
 
         "players_nearby": {
@@ -114,6 +116,30 @@
         "interaction_area": {
             "use": true,
             "radius": 300
+        },
+
+        "player_checker": {
+            "use": true,
+            "show_offline": true,
+            "show_title": true,
+            "clist_color": true,
+            "notify": true,
+            "sound_notify": true,
+            "align": "left",
+            "show_scrollbar_on": 5,
+            "players": [
+                { "nickname": "gassistant", "description": "test" },
+                { "nickname": "gassistant", "description": "test" },
+                { "nickname": "gassistant", "description": "test" },
+                { "nickname": "gassistant", "description": "test" },
+                { "nickname": "gassistant", "description": "test" },
+                { "nickname": "gassistant", "description": "test" },
+                { "nickname": "gassistant", "description": "test" },
+                { "nickname": "gassistant", "description": "test" },
+                { "nickname": "gassistant", "description": "test" },
+                { "nickname": "gassistant", "description": "test" },
+                { "nickname": "gassistant", "description": "test" }
+            ]
         },
 
         "spectator_keys": true,

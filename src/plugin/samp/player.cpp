@@ -73,3 +73,18 @@ plugin::samp::player::player(id_t new_id) {
     id = new_id;
     valid = true;
 }
+
+plugin::samp::player::player(const nickname_t& new_nickname) {
+    if (user::get_name() == new_nickname) {
+        write_local_player(user::get_id());
+        return;
+    }
+
+    if (auto new_id = player_pool::get_id(new_nickname))
+        id = *new_id;
+    else
+        return;
+
+    nickname = new_nickname;
+    valid = true;
+}

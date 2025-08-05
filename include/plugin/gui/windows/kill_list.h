@@ -7,7 +7,7 @@
 #include "plugin/samp/player.h"
 #include "plugin/types/color.h"
 #include "plugin/types/not_null.h"
-#include <deque>
+#include "plugin/types/simple.h"
 #include <optional>
 
 using namespace std::chrono_literals;
@@ -16,38 +16,42 @@ namespace plugin::gui::windows {
 
 class kill_list final : public window {
 private:
-    static constexpr float bold_font_size = 18;
-    static constexpr float regular_font_size = 16;
-    static constexpr std::chrono::milliseconds push_animation_duration = 300ms;
-    static constexpr std::chrono::milliseconds alpha_change_duration = 300ms;
-    static constexpr std::uint8_t text_border_size = 1;
+    static constexpr float title_font_size = 20;
+    static constexpr float common_font_size = 18;
+    static constexpr float text_border_size = 1;
+    static constexpr types::zstring_t title_text = "Килл-лист";
 
-    struct entry final {
-        struct side final {
-            samp::player player;
-            std::optional<types::color> color;
-            auto get_color() -> types::color;
-        }; // struct side final
+    struct player_t final {
+        std::string nickname;
+        std::uint16_t id;
+        types::color color;
 
-        side left;
-        std::optional<side> right;
-        std::chrono::system_clock::time_point time;
-        std::string reason;
-        
-        std::chrono::steady_clock::time_point alpha_time;
-        float alpha = 1.00;
-   
-        auto get_formatted_time() const -> std::string;
-        auto compute_width(ImFont* bold_font, ImFont* regular_font, bool with_time) const -> float;
-    }; // struct entry final
+        auto to_string() const -> std::string;
+        auto render(bool clist_color, ImFont* font) const -> void;
 
-    ImFont *bold_font, *regular_font;
-    ImVec2 window_size = { 0, 0 };
-    
-    std::deque<entry> entries;
-    std::chrono::steady_clock::time_point time_pushed;
+        explicit player_t(const samp::player& player)
+            : nickname(player.nickname), id(player.id),
+              color(get_render_safe_color(player.get_color())) {}
+    }; // struct player_t final
 
-    auto get_window_size(bool with_time) const -> ImVec2;
+    struct entry_t final {
+        player_t left;
+        std::optional<player_t> right;
+        std::string reason, time;
+        float width = 0.0f;
+    }; // struct entry_t final
+
+    ImFont* bold_font = nullptr;
+    ImFont* regular_font = nullptr;
+
+    float max_entry_width = 0;
+    std::deque<entry_t> entries;
+
+    static auto get_render_safe_color(const types::color& color) noexcept -> types::color;
+    auto get_window_size(bool show_title) const -> ImVec2;
+    auto update_max_entry_width() -> void;
+    auto write_entry_width(entry_t& entry) -> void;
+    auto try_write_entry_right_player(std::uint16_t id, entry_t& entry) const -> void;
     auto on_player_death_notification(const samp::event<samp::event_id::player_death_notification>& notification) -> bool;
 public:
     inline auto get_id() const -> types::zstring_t override;

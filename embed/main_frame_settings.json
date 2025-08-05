@@ -5,13 +5,13 @@
             "_type": "subsection",
             "_name": "Администрация онлайн",
             "show_title": { "_type": "bool", "_name": "Отображать заголовок" },
-            "show_count": { "_type": "bool", "_name": "Отображать количество" },
+            "show_count": { "_type": "bool", "_name": "Отображать количество в заголовке" },
             "show_id": { "_type": "bool", "_name": "Отображать ID" },
             "show_level": { "_type": "bool", "_name": "Отображать уровень" },
             "show_scrollbar_on": {
                 "_type": "intrange",
-                "_name": "Количество администраторов до появления заголовка",
-                "_config": [ 0, 100 ]
+                "_name": "Количество администраторов до появления ползунка",
+                "_config": [ 1, 100 ]
             },
             "sort_by": {
                 "_type": "variant",
@@ -65,6 +65,7 @@
             "_type": "subsection",
             "_name": "Килл-лист",
             "show_time": { "_type": "bool", "_name": "Отображать время смерти" },
+            "show_title": { "_type": "bool", "_name": "Отображать заголовок" },
             "clist_color": { "_type": "bool", "_name": "Цвет никнейма по клисту" },
             "align": {
                 "_type": "variant",
@@ -78,7 +79,7 @@
             "max_count": {
                 "_type": "intrange",
                 "_name": "Максимальное количество строк",
-                "_config": [ 0, 50 ]
+                "_config": [ 1, 50 ]
             }
         },
         "far_chat": {
@@ -92,19 +93,16 @@
             "max_count": {
                 "_type": "intrange",
                 "_name": "Максимальное количество строк",
-                "_config": [ 0, 50 ]
+                "_config": [ 1, 50 ]
+            },
+            "width": {
+                "_type": "intrange",
+                "_name": "Длина окна",
+                "_config": [ 300, 3000 ]
             },
             "show_time": { "_type": "bool", "_name": "Отображать время" },
             "clist_color": { "_type": "bool", "_name": "Цвет никнейма по клисту" },
-             "align": {
-                "_type": "variant",
-                "_name": "Выравнивание по",
-                "_config": [
-                    [ "left", "Левому краю" ],
-                    [ "center", "Центру" ],
-                    [ "right", "Правому краю" ]
-                ]
-            }
+            "show_title": { "_type": "bool", "_name": "Отображать заголовок" }
         },
         "players_nearby": {
             "_type": "subsection",
@@ -117,7 +115,7 @@
             "show_distance": { "_type": "bool", "_name": "Отображать расстояние" },
             "show_title": { "_type": "bool", "_name": "Отображать заголовок" },
             "clist_color": { "_type": "bool", "_name": "Цвет никнейма по клисту" },
-             "align": {
+            "align": {
                 "_type": "variant",
                 "_name": "Выравнивание по",
                 "_config": [
@@ -151,6 +149,29 @@
                 "_type": "intrange",
                 "_name": "Радиус",
                 "_config": [ 100, 1000 ]
+            }
+        },
+        "player_checker": {
+            "_type": "subsection",
+            "_name": "Чекер игроков",
+            "show_offline": { "_type": "bool", "_name": "Отображать игроков в оффлайн" },
+            "show_title": { "_type": "bool", "_name": "Отображать заголовок" },
+            "clist_color": { "_type": "bool", "_name": "Цвет никнейма по клисту" },
+            "notify": { "_type": "bool", "_name": "Показывать оповещения" },
+            "sound_notify": { "_type": "bool", "_name": "Звуковое оповещение" },
+            "align": {
+                "_type": "variant",
+                "_name": "Выравнивание по",
+                "_config": [
+                    [ "left", "Левому краю" ],
+                    [ "center", "Центру" ],
+                    [ "right", "Правому краю" ]
+                ]
+            },
+            "show_scrollbar_on": {
+                "_type": "intrange",
+                "_name": "Количество игроков до появления ползунка",
+                "_config": [ 1, 100 ]
             }
         },
         "spectator_keys": { "_type": "bool", "_name": "Клавиши игрока в /sp" },

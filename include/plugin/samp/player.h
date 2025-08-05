@@ -34,6 +34,7 @@ public:
     static auto get_stream_players() -> std::deque<stream_entry_t>;
     
     explicit player(id_t new_id);
+    explicit player(const nickname_t& new_nickname);
 }; // class player final
 
 } // namespace plugin::samp
