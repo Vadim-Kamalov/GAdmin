@@ -14,14 +14,11 @@ std::unordered_map<std::string, plugin::server::binder::variable_replacement_t> 
 }; // std::unordered_map<std::string, plugin::server::binder::variable_replacement_t> plugin::server::binder::variables
 
 auto plugin::server::binder::process_variable_body(const std::string_view& input) -> std::string {
+    if (input.empty() || !std::isalpha(input[0]))
+        return "";
+    
     std::string variable_name;
     std::size_t index = 0;
-
-    if (input.empty())
-        return "";
-
-    if (!std::isalpha(input[index]))
-        return "";
 
     while (index < input.length() && (std::isalpha(input[index]) || input[index] == '_'))
         variable_name.push_back(input[index++]);
@@ -34,7 +31,7 @@ auto plugin::server::binder::process_variable_body(const std::string_view& input
     while (index < input.length() && std::isspace(input[index]))
         index++;
 
-    if (input[index] != ',')
+    if (index >= input.length() || input[index] != ',')
         return it->second({});
 
     std::vector<std::string> params;
@@ -45,7 +42,7 @@ auto plugin::server::binder::process_variable_body(const std::string_view& input
         param.erase(param.find_last_not_of(' ') + 1);
         params.push_back(param);
     }
-        
+ 
     return it->second(params);
 }
 
@@ -82,6 +79,8 @@ auto plugin::server::binder::process(const std::string_view& input) -> std::stri
             buffer.erase(0, buffer.find_first_not_of(' '));
             buffer.erase(buffer.find_last_not_of(' ') + 1);
             result.append(process_variable_body(buffer));
+        
+            continue;
         }
 
         result.push_back(input[index++]);
