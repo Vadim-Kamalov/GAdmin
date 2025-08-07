@@ -23,6 +23,7 @@ private:
     static types::versioned_address_container<vehicle, types::version_container_option::offsets> vehicle_container;
     static types::versioned_address_container<float, types::version_container_option::offsets> armor_container;
     static types::versioned_address_container<signatures::get_color_as_argb> get_color_container;
+    static types::versioned_address_container<std::uint16_t, types::version_container_option::offsets> id_container;
 public:
     auto is_available() const -> bool;
 
@@ -30,6 +31,7 @@ public:
     auto get_vehicle() const -> vehicle;
     auto get_armor() const -> float;
     auto get_color() const -> types::color;
+    auto get_id() const -> std::uint16_t;
 
     explicit remote_player(const types::dynamic_address<std::uintptr_t>& handle)
         : handle(handle) {}

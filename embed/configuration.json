@@ -126,20 +126,7 @@
             "notify": true,
             "sound_notify": true,
             "align": "left",
-            "show_scrollbar_on": 5,
-            "players": [
-                { "nickname": "gassistant", "description": "test" },
-                { "nickname": "gassistant", "description": "test" },
-                { "nickname": "gassistant", "description": "test" },
-                { "nickname": "gassistant", "description": "test" },
-                { "nickname": "gassistant", "description": "test" },
-                { "nickname": "gassistant", "description": "test" },
-                { "nickname": "gassistant", "description": "test" },
-                { "nickname": "gassistant", "description": "test" },
-                { "nickname": "gassistant", "description": "test" },
-                { "nickname": "gassistant", "description": "test" },
-                { "nickname": "gassistant", "description": "test" }
-            ]
+            "players": []
         },
 
         "spectator_keys": true,

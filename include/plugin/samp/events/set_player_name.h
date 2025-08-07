@@ -7,8 +7,8 @@ namespace plugin::samp {
 
 template<>
 struct event<event_id::set_player_name> final {
-    std::string nickname;
     std::uint16_t id;
+    std::string nickname;
 
     explicit event(bit_stream* stream)
         : id(stream->read<std::uint16_t>()),

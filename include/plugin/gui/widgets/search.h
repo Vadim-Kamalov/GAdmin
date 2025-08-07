@@ -59,6 +59,14 @@ public:
     template<typename... Args>
     auto contains(std::format_string<Args...> fmt, Args&&... args) const -> bool;
 
+    /// @brief Get search widget's current text.
+    /// @return The buffer of a search widget.
+    auto get_text() const -> std::string;
+
+    /// @brief Set search widget's current text.
+    /// @param text The new text to be set.
+    auto set_text(const std::string_view& text) -> void;
+
     /// @brief Constructor for the search widget.
     /// @param id Search widget's ID.
     explicit search(const std::string_view& id)

@@ -27,3 +27,11 @@ auto plugin::gui::widgets::search::contains(const std::string_view& text) const 
 auto plugin::gui::widgets::search::empty() const -> bool {
     return buffer.empty();
 }
+
+auto plugin::gui::widgets::search::get_text() const -> std::string {
+    return buffer;
+}
+
+auto plugin::gui::widgets::search::set_text(const std::string_view& text) -> void {
+    buffer = text;
+}

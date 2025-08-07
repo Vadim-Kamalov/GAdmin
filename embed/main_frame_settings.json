@@ -167,11 +167,6 @@
                     [ "center", "Центру" ],
                     [ "right", "Правому краю" ]
                 ]
-            },
-            "show_scrollbar_on": {
-                "_type": "intrange",
-                "_name": "Количество игроков до появления ползунка",
-                "_config": [ 1, 100 ]
             }
         },
         "spectator_keys": { "_type": "bool", "_name": "Клавиши игрока в /sp" },

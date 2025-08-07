@@ -39,7 +39,7 @@ auto plugin::gui::windows::main::widgets::popup::render(types::not_null<initiali
             renderer();
             ImGui::PushFont(child->child->fonts->bold);
             {
-                if (gui::widgets::button("Закрыть##widgets::popup::" + id, { ImGui::GetItemRectSize().x, close_button_height })
+                if (gui::widgets::button("Закрыть##widgets::popup::" + id, { ImGui::GetContentRegionAvail().x, close_button_height })
                         .with_durations({ 200ms, 0ms, 0ms }).render() && window_alpha == 255.0f)
                 {
                     close();

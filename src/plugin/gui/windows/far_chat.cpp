@@ -70,11 +70,10 @@ auto plugin::gui::windows::far_chat::render() -> void {
     bool show_title = window_configuration["show_title"];
     bool show_time = window_configuration["show_time"];
     bool clist_color = window_configuration["clist_color"];
+    auto flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoBackground;
 
     ImGui::SetNextWindowSize({ window_width, 0 });
-    ImGui::SetNextWindowBgAlpha(0);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
-    ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::Begin(get_id(), nullptr, flags);
     {
         if (show_title)
             widgets::text(bold_font, title_font_size, text_border_size, title_text);
@@ -108,7 +107,6 @@ auto plugin::gui::windows::far_chat::render() -> void {
         }
     }
     ImGui::End();
-    ImGui::PopStyleVar();
 }
 
 auto plugin::gui::windows::far_chat::create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t {

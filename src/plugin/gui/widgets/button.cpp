@@ -14,7 +14,7 @@ auto plugin::gui::widgets::button::render() -> bool {
 
     types::color button_color = ImGui::GetColorU32(ImGuiCol_Button);
     types::color button_active = ImGui::GetColorU32(ImGuiCol_ButtonActive);
-    types::color hovered_color = ImGui::GetColorU32(ImGuiCol_ButtonHovered);
+    types::color hovered_color = ImGui::GetColorU32(ImGuiCol_ButtonHovered, it.border_alpha / 255.0f);
 
     float rounding = ImGui::GetStyle().FrameRounding;
     float border_size = ImGui::GetStyle().FrameBorderSize;
@@ -27,7 +27,7 @@ auto plugin::gui::widgets::button::render() -> bool {
     ImVec2 border_start = { start.x - border_size, start.y - border_size };
     ImVec2 border_end = { end.x + border_size, end.y + border_size };
 
-    draw_list->AddRect(border_start, border_end, *types::color(hovered_color, it.border_alpha), rounding, draw_flags, border_size);
+    draw_list->AddRect(border_start, border_end, *hovered_color, rounding, draw_flags, border_size);
 
     it.border_alpha = animation::bring_to(it.border_alpha, (it.hovered.state) ? 255 : 0, it.hovered.time, durations[0]);
 

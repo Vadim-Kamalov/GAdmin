@@ -81,17 +81,15 @@ auto plugin::gui::windows::admins::render() -> void {
     if (!window_information.render)
         return;
 
-    ImGui::SetNextWindowBgAlpha(0);
     ImGui::SetNextWindowSize({ window_information.window_width, 0 });
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
-    ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoBackground);
     {
         if (!window_information.title.empty())
             widgets::text(title_font, title_font_size, border_size, "{}", window_information.title);
 
-        ImGui::SetNextWindowBgAlpha(0);
         ImGui::PushStyleColor(ImGuiCol_ScrollbarBg, { 0, 0, 0, 0 });
-        ImGui::BeginChild("windows::admins::content", { 0, window_information.scroll_area_height });
+        ImGui::BeginChild("windows::admins::content", { 0, window_information.scroll_area_height },
+                          ImGuiChildFlags_None, ImGuiWindowFlags_NoBackground);
         {
             ImGuiListClipper clipper;
 
@@ -113,7 +111,6 @@ auto plugin::gui::windows::admins::render() -> void {
         ImGui::PopStyleColor();
     }
     ImGui::End();
-    ImGui::PopStyleVar();
 }
 
 auto plugin::gui::windows::admins::create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t {

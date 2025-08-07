@@ -21,6 +21,7 @@ enum class event_id : std::uint8_t {
     set_text_draw_string = 105,
     show_text_draw = 134,
     hide_text_draw = 135,
+    server_connect = 137,
     server_quit = 138,
     vehicle_synchronization = 200,
     bullet_synchronization = 206,

@@ -138,9 +138,7 @@ auto plugin::gui::windows::kill_list::render() -> void {
     widgets::aligner::mode_t align_mode = window_configuration["align"];
 
     ImGui::SetNextWindowSize(get_window_size(show_title));
-    ImGui::SetNextWindowBgAlpha(0);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
-    ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoDecoration);
+    ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground);
     {
         if (show_title) {
             widgets::aligner(align_mode, bold_font->CalcTextSizeA(title_font_size, FLT_MAX, 0.0f, title_text).x)
@@ -171,7 +169,6 @@ auto plugin::gui::windows::kill_list::render() -> void {
         }
     }
     ImGui::End();
-    ImGui::PopStyleVar();
 }
 
 auto plugin::gui::windows::kill_list::create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t {
