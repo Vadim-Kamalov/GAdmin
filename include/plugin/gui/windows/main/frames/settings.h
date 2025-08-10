@@ -79,7 +79,7 @@ auto plugin::gui::windows::main::frames::settings::render_range(types::zstring_t
     if constexpr (std::is_integral_v<T>)
         ImGui::SliderInt(label, reinterpret_cast<int*>(value), range.first, range.second);
     else if constexpr (std::is_floating_point_v<T>)
-        ImGui::SliderFloat(label, reinterpret_cast<float*>(value), range.first, range.second);
+        ImGui::SliderScalar(label, ImGuiDataType_Double, value, &range.first, &range.second, "%.3f");
 }
 
 #endif // GADMIN_PLUGIN_GUI_WINDOWS_MAIN_FRAMES_SETTINGS_H

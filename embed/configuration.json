@@ -257,6 +257,7 @@
 
     "internal": {
         "guide_hints": [],
-        "hotkeys": {}
+        "hotkeys": {},
+        "notes": []
     }
 }

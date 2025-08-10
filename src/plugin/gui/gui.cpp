@@ -7,6 +7,7 @@
 #include "plugin/gui/windows/interaction_area.h"
 #include "plugin/gui/windows/kill_list.h"
 #include "plugin/gui/windows/main/initializer.h"
+#include "plugin/gui/windows/notes.h"
 #include "plugin/gui/windows/notify.h"
 #include "plugin/gui/windows/player_checker.h"
 #include "plugin/gui/windows/players_nearby.h"
@@ -89,6 +90,7 @@ auto plugin::gui_initializer::on_initialize() -> void {
     registered_windows.push_back(windows::interaction_area::create(this));
     registered_windows.push_back(windows::release_information::create(this));
     registered_windows.push_back(windows::player_checker::create(this));
+    registered_windows.push_back(windows::notes::create(this));
 }
 
 auto plugin::gui_initializer::render() const -> void {

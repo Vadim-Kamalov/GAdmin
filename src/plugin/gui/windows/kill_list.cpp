@@ -1,5 +1,4 @@
 #include "plugin/gui/windows/kill_list.h"
-#include "imgui.h"
 #include "plugin/common_utils.h"
 #include "plugin/gui/widgets/aligner.h"
 #include "plugin/gui/widgets/text.h"

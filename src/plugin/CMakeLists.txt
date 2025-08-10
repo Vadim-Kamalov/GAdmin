@@ -45,17 +45,7 @@ include(${CMAKE_SOURCE_DIR}/cmake/compile_flags.cmake)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include)
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "gadmin" SUFFIX ".dll")
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_26)
-target_link_libraries(${PROJECT_NAME} PRIVATE
-    d3d9
-    d3dx9
-    kthook
-    gdi32
-    dwmapi
-    common
-    dbghelp
-    nlohmann_json::nlohmann_json
-    ctre::ctre
-)
+target_link_libraries(${PROJECT_NAME} PRIVATE ${LIBRARIES_LINKAGE})
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     PROJECT_REPOSITORY="${PROJECT_REPOSITORY}"

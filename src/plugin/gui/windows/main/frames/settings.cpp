@@ -261,13 +261,13 @@ plugin::gui::windows::main::frames::settings::settings(types::not_null<initializ
                           std::make_any<nlohmann::ordered_json&>(section));
     }
 
-    submenu.set_frame_renderer([this](const std::string_view& label, std::any& payload) {
+    submenu.set_frame_renderer([this](std::string& label, std::any& payload) {
         std::size_t pos = label.find("##");
 
         [[assume(pos != std::string_view::npos)]];
         
-        std::string name = std::string(label.substr(0, pos));
-        std::string key = std::string(label.substr(pos + 2));
+        std::string name = label.substr(0, pos);
+        std::string key = label.substr(pos + 2);
 
         gui::widgets::text(bold_font, section_title_font_size, 0, "{}", name);
         ImGui::PushFont(regular_font, common_text_size);

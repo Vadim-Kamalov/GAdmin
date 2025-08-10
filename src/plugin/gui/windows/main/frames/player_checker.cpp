@@ -45,7 +45,7 @@ auto plugin::gui::windows::main::frames::player_checker::render_description_hint
 auto plugin::gui::windows::main::frames::player_checker::render_left_group(float width) -> void {
     float child_height = (ImGui::GetContentRegionAvail().y - ImGui::GetTextLineHeightWithSpacing()) / 1.5f;
 
-    ImGui::BeginChild("players_online", { width, child_height }, ImGuiChildFlags_AlwaysUseWindowPadding);
+    ImGui::BeginChild("players_online", { width, child_height }, ImGuiChildFlags_AlwaysUseWindowPadding, child->window_flags);
     {
         static constexpr types::zstring_t title_text = "Игроки онлайн";
         ImVec2 title_text_size = bold_font->CalcTextSizeA(title_font_size, FLT_MAX, 0.0f, title_text);
@@ -101,7 +101,7 @@ auto plugin::gui::windows::main::frames::player_checker::render_left_group(float
 auto plugin::gui::windows::main::frames::player_checker::render_right_group(float width) -> void {
     float child_height = ImGui::GetContentRegionAvail().y - ImGui::GetStyle().ItemSpacing.y - bottom_button_height;
 
-    ImGui::BeginChild("players_added", { width, child_height }, ImGuiChildFlags_AlwaysUseWindowPadding);
+    ImGui::BeginChild("players_added", { width, child_height }, ImGuiChildFlags_AlwaysUseWindowPadding, child->window_flags);
     {
         static constexpr types::zstring_t title_text = "Чекер игроков";
         ImVec2 title_text_size = bold_font->CalcTextSizeA(title_font_size, FLT_MAX, 0.0f, title_text);
