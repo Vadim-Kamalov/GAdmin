@@ -121,7 +121,7 @@ auto plugin::gui::widgets::hint::render_as_guide(const std::string& label, bool 
         if (deleted || !optional_condition)
             return false;
 
-        if (now - timers[label] >= 5s) {
+        if (now - timers[label] >= 10s) {
             deleted_hints.push_back(label);
             return false;
         }

@@ -26,8 +26,7 @@ struct vector_3d final {
 template<>
 struct std::formatter<plugin::types::vector_3d> : std::formatter<std::string_view> {
     auto format(const plugin::types::vector_3d& vector, std::format_context& ctx) const {
-        return std::format_to(ctx.out(), "vector_3d {{ .x = {}, .y = {}, .z = {} }}",
-                              vector.x, vector.y, vector.z);
+        return std::format_to(ctx.out(), "X: {} | Y: {} | Z: {}", vector.x, vector.y, vector.z);
     }
 }; // struct std::formatter<plugin::types::vector_3d> : std::formatter<std::string_view>
 

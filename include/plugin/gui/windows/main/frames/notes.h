@@ -3,6 +3,7 @@
 
 #include "plugin/gui/windows/main/initializer.h"
 #include "plugin/gui/windows/main/base/frame.h"
+#include "plugin/gui/windows/main/widgets/binder_variables_popup.h"
 #include "plugin/gui/windows/main/widgets/submenu.h"
 #include "plugin/types/not_null.h"
 #include <nlohmann/json.hpp>
@@ -13,9 +14,10 @@ class notes final : public basic_frame {
 private:
     static constexpr float title_font_size = 24;
     static constexpr float common_font_size = 18;
-    static constexpr float remove_button_height = 30;
+    static constexpr float buttons_height = 30;
 
     types::not_null<initializer*> child;
+    widgets::binder_variables_popup popup;
     widgets::submenu submenu = widgets::submenu("Заметки##frames::notes");
 
     ImFont* bold_font = nullptr;

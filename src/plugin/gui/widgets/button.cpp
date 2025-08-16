@@ -13,7 +13,7 @@ auto plugin::gui::widgets::button::render() -> bool {
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
     types::color button_color = ImGui::GetColorU32(ImGuiCol_Button);
-    types::color button_active = ImGui::GetColorU32(ImGuiCol_ButtonActive);
+    types::color button_active = ImGui::GetColorU32(ImGuiCol_ButtonActive, it.alpha);
     types::color hovered_color = ImGui::GetColorU32(ImGuiCol_ButtonHovered, it.border_alpha / 255.0f);
 
     float rounding = ImGui::GetStyle().FrameRounding;
@@ -57,7 +57,7 @@ auto plugin::gui::widgets::button::render() -> bool {
             if (std::chrono::steady_clock::now() >= it.click_time + durations[1])
                 it.alpha = animation::bring_to(it.alpha, 0.00, it.click_time + durations[1], durations[2]);
         
-            draw_list->AddCircleFilled(*it.click_position, it.radius, *types::color(button_active, it.alpha * 255), 0xFF);
+            draw_list->AddCircleFilled(*it.click_position, it.radius, *button_active, 0xFF);
         }
         draw_list->PopClipRect();    
 

@@ -115,6 +115,8 @@ public:
 }; // class key_bind final
 
 class hotkey final {
+public:
+    using callback_t = std::function<void(hotkey&)>;
 private:
     static constexpr float fonts_size = 18;
     static inline const std::vector<std::string> hint_settings = {
@@ -127,6 +129,7 @@ private:
     bool tick_state = false;
     bool hint_active = false;
     bool already_registered = false;
+    bool rendering_in_settings = true;
 
     std::chrono::steady_clock::time_point tick_time;
     
@@ -139,16 +142,16 @@ private:
 public: 
     static constexpr ImVec2 default_button_size = { 100, 30 };
     
-    using callback_t = std::function<void(hotkey&)>;
-    
     std::string label = "";
     key_bind bind;
     callback_t callback = [](hotkey&) {};
 
+    inline auto can_render_in_settings() const -> bool;
     auto render(const ImVec2& size = default_button_size) -> void;
     
     inline auto with_callback(callback_t new_callback) -> hotkey&;
     inline auto with_handler(hotkey_handler* new_handler) -> hotkey&;
+    inline auto without_rendering_in_settings() -> hotkey&;
 
     explicit hotkey(const std::string_view& label, const key_bind& bind);
 
@@ -211,6 +214,10 @@ constexpr auto plugin::gui::key_bind::empty() const -> bool {
     return keys.first == 0 && keys.second == 0;
 }
 
+inline auto plugin::gui::hotkey::can_render_in_settings() const -> bool {
+    return rendering_in_settings;
+}
+
 inline auto plugin::gui::hotkey::with_callback(callback_t new_callback) -> hotkey& {
     callback = new_callback;
     return *this;
@@ -218,6 +225,11 @@ inline auto plugin::gui::hotkey::with_callback(callback_t new_callback) -> hotke
 
 inline auto plugin::gui::hotkey::with_handler(hotkey_handler* new_handler) -> hotkey& {
     handler = new_handler;
+    return *this;
+}
+
+inline auto plugin::gui::hotkey::without_rendering_in_settings() -> hotkey& {
+    rendering_in_settings = false;
     return *this;
 }
 

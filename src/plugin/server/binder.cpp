@@ -1,29 +1,21 @@
 #include "plugin/server/binder.h"
-#include "plugin/server/spectator.h"
 #include "plugin/samp/core/user.h"
 #include <spanstream>
 #include <sstream>
-
-std::unordered_map<std::string, plugin::server::binder::variable_replacement_t> plugin::server::binder::variables = {
-    { "SPECTATOR_ID", [](const auto& params) {
-        std::string replacement = (params.size() > 0) ? params[0] : "N/A";
-        return (spectator::is_active()) ? std::to_string(spectator::id) : replacement;
-    }},
-
-    { "USER_ID", [](auto) { return std::to_string(samp::user::get_id()); }}
-}; // std::unordered_map<std::string, plugin::server::binder::variable_replacement_t> plugin::server::binder::variables
 
 auto plugin::server::binder::process_variable_body(const std::string_view& input) -> std::string {
     if (input.empty() || !std::isalpha(input[0]))
         return "";
     
-    std::string variable_name;
+    std::string variable_name = "";
     std::size_t index = 0;
 
     while (index < input.length() && (std::isalpha(input[index]) || input[index] == '_'))
         variable_name.push_back(input[index++]);
 
-    auto it = variables.find(variable_name.c_str());
+    auto it = std::find_if(variables.begin(), variables.end(), [variable_name](const variable_t& variable) {
+        return variable.name == variable_name;
+    });
 
     if (it == variables.end())
         return "";
@@ -32,7 +24,7 @@ auto plugin::server::binder::process_variable_body(const std::string_view& input
         index++;
 
     if (index >= input.length() || input[index] != ',')
-        return it->second({});
+        return it->callback({});
 
     std::vector<std::string> params;
     std::ispanstream stream(input.substr(++index));
@@ -43,7 +35,7 @@ auto plugin::server::binder::process_variable_body(const std::string_view& input
         params.push_back(param);
     }
  
-    return it->second(params);
+    return it->callback(params);
 }
 
 auto plugin::server::binder::process(const std::string_view& input) -> std::string {

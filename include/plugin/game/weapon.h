@@ -56,4 +56,11 @@ static constexpr types::zstring_t weapon_names[std::to_underlying(weapon::parach
 
 } // namespace plugin::game
 
+template<>
+struct std::formatter<plugin::game::weapon> : std::formatter<std::string_view> {
+    auto format(const plugin::game::weapon& weapon, std::format_context& ctx) const {
+        return std::format_to(ctx.out(), "{}", plugin::game::weapon_names[std::to_underlying(weapon)]);
+    }
+}; // struct std::formatter<plugin::server::spectator::platform_t> : std::formatter<std::string_view>
+
 #endif // GADMIN_PLUGIN_GAME_UTILS_H

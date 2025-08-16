@@ -29,6 +29,7 @@ private:
 
     struct note_information_t final {
         float width = 0.0f;
+        std::string processed_text;
         widgets::aligner title_aligner;
         widgets::aligner::mode_t align_mode;
     }; // struct note_information_t final

@@ -42,6 +42,7 @@ set(LIBRARIES_LINKAGE
     dwmapi
     common
     dbghelp
+    rpcrt4
     nlohmann_json::nlohmann_json
     ctre::ctre
 )

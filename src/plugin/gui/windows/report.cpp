@@ -20,8 +20,6 @@
 #include <ranges>
 
 auto plugin::gui::windows::report::get_action_buttons() -> std::array<action_button, 12> {
-    static constexpr std::array<std::chrono::milliseconds, 3> close_button_duration = { 200ms, 0ms, 0ms };
-    
     std::array<action_button, 12> output;
     std::string id = std::format("##{}", get_id());
     
@@ -35,22 +33,22 @@ auto plugin::gui::windows::report::get_action_buttons() -> std::array<action_but
     ImVec2 corner_button_size = { window_width / max_buttons_per_line - padding.x, button_height }; 
     ImVec2 middle_button_size = { window_width / max_buttons_per_line - spacing.x * 2, button_height };
 
-    output[0] = { widgets::button("Следить" + id, corner_button_size).with_durations(close_button_duration),
+    output[0] = { widgets::button("Следить" + id, corner_button_size),
                   std::bind(&report::send_response, this, dialog_option::spectate) };
 
-    output[1] = { widgets::button("Удалить" + id, middle_button_size).with_durations(close_button_duration),
+    output[1] = { widgets::button("Удалить" + id, middle_button_size),
                   std::bind(&report::send_input_response, this, dialog_option::remove) };
 
-    output[2] = { widgets::button("Поставить метку" + id, corner_button_size).with_durations(close_button_duration),
+    output[2] = { widgets::button("Поставить метку" + id, corner_button_size),
                   std::bind(&report::send_response, this, dialog_option::set_map_point) };
     
     output[3] = { widgets::button("Отправить в /a чат" + id, corner_button_size),
                   std::bind(&report::send_chat_action_button, this) };
     
-    output[4] = { widgets::button("Заблокировать репорт" + id, middle_button_size).with_durations(close_button_duration),
+    output[4] = { widgets::button("Заблокировать репорт" + id, middle_button_size),
                   std::bind(&report::block_action_button, this) };
 
-    output[5] = { widgets::button("Передать репорт" + id, corner_button_size).with_durations(close_button_duration),
+    output[5] = { widgets::button("Передать репорт" + id, corner_button_size),
                   std::bind(&report::send_response, this, dialog_option::return_to_administration) };
 
     for (int i = 6; i < output.size(); i++) {
@@ -332,11 +330,11 @@ auto plugin::gui::windows::report::render() -> void {
                     ImGui::SameLine();
             }
 
-            auto close_button = widgets::button("Ответить##windows::report", { ImGui::GetContentRegionAvail().x, answer_button_height })
-                .with_durations({ 200ms, 0ms, 0ms });
-
-            if (close_button.render() && can_send_response())
+            if (widgets::button("Ответить##windows::report", { ImGui::GetContentRegionAvail().x, answer_button_height })
+                    .render() && can_send_response())
+            {
                 send_input_response(dialog_option::answer);
+            }
         }
         ImGui::PopFont();
 
@@ -347,10 +345,9 @@ auto plugin::gui::windows::report::render() -> void {
                 float full_width = ImGui::GetContentRegionAvail().x;
                
                 for (std::uint8_t index = 0; index < std::size(block_time_options); index++) {
-                    auto button = widgets::button(std::to_string(block_time_options[index]) + " минут##block_time_selection", { full_width, 25 })
-                        .with_durations({ 200ms, 0ms, 0ms });
-
-                    if (button.render()) {
+                    if (widgets::button(std::to_string(block_time_options[index]) + " минут##block_time_selection", { full_width, 25 })
+                                .render())
+                    {
                         current_response = { dialog_option::block, answer_input, index };
                         ImGui::CloseCurrentPopup();
                         close_dialog();
@@ -358,7 +355,6 @@ auto plugin::gui::windows::report::render() -> void {
                 }
             
                 if (widgets::button("Закрыть##block_time_selection", { full_width, 30 })
-                        .with_durations({ 200ms, 0ms, 0ms })
                         .render())
                 {
                     ImGui::CloseCurrentPopup();

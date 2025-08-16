@@ -2,16 +2,19 @@
 #include "plugin/gui/widgets/text.h"
 #include "plugin/game/game.h"
 #include "plugin/plugin.h"
+#include "plugin/server/binder.h"
 #include <ranges>
 
 auto plugin::gui::windows::notes::get_note_information(const note_t& note) const -> note_information_t {
+    note_information_t information = { .processed_text = server::binder::process(note.text) };
+    
     float title_width = bold_font->CalcTextSizeA(note.title_size, FLT_MAX, 0.0f, note.title.c_str()).x
         + text_border_size * 2;
 
-    float text_width = regular_font->CalcTextSizeA(note.text_size, FLT_MAX, 0.0f, note.text.c_str()).x
+    float text_width = regular_font->CalcTextSizeA(note.text_size, FLT_MAX, 0.0f, information.processed_text.c_str()).x
         + text_border_size * 2;
 
-    note_information_t information = { title_width };
+    information.width = title_width;
 
     if (information.width < text_width)
         information.width = text_width;
@@ -38,7 +41,7 @@ auto plugin::gui::windows::notes::render_note(const note_t& note, const std::str
         note_information.title_aligner.align_next_item();
         widgets::text(bold_font, note.title_size, text_border_size, "{}", note.title);
         
-        std::stringstream stream(note.text);
+        std::stringstream stream(note_information.processed_text);
         
         for (std::string line; std::getline(stream, line);) {
             float line_width = regular_font->CalcTextSizeA(note.text_size, FLT_MAX, 0.0f, line.c_str()).x

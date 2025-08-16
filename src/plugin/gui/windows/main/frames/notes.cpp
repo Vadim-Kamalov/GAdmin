@@ -56,7 +56,7 @@ auto plugin::gui::windows::main::frames::notes::on_entry_destroyed(std::size_t i
     notes.erase(index);
 }
 
-auto plugin::gui::windows::main::frames::notes::frame_renderer(std::string& label, std::any& payload) -> void {
+auto plugin::gui::windows::main::frames::notes::frame_renderer(std::string& label, std::any&) -> void {
     nlohmann::json& notes = (*configuration)["internal"]["notes"];
     nlohmann::json& note = notes[submenu.get_current_entry_index()];
     
@@ -64,6 +64,7 @@ auto plugin::gui::windows::main::frames::notes::frame_renderer(std::string& labe
     ImGui::PushFont(regular_font, common_font_size);
     {
         std::string current_string_index = std::to_string(submenu.get_current_entry_index());
+        float full_width = ImGui::GetContentRegionAvail().x;
 
         render_editable_title(label, note["title"].get_ref<std::string&>());
         
@@ -75,13 +76,17 @@ auto plugin::gui::windows::main::frames::notes::frame_renderer(std::string& labe
         render_align_setting(note["align_mode"]);
         gui::widgets::text(bold_font, common_font_size, 0, "Текст заметки");
 
-        ImVec2 region_avail = ImGui::GetContentRegionAvail();
-        region_avail.y -= remove_button_height + ImGui::GetStyle().ItemSpacing.y;
+        if (gui::widgets::button("Вставить переменную##frames::notes", { full_width, buttons_height }).render())
+            popup.open();
 
-        ImGui::InputTextMultiline("##text", &note["text"].get_ref<std::string&>(), region_avail);
+        std::string* text = &note["text"].get_ref<std::string&>();
+        float input_height = ImGui::GetContentRegionAvail().y - buttons_height - ImGui::GetStyle().ItemSpacing.y;
+
+        popup.set_inserter(text);
+        ImGui::InputTextMultiline("##text", text, { full_width, input_height });
 
         if (gui::widgets::button("Удалить##frames::notes-" + current_string_index,
-                                 { region_avail.x, remove_button_height }).render())
+                                 { full_width, buttons_height }).render())
         {
             submenu.remove_current_entry_animated();
         }
@@ -99,6 +104,7 @@ auto plugin::gui::windows::main::frames::notes::add_callback() -> void {
 }
 
 auto plugin::gui::windows::main::frames::notes::render() -> void {
+    popup.render();
     submenu.render_menu(child);
     ImGui::SameLine();
     submenu.render_current_frame(child);
@@ -106,6 +112,7 @@ auto plugin::gui::windows::main::frames::notes::render() -> void {
 
 plugin::gui::windows::main::frames::notes::notes(types::not_null<initializer*> child)
     : child(child),
+      popup("frames::notes", child),
       bold_font(child->child->fonts->bold),
       regular_font(child->child->fonts->regular)
 {

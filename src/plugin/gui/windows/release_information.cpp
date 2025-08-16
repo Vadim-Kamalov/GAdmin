@@ -89,7 +89,6 @@ auto plugin::gui::windows::release_information::render() -> void {
         widgets::markdown(parsed_information->body, child->fonts->bold).render();
 
         if (widgets::button("Закрыть##windows::release_information", { ImGui::GetContentRegionAvail().x, 30 })
-                .with_durations({ 200ms, 0ms, 0ms })
                 .render() && !closing)
         {
             close_window();

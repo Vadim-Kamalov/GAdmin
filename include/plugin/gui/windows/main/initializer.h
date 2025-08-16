@@ -31,6 +31,7 @@ public:
 
     inline auto get_id() const -> types::zstring_t override;
 
+    auto on_event(const samp::event_info& event) -> bool override;
     auto render() -> void override;
 
     explicit initializer(types::not_null<gui_initializer*> child);

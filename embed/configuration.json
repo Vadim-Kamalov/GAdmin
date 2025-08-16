@@ -258,6 +258,26 @@
     "internal": {
         "guide_hints": [],
         "hotkeys": {},
-        "notes": []
+        "notes": [],
+        "binds": [
+            {
+                "command_name": "gg",
+                "text": "/ans ${{ SELECT, 1 }} Приятной игры!",
+                "title": "/gg",
+                "uuid": "##99983c6c-bb1f-4b67-a30a-5d209bca9d5f"
+            },
+            {
+                "command_name": "asp",
+                "text": "/a Взял на слежку ${{ SELECT, 1 }} ID.\n/sp ${{ SELECT, 1 }}",
+                "title": "/asp",
+                "uuid": "##3d921752-1cba-442b-81b8-2abff3bdbc68"
+            },
+            {
+                "command_name": "sph",
+                "text": "/aspawn ${{ SELECT, 1 }}\n/aheal ${{ SELECT, 1 }}",
+                "title": "/aspawn + /aheal",
+                "uuid": "##39c0ae51-b02f-441e-9199-1755b96b3816"
+            }
+        ]
     }
 }

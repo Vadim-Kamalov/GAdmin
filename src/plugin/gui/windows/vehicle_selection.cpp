@@ -185,8 +185,7 @@ auto plugin::gui::windows::vehicle_selection::render() -> void {
                                 : entries[i];
 
                             float width = ImGui::GetContentRegionAvail().x - ImGui::GetStyle().FrameBorderSize - window_padding.x;
-                            auto create_button = widgets::button(std::format("{}[ID: {}]", item.name, item.id), { width, create_button_height })
-                                .with_durations({ 200ms, 0ms, 0ms });
+                            auto create_button = widgets::button(std::format("{}[ID: {}]", item.name, item.id), { width, create_button_height });
 
                             if (create_button.render()) {
                                 samp::input::send_command("/veh {} {} {}", item.id, colors[0], colors[1]);
@@ -202,8 +201,7 @@ auto plugin::gui::windows::vehicle_selection::render() -> void {
             ImGui::EndChild();
         
             ImVec2 create_button_size = { ImGui::GetWindowWidth() - window_padding.x * 2, create_button_height };
-            auto create_button = widgets::button("Отмена##windows::vehicle_selection", create_button_size)
-                .with_durations({ 200ms, 0ms, 0ms });
+            auto create_button = widgets::button("Отмена##windows::vehicle_selection", create_button_size);
 
             if (create_button.render())
                 close_window();

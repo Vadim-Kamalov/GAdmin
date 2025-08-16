@@ -50,6 +50,16 @@ auto plugin::gui::windows::main::initializer::handle_window_moving() -> void {
     ImGui::SetWindowPos(get_id(), window_pos);
 }
 
+auto plugin::gui::windows::main::initializer::on_event(const samp::event_info& event) -> bool {
+    for (const auto& frame : frames) {
+        event.stream->reset_read_pointer();
+        if (!frame->on_event(event))
+            return false;
+    }
+
+    return true;
+}
+
 auto plugin::gui::windows::main::initializer::render() -> void {
     screen_size = game::get_screen_resolution();
     window_padding = ImGui::GetStyle().WindowPadding;

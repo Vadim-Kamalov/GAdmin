@@ -8,6 +8,7 @@
 #include "plugin/server/spectator.h"
 #include "plugin/server/user.h"
 #include "plugin/plugin.h"
+#include "plugin/string_utils.h"
 
 auto plugin::gui::key_bind::to_string() const -> std::string {
     std::deque<std::string> output;
@@ -90,7 +91,11 @@ auto plugin::gui::hotkey::hint_renderer() -> void {
     float window_width = std::max(ImGui::GetWindowWidth(), 200.0f);
     float item_full_width = window_width - ImGui::GetStyle().WindowPadding.x * 2;
 
-    widgets::text(bold_font, fonts_size, 0, "{}", label);
+    std::string new_label = string_utils::truncate_until_hashtag(label);
+
+    if (!new_label.empty())
+        widgets::text(bold_font, fonts_size, 0, "{}", label);
+    
     ImGui::BeginGroup();
     {
         widgets::text(bold_font, fonts_size, 0, "Клавиши:");
@@ -380,5 +385,5 @@ auto plugin::gui::hotkey_handler::on_event(unsigned int message, WPARAM wparam, 
 
 auto plugin::gui::hotkey_handler::add(hotkey& hotkey) -> void {
     log::info("hotkey \"{}\" initialized: key_bind = 0x{:08X}", hotkey.label, hotkey.bind.join());
-    pool.push_back(hotkey.with_handler(this));
+    pool.push_back(std::move(hotkey.with_handler(this)));
 }

@@ -26,7 +26,7 @@ auto plugin::gui::windows::main::widgets::submenu::render_entry(std::size_t inde
         }
     }
 
-    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, entry.alpha);
+    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, entry.alpha * ImGui::GetStyle().Alpha);
     {
         if (gui::widgets::button(entry.label + "##submenu::" + std::to_string(index), size).render()
             && index != future_entry_index)
