@@ -66,6 +66,11 @@ auto plugin::gui::style::apply() noexcept -> void {
     style.Colors[ImGuiCol_TabActive] = overlay[2];
     style.Colors[ImGuiCol_SliderGrab] = surface[1];
     style.Colors[ImGuiCol_SliderGrabActive] = surface[1];
+    style.Colors[ImGuiCol_TableBorderLight] = overlay[2];
+    style.Colors[ImGuiCol_TableBorderStrong] = overlay[2];
+    style.Colors[ImGuiCol_TableHeaderBg] = surface[1];
+    style.Colors[ImGuiCol_TableRowBg] = surface[0];
+    style.Colors[ImGuiCol_TableRowBgAlt] = surface[0];
     style.Colors[ImGuiCol_ResizeGrip] = none;
     style.Colors[ImGuiCol_ResizeGripActive] = none;
     style.Colors[ImGuiCol_ResizeGripHovered] = none;

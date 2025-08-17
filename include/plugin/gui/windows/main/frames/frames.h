@@ -34,7 +34,7 @@ static constexpr types::zstring_t icon_list[frames_count] = {
     ICON_USERS,                 ///< frame::player_checker
     ICON_WINDOW,                ///< frame::windows_customization
     ICON_DATA,                  ///< frame::logs
-    ICON_BOOK,                  ///< frame::server_information
+    ICON_TABLE,                 ///< frame::server_information
     ICON_NOTEBOOK,              ///< frame::binder
     ICON_NOTE,                  ///< frame::notes
     ICON_CHART_BAR_VERTICAL01,  ///< frame::statistics
