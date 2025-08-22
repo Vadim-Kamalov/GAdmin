@@ -22,6 +22,7 @@ public:
     std::uint16_t killed_id = id_none;
     std::uint8_t reason = 0xFF;
 
+    auto to_string() const -> std::string;
     auto get_reason() const -> std::string;
 
     explicit event(bit_stream* stream);

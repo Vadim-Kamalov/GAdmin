@@ -6,10 +6,8 @@
 #include "plugin/gui/windows/main/initializer.h"
 #include "plugin/gui/windows/main/base/frame.h"
 #include "plugin/gui/windows/main/widgets/binder_variables_popup.h"
-#include "plugin/gui/windows/main/widgets/popup.h"
 #include "plugin/gui/windows/main/widgets/submenu.h"
 #include "plugin/samp/events/send_command.h" // IWYU pragma: keep
-#include "plugin/server/binder.h"
 #include "plugin/types/not_null.h"
 #include <nlohmann/json.hpp>
 
