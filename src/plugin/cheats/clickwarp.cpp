@@ -1,3 +1,23 @@
+/// GAdmin - Plugin simplifying the work of administrators on the Gambit-RP
+/// Copyright (C) 2024-2025 The Contributors.
+///
+/// This program is free software: you can redistribute it and/or modify
+/// it under the terms of the GNU General Public License as published by
+/// the Free Software Foundation, either version 3 of the License, or
+/// (at your option) any later version.
+///
+/// This program is distributed in the hope that it will be useful,
+/// but WITHOUT ANY WARRANTY; without even the implied warranty of
+/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+/// GNU General Public License for more details.
+///
+/// You should have received a copy of the GNU General Public License
+/// along with this program. If not, see <https://www.gnu.org/licenses/>.
+///
+/// SPDX-License-Identifier: GPL-3.0-only
+
+/// @brief Implements the clickwarp cheat functionality.
+
 #include "plugin/cheats/clickwarp.h"
 #include "plugin/game/camera.h"
 #include "plugin/game/game.h"
@@ -11,11 +31,14 @@
 #include "plugin/game/cursor.h"
 #include <sstream>
 
+/// @brief Stops the process of selecting a place for teleportation.
 auto plugin::cheats::clickwarp::stop_selecting_place() -> void {
     selecting_place_to_warp = false;
     teleport_information = {};
 }
 
+/// @brief Handles login state changes for clickwarp.
+/// @param state The new login state.
 auto plugin::cheats::clickwarp::on_alogin_new_state(bool state) -> void {
     if (state || !selecting_place_to_warp)
         return;
@@ -23,6 +46,9 @@ auto plugin::cheats::clickwarp::on_alogin_new_state(bool state) -> void {
     stop_selecting_place();
 }
 
+/// @brief Handles events for clickwarp.
+/// @param message The message code.
+/// @return True if the event was handled, false otherwise.
 auto plugin::cheats::clickwarp::on_event(unsigned int message, WPARAM wparam, LPARAM lparam) -> bool {
     bool use = (*configuration)["cheats"]["clickwarp"];
 
@@ -62,6 +88,8 @@ auto plugin::cheats::clickwarp::on_event(unsigned int message, WPARAM wparam, LP
     return true;
 }
 
+/// @brief Renders the clickwarp interface.
+/// @param child The GUI initializer.
 auto plugin::cheats::clickwarp::render(types::not_null<gui_initializer*> child) -> void {
     if (!selecting_place_to_warp)
         return;

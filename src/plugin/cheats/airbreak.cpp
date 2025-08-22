@@ -1,3 +1,23 @@
+/// GAdmin - Plugin simplifying the work of administrators on the Gambit-RP
+/// Copyright (C) 2024-2025 The Contributors.
+///
+/// This program is free software: you can redistribute it and/or modify
+/// it under the terms of the GNU General Public License as published by
+/// the Free Software Foundation, either version 3 of the License, or
+/// (at your option) any later version.
+///
+/// This program is distributed in the hope that it will be useful,
+/// but WITHOUT ANY WARRANTY; without even the implied warranty of
+/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+/// GNU General Public License for more details.
+///
+/// You should have received a copy of the GNU General Public License
+/// along with this program. If not, see <https://www.gnu.org/licenses/>.
+///
+/// SPDX-License-Identifier: GPL-3.0-only
+
+
+/// @brief Implements the airbreak cheat functionality.
 #include "plugin/cheats/airbreak.h"
 #include "plugin/game/camera.h"
 #include "plugin/game/pad.h"
@@ -10,6 +30,8 @@
 #include "plugin/server/spectator.h"
 #include <cmath>
 
+/// @brief Callback for the airbreak hotkey.
+/// @param hotkey The hotkey object that triggered the callback.
 auto plugin::cheats::airbreak::hotkey_callback(gui::hotkey& hotkey) -> void {
     auto cheat_configuration = (*configuration)["cheats"]["airbreak"];
     
@@ -42,11 +64,16 @@ auto plugin::cheats::airbreak::hotkey_callback(gui::hotkey& hotkey) -> void {
     gui::notify::send(gui::notification(notify_title, notify_description, ICON_INFO));
 }
 
+/// @brief Calculates heading from XY coordinates.
+/// @param x The horizontal component.
+/// @return The calculated heading in degrees (0-360).
 auto plugin::cheats::airbreak::get_heading_from_xy(float x, float y) const -> float {
     float deg = std::atan2(y, x) * (180.0f / std::numbers::pi) - 90.0f;
     return (deg > 0.0f) ? deg : deg + 360.0f;
 }
 
+/// @brief Handles login state changes for airbreak.
+/// @param state The new login state.
 auto plugin::cheats::airbreak::on_alogin_new_state(bool state) -> void {
     if (state || !cheat_active)
         return;
@@ -67,10 +94,13 @@ auto plugin::cheats::airbreak::on_alogin_new_state(bool state) -> void {
     game::pad::set_player_enter_vehicle(false);
 }
 
+/// @brief Registers hotkeys for airbreak.
+/// @param handler The hotkey handler to register with.
 auto plugin::cheats::airbreak::register_hotkeys(types::not_null<gui::hotkey_handler*> handler) -> void {
     handler->add(hotkey);
 }
 
+/// @brief Main loop for airbreak cheat.
 auto plugin::cheats::airbreak::main_loop() -> void {
     if (!cheat_active)
         return;
@@ -129,6 +159,7 @@ auto plugin::cheats::airbreak::main_loop() -> void {
         coords.z -= speed / 2.0f;
 }
 
+/// @brief Constructor for airbreak cheat.
 plugin::cheats::airbreak::airbreak() {
     hotkey = gui::hotkey("Переключить AirBreak", gui::key_bind({ 'Z', 0 }, { .alt = true }, gui::bind_condition::on_alogin))
         .with_callback(std::bind(&airbreak::hotkey_callback, this, std::placeholders::_1));
