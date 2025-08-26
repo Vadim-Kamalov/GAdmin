@@ -46,7 +46,7 @@ static constexpr types::zstring_t label_list[frames_count] = {
     "Настройки",        ///< frame::settings
     "Горячие клавиши",  ///< frame::key_binds
     "Чекер игроков",    ///< frame::player_checker
-    "Настройка окон",   ///< frame::windows_customization
+    "Оформление окон",  ///< frame::windows_customization
     "Логи",             ///< frame::logs
     "Таблицы",          ///< frame::server_information
     "Биндер",           ///< frame::binder

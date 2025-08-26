@@ -104,8 +104,9 @@ private:
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(insert_button, name, insert);
 public:
     inline auto get_id() const -> types::zstring_t override;
-    static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
+    inline auto get_name() const -> types::zstring_t override;
 
+    static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
     auto render() -> void override;
     auto on_event(const samp::event_info& event) -> bool override;
 
@@ -116,6 +117,10 @@ public:
 
 inline auto plugin::gui::windows::report::get_id() const -> types::zstring_t {
     return "windows::report";
+}
+
+inline auto plugin::gui::windows::report::get_name() const -> types::zstring_t {
+    return "Репорт (/greport)";
 }
 
 #endif // GADMIN_PLUGIN_GUI_WINDOWS_REPORT_H

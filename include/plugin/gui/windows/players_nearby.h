@@ -37,8 +37,9 @@ private:
     auto get_window_information() const -> information_t;
 public:
     inline auto get_id() const -> types::zstring_t override;
-    static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
+    inline auto get_name() const -> types::zstring_t override;
 
+    static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
     auto render() -> void override;
 
     explicit players_nearby(types::not_null<gui_initializer*> child)
@@ -61,6 +62,10 @@ NLOHMANN_JSON_SERIALIZE_ENUM(players_nearby::sort_option_t, {
 
 inline auto plugin::gui::windows::players_nearby::get_id() const -> types::zstring_t {
     return "windows::players_nearby";
+}
+
+inline auto plugin::gui::windows::players_nearby::get_name() const -> types::zstring_t {
+    return "Игроки рядом";
 }
 
 #endif // GADMIN_PLUGIN_GUI_WINDOWS_PLAYERS_NEARBY_H

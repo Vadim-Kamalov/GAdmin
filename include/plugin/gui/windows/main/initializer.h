@@ -30,6 +30,7 @@ public:
     ImVec2 window_size = default_window_size;
 
     inline auto get_id() const -> types::zstring_t override;
+    inline auto get_name() const -> types::zstring_t override;
 
     auto on_event(const samp::event_info& event) -> bool override;
     auto render() -> void override;
@@ -43,6 +44,10 @@ auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
 
 inline auto plugin::gui::windows::main::initializer::get_id() const -> types::zstring_t {
     return "windows::main::initializer";
+}
+
+inline auto plugin::gui::windows::main::initializer::get_name() const -> types::zstring_t {
+    return "Текущее окно";
 }
 
 #endif // GADMIN_PLUGIN_GUI_WINDOWS_MAIN_INITIALIZER_H

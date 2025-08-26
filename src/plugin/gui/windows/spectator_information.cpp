@@ -58,18 +58,18 @@ auto plugin::gui::windows::spectator_information::vehicle_information_custom_ren
         return render_centered_text("Недоступно", regular_font, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
 
     std::string engine = "Заглушен", doors = "Открыты";
-    ImVec4 engine_color = ImGui::ColorConvertU32ToFloat4(*style::accent_colors.red);
-    ImVec4 doors_color = ImGui::ColorConvertU32ToFloat4(*style::accent_colors.green);
+    ImVec4 engine_color = ImGui::ColorConvertU32ToFloat4(*style::get_current_accent_colors().red);
+    ImVec4 doors_color = ImGui::ColorConvertU32ToFloat4(*style::get_current_accent_colors().green);
     ImVec2 text_size = regular_font->CalcTextSizeA(fonts_size, FLT_MAX, 0, std::format("{} / {}", engine, doors).c_str());
 
     if (vehicle.is_engine_active()) {
         engine = "Заведен";
-        engine_color = ImGui::ColorConvertU32ToFloat4(*style::accent_colors.green);
+        engine_color = ImGui::ColorConvertU32ToFloat4(*style::get_current_accent_colors().green);
     }
 
     if (vehicle.is_locked()) {
         doors = "Закрыты";
-        doors_color = ImGui::ColorConvertU32ToFloat4(*style::accent_colors.red);
+        doors_color = ImGui::ColorConvertU32ToFloat4(*style::get_current_accent_colors().red);
     }
 
     ImGui::PushFont(regular_font, fonts_size);
@@ -135,7 +135,7 @@ auto plugin::gui::windows::spectator_information::nickname_custom_renderer(const
     }) != admins.end();
 
     render_centered_text(text, regular_font, ImGui::ColorConvertU32ToFloat4(
-        (spectating_administrator) ? *style::accent_colors.red : *color));
+        (spectating_administrator) ? *style::get_current_accent_colors().red : *color));
     
     widgets::hint::render_as_guide("Красный цвет означает, что вы следите\nза администратором.", spectating_administrator);
 }
@@ -174,12 +174,12 @@ auto plugin::gui::windows::spectator_information::get_rows() const -> std::vecto
         
         row("Пинг", std::to_string(information.ping), [=] {
             if (information.ping >= 130)
-                return style::accent_colors.red;
+                return style::get_current_accent_colors().red;
             
             if (information.ping >= 80)
-                return style::accent_colors.yellow;
+                return style::get_current_accent_colors().yellow;
 
-            return style::accent_colors.green;
+            return style::get_current_accent_colors().green;
         }),
 
         row("Платформа", std::format("{}", server::spectator::platform)),
@@ -198,14 +198,14 @@ auto plugin::gui::windows::spectator_information::get_rows() const -> std::vecto
 
         row("Тек./макс. скорость", std::format("{} / {}", information.move_speed_current, information.move_speed_max), [=] -> types::color {
             if (server::spectator::player.get_vehicle().is_available() && information.move_speed_current > information.move_speed_max)
-                return style::accent_colors.red;
+                return style::get_current_accent_colors().red;
 
             return ImGui::GetColorU32(ImGuiCol_Text);
         }),
 
         row("Выстрелы/попадания", std::format("{} / {}", information.total_shots, information.hit_shots), [=] -> types::color {
             if (information.total_shots != 0 && information.total_shots == information.hit_shots)
-                return style::accent_colors.red;
+                return style::get_current_accent_colors().red;
 
             return ImGui::GetColorU32(ImGuiCol_Text);
         }),

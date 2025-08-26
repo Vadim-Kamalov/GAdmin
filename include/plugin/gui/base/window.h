@@ -48,6 +48,10 @@ public:
     /// @brief Window configuration: the window's ID.
     /// @return Window's ID.
     virtual inline auto get_id() const -> types::zstring_t;
+    
+    /// @brief Window configuration: the window's name.
+    /// @return Window's name.
+    virtual inline auto get_name() const -> types::zstring_t;
 
     /// @brief Window configuration: if the window should render when the game is paused.
     /// @return True if the window should render on game pause, false otherwise.
@@ -92,6 +96,10 @@ using window_ptr_t = std::unique_ptr<window>;
 
 inline auto plugin::gui::window::get_id() const -> types::zstring_t {
     return "<unknown window>";
+}
+
+inline auto plugin::gui::window::get_name() const -> types::zstring_t {
+    return "Неизвестное окно";
 }
 
 inline auto plugin::gui::window::render_on_game_paused() const -> bool {

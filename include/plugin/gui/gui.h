@@ -5,15 +5,18 @@
 #include "plugin/gui/fonts.h"
 #include "plugin/gui/hotkey.h"
 #include <minwindef.h>
-#include <vector>
 
 namespace plugin {
 
 class gui_initializer final {
 private:
-    std::vector<gui::window_ptr_t> registered_windows;
-    int cursor_last_x = -1, cursor_last_y = 1;
+    int cursor_last_x = -1;
+    int cursor_last_y = -1;
+
+    auto push_window_customization(const std::string_view& id) const -> std::uint8_t;
+    auto pop_window_customization(std::uint8_t times) const -> void;
 public:
+    std::deque<gui::window_ptr_t> registered_windows;
     std::unique_ptr<gui::fonts_initializer> fonts;
     std::unique_ptr<gui::hotkey_handler> hotkey_handler;
 

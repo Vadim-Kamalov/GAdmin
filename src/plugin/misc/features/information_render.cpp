@@ -34,7 +34,7 @@ auto plugin::misc::features::information_render::render_cars_information(ImDrawL
         bool vehicle_locked = vehicle.is_locked();
         bool engine_active = vehicle.is_engine_active();
         types::color default_color = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_Text]);
-        types::color status_color[2] = { gui::style::accent_colors.green, gui::style::accent_colors.red, };
+        types::color status_color[2] = { gui::style::get_current_accent_colors().green, gui::style::get_current_accent_colors().red, };
 
         std::deque<text_object> objects_on_first_line = {
             { "HP: ", default_color, bold_font },
@@ -119,7 +119,7 @@ auto plugin::misc::features::information_render::render(types::not_null<gui_init
             if (!admin.has_value())
                 continue;
 
-            types::color text_color = *gui::style::accent_colors.red;
+            types::color text_color = *gui::style::get_current_accent_colors().red;
             ImVec2 text_size = font->CalcTextSizeA(admin_configuration.font_size, FLT_MAX, 0.0f, admin->nickname.c_str());
             ImVec2 pos = { pos_x - text_size.x / 2, pos_y + y_offset };
 

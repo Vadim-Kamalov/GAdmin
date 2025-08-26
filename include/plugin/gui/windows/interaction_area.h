@@ -79,8 +79,9 @@ private:
     static consteval auto get_longest_action_description() noexcept -> types::zstring_t;
 public:
     inline auto get_id() const -> types::zstring_t override;
-    static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
+    inline auto get_name() const -> types::zstring_t override;
 
+    static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
     auto render() -> void override;
 
     explicit interaction_area(types::not_null<gui_initializer*> child);
@@ -109,6 +110,10 @@ consteval auto plugin::gui::windows::interaction_area::get_longest_action_descri
 
 inline auto plugin::gui::windows::interaction_area::get_id() const -> types::zstring_t {
     return "windows::interaction_area";
+}
+
+inline auto plugin::gui::windows::interaction_area::get_name() const -> types::zstring_t {
+    return "Круговое меню";
 }
 
 #endif // GADMIN_PLUGIN_GUI_WINDOWS_INTERACTION_AREA_H

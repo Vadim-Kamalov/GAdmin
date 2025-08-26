@@ -65,8 +65,9 @@ private:
     auto send_status_notification(const status_notification_t& notification) const -> void;
 public:
     inline auto get_id() const -> types::zstring_t override;
-    static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
+    inline auto get_name() const -> types::zstring_t override;
 
+    static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
     auto on_event(const samp::event_info& event) -> bool override;
     auto render() -> void override;
 
@@ -80,6 +81,10 @@ public:
 
 inline auto plugin::gui::windows::player_checker::get_id() const -> types::zstring_t {
     return "windows::player_checker";
+}
+
+inline auto plugin::gui::windows::player_checker::get_name() const -> types::zstring_t {
+    return "Чекер игроков";
 }
 
 #endif // GADMIN_PLUGIN_GUI_WINDOWS_PLAYER_CHECKER_H

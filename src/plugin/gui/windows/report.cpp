@@ -318,7 +318,7 @@ auto plugin::gui::windows::report::render() -> void {
                 send_input_response(dialog_option::answer);
             }
 
-            widgets::hint("Поле ответа не должно быть пустым", style::accent_colors.red)
+            widgets::hint("Поле ответа не должно быть пустым", style::get_current_accent_colors().red)
                 .with_condition([this] { return std::chrono::steady_clock::now() - time_hint_active < 5s; })
                 .render();
             

@@ -72,25 +72,18 @@ auto plugin::gui::windows::main::initializer::render() -> void {
         window_pos = ImGui::GetWindowPos();
         
         auto& frame_selector = widgets::frame_selector::instance(this);
-        ImU32 child_bg_color = ImGui::GetColorU32(ImGuiCol_ChildBg);
-        ImU32 window_bg_color = ImGui::GetColorU32(ImGuiCol_WindowBg);
 
         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, window_items_alpha / 255.0f);
         {
             ImGui::SetCursorPosX(frame_selector.state_width.first);
             ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, window_padding);
-            ImGui::PushStyleColor(ImGuiCol_ChildBg, window_bg_color);
-            ImGui::BeginChild("windows::main::active_frame", { 0, 0 }, ImGuiChildFlags_AlwaysUseWindowPadding, window_flags);
+            ImGui::BeginChild("windows::main::active_frame", { 0, 0 }, ImGuiChildFlags_AlwaysUseWindowPadding,
+                              window_flags | ImGuiWindowFlags_NoBackground);
             {
-                ImGui::PushStyleColor(ImGuiCol_ChildBg, child_bg_color);
-                {
-                    render_active_frame();
-                }
-                ImGui::PopStyleColor();
+                render_active_frame();
             }
             ImGui::EndChild();
             ImGui::PopStyleVar();
-            ImGui::PopStyleColor();
             frame_selector.render();
         }
         ImGui::PopStyleVar();

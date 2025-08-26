@@ -55,8 +55,9 @@ private:
     auto on_player_death_notification(const samp::event<samp::event_id::player_death_notification>& notification) -> bool;
 public:
     inline auto get_id() const -> types::zstring_t override;
-    static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
+    inline auto get_name() const -> types::zstring_t override;
 
+    static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
     auto render() -> void override;
     auto on_event(const samp::event_info& event) -> bool override;
 
@@ -70,6 +71,10 @@ public:
 
 inline auto plugin::gui::windows::kill_list::get_id() const -> types::zstring_t {
     return "windows::kill_list";
+}
+
+inline auto plugin::gui::windows::kill_list::get_name() const -> types::zstring_t {
+    return "Килл-лист";
 }
 
 #endif // GADMIN_PLUGIN_GUI_WINDOWS_KILL_LIST_H

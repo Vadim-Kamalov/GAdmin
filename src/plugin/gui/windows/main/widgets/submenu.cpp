@@ -38,6 +38,10 @@ auto plugin::gui::windows::main::widgets::submenu::render_entry(std::size_t inde
     ImGui::PopStyleVar();
 }
 
+auto plugin::gui::windows::main::widgets::submenu::get_total_entries() const -> std::size_t {
+    return entries.size();
+}
+
 auto plugin::gui::windows::main::widgets::submenu::get_current_entry_index() const -> std::size_t {
     return current_entry_index;
 }
@@ -119,7 +123,7 @@ auto plugin::gui::windows::main::widgets::submenu::render_menu(types::not_null<i
 
 auto plugin::gui::windows::main::widgets::submenu::render_current_frame(types::not_null<initializer*> child) -> void {
     auto now = std::chrono::steady_clock::now();
-    ImGuiWindowFlags flags = child->window_flags;
+    ImGuiWindowFlags flags = child->window_flags | ImGuiWindowFlags_NoBackground;
 
     if (now - time_clicked <= fade_in_out_duration) {
         bool change_animation_duration = (now - time_clicked >= fade_in_duration);
@@ -135,35 +139,25 @@ auto plugin::gui::windows::main::widgets::submenu::render_current_frame(types::n
                                           time_clicked, animation_duration);
     }
 
-    ImU32 child_bg_color = ImGui::GetColorU32(ImGuiCol_ChildBg);
-    ImU32 window_bg_color = ImGui::GetColorU32(ImGuiCol_WindowBg);
-
     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, frame_alpha * ImGui::GetStyle().Alpha);
-    ImGui::PushStyleColor(ImGuiCol_ChildBg, window_bg_color);
-    ImGui::PushStyleColor(ImGuiCol_ScrollbarBg, window_bg_color);
     ImGui::BeginChild((label + "::current_frame").c_str(), { 0, 0 }, ImGuiChildFlags_None, flags);
     {
-        ImGui::PushStyleColor(ImGuiCol_ChildBg, child_bg_color);
-        {
-            if (current_entry_index >= entries.size()) {
-                ImGui::PushFont(child->child->fonts->bold, empty_placeholder_font_size);
-                {
-                    ImVec2 text_size = ImGui::CalcTextSize(selected_empty_placeholder);
-                    ImVec2 region_size = ImGui::GetWindowSize();
-                    ImGui::SetCursorPos({ (region_size.x - text_size.x) / 2.0f, (region_size.y - text_size.y) / 2.0f });
-                    ImGui::TextDisabled("%s", selected_empty_placeholder);
-                }
-                ImGui::PopFont();
-            } else {
-                entry_t& entry = entries[current_entry_index];
-                frame_renderer(entry.label, entry.payload);
+        if (current_entry_index >= entries.size()) {
+            ImGui::PushFont(child->child->fonts->bold, empty_placeholder_font_size);
+            {
+                ImVec2 text_size = ImGui::CalcTextSize(selected_empty_placeholder);
+                ImVec2 region_size = ImGui::GetWindowSize();
+                ImGui::SetCursorPos({ (region_size.x - text_size.x) / 2.0f, (region_size.y - text_size.y) / 2.0f });
+                ImGui::TextDisabled("%s", selected_empty_placeholder);
             }
+            ImGui::PopFont();
+        } else {
+            entry_t& entry = entries[current_entry_index];
+            frame_renderer(entry.label, entry.payload);
         }
-        ImGui::PopStyleColor();
     }
     ImGui::EndChild();
     ImGui::PopStyleVar();
-    ImGui::PopStyleColor(2);
 }
 
 plugin::gui::windows::main::widgets::submenu::submenu(const std::string_view& label)

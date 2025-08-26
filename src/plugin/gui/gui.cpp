@@ -19,8 +19,28 @@
 #include "plugin/gui/windows/command_requester.h"
 #include "plugin/gui/windows/report.h"
 #include "plugin/server/spectator.h"
+#include "plugin/plugin.h"
+#include <ranges>
 #include <windows.h>
 #include <imgui.h>
+
+auto plugin::gui_initializer::push_window_customization(const std::string_view& id) const -> std::uint8_t {
+    nlohmann::json& entries = (*configuration)["internal"]["windows_customization"][id];
+
+    if (!entries.is_array())
+        return 0;
+
+    for (const auto& [ index, entry ] : entries | std::views::enumerate) {
+        ImVec4 value = { entry[0], entry[1], entry[2], entry[3] };
+        ImGui::PushStyleColor(gui::style::used_colors[index], value);
+    }
+
+    return entries.size();
+}
+
+auto plugin::gui_initializer::pop_window_customization(std::uint8_t times) const -> void {
+    ImGui::PopStyleColor(times);
+}
 
 auto plugin::gui_initializer::on_event(const samp::event_info& event) const -> bool {
     for (const auto& window : registered_windows) {
@@ -98,7 +118,12 @@ auto plugin::gui_initializer::render() const -> void {
         if (!window->can_render() || (game::is_menu_opened() && !window->render_on_game_paused()))
             continue;
 
+        std::uint8_t pop_times = push_window_customization(window->get_id());
+
         window->render();
+
+        if (pop_times != 0)
+            pop_window_customization(pop_times);
     }
 
 #ifndef NDEBUG

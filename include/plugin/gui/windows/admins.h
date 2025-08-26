@@ -36,8 +36,9 @@ private:
     auto get_window_information() const -> window_information_t;
 public:
     inline auto get_id() const -> types::zstring_t override;
+    inline auto get_name() const -> types::zstring_t override;
+
     static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
-    
     auto render() -> void override;
 
     explicit admins(types::not_null<gui_initializer*> child)
@@ -50,6 +51,10 @@ public:
 
 inline auto plugin::gui::windows::admins::get_id() const -> types::zstring_t {
     return "windows::admins";
+}
+
+inline auto plugin::gui::windows::admins::get_name() const -> types::zstring_t {
+    return "Администрация онлайн";
 }
 
 #endif // GADMIN_PLUGIN_GUI_WINDOWS_ADMINS_H

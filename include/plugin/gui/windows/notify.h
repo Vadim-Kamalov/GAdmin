@@ -26,8 +26,9 @@ private:
     auto render_notification(notification& item) const -> void;
 public:
     inline auto get_id() const -> types::zstring_t override;
+    inline auto get_name() const -> types::zstring_t override;
+ 
     static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
-
     auto render() -> void override;
 
     explicit notify(types::not_null<gui_initializer*> child);
@@ -40,6 +41,10 @@ private:
 
 inline auto plugin::gui::windows::notify::get_id() const -> types::zstring_t {
     return "windows::notify";
+}
+
+inline auto plugin::gui::windows::notify::get_name() const -> types::zstring_t {
+    return "Оповещения";
 }
 
 #endif // GADMIN_PLUGIN_GUI_WINDOWS_NOTIFY_H

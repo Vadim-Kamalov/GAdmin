@@ -23,8 +23,9 @@ private:
     static auto get_keycaps(const samp::synchronization_type& type) noexcept -> std::vector<widgets::keycap>;
 public:
     inline auto get_id() const -> types::zstring_t override;
-    static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
+    inline auto get_name() const -> types::zstring_t override;
 
+    static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
     auto render() -> void override;
 
     explicit spectator_keys(types::not_null<gui_initializer*> child)
@@ -35,6 +36,10 @@ public:
 
 inline auto plugin::gui::windows::spectator_keys::get_id() const -> types::zstring_t {
     return "windows::spectator_keys";
+}
+
+inline auto plugin::gui::windows::spectator_keys::get_name() const -> types::zstring_t {
+    return "Клавиши в /sp";
 }
 
 template<plugin::samp::synchronization_key key>

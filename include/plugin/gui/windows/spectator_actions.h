@@ -18,8 +18,9 @@ public:
     }; // struct button final
     
     inline auto get_id() const -> types::zstring_t override;
+    inline auto get_name() const -> types::zstring_t override;
+    
     static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
-
     auto render() -> void override;
 
     explicit spectator_actions(types::not_null<gui_initializer*> child)
@@ -33,6 +34,10 @@ auto from_json(const nlohmann::json& json, spectator_actions::button& button) ->
 
 inline auto plugin::gui::windows::spectator_actions::get_id() const -> types::zstring_t {
     return "windows::spectator_actions";
+}
+
+inline auto plugin::gui::windows::spectator_actions::get_name() const -> types::zstring_t {
+    return "Действия в /sp";
 }
 
 #endif // GADMIN_PLUGIN_GUI_WINDOWS_SPECTATOR_ACTIONS_H

@@ -41,8 +41,9 @@ private:
     auto render_note(const note_t& note, const std::string& id) const -> void;
 public:
     inline auto get_id() const -> types::zstring_t override;
-    static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
+    inline auto get_name() const -> types::zstring_t override;
 
+    static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
     auto render() -> void override;
 
     explicit notes(types::not_null<gui_initializer*> child)
@@ -55,6 +56,10 @@ public:
 
 inline auto plugin::gui::windows::notes::get_id() const -> types::zstring_t {
     return "windows::notes";
+}
+
+inline auto plugin::gui::windows::notes::get_name() const -> types::zstring_t {
+    return "Заметки";
 }
 
 #endif // GADMIN_PLUGIN_GUI_WINDOWS_NOTES_H

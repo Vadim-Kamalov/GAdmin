@@ -180,9 +180,8 @@ auto plugin::gui::hotkey::render(const ImVec2& size) -> void {
         .with_renderer(std::bind(&hotkey::hint_renderer, this))
         .render();
 
-    widgets::hint("Эти клавиши уже используются другим биндом.\nПодсказка: чтобы отменить смену клавиш - нажмите ESC.##" + label, style::accent_colors.red)
-        .with_condition([this] { return already_registered; })
-        .render();
+    widgets::hint("Эти клавиши уже используются другим биндом.\nПодсказка: чтобы отменить смену клавиш - нажмите ESC.##" + label,
+                  style::get_current_accent_colors().red).with_condition([this] { return already_registered; }).render();
 }
 
 plugin::gui::hotkey::hotkey(const std::string_view& label, const key_bind& default_bind) : label(std::move(label)) {

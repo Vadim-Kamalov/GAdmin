@@ -75,8 +75,9 @@ private:
     auto on_server_message(const samp::event<samp::event_id::server_message>& event) -> bool;
 public:
     inline auto get_id() const -> types::zstring_t override;
+    inline auto get_name() const -> types::zstring_t override;
+    
     static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
-
     auto render() -> void override;
     auto on_event(const samp::event_info& event) -> bool override;
 
@@ -87,6 +88,10 @@ public:
 
 inline auto plugin::gui::windows::command_requester::get_id() const -> types::zstring_t {
     return "windows::command_requester";
+}
+
+inline auto plugin::gui::windows::command_requester::get_name() const -> types::zstring_t {
+    return "Запрос формы";
 }
 
 #endif // GADMIN_PLUGIN_GUI_WINDOWS_COMMAND_REQUESTER_H

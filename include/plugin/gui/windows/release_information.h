@@ -45,8 +45,9 @@ private:
     auto close_window() -> void;
 public:
     inline auto get_id() const -> types::zstring_t override;
-    static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
+    inline auto get_name() const -> types::zstring_t override;
 
+    static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
     auto render() -> void override;
 
     explicit release_information(types::not_null<gui_initializer*> child);
@@ -56,6 +57,10 @@ public:
 
 inline auto plugin::gui::windows::release_information::get_id() const -> types::zstring_t {
     return "windows::release_information";
+}
+
+inline auto plugin::gui::windows::release_information::get_name() const -> types::zstring_t {
+    return "Информация о релизе";
 }
 
 #endif // GADMIN_PLUGIN_GUI_WINDOWS_RELEASE_INFORMATION_H

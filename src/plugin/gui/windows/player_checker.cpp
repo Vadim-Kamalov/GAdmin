@@ -184,7 +184,7 @@ auto plugin::gui::windows::player_checker::render() -> void {
             {
                 if (window_information.render_configuration.show_offline) {
                     bool connected = (entry.id != id_none);
-                    types::color color = (connected) ? style::accent_colors.green : style::accent_colors.red;
+                    types::color color = (connected) ? style::get_current_accent_colors().green : style::get_current_accent_colors().red;
                     std::string text = std::format("[{}]", (connected) ? "ONLINE" : "OFFLINE");
 
                     ImGui::PushStyleColor(ImGuiCol_Text, *color);

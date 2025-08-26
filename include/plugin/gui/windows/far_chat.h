@@ -38,8 +38,9 @@ private:
     auto on_player_chat_bubble(const samp::event<samp::event_id::player_chat_bubble>& event) -> bool;
 public:
     inline auto get_id() const -> types::zstring_t override;
-    static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
+    inline auto get_name() const -> types::zstring_t override;
 
+    static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
     auto on_event(const samp::event_info& event) -> bool override;
     auto render() -> void override;
 
@@ -53,6 +54,10 @@ public:
 
 inline auto plugin::gui::windows::far_chat::get_id() const -> types::zstring_t {
     return "windows::far_chat";
+}
+
+inline auto plugin::gui::windows::far_chat::get_name() const -> types::zstring_t {
+    return "Дальний чат";
 }
 
 #endif // GADMIN_PLUGIN_GUI_WINDOWS_FAR_CHAT_H

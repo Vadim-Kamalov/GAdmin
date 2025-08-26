@@ -26,11 +26,11 @@ private:
     
     static constexpr float title_font_size = 24;
     static constexpr float empty_placeholder_font_size = 18;
-    static constexpr float child_default_width = 180;
+    static constexpr float child_default_width = 190;
     static constexpr float switch_button_default_height = 30;
 
     static constexpr float child_width_percent =
-        (child_default_width * 100.0f) / initializer::default_window_size.x; ///< 25%
+        (child_default_width * 100.0f) / initializer::default_window_size.x; ///< 23.75%
 
     static constexpr float switch_button_percent =
         (switch_button_default_height * 100.0f) / initializer::default_window_size.y; ///< 6%
@@ -60,7 +60,9 @@ private:
     auto get_next_available_entry_index() const -> std::size_t;
     auto render_entry(std::size_t index, entry_t& entry, const ImVec2& size) -> void;
 public:
+    auto get_total_entries() const -> std::size_t;
     auto get_current_entry_index() const -> std::size_t;
+
     auto add_entry(const std::string_view& label, const std::any& payload) -> void;
     auto add_entry_animated(const std::string_view& label, const std::any& payload) -> void;
     auto remove_current_entry_animated() -> void;

@@ -16,8 +16,6 @@
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
 
-/// @brief Implements the tracers cheat functionality.
-
 #include "plugin/cheats/tracers.h"
 #include "plugin/gui/icon.h"
 #include "plugin/gui/notify.h"
@@ -29,16 +27,11 @@
 #include "plugin/server/user.h"
 #include "plugin/types/color.h"
 
-/// @brief Callback for the tracers hotkey.
-/// @param hotkey The hotkey object that triggered the callback.
 auto plugin::cheats::tracers::hotkey_callback(gui::hotkey&) -> void {
     current_tracers.clear();
     gui::notify::send(gui::notification("Трассера удалены", "Трассера на экране успешно удалены!", ICON_INFO));
 }
 
-/// @brief Handles bullet synchronization events for tracers.
-/// @param synchronization The bullet synchronization packet.
-/// @return True if the event was handled, false otherwise.
 auto plugin::cheats::tracers::on_bullet_synchronization(const samp::packet<samp::event_id::bullet_synchronization>& synchronization)
     -> bool
 {
@@ -66,9 +59,6 @@ auto plugin::cheats::tracers::on_bullet_synchronization(const samp::packet<samp:
     return true;
 }
 
-/// @brief Handles events for tracers.
-/// @param event The SA-MP event information.
-/// @return True if the event was handled, false otherwise
 auto plugin::cheats::tracers::on_event(const samp::event_info& event) -> bool {
     if (event == samp::event_type::incoming_packet && event == samp::event_id::bullet_synchronization)
         return on_bullet_synchronization(event.create<samp::event_id::bullet_synchronization, samp::event_type::incoming_packet>());
@@ -76,8 +66,6 @@ auto plugin::cheats::tracers::on_event(const samp::event_info& event) -> bool {
     return true;
 }
 
-/// @brief Renders the tracers.
-/// @param child The GUI initializer
 auto plugin::cheats::tracers::render(types::not_null<gui_initializer*> child) -> void {
     if (current_tracers.empty() || game::is_menu_opened())
         return;
@@ -100,7 +88,9 @@ auto plugin::cheats::tracers::render(types::not_null<gui_initializer*> child) ->
             continue;
         }
 
-        types::color color = (it->miss) ? gui::style::accent_colors.red : gui::style::accent_colors.green;
+        types::color color = (it->miss)
+            ? gui::style::get_current_accent_colors().red
+            : gui::style::get_current_accent_colors().green;
 
         draw_list->AddLine({ origin_screen_x, origin_screen_y }, { target_screen_x, target_screen_y }, *color, 1);
         draw_list->AddCircleFilled({ target_screen_x + 1.5f, target_screen_y + 1.5f }, 3, *color, 16);
@@ -109,13 +99,10 @@ auto plugin::cheats::tracers::render(types::not_null<gui_initializer*> child) ->
     } 
 }
 
-/// @brief Registers hotkeys for tracers.
-/// @param handler The hotkey handler to register with
 auto plugin::cheats::tracers::register_hotkeys(types::not_null<gui::hotkey_handler*> handler) -> void {
     handler->add(hotkey);
 }
 
-/// @brief Constructor for tracers cheat.
 plugin::cheats::tracers::tracers() {
     hotkey = gui::hotkey("Удалить трассера", gui::key_bind({ 'C', 0 }, { .alt = true }, gui::bind_condition::on_alogin))
         .with_callback(std::bind(&tracers::hotkey_callback, this, std::placeholders::_1));
