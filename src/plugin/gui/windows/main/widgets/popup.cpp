@@ -30,7 +30,6 @@ auto plugin::gui::windows::main::widgets::popup::render(types::not_null<initiali
 
     ImGui::SetNextWindowPos(pos, ImGuiCond_Always, { 0.5f, 0.5f });
     ImGui::SetNextWindowSize(size);
-    ImGui::SetNextWindowFocus();
     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, window_alpha / 255.0f);
     ImGui::Begin(id.c_str(), nullptr, flags);
     {
@@ -40,7 +39,7 @@ auto plugin::gui::windows::main::widgets::popup::render(types::not_null<initiali
             ImGui::PushFont(child->child->fonts->bold);
             {
                 if (gui::widgets::button("Закрыть##widgets::popup::" + id, { ImGui::GetContentRegionAvail().x, close_button_height })
-                        .render() && window_alpha == 255.0f)
+                        .render())
                 {
                     close();
                 }

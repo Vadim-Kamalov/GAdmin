@@ -8,6 +8,7 @@
 #include "plugin/gui/windows/main/widgets/popup.h"
 #include "plugin/types/not_null.h"
 #include <nlohmann/json.hpp>
+#include <unordered_map>
 #include <deque>
 #include <thread>
 
@@ -27,6 +28,8 @@ private:
         NLOHMANN_DEFINE_TYPE_INTRUSIVE(user_theme_t, name, author, theme);
     }; // struct user_theme_t final
 
+    std::unordered_map<std::string, ImVec4> color_pool;
+
     types::not_null<initializer*> child;
     widgets::submenu submenu = widgets::submenu("Оформление окон##frames::windows_customization");
     widgets::popup popup = widgets::popup("frames::windows_customization::popup");
@@ -40,9 +43,9 @@ private:
 
     static auto get_windows_customization() -> nlohmann::json&;
 
-    auto render_color_edit(types::zstring_t label, const std::string& id, nlohmann::json& setter) const -> void;
-    auto render_accent_color_edit(types::zstring_t label, const std::string& id) const -> void;
-    auto render_interface_color_edit(types::zstring_t label, const std::string& id, std::size_t index) const -> void;
+    auto render_color_edit(types::zstring_t label, const std::string& id, nlohmann::json& setter) -> void;
+    auto render_accent_color_edit(types::zstring_t label, const std::string& id) -> void;
+    auto render_interface_color_edit(types::zstring_t label, const std::string& id, std::size_t index) -> void;
     auto render_global_theme_frame() -> void;
     
     auto update_color_edit_values(const std::string_view& id, std::size_t index, const ImVec4& value) const -> void;

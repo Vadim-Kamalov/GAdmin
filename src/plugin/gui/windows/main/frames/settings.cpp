@@ -181,10 +181,8 @@ auto plugin::gui::windows::main::frames::settings::render_color(const std::strin
 
         ImGui::BeginGroup();
         {
-            std::string hexadecimal_color = std::format("{:02X}{:02X}{:02X}",
-                static_cast<std::uint8_t>(vector_color.x * 255.0f),
-                static_cast<std::uint8_t>(vector_color.y * 255.0f),
-                static_cast<std::uint8_t>(vector_color.z * 255.0f));
+            std::string hexadecimal_color = std::format("{:02X}{:02X}{:02X}", color.value.red,
+                                                        color.value.green, color.value.blue);
 
             ImGui::SetCursorScreenPos({ pos.x + frame_padding.x,
                     pos.y + (frame_height - ImGui::CalcTextSize(hexadecimal_color.c_str()).y) / 2.0f });
@@ -200,6 +198,7 @@ auto plugin::gui::windows::main::frames::settings::render_color(const std::strin
             ImVec2 rect_min = ImGui::GetItemRectMin();
             float frame_rounding = ImGui::GetStyle().FrameRounding;
 
+            color.value.alpha = ImGui::GetStyle().Alpha * 255.0f;
             draw_list->AddRect(pos, ImGui::GetItemRectMax(), *color, frame_rounding, ImDrawFlags_None, color_border_size);
             draw_list->AddRectFilled(rect_min, { rect_min.x + frame_rounding, rect_min.y + frame_height }, *color);
         }

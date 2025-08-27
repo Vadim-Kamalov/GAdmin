@@ -36,19 +36,7 @@ public:
     static const std::vector<ImGuiCol> used_colors;
     static const std::vector<std::string> colors_placeholders;
 private:
-    static inline theme_t current_theme = {
-        .interface_colors = {
-            .surface = { 0xFF241717, 0xFF2E1D1D },
-            .text = { 0xFFDEC2BA, 0xFF5A4745 },
-            .overlay = { 0xFF3F302F, 0xFF4E3E3C, 0xFF372A2A }
-        },
-        .accent_colors = {
-            .green = 0xFFA1E3A6,
-            .red = 0xFFA88BF3,
-            .yellow = 0xFFAEE2F9
-        }
-    }; // static inline theme_t current_theme
-
+    static inline theme_t current_theme;
     static inline std::unordered_map<ImGuiCol, ImVec4> global_colors;
 
     static auto apply_theme(ImGuiStyle& style, const theme_t& theme) noexcept -> void;

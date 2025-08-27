@@ -6,7 +6,6 @@
 #include "plugin/gui/gui.h"
 #include "plugin/plugin.h"
 #include <common/network.h>
-#include <unordered_map>
 #include <ranges>
 
 auto plugin::gui::windows::main::frames::windows_customization::get_windows_customization() -> nlohmann::json& {
@@ -14,10 +13,8 @@ auto plugin::gui::windows::main::frames::windows_customization::get_windows_cust
 }
 
 auto plugin::gui::windows::main::frames::windows_customization::render_color_edit(types::zstring_t label, const std::string& id,
-                                                                                  nlohmann::json& setter) const -> void
+                                                                                  nlohmann::json& setter) -> void
 {
-    static std::unordered_map<std::string, ImVec4> color_pool;
-
     if (!color_pool.contains(id))
         color_pool[id] = ImGui::ColorConvertU32ToFloat4(*setter.get<types::color>());
 
@@ -26,8 +23,8 @@ auto plugin::gui::windows::main::frames::windows_customization::render_color_edi
         ImVec4& selected_color = color_pool[id];
 
         if (ImGui::ColorEdit4(("##" + id).c_str(), reinterpret_cast<float*>(&selected_color), ImGuiColorEditFlags_NoInputs)) {
-            get_windows_customization() = nlohmann::json::object();
             setter = types::color(ImGui::ColorConvertFloat4ToU32(selected_color));
+            get_windows_customization().clear();
             style::apply_theme(style::get_saved_theme());
         }
 
@@ -38,13 +35,13 @@ auto plugin::gui::windows::main::frames::windows_customization::render_color_edi
 }
 
 auto plugin::gui::windows::main::frames::windows_customization::render_accent_color_edit(types::zstring_t label,
-                                                                                         const std::string& id) const -> void
+                                                                                         const std::string& id) -> void
 {
     render_color_edit(label, id, style::get_saved_theme()["accent_colors"][id]);
 }
 
 auto plugin::gui::windows::main::frames::windows_customization::render_interface_color_edit(types::zstring_t label, const std::string& id,
-                                                                                            std::size_t index) const -> void
+                                                                                            std::size_t index) -> void
 {
     render_color_edit(label, id + std::to_string(index), style::get_saved_theme()["interface_colors"][id][index]);
 }
@@ -239,9 +236,10 @@ auto plugin::gui::windows::main::frames::windows_customization::popup_renderer()
         if (gui::widgets::button("", "user_theme:" + user_theme.name, button_size).render()) {
             nlohmann::json& saved_theme = style::get_saved_theme();
 
-            get_windows_customization() = nlohmann::json::object();
-            saved_theme = user_theme.theme;
+            get_windows_customization().clear();
+            color_pool.clear();
 
+            saved_theme = user_theme.theme;
             style::apply_theme(saved_theme);
         }
 
