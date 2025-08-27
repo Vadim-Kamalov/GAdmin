@@ -1,3 +1,24 @@
+/// GAdmin - Plugin simplifying the work of administrators on the Gambit-RP
+/// Copyright (C) 2023-2025 The Contributors.
+///
+/// This program is free software: you can redistribute it and/or modify
+/// it under the terms of the GNU General Public License as published by
+/// the Free Software Foundation, either version 3 of the License, or
+/// (at your option) any later version.
+///
+/// This program is distributed in the hope that it will be useful,
+/// but WITHOUT ANY WARRANTY; without even the implied warranty of
+/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+/// GNU General Public License for more details.
+///
+/// You should have received a copy of the GNU General Public License
+/// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+///
+/// SPDX-License-Identifier: GPL-3.0-only
+/// 
+/// @file plugin/gui/windows/main/frames/server_information.h
+/// @brief Defines the server information frame in the GUI.
+
 #ifndef GADMIN_PLUGIN_GUI_WINDOWS_MAIN_FRAMES_SERVER_INFORMATION_H
 #define GADMIN_PLUGIN_GUI_WINDOWS_MAIN_FRAMES_SERVER_INFORMATION_H
 
@@ -10,6 +31,8 @@
 
 namespace plugin::gui::windows::main::frames {
 
+/// @class server_information
+/// @brief Represents the server information frame in the GUI.
 class server_information final : public basic_frame {
 public:
     enum class item_type : std::uint8_t {
@@ -40,8 +63,12 @@ private:
     auto render_map(const std::string& id, const nlohmann::json& config) const -> void;
     auto frame_renderer(std::string& label, std::any& payload) -> void;
 public:
+
+    /// @brief Renders the server information frame.
     auto render() -> void override;
 
+    /// @brief Constructor for the server information frame.
+    /// @param child The GUI initializer.
     explicit server_information(types::not_null<initializer*> child);
 }; // class server_information final : public basic_frame
 

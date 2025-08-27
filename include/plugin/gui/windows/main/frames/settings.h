@@ -1,3 +1,25 @@
+/// GAdmin - Plugin simplifying the work of administrators on the Gambit-RP
+/// Copyright (C) 2023-2025 The Contributors.
+///
+/// This program is free software: you can redistribute it and/or modify
+/// it under the terms of the GNU General Public License as published by
+/// the Free Software Foundation, either version 3 of the License, or
+/// (at your option) any later version.
+///
+/// This program is distributed in the hope that it will be useful,
+/// but WITHOUT ANY WARRANTY; without even the implied warranty of
+/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+/// GNU General Public License for more details.
+///
+/// You should have received a copy of the GNU General Public License
+/// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+///
+/// SPDX-License-Identifier: GPL-3.0-only
+/// 
+/// @file plugin/gui/windows/main/frames/settings.h
+/// @brief Defines the settings frame in the GU
+
+
 #ifndef GADMIN_PLUGIN_GUI_WINDOWS_MAIN_FRAMES_SETTINGS_H
 #define GADMIN_PLUGIN_GUI_WINDOWS_MAIN_FRAMES_SETTINGS_H
 
@@ -11,6 +33,8 @@
 
 namespace plugin::gui::windows::main::frames {
 
+/// @class settings
+/// @brief Represents the settings frame in the GUI.
 class settings final : public basic_frame {
 private:
     static constexpr float section_title_font_size = 24;
@@ -41,6 +65,7 @@ private:
     auto render_custom(const std::string_view& id, nlohmann::json& setter) const -> void;
     auto render_boolean(const std::string_view& label, nlohmann::ordered_json& config, bool& setter) const -> void;
 public:
+    /// @brief Enumeration of item types for settings.
     enum class item_type : std::uint8_t {
         subsection,
         custom,
@@ -52,8 +77,11 @@ public:
         color
     }; // enum class item_type : std::uint8_t
 
+    /// @brief Renders the settings frame.
     auto render() -> void override;
 
+    /// @brief Constructor for the settings frame.
+    /// @param child The GUI initializer.
     explicit settings(types::not_null<initializer*> child);
 }; // class settings final
 

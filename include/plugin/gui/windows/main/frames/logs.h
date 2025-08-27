@@ -1,3 +1,24 @@
+/// GAdmin - Plugin simplifying the work of administrators on the Gambit-RP
+/// Copyright (C) 2023-2025 The Contributors.
+///
+/// This program is free software: you can redistribute it and/or modify
+/// it under the terms of the GNU General Public License as published by
+/// the Free Software Foundation, either version 3 of the License, or
+/// (at your option) any later version.
+///
+/// This program is distributed in the hope that it will be useful,
+/// but WITHOUT ANY WARRANTY; without even the implied warranty of
+/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+/// GNU General Public License for more details.
+///
+/// You should have received a copy of the GNU General Public License
+/// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+///
+/// SPDX-License-Identifier: GPL-3.0-only
+/// 
+/// @file plugin/gui/windows/main/frames/logs.h
+/// @brief Defines the logs frame in the GUI.
+
 #ifndef GADMIN_PLUGIN_GUI_WINDOWS_MAIN_FRAMES_LOGS_H
 #define GADMIN_PLUGIN_GUI_WINDOWS_MAIN_FRAMES_LOGS_H
 
@@ -16,6 +37,8 @@
 
 namespace plugin::gui::windows::main::frames {
 
+/// @class logs
+/// @brief Represents the logs frame in the GUI.
 class logs final : public basic_frame {
 private:
     static constexpr float title_font_size = 24;
@@ -79,8 +102,14 @@ private:
     auto frame_renderer(std::string& label, std::any& payload) -> void;
 public:
     auto render() -> void override;
+
+    /// @brief Handles events for the logs frame.
+    /// @param event The SA-MP event information.
+    /// @return True if the event was handled, false otherwise.
     auto on_event(const samp::event_info& event) -> bool override;
 
+    /// @brief Constructor for the logs frame.
+    /// @param child The GUI initializer.
     explicit logs(types::not_null<initializer*> child);
 }; // class logs final
 

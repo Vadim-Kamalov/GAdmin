@@ -1,3 +1,25 @@
+/// GAdmin - Plugin simplifying the work of administrators on the Gambit-RP
+/// Copyright (C) 2023-2025 The Contributors.
+///
+/// This program is free software: you can redistribute it and/or modify
+/// it under the terms of the GNU General Public License as published by
+/// the Free Software Foundation, either version 3 of the License, or
+/// (at your option) any later version.
+///
+/// This program is distributed in the hope that it will be useful,
+/// but WITHOUT ANY WARRANTY; without even the implied warranty of
+/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+/// GNU General Public License for more details.
+///
+/// You should have received a copy of the GNU General Public License
+/// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+///
+/// SPDX-License-Identifier: GPL-3.0-only
+/// 
+/// @file plugin/gui/windows/main/frames/plugin_information.h
+/// @brief Defines the plugin information frame in the GUI.
+
+
 #ifndef GADMIN_PLUGIN_GUI_WINDOWS_MAIN_FRAMES_PLUGIN_INFORMATION_H
 #define GADMIN_PLUGIN_GUI_WINDOWS_MAIN_FRAMES_PLUGIN_INFORMATION_H
 
@@ -9,6 +31,8 @@
 
 namespace plugin::gui::windows::main::frames {
 
+/// @class plugin_information
+/// @brief Represents the plugin information frame in the GUI.
 class plugin_information final : public basic_frame {
 private:
     static constexpr std::uint8_t nickname_count_per_group = 4;
@@ -38,8 +62,11 @@ private:
     auto get_nicknames_information() const -> nicknames_information_t;
     auto render_centered_text(types::not_null<ImFont*> font, float font_size, types::zstring_t text) const -> void;
 public:
+    /// @brief Renders the plugin information frame.
     auto render() -> void override;
 
+    /// @brief Constructor for the plugin information frame.
+    /// @param child The GUI initializer.
     explicit plugin_information(types::not_null<initializer*> child)
         : child(child) {}
 }; // class plugin_information final
