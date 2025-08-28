@@ -15,9 +15,6 @@
 /// along with this program. If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-///
-/// @file include/plugin/gui/widgets/search.h
-/// @details Provides functionality for searching in the GUI.
 
 #ifndef GADMIN_PLUGIN_GUI_WIDGETS_SEARCH_H
 #define GADMIN_PLUGIN_GUI_WIDGETS_SEARCH_H
@@ -27,48 +24,54 @@
 
 namespace plugin::gui::widgets {
 
-/// @class search
-/// @brief Represents a search widget in the GUI.
+/// Represents a search widget in the GUI.
 class search final {
 private:
     std::string id = "";
     std::string buffer = "";
 public:
-    /// @brief Renders the search widget.
-    /// @param width The width of the search widget.
-    /// @param placeholder The placeholder text for the search widget.
+    /// Renders the search widget.
+    /// 
+    /// @param width[in]       Width of the input text, used in widget.
+    /// @param placeholder[in] Placeholder text for `ImGui::InputTextWithHint`.
     auto render(float width = 0, const std::string_view& placeholder = "") -> void;
     
-    /// @brief Clears current buffer of the search widget.
+    /// Clear current buffer.
     auto clear() -> void;
 
-    /// @brief Checks if the search buffer contains a specific text.
-    /// @param text The text to check for.
-    /// @return True if the search buffer contains the text, false otherwise
+    /// Check if the search's buffer contains a specific text.
+    /// 
+    /// @param text[in] Text to check for.
+    /// @return         True if the search's buffer contains the text.
     auto contains(const std::string_view& text) const -> bool;
 
-    /// @brief Checks if the search buffer is empty.
-    /// @return True if the search buffer is empty, false otherwise.
+    /// Check if the search's buffer is empty.
+    /// 
+    /// @return True if the search buffer is empty.
     auto empty() const -> bool;
 
-    /// @brief Checks if the search buffer contains formatted text.
-    /// @tparam Args The types of the arguments.
-    /// @param fmt The format string.
-    /// @param args The arguments to format.
-    /// @return True if the search buffer contains the formatted text, false otherwise.
+    /// Check if the search's buffer contains formatted text.
+    /// 
+    /// @tparam Args    Types of the arguments.
+    /// @param fmt[in]  Format string.
+    /// @param args[in] Arguments to format.
+    /// @return         True if the search's buffer contains the text.
     template<typename... Args>
     auto contains(std::format_string<Args...> fmt, Args&&... args) const -> bool;
 
-    /// @brief Get search widget's current text.
-    /// @return The buffer of a search widget.
+    /// Get search's buffer.
+    /// 
+    /// @return Current buffer.
     auto get_text() const -> std::string;
 
-    /// @brief Set search widget's current text.
-    /// @param text The new text to be set.
+    /// Set text in the search's buffer.
+    ///
+    /// @param text[in] New text to be set.
     auto set_text(const std::string_view& text) -> void;
 
-    /// @brief Constructor for the search widget.
-    /// @param id Search widget's ID.
+    /// Construct widget.
+    ///
+    /// @param id[in] Widget's ID.
     explicit search(const std::string_view& id)
         : id(std::move(id)) {}
 }; // class search final
@@ -79,6 +82,5 @@ template<typename... Args>
 auto plugin::gui::widgets::search::contains(std::format_string<Args...> fmt, Args&&... args) const -> bool {
     return contains(std::format(fmt, std::forward<Args>(args)...));
 }
-
 
 #endif // GADMIN_PLUGIN_GUI_WIDGETS_SEARCH_H

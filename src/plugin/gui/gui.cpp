@@ -141,7 +141,7 @@ auto plugin::gui_initializer::is_cursor_active() const -> bool {
 }
 
 auto plugin::gui_initializer::enable_cursor() -> void {
-    game::cursor::set_status(true);
+    game::cursor::set_state(true);
     
     if (cursor_last_x != -1 && cursor_last_y != -1)
         SetCursorPos(cursor_last_x, cursor_last_y);
@@ -150,7 +150,7 @@ auto plugin::gui_initializer::enable_cursor() -> void {
 auto plugin::gui_initializer::disable_cursor() -> void {
     POINT cursor_pos;
     
-    game::cursor::set_status(false);
+    game::cursor::set_state(false);
     GetCursorPos(&cursor_pos);
 
     cursor_last_x = cursor_pos.x;

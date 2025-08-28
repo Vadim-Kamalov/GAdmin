@@ -15,9 +15,6 @@
 /// along with this program. If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-///
-/// @file include/plugin/gui/widgets/hint.h
-/// @details Provides functionality for creating and managing GUI hints.
 
 #ifndef GADMIN_PLUGIN_GUI_WIDGETS_HINT_H
 #define GADMIN_PLUGIN_GUI_WIDGETS_HINT_H
@@ -33,12 +30,12 @@ using namespace std::chrono_literals;
 
 namespace plugin::gui::widgets {
 
-/// @class hint
-/// @brief Represents a GUI hint with customizable properties.
+/// Represents a GUI hint opened on the previous item after
+/// certain condition(s) with customizable properties.
 class hint final {
 public:
-    using condition_t = std::function<bool()>; ///< Condition to show for the current hint.
-    using renderer_t = std::function<void()>; ///< Render function for the current hint.
+    using condition_t = std::function<bool()>;  ///< Condition to show the hint.
+    using renderer_t = std::function<void()>;   ///< Render function for the hint.
 private:
     struct configuration_t final {
         float width;
@@ -62,37 +59,43 @@ private:
     auto default_renderer() const -> void;
     auto render_hint(float alpha) const -> void;
 public:
-    /// @brief Sets the condition for showing the hint.
-    /// @param new_condition The new condition to set.
-    /// @return Reference to the hint object.
+    /// Set the condition for showing the hint.
+    /// 
+    /// @param new_condition[in] New condition to set.
+    /// @return                  Reference to the hint object to allow construction be chain-called.
     inline auto with_condition(condition_t new_condition) noexcept -> hint&;
 
-    /// @brief Sets the show/hide duration for the hint.
-    /// @param duration The duration to set.
-    /// @return Reference to the hint object.
+    /// Set the show/hide duration for the hint.
+    /// 
+    /// @param duration[in] Duration to set.
+    /// @return             Reference to the hint object to allow construction be chain-called.
     inline auto with_show_hide_duration(std::chrono::milliseconds duration) noexcept -> hint&;
 
-    /// @brief Sets the renderer for the hint.
-    /// @param new_renderer The new renderer to set.
-    /// @return Reference to the hint object.
+    /// Set the renderer for the hint.
+    /// 
+    /// @param new_renderer[in] New renderer to set.
+    /// @return                 Reference to the hint object to allow construction be chain-called.
     inline auto with_renderer(renderer_t new_renderer) noexcept -> hint&;
 
-    /// @brief Renders the hint. 
+    /// Render the hint. 
     auto render() -> void;
 
-    /// @brief Renders the hint as a guide: it will be appeared only once until the configuration file is reset.
-    /// @param label The label of the hint.
-    /// @param optional_condition Optional condition for rendering the hint.
+    /// Render the hint as a guide: it will be appeared only once until the configuration file is reset.
+    /// 
+    /// @param label[in]              Label of the hint.
+    /// @param optional_condition[in] Optional condition for rendering the hint.
     static auto render_as_guide(const std::string& label, bool optional_condition = true) noexcept -> void;
 
-    /// @brief Constructor for the hint class.
-    /// @param label The label of the hint.
+    /// Construct the hint.
+    ///
+    /// @param label[in] Label of the hint.
     explicit hint(const std::string_view& label)
         : label(std::move(label)) {}
 
-    /// @brief Constructor for the hint class with a color.
-    /// @param label The label of the hint.
-    /// @param color The color of the hint.
+    /// Construct the hint with the new background color of it.
+    ///
+    /// @param label[in] Label of the hint.
+    /// @param color[in] Color of the hint.
     explicit hint(const std::string_view& label, const types::color& color)
         : label(std::move(label)), color(color) {}
 }; // class hint final

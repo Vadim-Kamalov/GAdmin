@@ -15,9 +15,6 @@
 /// along with this program. If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-///
-/// @file include/plugin/gui/widgets/toggle_button.h
-/// @details Provides functionality for rendering a toggle button in the GUI.
 
 #ifndef GADMIN_PLUGIN_GUI_WIDGETS_TOGGLE_BUTTON_H
 #define GADMIN_PLUGIN_GUI_WIDGETS_TOGGLE_BUTTON_H
@@ -32,10 +29,13 @@ using namespace std::chrono_literals;
 
 namespace plugin::gui::widgets {
 
-/// @class toggle_button
-/// @brief Represents a toggle button in the GUI.
+/// Represents a toggle button in the GUI.
 class toggle_button final {
 private:
+    static constexpr float radius = 6;
+    static constexpr ImVec2 size = { 40, 20 };
+    static constexpr std::chrono::milliseconds duration = 300ms;
+    
     struct configuration_t {
         std::chrono::steady_clock::time_point time;
         types::color color;
@@ -47,25 +47,24 @@ private:
     std::string label;
     types::setter<bool> state;
 public:
-    /// @brief Renders the toggle button.
-    /// @return The state of the toggle button.
+    /// Render the toggle button.
+    /// 
+    /// @return True if the button was clicked by the user.
     auto render() -> bool;
 
-    /// @brief Constructor for the toggle_button class.
-    /// @param label The label of the toggle button.
-    /// @param state The state of the toggle button.
+    /// Construct toggle button with a directly passed state by reference.
+    /// 
+    /// @param label[in] Label of the toggle button.
+    /// @param state[in] State of the toggle button.
     explicit toggle_button(const std::string_view& label, bool& state)
         : label(std::move(label)), state(state) {}
 
-    /// @brief Constructor for the toggle_button class with a setter.
-    /// @param label The label of the toggle button.
-    /// @param state The setter for the state of the toggle button.
+    /// Construct toggle button with a setter.
+    ///
+    /// @param label[in] Label of the toggle button.
+    /// @param state[in] Setter for the state of the toggle button.
     explicit toggle_button(const std::string_view& label, const types::setter<bool>& state)
         : label(std::move(label)), state(std::move(state)) {}
-private:
-    static constexpr float radius = 6;
-    static constexpr ImVec2 size = { 40, 20 };
-    static constexpr std::chrono::milliseconds duration = 300ms;
 }; // class toggle_button final
 
 } // namespace plugin::gui::widgets

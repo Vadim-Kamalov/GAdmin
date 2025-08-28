@@ -15,9 +15,6 @@
 /// along with this program. If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-///
-/// @file include/plugin/gui/widgets/keycap.h
-/// @details Provides functionality for rendering a keycap in the GUI.
 
 #ifndef GADMIN_PLUGIN_GUI_WIDGETS_KEYCAP_H
 #define GADMIN_PLUGIN_GUI_WIDGETS_KEYCAP_H
@@ -31,8 +28,7 @@
 
 namespace plugin::gui::widgets {
 
-/// @class keycap
-/// @brief Represents a keycap in the GUI.
+/// Represents a keycap in the GUI.
 class keycap final {
 private:
     std::string label;
@@ -43,17 +39,18 @@ private:
         bool state;
         types::color color;
         std::chrono::steady_clock::time_point time;
-    }; // struct configuration_t
+    }; // struct configuration_t final
 
     static inline std::unordered_map<std::string, configuration_t> pool;
 public:
-    /// @brief Renders the keycap.
+    /// Render the keycap.
     auto render() const -> void;
 
-    /// @brief Constructor for the keycap class.
-    /// @param label The label of the keycap.
-    /// @param size The size of the keycap.
-    /// @param state The state of the keycap.
+    /// Constructor for the keycap class.
+    /// 
+    /// @param label[in] Label of the keycap.
+    /// @param size[in]  Size of the keycap.
+    /// @param state[in] State of the keycap.
     explicit keycap(const std::string_view& label, const ImVec2& size, bool state)
         : label(std::move(label)), size(std::move(size)), state(state) {}
 }; // class keycap final

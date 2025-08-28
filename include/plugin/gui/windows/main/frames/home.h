@@ -15,9 +15,6 @@
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-/// 
-/// @file plugin/gui/windows/main/frames/home.h
-/// @brief Defines the home frame in the GUI.
 
 #ifndef GADMIN_PLUGIN_GUI_WINDOWS_MAIN_FRAMES_HOME_H
 #define GADMIN_PLUGIN_GUI_WINDOWS_MAIN_FRAMES_HOME_H
@@ -28,18 +25,16 @@
 
 namespace plugin::gui::windows::main::frames {
 
+/// Represents the home frame in the main window.
 class home final : public basic_frame {
-public:
-
-    /// @class home
-    /// @brief Represents the home frame in the GUI.
+private:
     types::not_null<initializer*> child;
-
-    /// @brief Renders the home frame.
+public:
     auto render() -> void override;
 
-    /// @brief Constructor for the home frame.
-    /// @param child The GUI initializer.
+    /// Construct the frame.
+    ///
+    /// @param child[in] Valid pointer to the main window.
     explicit home(types::not_null<initializer*> child)
         : child(child) {}
 }; // class home final

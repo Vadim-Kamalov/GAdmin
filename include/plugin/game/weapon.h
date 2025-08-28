@@ -15,9 +15,6 @@
 /// along with this program. If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-///
-/// @file include/plugin/game/weapon.h
-/// @details Provides enumerations and constants related to weapons in the game
 
 #ifndef GADMIN_PLUGIN_GAME_WEAPON_H
 #define GADMIN_PLUGIN_GAME_WEAPON_H
@@ -27,9 +24,8 @@
 
 namespace plugin::game {
 
-/// @enum weapon
-/// @brief Enumeration of weapon types.
-enum class weapon : char {
+/// All weapons in the game. Note that the game does not have weapons mapped to the 19, 20 and 21 IDs.
+enum class weapon : std::uint8_t {
     fist, brass_knuckles, golf_club, night_stick, knife,
     baseball_bat, shovel, pool_cue, katana, chainsaw,
     purple_dildo, white_dildo, white_vibrator,
@@ -40,9 +36,9 @@ enum class weapon : char {
     heat_seeker, flame_thrower, minigun, satchelcharge,
     detonator, spraycan, fire_extinguisher, camera,
     night_vision, thermal_vision, parachute
-}; // enum class weapon
+}; // enum class weapon : std::uint8_t
 
-/// @brief Names of weapon types.
+/// Names of all weapons in the game.
 static constexpr types::zstring_t weapon_names[std::to_underlying(weapon::parachute) + 1] = {
 	"Fist", "Brass Knuckles", "Golf Club", "Nightstick", "Knife", "Baseball Bat",
 	"Shovel", "Pool Cue", "Katana", "Chainsaw", "Purple Dildo", "Dildo", "Vibrator",

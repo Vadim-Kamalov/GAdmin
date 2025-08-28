@@ -18,7 +18,7 @@ private:
 public:
     static inline auto is_on_alogin() noexcept -> bool;
     static auto main_loop() -> void;
-    static auto set_alogin_status(bool status) -> void;
+    static auto set_alogin_state(bool state) -> void;
     static auto on_event(const samp::event_info& event) -> bool;
 }; // class user final
 

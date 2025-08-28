@@ -94,7 +94,7 @@ public:
     static inline std::chrono::steady_clock::time_point last_checked;
 
     static inline auto is_active() noexcept -> bool;
-    static inline auto set_status(bool status) noexcept -> void;
+    static inline auto set_state(bool state) noexcept -> void;
 
     static auto assign(std::uint16_t new_id) noexcept -> void;
     static auto get_information() noexcept -> spectator_information;
@@ -115,8 +115,8 @@ inline auto plugin::server::spectator::is_active() noexcept -> bool {
     return active && player.is_available() && user::is_on_alogin();
 }
 
-inline auto plugin::server::spectator::set_status(bool status) noexcept -> void {
-    active = status;
+inline auto plugin::server::spectator::set_state(bool state) noexcept -> void {
+    active = state;
 }
     
 template<plugin::server::spectator::menu_option option>

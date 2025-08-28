@@ -15,9 +15,6 @@
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-/// 
-/// @file plugin/gui/windows/main/frames/key_binds.h
-/// @brief Defines the key binds frame in the GUI.
 
 #ifndef GADMIN_PLUGIN_GUI_WINDOWS_MAIN_FRAMES_KEY_BINDS_H
 #define GADMIN_PLUGIN_GUI_WINDOWS_MAIN_FRAMES_KEY_BINDS_H
@@ -30,8 +27,7 @@
 
 namespace plugin::gui::windows::main::frames {
 
-/// @class key_binds
-/// @brief Represents the key binds frame in the GUI.
+/// Represents a frame in the main window that allows configuring hotkeys.
 class key_binds final : public basic_frame {
 private:
     static constexpr float title_font_size = 24;
@@ -49,11 +45,11 @@ private:
 
     auto get_buttons_size() -> ImVec2;
 public:
-    /// @brief Renders the key binds frame.
     auto render() -> void override;
 
-    /// @brief Constructor for the key binds frame.
-    /// @param child The GUI initializer.
+    /// Construct the frame.
+    ///
+    /// @param child[in] Valid pointer to the main window.
     explicit key_binds(types::not_null<initializer*> child)
         : child(child),
           bold_font(child->child->fonts->bold),

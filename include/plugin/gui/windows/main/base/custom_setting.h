@@ -16,9 +16,6 @@
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
 
-/// @file plugin/gui/windows/main/base/custom_setting.h
-/// @brief Defines the base class for custom settings in the GUI.
-
 #ifndef GADMIN_PLUGIN_GUI_WINDOWS_MAIN_BASE_CUSTOM_SETTING_H
 #define GADMIN_PLUGIN_GUI_WINDOWS_MAIN_BASE_CUSTOM_SETTING_H
 
@@ -29,24 +26,31 @@
 
 namespace plugin::gui::windows::main {
 
-/// @class basic_custom_setting
-/// @brief Base class for custom settings.
+/// Base class for custom settings.
+///
+/// In the main window, custom settings are used when the default methods are
+/// insufficient for configuring a specific object. A custom setting must handle
+/// both the rendering and configuration of the object passed to it.
+///
+/// @note ID of the custom setting must follow the format:
+///       `<subsection_key>.<setting_key>`, e.g., `report.insert_buttons`.
 class basic_custom_setting {
 public:
-    /// @brief virtual destructor.
     virtual ~basic_custom_setting() = default;
 
-    /// @brief Gets the ID of the setting.
-    /// @return The ID of the setting
+    /// Get the ID of the setting in `<subsection_key>.<setting_key>` format.
+    ///
+    /// @return ID of the setting
     virtual auto get_id() const -> types::zstring_t = 0;
 
-    /// @brief Renders the setting.
-    /// @param gui The GUI initializer.
-    /// @param setter The JSON object for setting values.
+    /// Render the setting.
+    /// 
+    /// @param gui[in]     Valid instance of the GUI initializer used to create window.
+    /// @param setter[out] JSON object for setting values.
     virtual auto render(types::not_null<gui_initializer*> gui, nlohmann::json& setter) -> void = 0;
 }; // class basic_custom_setting
 
-/// @brief Unique pointer type for custom setting objects.
+/// RAII pointer to the custom setting.
 using custom_setting_ptr_t = std::unique_ptr<basic_custom_setting>;
 
 } // namespace plugin::gui::windows::main

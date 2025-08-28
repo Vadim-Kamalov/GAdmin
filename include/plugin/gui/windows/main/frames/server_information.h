@@ -15,9 +15,6 @@
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-/// 
-/// @file plugin/gui/windows/main/frames/server_information.h
-/// @brief Defines the server information frame in the GUI.
 
 #ifndef GADMIN_PLUGIN_GUI_WINDOWS_MAIN_FRAMES_SERVER_INFORMATION_H
 #define GADMIN_PLUGIN_GUI_WINDOWS_MAIN_FRAMES_SERVER_INFORMATION_H
@@ -31,8 +28,7 @@
 
 namespace plugin::gui::windows::main::frames {
 
-/// @class server_information
-/// @brief Represents the server information frame in the GUI.
+/// Represents the server information frame in the main window.
 class server_information final : public basic_frame {
 public:
     enum class item_type : std::uint8_t {
@@ -63,12 +59,11 @@ private:
     auto render_map(const std::string& id, const nlohmann::json& config) const -> void;
     auto frame_renderer(std::string& label, std::any& payload) -> void;
 public:
-
-    /// @brief Renders the server information frame.
     auto render() -> void override;
 
-    /// @brief Constructor for the server information frame.
-    /// @param child The GUI initializer.
+    /// Construct the frame.
+    ///
+    /// @param child[in] Valid pointer to the main window.
     explicit server_information(types::not_null<initializer*> child);
 }; // class server_information final : public basic_frame
 

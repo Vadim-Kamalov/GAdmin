@@ -15,15 +15,6 @@
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-///
-/// @file include/plugin/cheats/base.h
-/// @brief Base interface for cheat modules
-/// @details Provides core interface that all cheat systems must implement:
-/// - Hotkey registration
-/// - Rendering
-/// - Main loop processing
-/// - Event handling
-/// - State management
 
 #ifndef GADMIN_PLUGIN_CHEATS_BASE_H
 #define GADMIN_PLUGIN_CHEATS_BASE_H
@@ -34,45 +25,55 @@
 
 namespace plugin::cheats {
 
-/// @class basic_cheat
-/// @brief Abstract base class for all cheat modules
-/// @details Serves as foundation for cheat implementations, providing:
-/// - Default implementations for optional functionality
-/// - Consistent interface for plugin system
-/// - Polymorphic behavior through virtual methods
+/// Base class for all cheat modules.
+///
+/// Serves as the base class for all cheat implementations, enabling:
+///     
+///     - Hotkey registration,
+///     - Background rendering,
+///     - SA:MP event handling,
+///     - Window's messages processing,
+///     - User authorization state management via `/alogin`.
+///
+/// Implementations must verify the user's `/alogin` state and check
+/// if the cheat is enabled in the configuration.
 class basic_cheat {
 public:
     virtual ~basic_cheat() = default;
 
-    /// @brief Registers hotkeys for the cheat module
-    /// @param handler Pointer to hotkey handler system
-    /// @note Base implementation does nothing (optional feature)
+    /// Register any hotkeys used in the cheat.
+    /// 
+    /// @param handler[in] Pointer to the hotkey handler.
     virtual auto register_hotkeys(types::not_null<gui::hotkey_handler*> handler) -> void {}
 
-    /// @brief Renders cheat-specific GUI elements
-    /// @param child GUI initializer reference
-    /// @note Base implementation does nothing (optional feature)
+    /// Render cheat-specific GUI elements. Must be called each frame.
+    /// 
+    /// @param child[in] Valid GUI initializer pointer.
     virtual auto render(types::not_null<gui_initializer*> child) -> void {}
+    
+    /// Main loop for the cheat.
     virtual auto main_loop() -> void {}
+
+    /// Process user's new state of the `/alogin`.
+    ///
+    /// @param state[in] New user's state of the /alogin.
     virtual auto on_alogin_new_state(bool state) -> void {}
 
-    /// @brief Processes SA-MP events
-    /// @param event SA-MP event information
-    /// @return true if event should continue processing, false to consume it
-    /// @note Base implementation allows all events through
+    /// Process SA:MP event.
+    /// 
+    /// @param event[in] SA-MP event information.
+    /// @return          Whether the event should continue processing.
     virtual auto on_event(const samp::event_info& event) -> bool { return true; }
 
-    /// @brief Processes Windows messages
-    /// @param message Windows message ID
-    /// @param wparam Message parameter
-    /// @param lparam Message parameter
-    /// @return true if message should continue processing, false to consume it
-    /// @note Base implementation allows all messages through
+    /// Process window's message.
+    ///
+    /// @param message[in]            Message ID.
+    /// @param wparam[in], lparam[in] Message parameters.
+    /// @return                       Whether the message should continue processing.
     virtual auto on_event(unsigned int message, WPARAM wparam, LPARAM lparam) -> bool { return true; }
 }; // class basic_cheat
 
-/// @brief Alias for cheat pointer type
-/// @details std::unique_ptr to basic_cheat for memory management
+/// RAII pointer to the cheat.
 using cheat_t = std::unique_ptr<basic_cheat>;
 
 } // namespace plugin::cheats

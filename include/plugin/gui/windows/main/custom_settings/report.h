@@ -16,9 +16,6 @@
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
 
-/// @file plugin/gui/windows/main/custom_settings/report.h
-/// @brief Defines a custom setting for report buttons in the GUI.
-
 #ifndef GADMIN_PLUGIN_GUI_WINDOWS_MAIN_CUSTOM_SETTINGS_REPORT_H
 #define GADMIN_PLUGIN_GUI_WINDOWS_MAIN_CUSTOM_SETTINGS_REPORT_H
 
@@ -26,12 +23,11 @@
 
 namespace plugin::gui::windows::main::custom_settings {
 
-/// @class report
-/// @brief Custom setting for report buttons.
+/// Custom setting for a button in the report window that inserts text
+/// into the answer field. Uses the `double_line_input` class as the
+/// backend for rendering.
 class report final : public double_line_input {
 public:
-    /// @brief Gets the ID of the setting.
-    /// @return The ID of the setting
     inline auto get_id() const -> types::zstring_t override;
 
     explicit report()
@@ -41,8 +37,6 @@ public:
 
 } // namespace plugin::gui::windows::main::custom_settings
 
-/// @brief Gets the ID of the report setting.
-/// @return The ID of the report setting.
 inline auto plugin::gui::windows::main::custom_settings::report::get_id() const
     -> types::zstring_t
 {

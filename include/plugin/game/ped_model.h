@@ -15,9 +15,6 @@
 /// along with this program. If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-///
-/// @file include/plugin/game/ped_model.h
-/// @details Provides constants and functions related to pedestrian models in the game
 
 #ifndef GADMIN_PLUGIN_GAME_PED_MODEL_H
 #define GADMIN_PLUGIN_GAME_PED_MODEL_H
@@ -26,10 +23,14 @@
 
 namespace plugin::game {
 
-static constexpr float max_male_model_speed = 7;
-static constexpr float max_female_model_speed = 5;
+static constexpr float max_male_model_speed = 7;    ///< Maximum speed of the male model.
+static constexpr float max_female_model_speed = 5;  ///< Maximum speed of the female model.
+
+/// Maximum speed of the specific model indices. Represents a C-style map, where
+/// on the left side is model index and on the right is its maximum speed.
 static constexpr float special_models_speed[3][2] = { { 0, 11 }, { 92, 8 }, { 99, 8 } };
 
+/// Indices of all female models in the game. Can be used to check whether model is male or female.
 static constexpr std::uint16_t female_models_index[] = {
     9, 10, 11, 12, 13, 31, 38, 39, 40, 41, 53, 54, 55, 56,
     63, 64, 65, 69, 75, 76, 77, 85, 87, 88, 89, 90, 91, 92,
@@ -41,9 +42,10 @@ static constexpr std::uint16_t female_models_index[] = {
     308, 309
 }; // static constexpr std::uint16_t female_models_index[]
 
-/// @brief Gets the maximum speed for a pedestrian model.
-/// @param ped_model_index The index of the pedestrian model.
-/// @return The maximum speed for the pedestrian model.
+/// Get the maximum speed for the pedestrian model.
+/// 
+/// @param ped_model_index[in] Index of the pedestrian model (range: 400-611).
+/// @return                    Maximum speed for the pedestrian model.
 constexpr auto get_max_ped_model_speed(std::uint16_t ped_model_index) noexcept -> float;
 
 } // namespace plugin::game

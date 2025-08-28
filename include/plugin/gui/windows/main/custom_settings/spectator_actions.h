@@ -16,9 +16,6 @@
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
 
-/// @file plugin/gui/windows/main/custom_settings/spectator_actions.h
-/// @brief Defines a custom setting for spectator actions in the GUI.
-
 #ifndef GADMIN_PLUGIN_GUI_WINDOWS_CUSTOM_SETTINGS_SPECTATOR_ACTIONS_H
 #define GADMIN_PLUGIN_GUI_WINDOWS_CUSTOM_SETTINGS_SPECTATOR_ACTIONS_H
 
@@ -26,8 +23,11 @@
 
 namespace plugin::gui::windows::main::custom_settings {
 
-/// @class spectator_actions
-/// @brief Custom setting for spectator actions.
+/// Custom setting for action buttons in spectator mode.
+///
+/// This implementation allows any button to be disabled or configured to either
+/// evaluate a binder string, or execute a provided action. The rendering order
+/// of the buttons can also be adjusted by moving them up or down.
 class spectator_actions final : public basic_custom_setting {
 private:
     static constexpr types::zstring_t action_selector_placeholders[2] = {
@@ -44,19 +44,12 @@ private:
 
     auto render_lines(float width, nlohmann::json& setter) -> void;
 public:
-    /// @brief Gets the ID of the setting.
-    /// @return The ID of the setting.
     inline auto get_id() const -> types::zstring_t override;
-    /// @brief Renders the spectator actions setting.
-    /// @param gui The GUI initializer.
-    /// @param setter The JSON object for setting values.
     auto render(types::not_null<gui_initializer*> gui, nlohmann::json& setter) -> void override;
 }; // class spectator_actions final : public basic_custom_setting
 
 } // namespace plugin::gui::windows::main::custom_settings
 
-/// @brief Gets the ID of the spectator_actions setting.
-/// @return The ID of the spectator_actions setting.
 inline auto plugin::gui::windows::main::custom_settings::spectator_actions::get_id() const
     -> types::zstring_t
 {

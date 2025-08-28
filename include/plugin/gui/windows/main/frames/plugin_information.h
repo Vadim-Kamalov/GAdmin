@@ -15,9 +15,6 @@
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-/// 
-/// @file plugin/gui/windows/main/frames/plugin_information.h
-/// @brief Defines the plugin information frame in the GUI.
 
 
 #ifndef GADMIN_PLUGIN_GUI_WINDOWS_MAIN_FRAMES_PLUGIN_INFORMATION_H
@@ -31,8 +28,7 @@
 
 namespace plugin::gui::windows::main::frames {
 
-/// @class plugin_information
-/// @brief Represents the plugin information frame in the GUI.
+/// Represents the plugin information frame in the main window.
 class plugin_information final : public basic_frame {
 private:
     static constexpr std::uint8_t nickname_count_per_group = 4;
@@ -62,11 +58,11 @@ private:
     auto get_nicknames_information() const -> nicknames_information_t;
     auto render_centered_text(types::not_null<ImFont*> font, float font_size, types::zstring_t text) const -> void;
 public:
-    /// @brief Renders the plugin information frame.
     auto render() -> void override;
 
-    /// @brief Constructor for the plugin information frame.
-    /// @param child The GUI initializer.
+    /// Construct the frame.
+    ///
+    /// @param child[in] Valid pointer to the main window.
     explicit plugin_information(types::not_null<initializer*> child)
         : child(child) {}
 }; // class plugin_information final

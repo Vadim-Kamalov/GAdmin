@@ -15,9 +15,6 @@
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-/// 
-/// @file plugin/gui/windows/main/frames/frames.h
-/// @brief Defines the frames and their properties in the GUI.
 
 #ifndef GADMIN_PLUGIN_GUI_WINDOWS_MAIN_FRAMES_FRAMES_H
 #define GADMIN_PLUGIN_GUI_WINDOWS_MAIN_FRAMES_FRAMES_H
@@ -29,28 +26,28 @@
 
 namespace plugin::gui::windows::main {
 
-/// @enum frame
-/// @brief Enumeration of available frames in the GUI
+/// All available frames to switch to in the main window.
 enum class frame : std::uint8_t {
-    home,
-    settings,
-    key_binds,
-    player_checker,
-    windows_customization,
-    logs,
-    server_information,
-    binder,
-    notes,
-    statistics,
-    plugin_information,
-    count
+    home,                   ///< Home frame: displayed when no other frame is selected.
+    settings,               ///< Settings frame: allows the user to configure all settings.
+    key_binds,              ///< Key Binds frame: allows configuring all hotkeys.
+    player_checker,         ///< Player Checker frame: allows managing all players in the checker.
+    windows_customization,  ///< Windows Customization frame: allows customizing all windows and installing themes.
+    logs,                   ///< Logs frame: displays all messages sent in the chat by the server.
+    server_information,     ///< Server Information frame: provides information about the server, e.g., prices of valuables.
+    binder,                 ///< Binder frame: allows configuring binds.
+    notes,                  ///< Notes frame: allows the user to manage notes.
+    statistics,             ///< Statistics frame: provides detailed user statistics since the plugin was first loaded.
+    plugin_information,     ///< Plugin Information frame: displays information about the plugin, its sponsors, and contributors.
+    count                   ///< Count of all frames. Must always be the last entry in the enumeration.
 }; // enum class frame : std::uint8_t
 
-/// @brief Total number of frames.
+/// Total number of frames, same as `std::to_underlying(frame::count)`.
 static constexpr std::uint8_t frames_count = std::to_underlying(frame::count);
 
 namespace frames {
 
+/// Icons of the all frames in the main window.
 static constexpr types::zstring_t icon_list[frames_count] = {
     ICON_HOUSE01,               ///< frame::home
     ICON_SETTINGS,              ///< frame::settings
@@ -65,6 +62,7 @@ static constexpr types::zstring_t icon_list[frames_count] = {
     ICON_INFO                   ///< frame::plugin_information
 }; // static constexpr types::zstring_t icon_list[frames_count]
 
+/// Titles of the all frames in the main window.
 static constexpr types::zstring_t label_list[frames_count] = {
     "Главная",          ///< frame::home
     "Настройки",        ///< frame::settings

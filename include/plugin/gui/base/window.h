@@ -15,9 +15,6 @@
 /// along with this program. If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-///
-/// @file include/plugin/gui/window.h
-/// @details Provides the base class for GUI windows in the plugin.
 
 #ifndef GADMIN_PLUGIN_GUI_BASE_WINDOW_H
 #define GADMIN_PLUGIN_GUI_BASE_WINDOW_H
@@ -34,61 +31,78 @@ class gui_initializer;
 
 namespace gui {
 
-/// @class window
-/// @brief Base class for GUI windows.
+/// Base class for all windows.
+///
+/// Serves as the foundation for all windows in the GUI, enabling rendering, SA:MP event
+/// and window's messages handling. Implementations must have next properties set using
+/// next overriden functions:
+///
+///     - window::get_id():                Window's ID;
+///     - window::get_name():              Window's name;
+///     - window::render_on_game_paused(): Whether window should be rendering while game
+///                                        is paused (optional, default = false).
+///
+/// Implementations may verify the user's `/alogin` state and check if the window is
+/// enabled in the configuration.
 class window {
 private:
     bool rendering = true;
 public:
-    types::not_null<gui_initializer*> child;
-    
-    /// @brief Virtual destructor for the window class.
     virtual ~window() = default;
     
-    /// @brief Window configuration: the window's ID.
+    /// Valid instance of the GUI initializer used to create window.
+    types::not_null<gui_initializer*> child;
+    
+    /// Window configuration: get window's ID.
+    /// 
     /// @return Window's ID.
     virtual inline auto get_id() const -> types::zstring_t;
     
-    /// @brief Window configuration: the window's name.
+    /// Window configuration: get window's name.
+    /// 
     /// @return Window's name.
     virtual inline auto get_name() const -> types::zstring_t;
 
-    /// @brief Window configuration: if the window should render when the game is paused.
-    /// @return True if the window should render on game pause, false otherwise.
+    /// Window configuration, optional: if the window should render when the game is paused.
+    /// 
+    /// @return True if the window should render on game pause.
     virtual inline auto render_on_game_paused() const -> bool;
     
-    /// @brief Window configuration: if the window can be rendered.
-    /// @return True if the window can be rendered, false otherwise.
+    /// Check whether the window can be rendered.
+    /// 
+    /// @return True if the window can be rendered.
     inline auto can_render() const -> bool;
     
-    /// @brief Called each frame and so safe to render ImGui in this function.
+    /// Render window. Must be called each frame.
     virtual auto render() -> void = 0;
     
-    /// @brief Handles window events.
-    /// @param message The message code.
-    /// @param wparam Additional message information.
-    /// @param lparam Additional message information.
-    /// @return True if the event was handled, false otherwise.
+    /// Process window's message.
+    ///
+    /// @param message[in]            Message ID.
+    /// @param wparam[in], lparam[in] Message parameters.
+    /// @return                       Whether the message should continue processing.
     virtual auto on_event(unsigned int message, WPARAM wparam, LPARAM lparam) -> bool;
 
-    /// @brief Handles samp events.
-    /// @param event The event information.
-    /// @return True if the event was handled, false otherwise.
+    /// Process SA:MP event.
+    /// 
+    /// @param event[in] SA-MP event information.
+    /// @return          Whether the event should continue processing.
     virtual auto on_event(const samp::event_info& event) -> bool;
 
-    /// @brief Called only once when samp is fully initialized.
+    /// Process SA:MP initializing. Can be called only once since the plugin initialization.
     virtual auto on_samp_initialize() -> void {}
 
-    /// @brief Stop render of the current window.
-    void stop_render() noexcept;
+    /// Stop rendering window.
+    auto stop_render() noexcept -> void;
 
-    /// @brief Constructor for all windows. When constructed, it writes in the log file that this window is initialized.
-    /// @param child Child class (GUI initializer) for current window.
-    /// @param id Window ID.
+    /// Constructs window and write in the log file that this window is initialized.
+    /// 
+    /// @param child[in] Valid instance of the GUI initializer used to create window.
+    /// @param id[in]    Window's ID.
     explicit window(types::not_null<gui_initializer*> child, types::zstring_t id);
 }; // class window
 
-/// @brief RAII pointer to the window.
+/// RAII pointer to the window.
 using window_ptr_t = std::unique_ptr<window>;
 
 } // namespace gui

@@ -15,9 +15,6 @@
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-/// 
-/// @file plugin/gui/windows/main/frames/windows_customization.h
-/// @brief Defines the windows customization frame in the GUI.
 
 #ifndef GADMIN_PLUGIN_GUI_WINDOWS_MAIN_FRAMES_WINDOWS_CUSTOMIZATION_H
 #define GADMIN_PLUGIN_GUI_WINDOWS_MAIN_FRAMES_WINDOWS_CUSTOMIZATION_H
@@ -35,8 +32,7 @@
 
 namespace plugin::gui::windows::main::frames {
 
-/// @class windows_customization
-/// @brief Represents the windows customization frame in the GUI.
+/// Represents the window customization and theme downloading in the main window.
 class windows_customization final : public basic_frame {
 private:
     static constexpr float title_font_size = 24;
@@ -85,11 +81,11 @@ private:
     auto popup_renderer() -> void;
     auto frame_renderer(std::string& label, std::any& payload) -> void;
 public:
-    /// @brief Renders the windows customization frame.
     auto render() -> void override;
 
-    /// @brief Constructor for the windows customization frame.
-    /// @param child The GUI initializer.
+    /// Construct the frame.
+    ///
+    /// @param child[in] Valid pointer to the main window.
     explicit windows_customization(types::not_null<initializer*> child);
 }; // class windows_customization final
 

@@ -15,9 +15,6 @@
 /// along with this program. If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-///
-/// @file include/plugin/cheats/tracers.h
-/// @details Provides functionality for managing bullet tracers in the game.
 
 #ifndef GADMIN_PLUGIN_CHEATS_TRACERS_H
 #define GADMIN_PLUGIN_CHEATS_TRACERS_H
@@ -29,44 +26,31 @@
 
 namespace plugin::cheats {
 
-/// @class tracers
-/// @brief Implements bullet tracer functionality
-/// @inherits basic_cheat
+/// Cheat for bullet tracing functionality.
+///
+/// Renders all bullets' trajectories and whether they hit the target.
+/// Maximum amount of tracers is limited, and their rendering conditions
+/// can be configured by the user.
+///
+/// Only functions when the user is authenticated via `/alogin` and the
+/// cheat is enabled in the configuration.
 class tracers final : public basic_cheat {
 private:
-    /// @struct tracer_information
-    /// @brief Contains information about a bullet tracer
-    struct tracer_information {
-        bool miss; ///< Flag indicating if the bullet missed
-        types::vector_3d origin; ///< Origin coordinates of the tracer
-        types::vector_3d target; ///< Target coordinates of the tracer
-        std::chrono::steady_clock::time_point time; ///< Time point of the trace
-    }; // struct tracer_information
+    struct tracer_information final {
+        bool miss;
+        types::vector_3d origin;
+        types::vector_3d target;
+        std::chrono::steady_clock::time_point time;
+    }; // struct tracer_information final
 
     gui::hotkey hotkey;
     std::deque<tracer_information> current_tracers;
 
     auto hotkey_callback(gui::hotkey& hotkey) -> void;
-
-    /// @brief Handles bullet synchronization events
-    /// @param synchronization The bullet synchronization packet
-    /// @return Boolean indicating if the event was handled
     auto on_bullet_synchronization(const samp::packet<samp::event_id::bullet_synchronization>& synchronization) -> bool;
 public:
-    /// @brief Handles events related to tracers
-    /// @param event The event information
-    /// @return Boolean indicating if the event was handled
-    /// @override
     auto on_event(const samp::event_info& event) -> bool override;
-
-    /// @brief Renders the tracers interface
-    /// @param child Pointer to the GUI initializer
-    /// @override
     auto render(types::not_null<gui_initializer*> child) -> void override;
-
-    /// @brief Registers hotkeys for tracer functionality
-    /// @param handler Pointer to the hotkey handler
-    /// @override
     auto register_hotkeys(types::not_null<gui::hotkey_handler*> handler) -> void override;
 
     explicit tracers();

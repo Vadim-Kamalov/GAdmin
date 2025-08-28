@@ -15,9 +15,6 @@
 /// along with this program. If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-///
-/// @file include/plugin/game/camera.h
-/// @details Provides functionality for managing in-game camera operations.
 
 #ifndef GADMIN_PLUGIN_GAME_CAMERA_H
 #define GADMIN_PLUGIN_GAME_CAMERA_H
@@ -29,24 +26,20 @@
 namespace plugin {
 namespace signatures {
 
-/// @brief Function pointer type for linear interpolation of the field of view.
 using lerp_fov = void(__thiscall*)(std::uintptr_t, float, float, float, bool);
-
-/// @brief Function pointer type for finding the active camera's FOV.
 using find_fov = float(__thiscall*)(std::uintptr_t);
 
 } // namespace signatures
 
 namespace game {
 
-/// @class camera
-/// @brief Manages in-game camera operations and properties.
+/// Provides methods for in-game camera operations and accessing properties.
 class camera final {
 private:
-    struct active_camera {
+    struct active_camera final {
         types::vector_3d front;
         types::vector_3d source;
-    }; // struct active_camera
+    }; // struct active_camera final
     
     static inline types::address<types::vector_3d> active_camera_coordinates = 0xB6F338;
     static inline types::address<std::uintptr_t> instance_address = 0xB6F028;
@@ -58,30 +51,34 @@ private:
 
     static auto get_active_camera() noexcept -> active_camera;
 public:
-    /// @brief Gets the FOV from the active camera.
+    /// Get the FOV from the active camera.
+    /// 
     /// @return Active camera's FOV.
     static auto get_fov() noexcept -> float;
 
-    /// @brief Linearly interpolates the field of view.
-    /// @param zoom_in_factor Factor to zoom in.
-    /// @param zoom_out_factor Factor to zoom out.
-    /// @param time_limit Time limit for the interpolation.
-    /// @param ease Whether to ease the interpolation.
+    /// Linearly interpolate the field of view.
+    ///
+    /// @param zoom_in_factor[in]  Factor to zoom in.
+    /// @param zoom_out_factor[in] Factor to zoom out.
+    /// @param time_limit[in]      Time limit for the interpolation.
+    /// @param ease[in]            Whether to ease the interpolation.
     static auto lerp_fov(float zoom_in_factor, float zoom_out_factor, float time_limit, bool ease) noexcept -> void;
     
-    /// @brief Gets the active camera coordinates.
-    /// @return The active camera coordinates.
+    /// Get the active camera coordinates.
+    /// 
+    /// @return Active camera coordinates.
     static auto get_active_coordinates() noexcept -> types::vector_3d;
 
-    /// @brief Gets the point at which the camera is looking.
-    /// @return The point at which the camera is looking.
+    /// Get the point at which the camera is looking.
+    /// 
+    /// @return Point at which the camera is looking.
     static auto get_active_point_at() noexcept -> types::vector_3d;
 
-    /// @brief Converts screen coordinates to world coordinates.
-    /// @param x The x-coordinate on the screen.
-    /// @param y The y-coordinate on the screen.
-    /// @param depth The depth on the screen.
-    /// @return The corresponding world coordinates.
+    /// Convert screen coordinates to the world coordinates (2D => 3D).
+    ///
+    /// @param x[in], y[in] Coordinates on the screen.
+    /// @param depth[in]    Depth on the screen.
+    /// @return             Converted world coordinates.
     static auto screen_to_coordinates(float x, float y, float depth) noexcept -> types::vector_3d;
 private:
     static constexpr std::uintptr_t camera_size = 0x238;

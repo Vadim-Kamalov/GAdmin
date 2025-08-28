@@ -34,15 +34,15 @@ auto plugin::misc::features::information_render::render_cars_information(ImDrawL
         bool vehicle_locked = vehicle.is_locked();
         bool engine_active = vehicle.is_engine_active();
         types::color default_color = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_Text]);
-        types::color status_color[2] = { gui::style::get_current_accent_colors().green, gui::style::get_current_accent_colors().red, };
+        types::color state_color[2] = { gui::style::get_current_accent_colors().green, gui::style::get_current_accent_colors().red, };
 
         std::deque<text_object> objects_on_first_line = {
             { "HP: ", default_color, bold_font },
-            { std::to_string(static_cast<int>(game_vehicle.get_health())), status_color[0], regular_font },
+            { std::to_string(static_cast<int>(game_vehicle.get_health())), state_color[0], regular_font },
             { " · ", default_color, bold_font },
-            { (vehicle_locked) ? "Closed" : "Opened", status_color[vehicle_locked], regular_font },
+            { (vehicle_locked) ? "Closed" : "Opened", state_color[vehicle_locked], regular_font },
             { " · ", default_color, bold_font },
-            { (engine_active) ? "On" : "Off", status_color[!engine_active], regular_font }
+            { (engine_active) ? "On" : "Off", state_color[!engine_active], regular_font }
         };
 
         ImVec2 first_line_pos = { pos_x, pos_y };

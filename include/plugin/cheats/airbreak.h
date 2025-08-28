@@ -15,9 +15,6 @@
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-/// 
-/// @file include/plugin/cheats/airbreak.h
-/// @details Provides interface for aerial movement system allowing:
 
 #ifndef GADMIN_PLUGIN_CHEATS_AIRBREAK_H
 #define GADMIN_PLUGIN_CHEATS_AIRBREAK_H
@@ -28,9 +25,23 @@
 
 namespace plugin::cheats {
 
-/// @class airbreak
-/// @brief Implements aerial movement cheat
-/// @inherits basic_cheat
+/// Cheat for aerial movement.
+///
+/// While active, the user can move through walls, has no collision, and takes no
+/// fall damage. Can be toggled via hotkey and controlled using the following static keys:
+///
+///     - **Arrow Up** or **Space**: Move up;
+///     - **Arrow Down** or **Left Shift**: Move down;
+///     - **Arrow Left** or **A**: Move left;
+///     - **Arrow Right** or **D**: Move right;
+///     - **W**: Move forward;
+///     - **S**: Move backward.
+///
+/// When the user is airborne, the Z-coordinate is increased by `3.0f` to prevent
+/// fall damage. Compatible with both `game::ped` and `game::vehicle`.
+///
+/// Only functions when the user is authenticated via `/alogin` and the cheat is enabled
+/// in the configuration.
 class airbreak final : public basic_cheat {
 private:
     gui::hotkey hotkey;
@@ -42,9 +53,6 @@ private:
     
     static constexpr auto deg_to_rad(float deg) noexcept -> float;
 public:
-    /// @brief Handles login state changes
-    /// @param state New login state (true = logged in)
-    /// @override
     auto on_alogin_new_state(bool state) -> void override;
     auto register_hotkeys(types::not_null<gui::hotkey_handler*> handler) -> void override;
     auto main_loop() -> void override;

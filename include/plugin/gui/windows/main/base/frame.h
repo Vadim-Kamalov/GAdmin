@@ -16,9 +16,6 @@
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
 
-/// @file plugin/gui/windows/main/base/frame.h
-/// @brief Defines the base class for frames in the GUI.
-
 #ifndef GADMIN_PLUGIN_GUI_WINDOWS_MAIN_BASE_FRAME_H
 #define GADMIN_PLUGIN_GUI_WINDOWS_MAIN_BASE_FRAME_H
 
@@ -27,22 +24,22 @@
 
 namespace plugin::gui::windows::main {
 
-/// @class basic_frame
-/// @brief Base class for frames.
+/// Base class for all frames used in the main window.
 class basic_frame {
 public:
     virtual ~basic_frame() = default;
 
-    /// @brief Renders the frame.
+    /// Render the frame.
     virtual auto render() -> void = 0;
 
-    /// @brief Handles events.
-    /// @param event The event information.
-    /// @return True if the event was handled
+    /// Process SA:MP event.
+    /// 
+    /// @param event[in] SA-MP event information.
+    /// @return          Whether the event should continue processing.
     virtual auto on_event(const samp::event_info& event) -> bool;
 }; // class basic_frame
 
-/// @brief unique pointer type for frame objects
+/// RAII pointer to the frame.
 using frame_ptr_t = std::unique_ptr<basic_frame>;
 
 } // namespace plugin::gui::windows::main

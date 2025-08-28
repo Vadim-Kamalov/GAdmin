@@ -15,10 +15,6 @@
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-/// 
-/// @file plugin/gui/windows/main/frames/settings.h
-/// @brief Defines the settings frame in the GU
-
 
 #ifndef GADMIN_PLUGIN_GUI_WINDOWS_MAIN_FRAMES_SETTINGS_H
 #define GADMIN_PLUGIN_GUI_WINDOWS_MAIN_FRAMES_SETTINGS_H
@@ -33,8 +29,7 @@
 
 namespace plugin::gui::windows::main::frames {
 
-/// @class settings
-/// @brief Represents the settings frame in the GUI.
+/// Represents the settings frame in the main window.
 class settings final : public basic_frame {
 private:
     static constexpr float section_title_font_size = 24;
@@ -65,23 +60,23 @@ private:
     auto render_custom(const std::string_view& id, nlohmann::json& setter) const -> void;
     auto render_boolean(const std::string_view& label, nlohmann::ordered_json& config, bool& setter) const -> void;
 public:
-    /// @brief Enumeration of item types for settings.
+    /// Item types to parse from the JSON and later to render them.
     enum class item_type : std::uint8_t {
-        subsection,
-        custom,
-        int_range,
-        float_range,
-        variant,
-        boolean,
-        input,
-        color
+        subsection,     ///< Represents the group of settings.
+        custom,         ///< Represents the custom setting (`basic_custom_setting`).
+        int_range,      ///< Represents the integer range (`ImGui::SliderInt`).
+        float_range,    ///< Represents the floating range (`ImGui::SliderDouble`).
+        variant,        ///< Represents the map (`"key": "value"`).
+        boolean,        ///< Represents the boolean setting (`widgets::toggle_button`).
+        input,          ///< Represents the text input (`ImGui::InputText`).
+        color           ///< Represents the color (`ImGui::ColorEdit3`).
     }; // enum class item_type : std::uint8_t
 
-    /// @brief Renders the settings frame.
     auto render() -> void override;
 
-    /// @brief Constructor for the settings frame.
-    /// @param child The GUI initializer.
+    /// Construct the frame.
+    ///
+    /// @param child[in] Valid pointer to the main window.
     explicit settings(types::not_null<initializer*> child);
 }; // class settings final
 

@@ -15,10 +15,6 @@
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-/// 
-/// @file plugin/gui/windows/main/frames/statistics.h
-/// @brief Defines the statistics frame in the GUI.
-
 
 #ifndef GADMIN_PLUGIN_GUI_WINDOWS_MAIN_FRAMES_STATISTICS_H
 #define GADMIN_PLUGIN_GUI_WINDOWS_MAIN_FRAMES_STATISTICS_H
@@ -29,17 +25,16 @@
 
 namespace plugin::gui::windows::main::frames {
 
-/// @class statistics
-/// @brief Represents the statistics frame in the GUI.
+/// Represents the statistics frame in the main window.
 class statistics final : public basic_frame {
-public:
+private:
     types::not_null<initializer*> child;
-
-    /// @brief Renders the statistics frame.
+public:
     auto render() -> void override;
 
-    /// @brief Constructor for the statistics frame.
-    /// @param child The GUI initializer.
+    /// Construct the frame.
+    ///
+    /// @param child[in] Valid pointer to the main window.
     explicit statistics(types::not_null<initializer*> child)
         : child(child) {}
 }; // class statistics final

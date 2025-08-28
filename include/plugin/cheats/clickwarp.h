@@ -17,7 +17,6 @@
 /// SPDX-License-Identifier: GPL-3.0-only
 ///
 /// @file include/plugin/cheats/clickwarp.h
-/// @details Provides functionality for teleporting to selected locations in the game.
 
 #ifndef GADMIN_PLUGIN_CHEATS_CLICKWARP_H
 #define GADMIN_PLUGIN_CHEATS_CLICKWARP_H
@@ -28,17 +27,23 @@
 
 namespace plugin::cheats {
 
-/// @class clickwarp
-/// @brief Implements teleportation cheat by clicking on a map location
-/// @inherits basic_cheat
+/// Cheat for teleportation by clicking on a map location.
+///
+/// Allows the user to teleport by enabling the cheat with a middle mouse button click
+/// and selecting a destination directly in the game. If the mouse cursor hovers over
+/// a vehicle, the cheat suggests entering it as the driver, if no driver is present.
+/// Compatible with both `game::ped` and `game::vehicle`.
+///
+/// Only functions when the user is authenticated via `/alogin` and the cheat is enabled
+/// in the configuration.
 class clickwarp final : public basic_cheat {
 private:
     static constexpr float font_size = 18;
 
-    struct teleport_information_t {
+    struct teleport_information_t final {
         types::vector_3d coordinates;
         game::vehicle vehicle_to_jump;
-    }; // struct teleport_information_t
+    }; // struct teleport_information_t final
 
     bool selecting_place_to_warp = false;
     bool need_to_update_cursor = false;
@@ -47,22 +52,8 @@ private:
 
     auto stop_selecting_place() -> void;
 public:
-    /// @brief Handles login state changes
-    /// @param state New login state (true = logged in)
-    /// @override
     auto on_alogin_new_state(bool state) -> void override;
-
-    /// @brief Handles events for teleportation
-    /// @param message The message code
-    /// @param wparam Additional message information
-    /// @param lparam Additional message information
-    /// @return Boolean indicating if the event was handled
-    /// @override 
     auto on_event(unsigned int message, WPARAM wparam, LPARAM lparam) -> bool override;
-
-    /// @brief Renders the teleportation interface
-    /// @param child Pointer to the GUI initializer
-    /// @override
     auto render(types::not_null<gui_initializer*> child) -> void override;
 }; // class clickwarp final : public basic_cheat
 

@@ -15,9 +15,6 @@
 /// along with this program. If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-///
-/// @file include/plugin/cheats/initializer.h
-/// @details Provides functionality for initializing and managing cheats in the plugin.
 
 #ifndef GADMIN_PLUGIN_CHEATS_LOADER_H
 #define GADMIN_PLUGIN_CHEATS_LOADER_H
@@ -28,31 +25,39 @@
 
 namespace plugin::cheats {
 
-/// @class initializer
-/// @brief Manages initialization and execution of cheat    
+/// Manages initialization and execution of cheat modules.
 class initializer final {
 private:
     types::not_null<gui_initializer*> gui;
     std::deque<cheat_t> cheats;
 public:
+    /// Main loop for all cheat modules.
     auto main_loop() -> void;
+
+    /// Render cheats' specific GUI elements. Must be called each frame.
     auto render() -> void;
+
+    /// Send information to the cheat modules that user's `/alogin` state is changed.
+    ///
+    /// @param state[in] New `/alogin` state.
     auto on_alogin_new_state(bool state) -> void;
 
-    /// @brief Handles events related to cheats
-    /// @param event The event information
-    /// @return Boolean indicating if the event was handled
+    /// Send SA:MP event to the cheat modules.
+    ///
+    /// @param event[in] SA:MP event information.
+    /// @return          Whether the event should continue processing.
     auto on_event(const samp::event_info& event) -> bool;
 
-    /// @brief Handles system events
-    /// @param message The message code
-    /// @param wparam Additional message information
-    /// @param lparam Additional message information
-    /// @return Boolean indicating if the event was handled
+    /// Send window's message to the cheat modules.
+    ///
+    /// @param message[in]            Message ID.
+    /// @param wparam[in], lparam[in] Message parameters.
+    /// @return                       Whether the message should continue processing.
     auto on_event(unsigned int message, WPARAM wparam, LPARAM lparam) -> bool;
 
-    /// @brief Constructor for the initializer
-    /// @param gui Pointer to the GUI initializer    
+    /// Construct all cheat modules and register their hotkeys.
+    ///
+    /// @param gui[in] Valid GUI initializer pointer.
     explicit initializer(types::not_null<gui_initializer*> gui);
 }; // class initializer final
 

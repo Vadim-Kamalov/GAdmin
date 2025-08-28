@@ -15,10 +15,6 @@
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-/// 
-/// @file plugin/gui/windows/main/frames/player_checker.h
-/// @brief Defines the player checker frame in the GUI.
-
 
 #ifndef GADMIN_PLUGIN_GUI_WINDOWS_MAIN_FRAMES_PLAYER_CHECKER_H
 #define GADMIN_PLUGIN_GUI_WINDOWS_MAIN_FRAMES_PLAYER_CHECKER_H
@@ -26,7 +22,6 @@
 #include "plugin/gui/widgets/search.h"
 #include "plugin/gui/windows/main/initializer.h"
 #include "plugin/gui/windows/main/base/frame.h"
-#include "plugin/gui/gui.h"
 #include "plugin/types/not_null.h"
 #include "plugin/types/simple.h"
 #include <nlohmann/json.hpp>
@@ -34,8 +29,7 @@
 
 namespace plugin::gui::windows::main::frames {
 
-/// @class player_checker
- /// @brief Represents the player checker frame in the GUI.
+/// Represents the player checker frame in the main window.
 class player_checker final : public basic_frame {
 private:
     static constexpr float bottom_button_height = 30;
@@ -72,11 +66,11 @@ private:
     auto render_left_group(float width) -> void;
     auto render_right_group(float width) -> void;
 public:
-    /// @brief Renders the player checker frame.
     auto render() -> void override;
 
-    /// @brief Constructor for the player checker frame.
-    /// @param child The GUI initializer.
+    /// Construct the frame.
+    ///
+    /// @param child[in] Valid pointer to the main window.
     explicit player_checker(types::not_null<initializer*> child);
 }; // class player_checker final
 

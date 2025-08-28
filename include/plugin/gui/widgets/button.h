@@ -15,9 +15,6 @@
 /// along with this program. If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-///
-/// @file include/plugin/gui/widgets/button.h
-/// @details Provides functionality for creating and managing GUI buttons.
 
 #ifndef GADMIN_PLUGIN_GUI_WIDGETS_BUTTON_H
 #define GADMIN_PLUGIN_GUI_WIDGETS_BUTTON_H
@@ -34,18 +31,17 @@ using namespace std::chrono_literals;
 
 namespace plugin::gui::widgets {
 
-/// @class button
-/// @brief Represents a GUI button with customizable properties.
+/// Represents a GUI button with ripple animation on click and border highligting while hovered.
 class button final {
 private:
-    struct configuration_t {
+    struct configuration_t final {
         animation::hover_info hovered;
         std::uint8_t border_alpha = 0;
         float alpha = 0, radius = 0;
         std::optional<ImVec2> click_position;
         std::chrono::steady_clock::time_point click_time;
-    }; // struct configuration_t
-private:
+    }; // struct configuration_t final
+    
     std::array<std::chrono::milliseconds, 3> durations = { 200ms, 400ms, 300ms };
     std::string id;
 
@@ -58,34 +54,43 @@ private:
 public:
     std::string label;
 
-    /// @brief Sets the draw flags for the button.
-    /// @param new_draw_flags The new draw flags to set.
-    /// @return Reference to the button object.
+    /// Set the draw flags for the button.
+    /// 
+    /// @param new_draw_flags[in] New draw flags to set.
+    /// @return                   Reference to the button object to allow construction be chain-called.
     inline auto with_draw_flags(ImDrawFlags new_draw_flags) noexcept -> button&;
 
-    /// @brief Sets the animation durations for the button.
-    /// @param new_durations The new durations to set.
-    /// @return Reference to the button object.
+    /// Set the animation durations for the button.
+    /// 
+    /// @param new_durations[in] New durations to set.
+    /// @return                  Reference to the button object to allow construction be chain-called.
     inline auto with_durations(const std::array<std::chrono::milliseconds, 3>& durations) noexcept -> button&;
 
-    /// @brief Renders the button.
-    /// @return True if the button was clicked, false otherwise
+    /// Render the button.
+    /// 
+    /// @return True if the button was clicked.
     auto render() -> bool;
 
-    /// @brief Constructor for the button class with computed size and label.
-    /// @note Button's ID can be passed after double-hashtag in label. e.g. "Hello!##my_button_id". It will be removed in render.
+    /// Construct button with pre-computed size and label.
+    ///
+    /// @note Button's ID can be passed in label after double-hashtag in label. e.g. "Hello!##my_button_id".
+    /// @param label[in] Label of the button.
     explicit button(const std::string_view& label);
 
-    /// @brief Constructor for the button class with an ID, label and size.
-    /// @param label The label of the button.
-    /// @param id The ID of the button.
-    /// @param size The size of the button.
+    /// Construct button with an ID, label and size.
+    /// 
+    /// @note            Button's ID can be passed in label after double-hashtag in label. e.g. "Hello!##my_button_id".
+    /// @param label[in] Label of the button.
+    /// @param id[in]    ID of the button.
+    /// @param size[in]  Size of the button.
     explicit button(const std::string_view& label, const std::string_view& id, const ImVec2& size)
         : label(std::move(label)), size(std::move(size)), id(std::move(id)) { register_in_pool(); }
 
-    /// @brief Constructor for the button class with a size.
-    /// @param label The label of the button.
-    /// @param size The size of the button.
+    /// Construct button with a size.
+    /// 
+    /// @note            Button's ID can be passed in label after double-hashtag in label. e.g. "Hello!##my_button_id".
+    /// @param label[in] Label of the button.
+    /// @param size[in]  Size of the button.
     explicit button(const std::string_view& label, const ImVec2& size)
         : label(std::move(label)), size(std::move(size)), id(std::move(label)) { register_in_pool(); }
 

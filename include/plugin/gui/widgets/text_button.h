@@ -15,9 +15,6 @@
 /// along with this program. If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-///
-/// @file include/plugin/gui/widgets/toggle_button.h
-/// @details Provides functionality for rendering a toggle button in the GUI.
 
 #ifndef GADMIN_PLUGIN_GUI_WIDGETS_TEXT_BUTTON_H
 #define GADMIN_PLUGIN_GUI_WIDGETS_TEXT_BUTTON_H
@@ -31,8 +28,7 @@ using namespace std::chrono_literals;
 
 namespace plugin::gui::widgets {
 
-/// @class text_button
-/// @brief Class for rendering clickable text.
+/// Represents clickable (and animated) text in the GUI..
 class text_button final {
 private:
     struct configuration_t final {
@@ -46,13 +42,14 @@ private:
 
     std::string label;
 public:
-    /// @brief Render clickable text. When hovered, animation of text underlining will be applied.
+    /// Render clickable text. When hovered, animation of text underlining will be applied.
+    /// 
     /// @return Whether the widget is clicked or not.
     auto render() const -> bool;
 
-    /// @brief Constructor for clickable text.
-    /// @note Can be used in the render-part code.
-    /// @param label Text of the button.
+    /// Construct clickable text.
+    /// 
+    /// @param label[in] Label of the button.
     explicit text_button(const std::string_view& label);
 }; // class text_button final
 

@@ -15,9 +15,6 @@
 /// along with this program. If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-///
-/// @file include/plugin/game/ped.h
-/// @details Provides functionality for managing in-game pedestrian entities.
 
 #ifndef GADMIN_PLUGIN_GAME_PED_H
 #define GADMIN_PLUGIN_GAME_PED_H
@@ -39,23 +36,20 @@ using task_process_ped = bool(__thiscall*)(std::uintptr_t, std::uintptr_t);
 
 namespace game {
 
-/// @class ped
-/// @brief Represents a pedestrian entity in the game.
+/// Represents a pedestrian entity in the game.
 class ped final : public placeable {
 public:
-    /// @struct flags_t
-    /// @brief Contains various state flags for the pedestrian.
-    struct flags_t {
-        std::uint8_t is_standing : 1;
-        std::uint8_t was_standing : 1;
+    /// State flags representing current state of the pedestrian.
+    struct flags_t final {
+        std::uint8_t is_standing : 1;   ///< Whether the pedestrian is standing right now.
+        std::uint8_t was_standing : 1;  ///< Whether the pedestrian was standing.
         std::uint8_t : 6;
-        std::uint8_t in_vehicle : 1;
-        std::uint8_t in_the_air : 1;
-    }; // struct flags_t
+        std::uint8_t in_vehicle : 1;    ///< Whether the pedestrian is in the vehicle.
+        std::uint8_t in_the_air : 1;    ///< Whether the pedestrian is in the air.
+    }; // struct flags_t final
 
-    /// @enum bone
-    /// @brief Enumeration of bone identifiers.
-    enum bone { torso = 3, head = 6 };
+    /// Pedestrian's bone identifiers.
+    enum class bone : std::uint8_t { torso = 3, head = 6 };
 private:
     static inline types::address<signatures::teleport> teleport_address = 0x5E4110;
     static inline types::address<signatures::get_bone_position> get_bone_position_address = 0x5E4280;
@@ -69,46 +63,58 @@ private:
     static inline types::offset<std::uintptr_t> weapons_offset = 0x5A0;
     static inline types::offset<std::uint8_t> current_weapon_slot_offset = 0x718;
 public:
-    /// @brief Checks if the pedestrian is in the air.
-    /// @return True if the pedestrian is in the air, false otherwise
+    /// Check if the pedestrian is in the air.
+    /// 
+    /// @return True if the pedestrian is in the air.
     auto is_in_the_air() const -> bool;
 
-    /// @brief Checks if the pedestrian is targeting.
-    /// @return True if the pedestrian is targeting, false otherwise.
+    /// Check if the pedestrian is targeting.
+    /// 
+    /// @return True if the pedestrian is targeting.
     auto is_targeting() const -> bool;
 
-    /// @brief Gets the speed of the pedestrian.
-    /// @return The speed of the pedestrian.
+    /// Get the speed of the pedestrian in the meters per second.
+    ///
+    /// @return Speed of the pedestrian in the meters per second.
     auto get_speed() const -> types::meter_per_second_t;
 
-    /// @brief Gets the position of a specific bone of the pedestrian.
-    /// @param bone_id The bone identifier.
-    /// @return The position of the specified bone.
+    /// Get the position of a specific bone of the pedestrian.
+    /// 
+    /// @param bone_id[in] Bone identifier.
+    /// @return            Position of the specified bone.
     auto get_bone_bosition(const bone& bone_id) const -> types::vector_3d;
 
-    /// @brief Gets the current weapon of the pedestrian.
-    /// @return The current weapon.
+    /// Get the current active weapon of the pedestrian.
+    /// 
+    /// @return Pedestrian's current active weapon.
     auto get_current_weapon() const -> weapon;
 
-    /// @brief Gets the vehicle the pedestrian is in.
-    /// @return The vehicle the pedestrian is in.
+    /// Get the vehicle the pedestrian is in.
+    /// 
+    /// @return Vehicle the pedestrian is in.
     auto get_vehicle() const -> vehicle;
 
-    /// @brief Gets the player pedestrian.
-    /// @return The player pedestrian.
+    /// Get the pedestrian controlled by the user.
+    /// 
+    /// @return Pedestrian controlled by the user.
     static auto get_player() noexcept -> ped;
     
-    /// @brief Makes the pedestrian jump into a vehicle.
-    /// @note The pedestrian always jumps as driver.
-    /// @param vehicle The vehicle to jump into.
+    /// Warp pedestrian into a vehicle.
+    /// 
+    /// @note Pedestrian always jumps as driver. If there's already
+    ///       a driver - nothing will happen.
+    /// 
+    /// @param vehicle[in] Valid vehicle to jump into.
     auto jump_into_vehicle(const vehicle& vehicle) const -> void;
 
-    /// @brief Teleports the pedestrian to a new position.
-    /// @param pos The new position to teleport to.
+    /// Teleport the pedestrian to a new position.
+    /// 
+    /// @param pos[in] New position to teleport to.
     auto teleport(const types::vector_3d& pos) const -> void override;
 
-    /// @brief Sets the heading of the pedestrian.
-    /// @param angle The angle to set the heading to.
+    /// Set the heading in degrees of the pedestrian.
+    /// 
+    /// @param angle[in] The angle in degrees to set the heading to.
     auto set_heading(float angle) const -> void override;
 
     using placeable::placeable;

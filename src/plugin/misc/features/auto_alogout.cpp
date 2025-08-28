@@ -106,7 +106,7 @@ auto plugin::misc::features::auto_alogout::main_loop() -> void {
     static constexpr types::zstring_t notification_text =
         "Вы провели в AFK на /alogin {} секунд. Плагин автоматически покинул дежурство";
 
-    server::user::set_alogin_status(false);
+    server::user::set_alogin_state(false);
     samp::input::send_command("/alogout");
     send_shell_notification(std::format(notification_text, seconds_until_alogout));
 }

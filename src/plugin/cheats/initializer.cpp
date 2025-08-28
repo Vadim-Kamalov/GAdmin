@@ -16,8 +16,6 @@
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
 
-/// @brief Implements the cheat initializer functionality
-
 #include "plugin/cheats/initializer.h"
 #include "plugin/cheats/airbreak.h"
 #include "plugin/cheats/clickwarp.h"
@@ -26,8 +24,6 @@
 #include "plugin/gui/gui.h"
 #include <memory>
 
-/// @brief Constructor for the cheat initializer.
-/// @param gui The GUI initializer.
 plugin::cheats::initializer::initializer(types::not_null<gui_initializer*> gui) : gui(gui) {
     cheats.push_back(std::make_unique<airbreak>());
     cheats.push_back(std::make_unique<wallhack>());
@@ -38,28 +34,21 @@ plugin::cheats::initializer::initializer(types::not_null<gui_initializer*> gui) 
         cheat->register_hotkeys(gui->hotkey_handler.get());
 }
 
-/// @brief Main loop for the cheat initializer.
 auto plugin::cheats::initializer::main_loop() -> void {
     for (const auto& cheat : cheats)
         cheat->main_loop();
 }
 
-/// @brief Renders the cheats.
 auto plugin::cheats::initializer::render() -> void {
     for (const auto& cheat : cheats)
         cheat->render(gui);
 }
 
-/// @brief Handles login state changes for the cheat initializer.
-/// @param state The new login state.
 auto plugin::cheats::initializer::on_alogin_new_state(bool state) -> void {
     for (const auto& cheat : cheats)
         cheat->on_alogin_new_state(state);
 }
 
-/// @brief Handles SA-MP events for the cheat initializer.
-/// @param event The SA-MP event information.
-/// @return True if the event was handled, false otherwise.
 auto plugin::cheats::initializer::on_event(const samp::event_info& event) -> bool {
     for (const auto& cheat : cheats) {
         event.stream->reset_read_pointer();
@@ -70,10 +59,6 @@ auto plugin::cheats::initializer::on_event(const samp::event_info& event) -> boo
     return true;
 }
 
-/// @brief Handles system events for the cheat initializer.
-/// @param message The message code.
-/// @param wparam Additional message information.
-/// @return True if the event was handled, false otherwise.
 auto plugin::cheats::initializer::on_event(unsigned int message, WPARAM wparam, LPARAM lparam) -> bool {
     for (const auto& cheat : cheats)
         if (!cheat->on_event(message, wparam, lparam))

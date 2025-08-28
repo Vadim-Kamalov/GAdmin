@@ -15,9 +15,6 @@
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-/// 
-/// @file plugin/gui/windows/main/frames/binder.h
-/// @brief Defines the binder frame for managing key binds in the GUI.
 
 #ifndef GADMIN_PLUGIN_GUI_WINDOWS_MAIN_FRAMES_BINDER_H
 #define GADMIN_PLUGIN_GUI_WINDOWS_MAIN_FRAMES_BINDER_H
@@ -34,8 +31,16 @@
 
 namespace plugin::gui::windows::main::frames {
 
-    /// @class binder
-    /// @brief Manages key binds and their associated commands.
+/// Represents a frame in the main window for managing and configuring binds.
+///
+/// When a new bind is created, a new hotkey is automatically generated and
+/// assigned to it using a UUID. This UUID is used to determine which bind
+/// is activated by the hotkey and to execute the associated binder string.
+///
+/// Each bind can be configured to use a hotkey, a command, or both. When
+/// activated, the user's input text is evaluated: all variables are replaced
+/// with their actual values, and the result is inserted into the chat or its
+/// input frame.
 class binder final : public basic_frame {
 private:
     static constexpr float title_font_size = 24;
@@ -76,14 +81,11 @@ private:
     auto on_send_command(const samp::out_event<samp::event_id::send_command>& event) const -> bool;
 public:
     auto render() -> void override;
-
-    /// @brief Handles events for the binder frame.
-    /// @param event The SA-MP event information.
-    /// @return True if the event was handled, false otherwise.
     auto on_event(const samp::event_info& event) -> bool override;
 
-    /// @brief Constructor for the binder frame.
-    /// @param child The GUI initializer.
+    /// Construct the frame.
+    ///
+    /// @param child[in] Valid pointer to the main window.
     explicit binder(types::not_null<initializer*> child);
 }; // class binder final : public basic_frame
 

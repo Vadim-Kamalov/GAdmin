@@ -45,7 +45,7 @@ private:
         float width = 0.0f;
     }; // struct window_information_t final
     
-    struct status_notification_t final {
+    struct state_notification_t final {
         struct configuration_t final {
             bool disconnected : 1 = false;
             bool notify : 1 = false;
@@ -54,7 +54,7 @@ private:
 
         std::string nickname;
         std::uint16_t id;
-    }; // struct status_notification_t final
+    }; // struct state_notification_t final
 
     ImFont* bold_font = nullptr;
     ImFont* regular_font = nullptr;
@@ -62,7 +62,7 @@ private:
     auto get_render_safe_color(const types::color& color) const -> types::color;
     auto get_entry_width(const entry_t& entry, bool show_offline) const -> float;
     auto get_window_information() const -> window_information_t;
-    auto send_status_notification(const status_notification_t& notification) const -> void;
+    auto send_state_notification(const state_notification_t& notification) const -> void;
 public:
     inline auto get_id() const -> types::zstring_t override;
     inline auto get_name() const -> types::zstring_t override;

@@ -15,9 +15,6 @@
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-/// 
-/// @file plugin/gui/windows/main/frames/logs.h
-/// @brief Defines the logs frame in the GUI.
 
 #ifndef GADMIN_PLUGIN_GUI_WINDOWS_MAIN_FRAMES_LOGS_H
 #define GADMIN_PLUGIN_GUI_WINDOWS_MAIN_FRAMES_LOGS_H
@@ -37,8 +34,7 @@
 
 namespace plugin::gui::windows::main::frames {
 
-/// @class logs
-/// @brief Represents the logs frame in the GUI.
+/// @Represents the logs frame in the main window.
 class logs final : public basic_frame {
 private:
     static constexpr float title_font_size = 24;
@@ -102,14 +98,11 @@ private:
     auto frame_renderer(std::string& label, std::any& payload) -> void;
 public:
     auto render() -> void override;
-
-    /// @brief Handles events for the logs frame.
-    /// @param event The SA-MP event information.
-    /// @return True if the event was handled, false otherwise.
     auto on_event(const samp::event_info& event) -> bool override;
 
-    /// @brief Constructor for the logs frame.
-    /// @param child The GUI initializer.
+    /// Construct the frame.
+    ///
+    /// @param child[in] Valid pointer to the main window.
     explicit logs(types::not_null<initializer*> child);
 }; // class logs final
 

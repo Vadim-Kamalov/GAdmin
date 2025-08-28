@@ -15,9 +15,6 @@
 /// along with this program. If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-///
-/// @file include/plugin/gui/widgets/markdown.h
-/// @details Provides functionality for rendering text in Markdown format.
 
 #ifndef GADMIN_PLUGIN_GUI_WIDGETS_MARKDOWN_H
 #define GADMIN_PLUGIN_GUI_WIDGETS_MARKDOWN_H
@@ -29,8 +26,7 @@
 
 namespace plugin::gui::widgets {
 
-/// @class markdown
-/// @brief Helper class for rendering text in Markdown format.
+/// Helper class for rendering text in Markdown format.
 class markdown final {
 private:
     static inline ImGui::MarkdownConfig markdown_config;
@@ -40,12 +36,13 @@ private:
     
     static auto link_callback(ImGui::MarkdownLinkCallbackData data) noexcept -> void; 
 public:
-    /// @brief Render text in Markdown format.
+    /// Render text in Markdown format.
     auto render() const -> void;
 
-    /// @brief Constructor for the markdown class.
-    /// @param text Text to be rendered.
-    /// @param font Font for headings (`#`, `##` and `###`) and text wrapped in double-star (`**<text>**`).
+    /// Constructor for the markdown class.
+    /// 
+    /// @param text[in] Text to be rendered.
+    /// @param font[in] Font for headings (`#`, `##` and `###`) and text wrapped in double-star (`**<text>**`).
     explicit markdown(const std::string_view& text, types::not_null<ImFont*> font = ImGui::GetFont())
         : text(std::move(text)), font(font) {}
 }; // class markdown final

@@ -15,9 +15,6 @@
 /// along with this program. If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-///
-/// @file include/plugin/game/cursor.h
-/// @details Provides functionality for managing the in-game cursor.
 
 #ifndef GADMIN_PLUGIN_GAME_CURSOR_H
 #define GADMIN_PLUGIN_GAME_CURSOR_H
@@ -25,23 +22,20 @@
 namespace plugin {
 namespace signatures {
 
-/// @brief Function pointer type for clearing mouse history.
 using clear_mouse_history_t = void(__cdecl*)();
-
-/// @brief Function pointer type for updating pads.
 using update_pads_t = void(__cdecl*)();
 
 } // namespace signatures
 
 namespace game {
 
-/// @class cursor
-/// @brief Manages in-game cursor's state.
+/// Provides method for changing cursor visibility state.
 class cursor final {
 public:
-    /// @brief Sets the status of the cursor.
-    /// @param status The status to set for the cursor.
-    static auto set_status(bool status) noexcept -> void;
+    /// Set visibility state for the cursor.
+    /// 
+    /// @param state[in] Whether to show or hide cursor.
+    static auto set_state(bool state) noexcept -> void;
 }; // class cursor final
 
 } // namespace game

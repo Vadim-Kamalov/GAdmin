@@ -15,9 +15,6 @@
 /// along with this program. If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-///
-/// @file include/plugin/gui/widgets/text.h
-/// @details Provides functionality for rendering text in the GUI.
 
 #ifndef GADMIN_PLUGIN_GUI_WIDGETS_TEXT_H
 #define GADMIN_PLUGIN_GUI_WIDGETS_TEXT_H
@@ -29,32 +26,31 @@
 
 namespace plugin::gui::widgets {
 
-/// @struct basic_text
-/// @brief Represents text widget with customizable properties.
+/// Represents text widget with customizable properties. Shouldn't be used directly:
+/// you should prefer using helper-functions that constructs this structure and renders it.
 struct basic_text final {
-    types::zstring_t text;
-    std::uint8_t border_size = 0;
-    
-    ImFont* font;
-    float font_size;
+    types::zstring_t text;          ///< Text to render.
+    std::uint8_t border_size = 0;   ///< Border size around the text to render. Pass `0` to disable.
+    ImFont* font;                   ///< Font of the text to render.
+    float font_size;                ///< Font size of the text to render.
 
-    /// @struct colors_t
-    /// @brief Contains color settings for the text.
+    /// Colors for the text and border to render.
     struct colors_t {
         ImVec4 text = ImGui::GetStyle().Colors[ImGuiCol_Text];
         ImVec4 border = { 0, 0, 0, 1 };
     } colors;
 
-    /// @brief Renders the text.
+    /// Render the text.
     void render() const;
 }; // struct basic_text final
 
-/// @brief Renders formatted text.
-/// @tparam Args The types of the arguments.
-/// @param font The font of the text.
-/// @param border_size The size of the text border.
-/// @param fmt The format string.
-/// @param args The arguments to format.
+/// Render formatted text with specific font.
+///
+/// @tparam Args           Types of the arguments for formatting.
+/// @param font[in]        Font of the text.
+/// @param border_size[in] Border size around the text to render. Pass `0` to disable.
+/// @param fmt[in]         Format string.
+/// @param args[in]        Arguments to format.
 template<typename... Args>
 auto text(ImFont* font, float font_size, std::uint8_t border_size, std::format_string<Args...> fmt, Args&&... args) noexcept -> void;
 

@@ -15,9 +15,6 @@
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-/// 
-/// @file plugin/gui/windows/main/frames/notes.h
-/// @brief Defines the notes frame in the GUI.
 
 #ifndef GADMIN_PLUGIN_GUI_WINDOWS_MAIN_FRAMES_NOTES_H
 #define GADMIN_PLUGIN_GUI_WINDOWS_MAIN_FRAMES_NOTES_H
@@ -31,8 +28,7 @@
 
 namespace plugin::gui::windows::main::frames {
 
-/// @class notes
-/// @brief Represents the notes frame in the GUI.
+/// Represents the notes frame in the main window.
 class notes final : public basic_frame {
 private:
     static constexpr float title_font_size = 24;
@@ -54,11 +50,11 @@ private:
     auto frame_renderer(std::string& label, std::any& payload) -> void;
     auto add_callback() -> void;
 public:
-    /// @brief Renders the notes frame.
     auto render() -> void override;
 
-    /// @brief Constructor for the notes frame.
-    /// @param child The GUI initializer.
+    /// Construct the frame.
+    ///
+    /// @param child[in] Valid pointer to the main window.
     explicit notes(types::not_null<initializer*> child);
 }; // class notes final
 

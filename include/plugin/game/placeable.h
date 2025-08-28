@@ -15,9 +15,6 @@
 /// along with this program. If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-///
-/// @file include/plugin/game/placeable.h
-/// @details Provides functionality for managing placeable entities in the game.
 
 #ifndef GADMIN_PLUGIN_GAME_PLACEABLE_H
 #define GADMIN_PLUGIN_GAME_PLACEABLE_H
@@ -36,24 +33,33 @@ using set_placeable_heading = void(__thiscall*)(std::uintptr_t, float);
 
 namespace game {
 
-/// @class placeable
-/// @brief Represents a placeable entity in the game.
+/// Represents a placeable entity in the game.
 class placeable : public entity {
 public:
-    /// @struct physical_flags_t
-    /// @brief Contains various physical state flags for the placeable entity
-    struct physical_flags_t {
+    /// Physical state flags representing states of the placeable entity.
+    struct physical_flags_t final {
         std::uint8_t : 8;
         std::uint8_t : 5;
-        std::uint8_t locked : 1;
+        std::uint8_t locked : 1; ///< Whether the entity can be controlled.
         std::uint8_t : 2;
-        std::uint8_t soft : 1;
+        std::uint8_t soft : 1; ///< Whether the entity can move through the walls.
         std::uint8_t : 7;
         std::uint8_t : 8;
-    }; // struct physical_flags_t
+    }; // struct physical_flags_t final
 protected:
+    /// Set the heading in radians of the placeable entity.
+    /// 
+    /// @param angle[in] The heading in radians to be set.
     auto set_heading_in_rad(float angle) const -> void;
+
+    /// Set the heading in degrees of the placeable entity.
+    /// 
+    /// @param angle[in] The heading in degrees to be set.
     auto set_heading_in_deg(float angle) const -> void;
+    
+    /// Clamp angle in the next range: [0; angle; 360]
+    /// 
+    /// @return Clamped angle.
     auto clamp_angle(float angle) const -> float;
 
     static constexpr float rad_to_deg_multiplier = 180.0f / std::numbers::pi;
@@ -66,43 +72,32 @@ private:
 public:
     virtual ~placeable() = default;
     
-    /// @brief Checks if the placeable entity is available.
-    /// @return True if the entity is available, false otherwise
-    inline auto is_available() const -> bool;
-
-    /// @brief Boolean operator to check if the placeable entity is available.
-    /// @return True if the entity is available, false otherwise.
-    inline explicit operator bool() const;
-    
-    /// @brief Checks if the placeable entity is locked.
-    /// @return True if the entity is locked, false otherwise.
+    /// Check if the placeable entity is locked.
+    /// 
+    /// @note   When placeable entity is locked, then it cannot move and has no collision.
+    /// @return True if the entity is locked.
     auto is_locked() const -> bool;
 
-    /// @brief Sets the lock state of the placeable entity.
-    /// @param state The state to set for the entity's lock.
+    /// Set the lock state of the placeable entity.
+    /// 
+    /// @note            When placeable entity is locked, then it cannot move and has no collision.
+    /// @param state[in] New state to set for the entity's lock.
     auto set_lock(bool state) const -> void;
 
-    /// @brief Gets the heading of the placeable entity.
-    /// @return The heading of the entity.
+    /// Get the heading in degrees of the placeable entity.
+    ///
+    /// @return Heading of the entity in degrees.
     auto get_heading() const -> float;
 
-    /// @brief Sets the heading of the placeable entity.
-    /// @param angle The angle of the angle need to be set.
+    /// Set the heading of the placeable entity in degrees.
+    /// 
+    /// @param angle[in] Angle in degrees need to be set.
     virtual auto set_heading(float angle) const -> void;
 
-    /// @brief Constructor for the placeable class using the entity constructor.
     using entity::entity;
 }; // class placeable
 
 } // namespace game
 } // namespace plugin
-
-inline auto plugin::game::placeable::is_available() const -> bool {
-    return handle.is_available();
-}
-
-inline plugin::game::placeable::operator bool() const {
-    return is_available();
-}
 
 #endif // GADMIN_PLUGIN_GAME_PLACEABLE_H

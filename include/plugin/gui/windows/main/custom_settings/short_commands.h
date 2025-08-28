@@ -16,9 +16,6 @@
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
 
-/// @file plugin/gui/windows/main/custom_settings/short_commands.h
-/// @brief Defines a custom setting for short commands in the GUI.
-
 #ifndef GADMIN_PLUGIN_GUI_WINDOWS_MAIN_CUSTOM_SETTINGS_SHORT_COMMANDS_H
 #define GADMIN_PLUGIN_GUI_WINDOWS_MAIN_CUSTOM_SETTINGS_SHORT_COMMANDS_H
 
@@ -26,14 +23,12 @@
 
 namespace plugin::gui::windows::main::custom_settings {
 
-/// @class short_commands
-/// @brief Custom setting for short commands.
+/// Custom setting for the short commands. Uses the `double_line_input`
+/// class as the backend for rendering.
 class short_commands final : public double_line_input {
 public:
-    /// @brief Gets the ID of the setting.
-    /// @return The ID of the setting
     inline auto get_id() const -> types::zstring_t override;
-    
+   
     explicit short_commands()
         : double_line_input({ "command", "replacement" },
                             { "Команда", "Замена" }) {}
@@ -41,8 +36,6 @@ public:
 
 } // namespace plugin::gui::windows::main::custom_settings
 
-/// @brief Gets the ID of the short_commands setting.
-/// @return The ID of the short_commands setting.
 inline auto plugin::gui::windows::main::custom_settings::short_commands::get_id() const
     -> types::zstring_t
 {
