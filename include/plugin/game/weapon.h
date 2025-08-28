@@ -24,7 +24,7 @@
 
 namespace plugin::game {
 
-/// All weapons in the game. Note that game does not have weapons mapped to the 19, 20 and 21 IDs.
+/// All weapons in the game. Note that the game does not have weapons mapped to the 19, 20 and 21 IDs.
 enum class weapon : std::uint8_t {
     fist, brass_knuckles, golf_club, night_stick, knife,
     baseball_bat, shovel, pool_cue, katana, chainsaw,

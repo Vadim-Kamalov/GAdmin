@@ -40,9 +40,9 @@ public:
     struct physical_flags_t final {
         std::uint8_t : 8;
         std::uint8_t : 5;
-        std::uint8_t locked : 1;
+        std::uint8_t locked : 1; ///< Whether the entity can be controlled.
         std::uint8_t : 2;
-        std::uint8_t soft : 1;
+        std::uint8_t soft : 1; ///< Whether the entity can move through the walls.
         std::uint8_t : 7;
         std::uint8_t : 8;
     }; // struct physical_flags_t final

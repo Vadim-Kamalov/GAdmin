@@ -41,11 +41,11 @@ class ped final : public placeable {
 public:
     /// State flags representing current state of the pedestrian.
     struct flags_t final {
-        std::uint8_t is_standing : 1;   ///< Whether ped is standing right now.
-        std::uint8_t was_standing : 1;  ///< Whether ped was standing.
+        std::uint8_t is_standing : 1;   ///< Whether the pedestrian is standing right now.
+        std::uint8_t was_standing : 1;  ///< Whether the pedestrian was standing.
         std::uint8_t : 6;
-        std::uint8_t in_vehicle : 1;    ///< Whether ped is in the vehicle.
-        std::uint8_t in_the_air : 1;    ///< Whether ped is in the air.
+        std::uint8_t in_vehicle : 1;    ///< Whether the pedestrian is in the vehicle.
+        std::uint8_t in_the_air : 1;    ///< Whether the pedestrian is in the air.
     }; // struct flags_t final
 
     /// Pedestrian's bone identifiers.

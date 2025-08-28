@@ -42,7 +42,7 @@ static constexpr std::uint16_t female_models_index[] = {
     308, 309
 }; // static constexpr std::uint16_t female_models_index[]
 
-/// Get the maximum speed for a pedestrian model.
+/// Get the maximum speed for the pedestrian model.
 /// 
 /// @param ped_model_index[in] Index of the pedestrian model (range: 400-611).
 /// @return                    Maximum speed for the pedestrian model.

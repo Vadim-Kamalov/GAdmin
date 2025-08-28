@@ -63,9 +63,9 @@ auto plugin::cheats::clickwarp::on_event(unsigned int message, WPARAM wparam, LP
             if (teleport_information->vehicle_to_jump)
                 player_ped.jump_into_vehicle(teleport_information->vehicle_to_jump);
             else {
-                // game::ped and game::vehicle offer two different implementations for the teleportation
+                // `game::ped` and `game::vehicle` offer two different implementations for the teleportation
                 // method, which we don't want to use because we only need to teleport an entity without
-                // any additional details, e.g., applying specific flags for game::ped.
+                // any additional details, e.g., applying specific flags for `game::ped`.
                 game::entity common_entity = (player_vehicle)
                     ? static_cast<game::entity>(player_vehicle)
                     : player_ped;
