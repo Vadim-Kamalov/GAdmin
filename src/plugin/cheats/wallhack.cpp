@@ -16,8 +16,6 @@
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
 
-/// @brief Implements the wallhack cheat functionality.
-
 #include "plugin/cheats/wallhack.h"
 #include "plugin/samp/core/net_game.h"
 #include "plugin/gui/icon.h"
@@ -28,9 +26,6 @@
 #include "plugin/game/game.h"
 #include "plugin/plugin.h"
 
-
-/// @brief Sets the wallhack state.
-/// @param state The state to set.
 auto plugin::cheats::wallhack::set_wallhack_state(bool state) -> void {
     if (cheat_active == state)
         return;
@@ -48,9 +43,6 @@ auto plugin::cheats::wallhack::set_wallhack_state(bool state) -> void {
     set_samp_render_state(!state, false);
 }
 
-
-/// @brief Callback for the wallhack hotkey.
-/// @param hotkey The hotkey object that triggered the callback.
 auto plugin::cheats::wallhack::hotkey_callback(gui::hotkey& hotkey) -> void {
     if (!server::user::is_on_alogin())
         return;
@@ -64,10 +56,6 @@ auto plugin::cheats::wallhack::hotkey_callback(gui::hotkey& hotkey) -> void {
     gui::notify::send(gui::notification(notify_title, notify_description, ICON_INFO));
 }
 
-
-/// @brief Sets the SA-MP render state for wallhack.
-/// @param state The state to set.
-/// @param ensure_usage_valid Whether to ensure usage is valid.
 auto plugin::cheats::wallhack::set_samp_render_state(bool state, bool ensure_usage_valid) noexcept -> void {
     if (ensure_usage_valid && !server::user::is_on_alogin() && !(*configuration)["cheats"]["wallhack"]["use"])
         return;
@@ -77,14 +65,10 @@ auto plugin::cheats::wallhack::set_samp_render_state(bool state, bool ensure_usa
     settings.set_name_tags_render_distance((state) ? SERVER_NAME_TAGS_DISTANCE : render_distance);
 }
 
-/// @brief Registers hotkeys for wallhack.
-/// @param handler The hotkey handler to register with.
 auto plugin::cheats::wallhack::register_hotkeys(types::not_null<gui::hotkey_handler*> handler) -> void {
     handler->add(hotkey);
 }
 
-/// @brief Renders the wallhack.
-/// @param child The GUI initializer
 auto plugin::cheats::wallhack::render(types::not_null<gui_initializer*> child) -> void {
     auto& cheat_configuration = (*configuration)["cheats"]["wallhack"];
 
@@ -131,13 +115,10 @@ auto plugin::cheats::wallhack::render(types::not_null<gui_initializer*> child) -
     }
 }
 
-/// @brief Handles login state changes for wallhack.
-/// @param state The new login state.
 auto plugin::cheats::wallhack::on_alogin_new_state(bool state) -> void {
     set_wallhack_state(state);
 }
 
-/// @brief Constructor for wallhack cheat.
 plugin::cheats::wallhack::wallhack() {
     hotkey = gui::hotkey("Переключить WallHack", gui::key_bind({ 'X', 0 }, { .alt = true }, gui::bind_condition::on_alogin))
         .with_callback(std::bind(&wallhack::hotkey_callback, this, std::placeholders::_1));

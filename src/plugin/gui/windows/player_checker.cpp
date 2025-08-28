@@ -95,7 +95,7 @@ auto plugin::gui::windows::player_checker::get_window_information() const -> win
     return window_information;
 }
 
-auto plugin::gui::windows::player_checker::send_status_notification(const status_notification_t& notification) const -> void {
+auto plugin::gui::windows::player_checker::send_state_notification(const state_notification_t& notification) const -> void {
     if (notification.configuration.sound_notify)
         samp::audio::play_sound(samp::audio::sound_id::bell);
 
@@ -124,7 +124,7 @@ auto plugin::gui::windows::player_checker::on_event(const samp::event_info& even
     if (players.empty())
         return true;
 
-    status_notification_t notification = {
+    state_notification_t notification = {
         .configuration = {
             .disconnected = false,
             .notify = window_configuration["notify"],
@@ -156,7 +156,7 @@ auto plugin::gui::windows::player_checker::on_event(const samp::event_info& even
     if (std::find_if(players.begin(), players.end(), [notification](const nlohmann::json& player) {
         return player["nickname"] == notification.nickname;
     }) != players.end()) {
-        send_status_notification(notification);
+        send_state_notification(notification);
     }
 
     return true;

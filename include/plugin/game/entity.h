@@ -15,9 +15,6 @@
 /// along with this program. If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-///
-/// @file include/plugin/game/enity.h
-/// @details Provides functionality for managing in-game entities.
 
 #ifndef GADMIN_PLUGIN_GAME_ENTITY_H
 #define GADMIN_PLUGIN_GAME_ENTITY_H
@@ -28,10 +25,7 @@
 namespace plugin {
 namespace signatures {
 
-/// @brief Function pointer type for checking if a vehicle pointer is valid.
 using is_vehicle_pointer_valid = bool(__stdcall*)(std::uintptr_t);
-
-/// @brief Function pointer type for checking if an entity is on screen.
 using is_on_screen = bool(__thiscall*)(std::uintptr_t);
 
 } // namespace signatures
@@ -40,14 +34,14 @@ namespace game {
 
 class vehicle;
 
-/// @class entity
-/// @brief Represents an in-game entity with various properties and methods.
+/// Base class of `game::placeable`. Represents an in-game entity and its methods.
 class entity {
 public:
     types::dynamic_address<std::uintptr_t> handle;
 protected:
-    /// @brief Sets the coordinates of the entity.
-    /// @param pos The new coordinates to set.
+    /// Set the coordinates for the entity.
+    /// 
+    /// @param pos[in] New coordinates to set.
     void set_coordinates(const types::vector_3d& pos) const;
 private:
     static inline types::address<signatures::is_vehicle_pointer_valid> is_vehicle_pointer_valid_address = 0x6E38F0;
@@ -56,44 +50,52 @@ private:
     static inline types::offset<std::uint16_t> model_index_offset = 0x22;
     static inline types::offset<types::vector_3d> position_offset_in_matrix = 0x30;
 public:
-    /// @brief Virtual destructor for the entity class
     virtual ~entity() = default;
 
-    /// @brief Checks if the entity is available.
-    /// @return True if the entity is available, false otherwise.
+    /// Check if an entity pointer is not null. Equivalent to `handle.is_available()`.
+    ///
+    /// @return True if the entity pointer is not null.
     inline auto is_available() const -> bool;
 
-    /// @brief Checks if the entity is on screen.
-    /// @return True if the entity is on screen, false otherwise.   
+    /// Check if an entity is on screen.
+    /// 
+    /// @return True if the entity is on screen.
     auto is_on_screen() const -> bool;
 
-    /// @brief Gets the model index of the entity.
-    /// @return The model index.  
+    /// Get the model index of an entity.
+    ///
+    /// @return Model index (range: 400–611).
     auto get_model_index() const -> std::uint16_t;
 
-    /// @brief Gets the position of the entity.
-    /// @return The position of the entity.
+    /// Get the position of an entity.
+    /// 
+    /// @return Position of the entity.
     auto get_position() const -> types::vector_3d;
 
-    /// @brief Gets the vehicle associated with the entity.
-    /// @return The vehicle associated with the entity.
+    /// Get the vehicle associated with an entity.
+    /// 
+    /// @return Vehicle associated with the entity.
     auto get_vehicle() const -> vehicle;
 
-    /// @brief Equality operator to compare two entities.
-    /// @param other The other entity to compare with.
-    /// @return True if the entities are equal, false otherwise. 
+    /// Check the equality of two entities. Equivalent to `handle == other.handle`.
+    ///
+    /// @param other[in] Entity to compare with.
+    /// @return          True if the entity pointers are equal.
     auto operator==(const entity& other) const -> bool;
 
-    /// @brief Boolean operator to check if the entity is available.
-    /// @return True if the entity is available, false otherwise.
+    /// Boolean operator to check if an entity is available.
+    ///
+    /// @return True if the entity pointer is not null.
     inline explicit operator bool() const;
 
-    /// @brief Teleports the entity to a new position.
-    /// @param pos The new position to teleport to.
+    /// Teleport an entity to a new position.
+    /// 
+    /// @param pos[in] New position to teleport to.
     virtual auto teleport(const types::vector_3d& pos) const -> void;
 
-    /// @brief Constructor for the entity class.
-    /// @param handle The dynamic address handle for the entity.
+    /// Construct entity class.
+    /// 
+    /// @param handle[in] Dynamic address handle for the entity.
     explicit entity(const types::dynamic_address<std::uintptr_t>& handle)
         : handle(handle) {}
 }; // class entity

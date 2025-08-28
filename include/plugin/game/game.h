@@ -15,9 +15,6 @@
 /// along with this program. If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-///
-/// @file include/plugin/game.h
-/// @details Provides general game-related utilities and functions.
 
 #ifndef GADMIN_PLUGIN_GAME_H
 #define GADMIN_PLUGIN_GAME_H
@@ -29,33 +26,37 @@
 namespace plugin {
 namespace signatures {
 
-/// @brief Function pointer type for calculating screen coordinates.
 using calc_screen_coords = bool(__cdecl*)(types::vector_3d*, types::vector_3d*);
 
 } // namespace signatures
 
 namespace game {
 
-/// @brief Gets the window handle of the game.
+/// Get the window handle of the game.
+/// 
 /// @return The window handle
 inline auto get_window() noexcept -> HWND;
 
-/// @brief Gets the device associated with the game.
+/// Get the `IDirect3DDevice9` associated with the game.
+/// 
 /// @return The device identifier.
 inline auto get_device() noexcept -> DWORD;
 
-/// @brief Checks if the game menu is opened.
-/// @return True if the menu is opened, false otherwise.
+/// Check if the game menu is opened.
+/// 
+/// @return True if the menu is opened.
 inline auto is_menu_opened() noexcept -> bool;
 
-/// @brief Gets the screen resolution of the game.
+/// Get the screen resolution of the game.
+///
 /// @return A pair representing the screen resolution (width, height).
 auto get_screen_resolution() noexcept -> std::pair<float, float>;
 
-/// @brief Converts 3D coordinates to screen coordinates.
-/// @note If the Z-coordinate returns a value below `0.0f`, then the conversion has failed.
-/// @param coords The 3D coordinates to convert.
-/// @return The corresponding screen coordinates.
+/// Convert 3D coordinates into screen coordinates (3D => 2D).
+///
+/// @note             If the Z-coordinate returns a value below `0.0f`, then the conversion has failed.
+/// @param coords[in] The 3D coordinates to convert.
+/// @return           The corresponding screen coordinates.
 auto convert_3d_coords_to_screen(const types::vector_3d& coords) noexcept -> types::vector_3d;
 
 } // namespace game

@@ -5,13 +5,13 @@
 #include "plugin/types/u8regex.h"
 #include "plugin/plugin.h"
 
-auto plugin::server::user::set_alogin_status(bool status) -> void {
-    on_alogin = status;
+auto plugin::server::user::set_alogin_state(bool state) -> void {
+    on_alogin = state;
 
-    cheats_initializer->on_alogin_new_state(status);
-    misc_initializer->on_alogin_new_state(status);
+    cheats_initializer->on_alogin_new_state(state);
+    misc_initializer->on_alogin_new_state(state);
 
-    if (status)
+    if (state)
         return;
 
     admins::on_alogout();
@@ -19,7 +19,7 @@ auto plugin::server::user::set_alogin_status(bool status) -> void {
 
 auto plugin::server::user::on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog) -> bool {
     if (dialog.title == "Выбор персонажа" && is_on_alogin())
-        set_alogin_status(false);
+        set_alogin_state(false);
 
     return true;
 }
@@ -50,7 +50,7 @@ auto plugin::server::user::on_server_message(const samp::event<samp::event_id::s
     }
 
     if (types::u8regex::search<alogout_pattern>(message.text) && is_on_alogin())
-        set_alogin_status(false);
+        set_alogin_state(false);
 
     if (auto [ whole, nickname, id_match ] = ctre::search<admin_chat_message_pattern>(message.text); whole) {
         if (samp::user::get_id() != std::stoul(id_match.str()))
@@ -76,7 +76,7 @@ auto plugin::server::user::main_loop() -> void {
 
 auto plugin::server::user::on_event(const samp::event_info& event) -> bool {
     if (event == samp::event_type::incoming_packet && is_on_alogin() && (event.id == 32 || event.id == 36 || event.id == 37))
-        set_alogin_status(false);
+        set_alogin_state(false);
 
     if (event == samp::event_type::incoming_rpc) {
         if (event == samp::event_id::server_message)

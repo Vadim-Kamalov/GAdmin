@@ -43,7 +43,7 @@ auto plugin::server::admins::on_show_dialog(const samp::event<samp::event_id::sh
         }
         
         log::info("user is on /alogin; admins::list is not empty and available now");
-        user::set_alogin_status(true);
+        user::set_alogin_state(true);
     
         return false;
     }
@@ -115,7 +115,7 @@ auto plugin::server::admins::add_connected_admin(const admin& connected_admin) -
 
 auto plugin::server::admins::remove_disconnected_admin(std::uint16_t id) -> void {
     if (id == samp::user::get_id()) {
-        user::set_alogin_status(false);
+        user::set_alogin_state(false);
         return;
     }
 

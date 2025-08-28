@@ -15,9 +15,6 @@
 /// along with this program. If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
-///
-/// @file include/plugin/game/vehicle.h
-/// @details Provides functionality for managing vehicles in the game.
 
 #ifndef GADMIN_PLUGIN_GAME_VEHICLE_H
 #define GADMIN_PLUGIN_GAME_VEHICLE_H
@@ -28,30 +25,35 @@
 
 namespace plugin::game {
 
-/// @class vehicle
-/// @brief Represents a vehicle in the game.
+/// Represents a vehicle in the game.
 class vehicle final : public placeable {
 private:
     static inline types::offset<float> health_offset = 0x4C0;
     static inline types::offset<std::uintptr_t> driver_offset = 0x460;
 public:
-    /// @brief Checks if the vehicle has a driver.
-    /// @return True if the vehicle has a driver, false otherwise.
+    /// Check if the vehicle has a driver.
+    /// 
+    /// @return True if the vehicle has a driver.
     auto has_driver() const -> bool;
 
-    /// @brief Gets the vehicle health.
-    /// @return Vehicle health.
+    /// Get the vehicle's health.
+    /// 
+    /// @return Vehicle's health.
     auto get_health() const -> float;
 
-    /// @brief Constructor for the vehicle class using the placeable constructor.
     using placeable::placeable;
 }; // class vehicle final : public placeable
 
+/// Minimal vehicle ID in the game.
 static constexpr std::uint16_t min_vehicle_id = 400;
+
+/// Maximal vehicle ID in the game.
 static constexpr std::uint16_t max_vehicle_id = 611;
+
+/// Total count of all vehicles in the game.
 static constexpr std::uint16_t vehicle_count = max_vehicle_id - min_vehicle_id;
 
-/// @brief Maximum speeds for vehicle models.
+/// Maximum speeds for vehicle models.
 static constexpr std::uint16_t max_vehicle_speeds[vehicle_count + 1] = {
     88, 81, 103, 61, 74, 91, 61, 82, 55, 88, 72, 123,
     93, 61, 59, 107, 85, 61, 64, 83, 81, 85, 78, 55,
@@ -72,7 +74,7 @@ static constexpr std::uint16_t max_vehicle_speeds[vehicle_count + 1] = {
     60, 0, 0
 }; // static constexpr std::uint16_t max_vehicle_speeds[]
 
-/// @brief Names of vehicle models.
+/// Names of vehicle models.
 static constexpr types::zstring_t vehicle_names[vehicle_count + 1] = {
     "Landstalker", "Bravura", "Buffalo", "Linerunner", "Perennial", "Sentinel",
     "Dumper", "Firetruck", "Trashmaster", "Stretch", "Manana", "Infernus",
@@ -103,14 +105,16 @@ static constexpr types::zstring_t vehicle_names[vehicle_count + 1] = {
     "Tiller", "Utility Trailer"
 }; // static constexpr types::zstring_t vehicle_names[vehicle_count + 1]
 
-/// @brief Gets the maximum speed for a vehicle model.
-/// @param vehicle_model_index The index of the vehicle model.
-/// @return The maximum speed for the vehicle model.
+/// Get the maximum speed for a vehicle model.
+///
+/// @param vehicle_model_index[in] Index of the vehicle model (range: 400-611).
+/// @return                        Maximum speed for the vehicle model.
 constexpr auto get_max_vehicle_model_speed(std::uint16_t vehicle_model_index) noexcept -> std::uint16_t;
 
-/// @brief Gets the name of a vehicle model.
-/// @param vehicle_model_index The index of the vehicle model.
-/// @return The name of the vehicle model.
+/// Get the name of a vehicle model.
+/// 
+/// @param vehicle_model_index[in] Index of the vehicle model (range: 400-611).
+/// @return                        Name of the vehicle model.
 constexpr auto get_vehicle_name(std::uint16_t vehicle_model_index) noexcept -> types::zstring_t;
 
 } // namespace plugin::game

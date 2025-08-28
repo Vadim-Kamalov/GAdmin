@@ -2,8 +2,8 @@
 #include "plugin/memory.h"
 #include <windows.h>
 
-auto plugin::game::cursor::set_status(bool status) noexcept -> void {
-    if (status) {
+auto plugin::game::cursor::set_state(bool state) noexcept -> void {
+    if (state) {
         memory::set(0x53F417, 0x90, 5);
 	    memory::copy(0x53F41F, { 0x33, 0xC0, 0x0F, 0x84 });
 	    memory::write<std::uint8_t>(0x6194A0, 0xC3);
@@ -16,7 +16,7 @@ auto plugin::game::cursor::set_status(bool status) noexcept -> void {
         reinterpret_cast<signatures::update_pads_t>(0x541DD0)();
     }
 
-    SetCursor(LoadCursor(nullptr, (status) ? IDC_ARROW : nullptr));
+    SetCursor(LoadCursor(nullptr, (state) ? IDC_ARROW : nullptr));
 
     memory::set(0xB73424, 0x0, 8);
 	memory::set(0xB7342C, 0x0, 8);
