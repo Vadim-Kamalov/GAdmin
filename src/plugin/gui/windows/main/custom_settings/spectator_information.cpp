@@ -6,7 +6,7 @@ auto plugin::gui::windows::main::custom_settings::spectator_information::render(
     std::size_t size = setter.size();
     ImGuiListClipper clipper;
 
-    ImGui::BeginChild(get_id(), { 450.0f, 400.0f }, ImGuiChildFlags_AlwaysUseWindowPadding);
+    ImGui::BeginChild(get_id(), { std::max<float>(450.0f, ImGui::GetContentRegionAvail().x), 400.0f }, ImGuiChildFlags_AlwaysUseWindowPadding);
     {
         float frame_height = ImGui::GetFrameHeight();
         float width = ImGui::GetContentRegionAvail().x;
