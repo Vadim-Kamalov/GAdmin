@@ -1,3 +1,21 @@
+/// GAdmin - Plugin simplifying the work of administrators on the Gambit-RP
+/// Copyright (C) 2023-2025 The Contributors.
+///
+/// This program is free software: you can redistribute it and/or modify
+/// it under the terms of the GNU General Public License as published by
+/// the Free Software Foundation, either version 3 of the License, or
+/// (at your option) any later version.
+///
+/// This program is distributed in the hope that it will be useful,
+/// but WITHOUT ANY WARRANTY; without even the implied warranty of
+/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+/// GNU General Public License for more details.
+///
+/// You should have received a copy of the GNU General Public License
+/// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+///
+/// SPDX-License-Identifier: GPL-3.0-only
+
 #ifndef GADMIN_PLUGIN_GUI_WINDOWS_KILL_LIST_H
 #define GADMIN_PLUGIN_GUI_WINDOWS_KILL_LIST_H
 
@@ -14,6 +32,10 @@ using namespace std::chrono_literals;
 
 namespace plugin::gui::windows {
 
+/// Window for displaying kill list.
+///
+/// Shows player kill information with timestamps and reasons.
+/// Supports customizable display and entry width calculation.
 class kill_list final : public window {
 private:
     static constexpr float title_font_size = 20;
@@ -54,13 +76,34 @@ private:
     auto try_write_entry_right_player(std::uint16_t id, entry_t& entry) const -> void;
     auto on_player_death_notification(const samp::event<samp::event_id::player_death_notification>& notification) -> bool;
 public:
+    /// Get window ID.
+    ///
+    /// @return Window ID.
     inline auto get_id() const -> types::zstring_t override;
+
+    /// Get window name.
+    ///
+    /// @return Window name.
     inline auto get_name() const -> types::zstring_t override;
 
+    /// Create kill list window instance.
+    ///
+    /// @param child GUI initializer.
+    /// @return Unique pointer to window.
     static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
+
+    /// Render kill list window.
     auto render() -> void override;
+
+    /// Handle SA-MP events.
+    ///
+    /// @param event SA-MP event information.
+    /// @return True if event was handled.
     auto on_event(const samp::event_info& event) -> bool override;
 
+    /// Constructor.
+    ///
+    /// @param child GUI initializer.
     explicit kill_list(types::not_null<gui_initializer*> child)
         : window(child, get_id()),
           bold_font(child->fonts->bold),

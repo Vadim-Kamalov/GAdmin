@@ -1,3 +1,22 @@
+/// GAdmin - Plugin simplifying the work of administrators on the Gambit-RP
+/// Copyright (C) 2023-2025 The Contributors.
+///
+/// This program is free software: you can redistribute it and/or modify
+/// it under the terms of the GNU General Public License as published by
+/// the Free Software Foundation, either version 3 of the License, or
+/// (at your option) any later version.
+///
+/// This program is distributed in the hope that it will be useful,
+/// but WITHOUT ANY WARRANTY; without even the implied warranty of
+/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+/// GNU General Public License for more details.
+///
+/// You should have received a copy of the GNU General Public License
+/// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+///
+/// SPDX-License-Identifier: GPL-3.0-only
+
+
 #ifndef GADMIN_PLUGIN_GUI_WINDOWS_NOTES_H
 #define GADMIN_PLUGIN_GUI_WINDOWS_NOTES_H
 
@@ -11,8 +30,13 @@ using namespace std::chrono_literals;
 
 namespace plugin::gui::windows {
 
+/// Window for managing user notes.
+///
+/// Provides interface for creating, editing and displaying user notes.
+/// Supports note alignment, text size customization and visibility toggling.
 class notes final : public window {
 public:
+    /// Note structure.
     struct note_t final {
         std::string title = "Заметка";
         std::string text = "";
@@ -40,12 +64,28 @@ private:
     auto get_note_information(const note_t& note) const -> note_information_t;
     auto render_note(const note_t& note, const std::string& id) const -> void;
 public:
+    /// Get window ID.
+    ///
+    /// @return Window ID.
     inline auto get_id() const -> types::zstring_t override;
+
+    /// Get window name.
+    ///
+    /// @return Window name.
     inline auto get_name() const -> types::zstring_t override;
 
+    /// Create notes window instance.
+    ///
+    /// @param child GUI initializer.
+    /// @return Unique pointer to window.
     static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
+
+    /// Render notes window.
     auto render() -> void override;
 
+    /// Constructor.
+    ///
+    /// @param child GUI initializer.
     explicit notes(types::not_null<gui_initializer*> child)
         : window(child, get_id()),
           bold_font(child->fonts->bold),
