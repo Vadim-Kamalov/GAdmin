@@ -10,6 +10,14 @@ auto plugin::gui::windows::main::widgets::frame_selector_toggle::handle_hover_an
                                         hover_info.time, animation_duration);
 }
 
+auto plugin::gui::windows::main::widgets::frame_selector_toggle::handle_background() -> void {
+    if (std::chrono::steady_clock::now() - time_clicked >= animation_duration)
+        return;
+
+    child->child->window_items_alpha = animation::bring_to(child->child->window_items_alpha, (child->state) ? 100 : 255,
+                                                           time_clicked, animation_duration);
+}
+
 auto plugin::gui::windows::main::widgets::frame_selector_toggle::render_rect_with_icon() -> void {
     ImVec2 start = ImGui::GetItemRectMin();
     ImVec2 end = ImGui::GetItemRectMax();
@@ -34,6 +42,11 @@ auto plugin::gui::windows::main::widgets::frame_selector_toggle::update_menu_wid
 }
 
 auto plugin::gui::windows::main::widgets::frame_selector_toggle::switch_menu_state() -> void {
+    if (child->state)
+        child->child->window_flags &= ~ImGuiWindowFlags_NoInputs;
+    else
+        child->child->window_flags |= ImGuiWindowFlags_NoInputs;
+    
     time_clicked = std::chrono::steady_clock::now();
     child->state ^= true;
 }
@@ -42,6 +55,7 @@ auto plugin::gui::windows::main::widgets::frame_selector_toggle::render() -> voi
     if (ImGui::InvisibleButton("widgets::frame_selector_toggle", { child->width, child->state_width.first }))
         switch_menu_state();
 
+    handle_background();
     handle_hover_animation();
     render_rect_with_icon();
     update_menu_width();

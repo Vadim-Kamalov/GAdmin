@@ -170,7 +170,7 @@
             }
         },
         "spectator_keys": { "_type": "bool", "_name": "Клавиши игрока в /sp" },
-        "vehicle_selection": { "_type": "bool", "_name": "Панель спавна машин" }
+        "vehicle_selection": { "_type": "bool", "_name": "Панель спавна машин при вводе /veh" }
     },
     "cheats": {
         "_name": "Читы",

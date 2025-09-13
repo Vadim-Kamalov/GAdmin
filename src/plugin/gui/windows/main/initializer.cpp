@@ -11,12 +11,19 @@
 #include "plugin/gui/windows/main/frames/settings.h"
 #include "plugin/gui/windows/main/frames/statistics.h"
 #include "plugin/gui/windows/main/frames/windows_customization.h"
+#include "plugin/gui/animation.h"
 #include "plugin/gui/gui.h"
 #include "plugin/game/game.h"
+#include "plugin/plugin.h"
+#include <algorithm>
 #include <utility>
 
 auto plugin::gui::windows::main::initializer::render_active_frame() -> void {
-    frames[std::to_underlying(active_frame)]->render();
+    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, (active_frame_alpha / 255.0f) * ImGui::GetStyle().Alpha);
+    {
+        frames[std::to_underlying(active_frame)]->render();
+    }
+    ImGui::PopStyleVar();
 }
 
 auto plugin::gui::windows::main::initializer::handle_window_moving() -> void {
@@ -50,7 +57,43 @@ auto plugin::gui::windows::main::initializer::handle_window_moving() -> void {
     ImGui::SetWindowPos(get_id(), window_pos);
 }
 
+auto plugin::gui::windows::main::initializer::switch_window() -> void {
+    auto now = std::chrono::steady_clock::now();
+
+    if (active) {
+        time = now;
+        closing = true;
+        child->disable_cursor();
+        return;
+    }
+
+    time = now;
+    active = true;
+}
+
+auto plugin::gui::windows::main::initializer::on_send_command(const samp::out_event<samp::event_id::send_command>& event)
+    -> bool
+{
+    std::string command = event.command;
+
+    std::transform(command.begin(), command.end(), command.begin(), ::tolower);
+
+    if (command.starts_with("/gadmin")) {
+        switch_window();
+        return false;
+    }
+
+    return true;
+}
+
 auto plugin::gui::windows::main::initializer::on_event(const samp::event_info& event) -> bool {
+    if (event == samp::event_type::outgoing_rpc && event == samp::event_id::send_command) {
+        if (!on_send_command(event.create<samp::event_id::send_command, samp::event_type::outgoing_rpc>()))
+            return false;
+
+        event.stream->reset_read_pointer();
+    }
+
     for (const auto& frame : frames) {
         event.stream->reset_read_pointer();
         if (!frame->on_event(event))
@@ -60,11 +103,33 @@ auto plugin::gui::windows::main::initializer::on_event(const samp::event_info& e
     return true;
 }
 
-auto plugin::gui::windows::main::initializer::render() -> void {
-    screen_size = game::get_screen_resolution();
-    window_padding = ImGui::GetStyle().WindowPadding;
+auto plugin::gui::windows::main::initializer::on_event(unsigned int message, WPARAM wparam, LPARAM) -> bool {
+    if (message == WM_KEYUP && wparam == VK_ESCAPE && active) {
+        switch_window();
+        return false;
+    }
 
+    return true;
+}
+
+auto plugin::gui::windows::main::initializer::render() -> void {
+    if (!active)
+        return;
+
+    window_padding = ImGui::GetStyle().WindowPadding;
+    window_alpha = animation::bring_to(window_alpha, (closing) ? 0 : 255, time, animation_duration);
+
+    if (!closing && window_alpha != 255 && !child->is_cursor_active())
+        child->enable_cursor();
+
+    if (window_alpha == 0 && closing)
+        closing = active = false;
+
+    auto [ size_x, size_y ] = game::get_screen_resolution();
+
+    ImGui::SetNextWindowPos({ size_x / 2.0f, size_y / 2.0f }, ImGuiCond_FirstUseEver, { 0.5f, 0.5f });
     ImGui::SetNextWindowSizeConstraints(default_window_size, { FLT_MAX, FLT_MAX });
+    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, window_alpha / 255.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, 0 });
     ImGui::Begin(get_id(), nullptr, window_flags);
     {
@@ -73,7 +138,7 @@ auto plugin::gui::windows::main::initializer::render() -> void {
         
         auto& frame_selector = widgets::frame_selector::instance(this);
 
-        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, window_items_alpha / 255.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, (window_items_alpha / 255.0f) * ImGui::GetStyle().Alpha);
         {
             ImGui::SetCursorPosX(frame_selector.state_width.first);
             ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, window_padding);
@@ -89,13 +154,19 @@ auto plugin::gui::windows::main::initializer::render() -> void {
         ImGui::PopStyleVar();
     }
     ImGui::End();
-    ImGui::PopStyleVar();
+    ImGui::PopStyleVar(2);
     handle_window_moving();
 }
 
 plugin::gui::windows::main::initializer::initializer(types::not_null<gui_initializer*> child)
-    : window(child, get_id())
+    : window(child, get_id()),
+      active_frame((*configuration)["internal"]["main_window_frame"])
 {
+    switch_hotkey = hotkey("Открыть/закрыть это окно", key_bind({ 'X', 0 }, bind_condition::always))
+        .with_callback([this](auto&) { switch_window(); });
+
+    child->hotkey_handler->add(switch_hotkey);
+
     frames = {
         std::make_unique<frames::home>(this),
         std::make_unique<frames::settings>(this),

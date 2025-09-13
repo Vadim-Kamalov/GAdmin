@@ -61,27 +61,28 @@ auto plugin::gui::windows::main::frames::server_information::render_complex_tabl
     auto flags = ImGuiTableFlags_ScrollY | ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable;
 
     ImGui::PushFont(bold_font, common_font_size);
-    ImGui::BeginTable(id.c_str(), config["heading"].size(), flags);
     {
-        for (const auto& item : config["heading"]) {
-            std::string label = item["label"];
-            float width = item["width"];
-            ImGui::TableSetupColumn(label.c_str(), ImGuiTableColumnFlags_WidthStretch, width);
-        }
-        
-        ImGui::TableSetupScrollFreeze(0, 1);
-        ImGui::TableHeadersRow();
-
-        for (const auto& row : config["rows"]) {
-            for (std::string column : row["items"]) {
-                ImGui::TableNextColumn();
-                gui::widgets::text(regular_font, common_font_size, 0, "{}", column);
+        if (ImGui::BeginTable(id.c_str(), config["heading"].size(), flags)) {
+            for (const auto& item : config["heading"]) {
+                std::string label = item["label"];
+                float width = item["width"];
+                ImGui::TableSetupColumn(label.c_str(), ImGuiTableColumnFlags_WidthStretch, width);
             }
+        
+            ImGui::TableSetupScrollFreeze(0, 1);
+            ImGui::TableHeadersRow();
 
-            handle_row_controls(row["copy"]);
+            for (const auto& row : config["rows"]) {
+                for (std::string column : row["items"]) {
+                    ImGui::TableNextColumn();
+                    gui::widgets::text(regular_font, common_font_size, 0, "{}", column);
+                }
+
+                handle_row_controls(row["copy"]);
+            }
+            ImGui::EndTable();
         }
     }
-    ImGui::EndTable();
     ImGui::PopFont();
 }
 

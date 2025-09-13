@@ -39,7 +39,7 @@ private:
 
     static constexpr float header_font_size = 24;
     static constexpr float nickname_font_size = 18;
-    static constexpr float footer_font_size = 16;
+    static constexpr float footer_font_size = 18;
 
     struct nicknames_information_t final {
         using entry_t = misc::features::nickname_colors::entry_t;

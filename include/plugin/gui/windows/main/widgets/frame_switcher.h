@@ -41,6 +41,11 @@ private:
 
     static constexpr std::chrono::milliseconds click_animation_duration = 200ms;
     static constexpr std::chrono::milliseconds hover_animation_duration = 400ms;
+    
+    static constexpr std::chrono::milliseconds fade_in_duration = 150ms;
+    static constexpr std::chrono::milliseconds fade_out_duration = 300ms;
+    static constexpr std::chrono::milliseconds fade_in_out_duration = fade_in_duration + fade_out_duration;
+
     static constexpr float icon_font_size = 24;
     static constexpr float text_font_size = 18;
 
@@ -51,9 +56,10 @@ private:
    
     ImFont* icon_font = nullptr;
     ImFont* bold_font = nullptr;
-    ImVec2 button_size;
+    ImVec2 button_size = { 0, 0 };
     frame switch_frame;
 
+    auto handle_frame_switching() -> void;
     auto update_button_size() -> void;
     auto update_current_color() -> void;
     auto render_button() -> void;

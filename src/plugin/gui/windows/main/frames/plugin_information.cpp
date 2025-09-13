@@ -61,7 +61,7 @@ auto plugin::gui::windows::main::frames::plugin_information::render_centered_tex
 
 auto plugin::gui::windows::main::frames::plugin_information::render() -> void {
     types::not_null<ImFont*> bold_font = child->child->fonts->bold;
-    // types::not_null<ImFont*> light_font = child->child->fonts->light;
+    types::not_null<ImFont*> light_font = child->child->fonts->light;
 
     render_centered_text(bold_font, header_font_size, header_text);
     widgets::markdown(reinterpret_cast<types::zstring_t>(markdown_text_start), bold_font).render();
@@ -76,7 +76,7 @@ auto plugin::gui::windows::main::frames::plugin_information::render() -> void {
         {
             for (const auto& entry : group.entries) {
                 ImGui::PushStyleColor(ImGuiCol_Text, *entry.colors[0]);
-                widgets::text(child->child->fonts->bold, nickname_font_size, 1, "{}", entry.nickname);
+                widgets::text(bold_font, nickname_font_size, 1, "{}", entry.nickname);
                 ImGui::PopStyleColor();
             }
         }
@@ -85,5 +85,5 @@ auto plugin::gui::windows::main::frames::plugin_information::render() -> void {
 
     ImGui::NewLine();
     widgets::markdown(reinterpret_cast<types::zstring_t>(markdown_text_end), bold_font).render();
-    render_centered_text(bold_font, footer_font_size, footer_text);
+    render_centered_text(light_font, footer_font_size, footer_text);
 }

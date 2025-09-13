@@ -22,7 +22,6 @@
 #include "plugin/gui/windows/main/initializer.h"
 #include "plugin/gui/windows/main/base/frame.h"
 #include "plugin/types/not_null.h"
-#include "plugin/gui/gui.h"
 
 namespace plugin::gui::windows::main::frames {
 
@@ -33,7 +32,7 @@ private:
     static constexpr types::zstring_t button_text = "Открыть меню";
     static constexpr types::zstring_t legal_notice_text[2] = {
         "Copyright (C) " PROJECT_COPYRIGHT_YEARS " The Contributors",
-        "Licensed under the terms of GNU General Public Licence v3 (GPLv3)"
+        "Licensed under the terms of the GNU General Public Licence v3 (GPLv3)"
     }; // static constexpr types::zstring_t legal_notice_text[2]
 
     static constexpr float lines_count = 3;

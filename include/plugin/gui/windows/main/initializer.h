@@ -19,12 +19,16 @@
 #ifndef GADMIN_PLUGIN_GUI_WINDOWS_MAIN_INITIALIZER_H
 #define GADMIN_PLUGIN_GUI_WINDOWS_MAIN_INITIALIZER_H
 
+#include "plugin/gui/hotkey.h"
 #include "plugin/gui/windows/main/frames/frames.h"
 #include "plugin/gui/windows/main/base/frame.h"
 #include "plugin/gui/base/window.h"
+#include "plugin/samp/events/send_command.h" // IWYU pragma: keep
 #include "plugin/types/not_null.h"
 #include "plugin/types/simple.h"
 #include <imgui.h>
+
+using namespace std::chrono_literals;
 
 namespace plugin::gui::windows::main {
 
@@ -34,11 +38,19 @@ namespace plugin::gui::windows::main {
 /// rendering of active frames, and event processing.
 class initializer final : public window {
 private:
+    static constexpr std::chrono::milliseconds animation_duration = 500ms;
+
     std::array<frame_ptr_t, frames_count> frames;
-    bool moving_window = false;
+    hotkey switch_hotkey;
+
+    bool closing = false, active = false, moving_window = false;
+    std::chrono::steady_clock::time_point time;
 
     auto render_active_frame() -> void;
     auto handle_window_moving() -> void;
+    auto switch_window() -> void;
+
+    auto on_send_command(const samp::out_event<samp::event_id::send_command>& event) -> bool;
 public:
     /// Default window size.
     static constexpr ImVec2 default_window_size = { 800, 500 };
@@ -46,14 +58,17 @@ public:
     /// Currently active frame.
     frame active_frame = frame::home;
 
-    /// Screen size.
-    std::pair<float, float> screen_size;
-    
     /// Window flags.
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar;
 
-    /// Window items alpha.
+    /// Alpha inside of the window.
     std::uint8_t window_items_alpha = 255;
+
+    /// Alpha inside of the active frame.
+    std::uint8_t active_frame_alpha = 255;
+    
+    /// Window alpha.
+    std::uint8_t window_alpha = 0;
 
     /// Window padding.
     ImVec2 window_padding = { 0, 0 };
@@ -68,6 +83,8 @@ public:
     inline auto get_name() const -> types::zstring_t override;
 
     auto on_event(const samp::event_info& event) -> bool override;
+    auto on_event(unsigned int message, WPARAM wparam, LPARAM) -> bool override;
+
     auto render() -> void override;
 
     /// Construct window.

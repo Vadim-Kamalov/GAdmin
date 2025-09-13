@@ -1,6 +1,26 @@
 #include "plugin/gui/windows/main/widgets/frame_switcher.h"
 #include "plugin/gui/windows/main/frames/frames.h"
+#include "plugin/plugin.h"
 #include <unordered_map>
+
+auto plugin::gui::windows::main::widgets::frame_switcher::handle_frame_switching() -> void {
+    auto now = std::chrono::steady_clock::now();
+
+    if (now - time_clicked >= fade_in_out_duration)
+        return;
+    
+    bool change_animation_duration = (now - time_clicked >= fade_in_duration);
+    std::chrono::milliseconds animation_duration = fade_in_duration;
+
+    if (change_animation_duration) {
+        child->child->active_frame = switch_frame;
+        (*configuration)["internal"]["main_window_frame"] = std::to_underlying(switch_frame);
+        animation_duration = fade_out_duration;
+    }
+
+    child->child->active_frame_alpha = animation::bring_to(child->child->active_frame_alpha,
+            change_animation_duration * 255, time_clicked, animation_duration);
+}
 
 auto plugin::gui::windows::main::widgets::frame_switcher::update_button_size() -> void {
     button_size = { child->width, (button_height_percent * child->child->window_size.y) / 100.0f };
@@ -55,10 +75,13 @@ auto plugin::gui::windows::main::widgets::frame_switcher::render() -> void {
     std::string button_id = std::format("widgets::frame_switcher[{}]", std::to_underlying(switch_frame));
 
     update_button_size();
+    handle_frame_switching();
 
-    if (ImGui::InvisibleButton(button_id.c_str(), button_size)) {
+    if (ImGui::InvisibleButton(button_id.c_str(), button_size)
+        && child->child->active_frame != switch_frame
+        && child->child->active_frame_alpha == 255)
+    {
         time_clicked = std::chrono::steady_clock::now();
-        child->child->active_frame = switch_frame;
     }
 
     update_current_color();

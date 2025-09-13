@@ -1,5 +1,4 @@
 #include "plugin/gui/windows/main/widgets/frame_selector.h"
-#include "imgui.h"
 #include "plugin/gui/windows/main/widgets/frame_selector_toggle.h"
 #include "plugin/gui/windows/main/widgets/frame_switcher.h"
 #include "plugin/gui/windows/main/frames/frames.h"
@@ -46,16 +45,28 @@ auto plugin::gui::windows::main::widgets::frame_selector::render_missing_rect() 
     ImVec2 rect_min = ImGui::GetItemRectMin();
     ImVec2 rect_max = ImGui::GetItemRectMax();
     
-    ImGui::GetWindowDrawList()->AddRectFilled({ rect_max.x - ImGui::GetStyle().ChildRounding, rect_min.y }, rect_max,
-                                    ImGui::GetColorU32(ImGui::GetStyle().Colors[ImGuiCol_ChildBg]));
+    ImGui::GetWindowDrawList()->AddRectFilled({ rect_max.x - ImGui::GetStyle().ChildRounding, rect_min.y },
+                                              rect_max, ImGui::GetColorU32(ImGuiCol_ChildBg));
 }
 
 auto plugin::gui::windows::main::widgets::frame_selector::render() -> void {
+    ImGuiWindowFlags window_flags = child->window_flags;
+    std::uint8_t pop_times = 2;
+
+    if (state)
+        window_flags &= ~ImGuiWindowFlags_NoInputs;
+
     update_state_width();
     ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 0);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 10, 10 });
+    
+    if (state || width != ((state) ? state_width.second : state_width.first)) {
+        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, child->window_alpha / 255.0f);
+        pop_times++;
+    }
+
     ImGui::SetCursorPosY(0);
-    ImGui::BeginChild("windows::main::menu", { width, child->window_size.y }, ImGuiChildFlags_Borders, child->window_flags);
+    ImGui::BeginChild("windows::main::menu", { width, child->window_size.y }, ImGuiChildFlags_Borders, window_flags);
     {
         ImGui::SetCursorPos({ 0, 0 });
         widgets::frame_selector_toggle::instance(this).render();
@@ -68,6 +79,6 @@ auto plugin::gui::windows::main::widgets::frame_selector::render() -> void {
         ImGui::EndGroup();
     }
     ImGui::EndChild();
-    ImGui::PopStyleVar(2);
+    ImGui::PopStyleVar(pop_times);
     render_missing_rect();
 }

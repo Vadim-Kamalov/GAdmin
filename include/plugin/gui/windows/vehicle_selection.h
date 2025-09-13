@@ -14,11 +14,14 @@ namespace plugin::gui::windows {
 
 class vehicle_selection final : public window {
 private:
+    static constexpr std::chrono::milliseconds animation_duration = 500ms;
+    static constexpr float create_button_height = 30;
+
     struct entry final {
         std::string name;
         std::uint16_t id;
-    }; // struct entry final 
-private:
+    }; // struct entry final
+
     widgets::search search_bar = widgets::search(get_id());
 
     int colors[2] = { 0, 0 };
@@ -42,9 +45,6 @@ public:
 
     explicit vehicle_selection(types::not_null<gui_initializer*> child)
         : window(child, get_id()) {}
-private:
-    static constexpr std::chrono::milliseconds animation_duration = 500ms;
-    static constexpr float create_button_height = 30;
 }; // class vehicle_selection final : public window
 
 } // namespace plugin::gui::windows

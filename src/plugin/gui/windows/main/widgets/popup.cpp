@@ -30,7 +30,7 @@ auto plugin::gui::windows::main::widgets::popup::render(types::not_null<initiali
 
     ImGui::SetNextWindowPos(pos, ImGuiCond_Always, { 0.5f, 0.5f });
     ImGui::SetNextWindowSize(size);
-    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, window_alpha / 255.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, (window_alpha / 255.0f) * (child->window_alpha / 255.0f));
     ImGui::Begin(id.c_str(), nullptr, flags);
     {
         ImGui::BeginGroup();

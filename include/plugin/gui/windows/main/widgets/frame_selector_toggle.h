@@ -30,6 +30,7 @@ private:
     animation::hover_info hover_info;
 
     auto handle_hover_animation() -> void;
+    auto handle_background() -> void;
     auto render_rect_with_icon() -> void;
     auto update_menu_width() -> void;
 public:

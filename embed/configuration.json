@@ -257,6 +257,8 @@
 
     "internal": {
         "last_time_join": 0,
+        "main_window_frame": 0,
+
         "windows_customization": {},
         "hotkeys": {},
         "theme": {
