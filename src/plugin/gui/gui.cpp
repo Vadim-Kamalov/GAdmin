@@ -129,6 +129,7 @@ auto plugin::gui_initializer::render() const -> void {
 #ifndef NDEBUG
     ImGui::ShowDebugLogWindow();
     ImGui::ShowMetricsWindow();
+    ImGui::ShowDemoWindow();
 #endif // NDEBUG
 }
 

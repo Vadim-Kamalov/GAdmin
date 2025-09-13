@@ -16,7 +16,6 @@
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
 
-
 #ifndef GADMIN_PLUGIN_GUI_WINDOWS_MAIN_WIDGETS_BINDER_VARIABLES_POPUP
 #define GADMIN_PLUGIN_GUI_WINDOWS_MAIN_WIDGETS_BINDER_VARIABLES_POPUP
 
@@ -64,10 +63,10 @@ public:
     /// @param new_inserter[in] Pointer to string where selected variable will be inserted.
     inline auto set_inserter(std::string* new_inserter) -> void;
 
-    /// Constructor.
+    /// Construct popup.
     ///
-    /// @param id[in]      Popup identifier.
-    /// @param child[in]   GUI initializer.
+    /// @param id[in]    Popup identifier.
+    /// @param child[in] Valid pointer to the main window.
     explicit binder_variables_popup(const std::string_view& id, types::not_null<initializer*> child);
 }; // class binder_variables_popup final
 

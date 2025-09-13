@@ -62,10 +62,10 @@ public:
 
     /// Render popup.
     ///
-    /// @param child[out] GUI initializer.
+    /// @param child[in] Valid pointer to the main window..
     auto render(types::not_null<initializer*> child) -> void;
 
-    /// Constructor.
+    /// Construct popup.
     ///
     /// @param id[in] Popup identifier.
     explicit popup(const std::string_view& id)

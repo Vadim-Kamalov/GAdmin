@@ -1,7 +1,6 @@
 #ifndef GADMIN_PLUGIN_GUI_WINDOWS_MAIN_WIDGETS_FRAME_SELECTOR_TOGGLE_H
 #define GADMIN_PLUGIN_GUI_WINDOWS_MAIN_WIDGETS_FRAME_SELECTOR_TOGGLE_H
 
-#include "imgui.h"
 #include "plugin/gui/animation.h"
 #include "plugin/gui/icon.h"
 #include "plugin/types/color.h"

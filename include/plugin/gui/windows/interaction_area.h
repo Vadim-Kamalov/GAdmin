@@ -100,28 +100,20 @@ private:
 
     static consteval auto get_longest_action_description() noexcept -> types::zstring_t;
 public:
-    /// Get window ID.
-    ///
-    /// @return Window ID.
     inline auto get_id() const -> types::zstring_t override;
-
-    /// Get window name.
-    ///
-    /// @return Window name.
     inline auto get_name() const -> types::zstring_t override;
+
+    auto render() -> void override;
 
     /// Create interaction area window instance.
     ///
-    /// @param child GUI initializer.
-    /// @return Unique pointer to window.
+    /// @param child[in] GUI initializer.
+    /// @return          Unique pointer to window.
     static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
 
-    /// Render interaction area window.
-    auto render() -> void override;
-
-    /// Constructor.
+    /// Construct window.
     ///
-    /// @param child GUI initializer.
+    /// @param child[in] GUI initializer.
     explicit interaction_area(types::not_null<gui_initializer*> child);
 }; // class interaction_area final : public window
 

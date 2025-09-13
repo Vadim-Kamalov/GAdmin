@@ -96,34 +96,21 @@ private:
     auto on_send_command(const samp::out_event<samp::event_id::send_command>& event) -> bool;
     auto on_server_message(const samp::event<samp::event_id::server_message>& event) -> bool;
 public:
-    /// Get window ID.
-    ///
-    /// @return Window ID.
     inline auto get_id() const -> types::zstring_t override;
-
-    /// Get window name.
-    ///
-    /// @return Window name.
     inline auto get_name() const -> types::zstring_t override;
+
+    auto render() -> void override;
+    auto on_event(const samp::event_info& event) -> bool override;
     
     /// Create command requester window instance.
     ///
-    /// @param child GUI initializer.
-    /// @return Unique pointer to window.
+    /// @param child[in] GUI initializer.
+    /// @return          Unique pointer to window.
     static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
 
-    /// Render command requester window.
-    auto render() -> void override;
-
-    /// Handle SA-MP events.
+    /// Construct window.
     ///
-    /// @param event SA-MP event information.
-    /// @return True if event was handled.
-    auto on_event(const samp::event_info& event) -> bool override;
-
-    /// Constructor.
-    ///
-    /// @param child GUI initializer.
+    /// @param child[in] GUI initializer.
     explicit command_requester(types::not_null<gui_initializer*> child);
 }; // class command_requester final : public window 
 

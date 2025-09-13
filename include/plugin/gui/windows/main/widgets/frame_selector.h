@@ -51,10 +51,16 @@ private:
     auto render_frame_switchers() -> void;
     auto render_missing_rect() const -> void;
 public:
+    /// Valid pointer to the main window.
     types::not_null<initializer*> child;
+    
+    /// Width pair on certain menu states.
     std::pair<float, float> state_width;
 
+    /// Current menu width.
     float width = state_width.first;
+
+    /// Current menu visiblity state.
     bool state = false;
 
     /// Render frame selector.
@@ -62,7 +68,7 @@ public:
 
     /// Constructor.
     ///
-    /// @param window[in] Main window initializer.
+    /// @param window[in] Valid pointer to the main window.
     explicit frame_selector(types::not_null<initializer*> window)
         : child(window),
           state_width({ compute_width_on_state(false), compute_width_on_state(true) }),

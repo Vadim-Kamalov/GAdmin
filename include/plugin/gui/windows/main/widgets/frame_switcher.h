@@ -63,16 +63,16 @@ public:
 
     /// Get frame switcher instance from pool.
     ///
-    /// @param child[in]      Frame selector instance.
+    /// @param child[in]        Frame selector instance.
     /// @param switch_frame[in] Target frame to switch to.
-    /// @return Reference to frame switcher instance.
+    /// @return                 Reference to frame switcher instance.
     static auto get_from_pool(types::not_null<frame_selector*> child, const frame& switch_frame)
         noexcept -> std::unique_ptr<frame_switcher>&;
 
     /// Constructor.
     ///
     /// @param frame_selector[in] Parent frame selector.
-    /// @param switch_frame[in]    Target frame to switch to.
+    /// @param switch_frame[in]   Target frame to switch to.
     explicit frame_switcher(types::not_null<frame_selector*> frame_selector, const frame& switch_frame)
         : child(frame_selector),
           switch_frame(switch_frame),

@@ -16,7 +16,6 @@
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
 
-
 #ifndef GADMIN_PLUGIN_GUI_WINDOWS_MAIN_INITIALIZER_H
 #define GADMIN_PLUGIN_GUI_WINDOWS_MAIN_INITIALIZER_H
 
@@ -65,34 +64,22 @@ public:
     /// Window size.
     ImVec2 window_size = default_window_size;
 
-    /// Get window ID.
-    ///
-    /// @return Window ID.
     inline auto get_id() const -> types::zstring_t override;
-
-    /// Get window name.
-    ///
-    /// @return Window name.
     inline auto get_name() const -> types::zstring_t override;
 
-    /// Handle SA-MP events.
-    ///
-    /// @param event SA-MP event information.
-    /// @return True if event was handled.
     auto on_event(const samp::event_info& event) -> bool override;
     auto render() -> void override;
 
-    /// Constructor.
+    /// Construct window.
     ///
-    /// @param child GUI initializer.
+    /// @param child[in] GUI initializer.
     explicit initializer(types::not_null<gui_initializer*> child);
 }; // class initializer final : public window
 
-
 /// Create main window instance.
 ///
-/// @param child GUI initializer.
-/// @return Unique pointer to window.
+/// @param child[in] GUI initializer.
+/// @return          Unique pointer to window.
 auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
 
 } // namespace plugin::gui::windows::main

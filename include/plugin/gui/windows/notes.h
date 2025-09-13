@@ -16,7 +16,6 @@
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
 
-
 #ifndef GADMIN_PLUGIN_GUI_WINDOWS_NOTES_H
 #define GADMIN_PLUGIN_GUI_WINDOWS_NOTES_H
 
@@ -36,14 +35,14 @@ namespace plugin::gui::windows {
 /// Supports note alignment, text size customization and visibility toggling.
 class notes final : public window {
 public:
-    /// Note structure.
+    /// Represents configuration of the user note.
     struct note_t final {
-        std::string title = "Заметка";
-        std::string text = "";
-        widgets::aligner::mode_t align_mode = widgets::aligner::mode_t::left;
-        float text_size = 18.0f;
-        float title_size = 20.0f;
-        bool visible = true;
+        std::string title = "Заметка";                                        ///< Note title.
+        std::string text = "";                                                ///< Note text.
+        widgets::aligner::mode_t align_mode = widgets::aligner::mode_t::left; ///< Note align mode (for both text and title).
+        float text_size = 18.0f;                                              ///< Note text size.
+        float title_size = 20.0f;                                             ///< Note title size.
+        bool visible = true;                                                  ///< Note visivility state.
 
         NLOHMANN_DEFINE_TYPE_INTRUSIVE(note_t, title, text, align_mode, text_size,
                                        title_size, visible);
@@ -64,28 +63,20 @@ private:
     auto get_note_information(const note_t& note) const -> note_information_t;
     auto render_note(const note_t& note, const std::string& id) const -> void;
 public:
-    /// Get window ID.
-    ///
-    /// @return Window ID.
     inline auto get_id() const -> types::zstring_t override;
-
-    /// Get window name.
-    ///
-    /// @return Window name.
     inline auto get_name() const -> types::zstring_t override;
+
+    auto render() -> void override;
 
     /// Create notes window instance.
     ///
-    /// @param child GUI initializer.
-    /// @return Unique pointer to window.
+    /// @param child[in] GUI initializer.
+    /// @return          Unique pointer to window.
     static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
 
-    /// Render notes window.
-    auto render() -> void override;
-
-    /// Constructor.
+    /// Construct window.
     ///
-    /// @param child GUI initializer.
+    /// @param child[in] GUI initializer.
     explicit notes(types::not_null<gui_initializer*> child)
         : window(child, get_id()),
           bold_font(child->fonts->bold),

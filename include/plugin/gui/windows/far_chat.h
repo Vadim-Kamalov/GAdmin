@@ -59,34 +59,21 @@ private:
     auto is_duplicate_entry(const std::string_view& message, std::uint16_t player_id, std::chrono::milliseconds delay) const -> bool;
     auto on_player_chat_bubble(const samp::event<samp::event_id::player_chat_bubble>& event) -> bool;
 public:
-    /// Get window ID.
-    ///
-    /// @return Window ID.
     inline auto get_id() const -> types::zstring_t override;
-
-    /// Get window name.
-    ///
-    /// @return Window name.
     inline auto get_name() const -> types::zstring_t override;
+
+    auto on_event(const samp::event_info& event) -> bool override;
+    auto render() -> void override;
 
     /// Create far chat window instance.
     ///
-    /// @param child GUI initializer.
-    /// @return Unique pointer to window.
+    /// @param child[in] GUI initializer.
+    /// @return          Unique pointer to window.
     static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
 
-    /// Handle SA-MP events.
+    /// Construct window.
     ///
-    /// @param event SA-MP event information.
-    /// @return True if event was handled.
-    auto on_event(const samp::event_info& event) -> bool override;
-
-    /// Render far chat window.
-    auto render() -> void override;
-
-    /// Constructor.
-    ///
-    /// @param child GUI initializer.
+    /// @param child[in] GUI initializer.
     explicit far_chat(types::not_null<gui_initializer*> child)
         : window(child, get_id()),
           regular_font(child->fonts->regular),

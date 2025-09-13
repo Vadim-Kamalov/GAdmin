@@ -16,7 +16,6 @@
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
 
-
 #ifndef GADMIN_PLUGIN_GUI_WINDOWS_ADMINS_H
 #define GADMIN_PLUGIN_GUI_WINDOWS_ADMINS_H
 
@@ -58,28 +57,20 @@ private:
 
     auto get_window_information() const -> window_information_t;
 public:
-    /// Get window ID.
-    ///
-    /// @return Window ID
     inline auto get_id() const -> types::zstring_t override;
-
-    /// Get window name.
-    ///
-    /// @return Window name.
     inline auto get_name() const -> types::zstring_t override;
+
+    auto render() -> void override;
 
     /// Create admins window instance.
     ///
-    /// @param child GUI initializer.
-    /// @return Unique pointer to window.
+    /// @param child[in] GUI initializer.
+    /// @return          Unique pointer to window.
     static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
 
-    /// Render admins window.
-    auto render() -> void override;
-
-    /// Constructor.
+    /// Construct window.
     ///
-    /// @param child GUI initializer.
+    /// @param child[in] GUI initializer.
     explicit admins(types::not_null<gui_initializer*> child)
         : window(child, get_id()),
           title_font(child->fonts->bold),

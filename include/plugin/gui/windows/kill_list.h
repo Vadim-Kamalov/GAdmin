@@ -34,8 +34,7 @@ namespace plugin::gui::windows {
 
 /// Window for displaying kill list.
 ///
-/// Shows player kill information with timestamps and reasons.
-/// Supports customizable display and entry width calculation.
+/// Shows kill list log from the server with timestamps and reasons.
 class kill_list final : public window {
 private:
     static constexpr float title_font_size = 20;
@@ -76,34 +75,21 @@ private:
     auto try_write_entry_right_player(std::uint16_t id, entry_t& entry) const -> void;
     auto on_player_death_notification(const samp::event<samp::event_id::player_death_notification>& notification) -> bool;
 public:
-    /// Get window ID.
-    ///
-    /// @return Window ID.
     inline auto get_id() const -> types::zstring_t override;
-
-    /// Get window name.
-    ///
-    /// @return Window name.
     inline auto get_name() const -> types::zstring_t override;
+
+    auto render() -> void override;
+    auto on_event(const samp::event_info& event) -> bool override;
 
     /// Create kill list window instance.
     ///
-    /// @param child GUI initializer.
-    /// @return Unique pointer to window.
+    /// @param child[in] GUI initializer.
+    /// @return          Unique pointer to window.
     static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
 
-    /// Render kill list window.
-    auto render() -> void override;
-
-    /// Handle SA-MP events.
+    /// Construct window.
     ///
-    /// @param event SA-MP event information.
-    /// @return True if event was handled.
-    auto on_event(const samp::event_info& event) -> bool override;
-
-    /// Constructor.
-    ///
-    /// @param child GUI initializer.
+    /// @param child[in] GUI initializer.
     explicit kill_list(types::not_null<gui_initializer*> child)
         : window(child, get_id()),
           bold_font(child->fonts->bold),

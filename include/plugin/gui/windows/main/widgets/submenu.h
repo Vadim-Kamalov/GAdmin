@@ -130,14 +130,17 @@ public:
     
     /// Render submenu interface.
     ///
-    /// @param child[out] GUI initializer.
+    /// @param child[in] Valid pointer to the main window.
     auto render_menu(types::not_null<initializer*> child) -> void;
 
     /// Render currently selected frame.
     ///
-    /// @param child[out] GUI initializer.
+    /// @param child[in] Valid pointer to the main window.
     auto render_current_frame(types::not_null<initializer*> child) -> void;
 
+    /// Construct submenu.
+    ///
+    /// @param label[in] Label of the submenu.
     explicit submenu(const std::string_view& label);
 }; // class submenu final
 
