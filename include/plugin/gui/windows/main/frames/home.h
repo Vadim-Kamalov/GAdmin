@@ -22,21 +22,56 @@
 #include "plugin/gui/windows/main/initializer.h"
 #include "plugin/gui/windows/main/base/frame.h"
 #include "plugin/types/not_null.h"
+#include "plugin/gui/gui.h"
 
 namespace plugin::gui::windows::main::frames {
 
 /// Represents the home frame in the main window.
 class home final : public basic_frame {
 private:
+    static constexpr types::zstring_t links_text = "Репозиторий GitHub · Тема на форуме";
+    static constexpr types::zstring_t button_text = "Открыть меню";
+    static constexpr types::zstring_t legal_notice_text[2] = {
+        "Copyright (C) " PROJECT_COPYRIGHT_YEARS " The Contributors",
+        "Licensed under the terms of GNU General Public Licence v3 (GPLv3)"
+    }; // static constexpr types::zstring_t legal_notice_text[2]
+
+    static constexpr float lines_count = 3;
+    static constexpr float button_font_size = 18;
+    static constexpr float legal_notice_font_size = 18;
+    static constexpr float lines_font_size = 24;
+    static constexpr float top_bottom_font_size = 18;
+
+    struct line_t final {
+        struct entry_t final {
+            ImFont* font;
+            std::string text;
+        }; // struct entry_t final
+
+        entry_t left;
+        entry_t right;
+    }; // struct line_t final
+
     types::not_null<initializer*> child;
+    std::string last_time_join = "";
+
+    ImFont* bold_font = nullptr;
+    ImFont* regular_font = nullptr;
+    ImFont* light_font = nullptr;
+
+    auto convert_time(const std::time_t& time) const -> std::string;
+    auto get_greeting_text() const -> std::string;
+
+    auto render_line(const line_t& line) const -> void;
+    auto render_title() const -> void;
+    auto render_legal_notice() const -> void;
 public:
     auto render() -> void override;
 
     /// Construct the frame.
     ///
     /// @param child[in] Valid pointer to the main window.
-    explicit home(types::not_null<initializer*> child)
-        : child(child) {}
+    explicit home(types::not_null<initializer*> child);
 }; // class home final
 
 } // namespace plugin::gui::windows::main::frames

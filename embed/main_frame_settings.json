@@ -221,7 +221,7 @@
         "display_id_in_chat": { "_type": "bool", "_name": "Отображать ID в IC чате" },
         "auto_login": {
             "_type": "subsection",
-            "_name": "Автоматическая авторизация",
+            "_name": "Автоматический ввод паролей",
             "account_password": { "_type": "input", "_name": "Пароль от аккаунта" },
             "alogin_password": { "_type": "input", "_name": "Пароль от /alogin" }
         },

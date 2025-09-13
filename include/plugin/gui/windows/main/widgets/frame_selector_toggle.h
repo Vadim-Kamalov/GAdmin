@@ -33,6 +33,7 @@ private:
     auto render_rect_with_icon() -> void;
     auto update_menu_width() -> void;
 public:
+    auto switch_menu_state() -> void;
     auto render() -> void;
 
     explicit frame_selector_toggle(types::not_null<frame_selector*> frame_selector)

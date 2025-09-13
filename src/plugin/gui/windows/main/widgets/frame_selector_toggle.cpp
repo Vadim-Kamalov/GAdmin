@@ -33,11 +33,14 @@ auto plugin::gui::windows::main::widgets::frame_selector_toggle::update_menu_wid
                                        time_clicked, width_change_duration);
 }
 
+auto plugin::gui::windows::main::widgets::frame_selector_toggle::switch_menu_state() -> void {
+    time_clicked = std::chrono::steady_clock::now();
+    child->state ^= true;
+}
+
 auto plugin::gui::windows::main::widgets::frame_selector_toggle::render() -> void {
-    if (ImGui::InvisibleButton("widgets::frame_selector_toggle", { child->width, child->state_width.first })) {
-        time_clicked = std::chrono::steady_clock::now();
-        child->state ^= true;
-    }
+    if (ImGui::InvisibleButton("widgets::frame_selector_toggle", { child->width, child->state_width.first }))
+        switch_menu_state();
 
     handle_hover_animation();
     render_rect_with_icon();

@@ -89,7 +89,7 @@ auto plugin::misc::features::auto_alogout::main_loop() -> void {
 
     if (seconds_inactive == std::chrono::seconds(seconds_until_warning) && !sent_warning_notification) {
         static constexpr types::zstring_t notification_text = 
-            "Вы провели в AFK на /alogin {} секунд. У вас есть еще {}"
+            "Вы провели в AFK на /alogin {} секунд. У вас есть еще {} "
             "секунд что-бы зайти, иначе плагин скрипт сам покинет дежурство.";
 
         send_shell_notification(std::format(notification_text, seconds_until_warning,
