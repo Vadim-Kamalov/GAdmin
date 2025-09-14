@@ -160,6 +160,8 @@
         "nickname_colors": true,
         "auto_aa_command": true,
         "display_id_in_chat": true,
+        "auto_alogin": true,
+        "fix_chat_opening": true,
 
         "auto_login": {
             "use": true,
