@@ -1,13 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<AutoUpdate version="1.7.9">
-    <title>GAdmin v1.7.9</title>
-    <buttons first="Установить" second="Пропустить" third="Позже"/>
+<AutoUpdate version="1.7.9-LTS">
+    <title>GAdmin v1.7.9-LTS</title>
+    <buttons first="Установить" second="Пропустить (не рекомендуется)" third="Позже"/>
     <body>
+        <header>v1.7-9-LTS (поддержка до 14.09.2026)</header>
+        <ul>Последняя версия перед переходом с .lua версии на .asi (v1.8). Lua версия будет получать патчи обеспечивающие стабильную работу скрипта до 14.09.2026 или вплоть до релиза лаунчера.</ul>
+        <ul>Рекомендуется установить эту версию, поскольку при слиянии веток plugin и main ссылки (которые указаны в v1.7.9) будут вести на несуществующие файлы и вызывать проблемы в работе скрипта.</ul>
+        <ul>Релиз версии v1.8 запланирован на текущий месяц (сентябрь 2025) и после её выхода необходимо будет её установить, чтобы в дальнейшем продолжить получать обновления, связанные с добавлением нового функционала (или остаться на LTS версии и получать только патчи с исправлениями каких-либо проблем скрипта).</ul>
         <header>Изменения</header>
-        <ul>Реализованы действия в чате при наведении и нажатие на что-либо: строку, никнейм администратора или игрока. Можно скопировать строку в чате (без/с переноса/ом), упомянуть администратора (при нажатии на никнейм), следить за игроком, открыть описание/cтатистику игрока. Функция взята из v1.8 (#34), до GAdmin.asi (#35).</ul>
+        <ul>Репозиторий, указанный в коде, изменен с Vadim-Kamalov/GAdmin на defaultzone/GAdmin-1.7.9-LTS.</ul>
     </body>
     <links>
         <!-- Notice that `link` with `destination="GAdmin-Release.lua"` should be last element in this section. -->
-        <link destination="GAdmin-Release.lua">https://github.com/Vadim-Kamalov/GAdmin/releases/latest/download/GAdmin-Release.lua</link>
+        <link destination="GAdmin-Release.lua">https://github.com/defaultzone/GAdmin-1.7.9-LTS/releases/latest/download/GAdmin-Release.lua</link>
     </links>
 </AutoUpdate>
