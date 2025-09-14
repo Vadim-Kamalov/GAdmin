@@ -1,50 +1,68 @@
 [
-    {
-        "name": "Catppuccin Latte",
-        "author": "Catppuccin (port: DEV_defaultzone)",
-        "theme": {
-            "interface_colors": {
-                "surface": [ "FFF5F1EF", "FFEFE9E6" ],
-                "text": [ "FF694F4C", "FF775F5C" ],
-                "overlay": [ "FFDAD0CC", "FFCCC0BC", "FFBEB0AC" ]
-            },
-            "accent_colors": {
-                "red": "FF390FD2",
-                "green": "FF2BA040",
-                "yellow": "FF1D8EDF"
-            }
-        }
-    },
-    {
-        "name": "Catppuccin Mocha",
-        "author": "Catppuccin (port: DEV_defaultzone)",
-        "theme": {
-            "interface_colors": {
-                "surface": [ "FF2E1E1E", "FF251818" ],
-                "text": [ "FFF4D6CD", "FFDEC2BA" ],
-                "overlay": [ "FF443231", "FF5A4745", "FF705B58" ]
-            },
-            "accent_colors": {
-                "red": "FFA88BF3",
-                "green": "FFA1E3A6",
-                "yellow": "FFAFE2F9"
-            }
-        }
-    },
-    {
-        "name": "Nord",
-        "author": "Sven Greb <development@svengreb.de> (port: DEV_defaultzone)",
-        "theme": {
-            "interface_colors": {
-                "surface": [ "FF40342E", "FF3C302A" ],
-                "text": [ "FFF0E9E5", "FFD3D2D1" ],
-                "overlay": [ "FF6A564C", "FFAC815E", "FFB79777" ]
-            },
-            "accent_colors": {
-                "red": "FF6A61BF",
-                "green": "FF8CBEA3",
-                "yellow": "FF8BCBEB"
-            }
-        }
+  {
+    "name": "Catppuccin Latte",
+    "author": "Catppuccin (port: DEV_defaultzone)",
+    "theme": {
+      "interface_colors": {
+        "surface": [ "FFF5F1EF", "FFEFE9E6" ],
+        "text": [ "FF694F4C", "FF775F5C" ],
+        "overlay": [ "FFDAD0CC", "FFCCC0BC", "FFBEB0AC" ]
+      },
+      "accent_colors": {
+        "red": "FF390FD2",
+        "green": "FF2BA040",
+        "yellow": "FF1D8EDF"
+      }
     }
+  },
+  {
+    "name": "Catppuccin Mocha",
+    "author": "Catppuccin (port: DEV_defaultzone)",
+    "theme": {
+      "interface_colors": {
+        "surface": [ "FF2E1E1E", "FF251818" ],
+        "text": [ "FFF4D6CD", "FFDEC2BA" ],
+        "overlay": [ "FF443231", "FF5A4745", "FF705B58" ]
+      },
+      "accent_colors": {
+        "red": "FFA88BF3",
+        "green": "FFA1E3A6",
+        "yellow": "FFAFE2F9"
+      }
+    }
+  },
+  {
+    "name": "Nord",
+    "author": "Sven Greb <development@svengreb.de> (port: DEV_defaultzone)",
+    "theme": {
+      "interface_colors": {
+        "surface": [ "FF40342E", "FF3C302A" ],
+        "text": [ "FFF0E9E5", "FFD3D2D1" ],
+        "overlay": [ "FF6A564C", "FFAC815E", "FFB79777" ]
+      },
+      "accent_colors": {
+        "red": "FF6A61BF",
+        "green": "FF8CBEA3",
+        "yellow": "FF8BCBEB"
+      }
+    }
+  },
+  {
+    "name": "Midnight Aurora",
+    "author": "Timmy",
+    "theme": {
+      "interface_colors": {
+        "surface": [ "FF140E0A", "FF211713" ],
+        "text": [ "FFEED0D9", "FFCBB4A5" ],
+        "overlay": [ "FF2C211C", "FF453A35", "FF5E524C" ]
+      },
+      "accent_colors": {
+        "red": "FF7F75FF",
+        "green": "FFA495FF",
+        "yellow": "FFA3E6FF",
+        "purple": "FFFF99C0",
+        "blue": "FFFFDD89"
+      }
+    }
+  }
 ]
