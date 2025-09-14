@@ -133,7 +133,7 @@ auto plugin::gui::hotkey::hint_renderer() -> void {
 
 auto plugin::gui::hotkey::render(const ImVec2& size) -> void {
     auto now = std::chrono::steady_clock::now();
-    auto saved_hotkeys = (*configuration)["internal"]["hotkeys"];
+    auto& saved_hotkeys = (*configuration)["internal"]["hotkeys"];
 
     widgets::button button(bind.to_string(), label, size);
 
@@ -289,7 +289,7 @@ auto plugin::gui::hotkey_handler::is_bind_defined(const key_bind& bind) const ->
 }
 
 auto plugin::gui::hotkey_handler::is_hotkey_active(const hotkey& hotkey_to_find) const -> bool {
-    if (auto it = std::find_if(pool.begin(), pool.end(), [hotkey_to_find](const hotkey& hotkey_in_pool) {
+    if (auto it = std::find_if(pool.begin(), pool.end(), [&hotkey_to_find](const hotkey& hotkey_in_pool) {
         return hotkey_to_find.label == hotkey_in_pool.label;
     }); it != pool.end())
         return it->bind.modifiers.internal_first_key_down && it->bind.modifiers.internal_second_key_down;
@@ -384,5 +384,5 @@ auto plugin::gui::hotkey_handler::on_event(unsigned int message, WPARAM wparam, 
 
 auto plugin::gui::hotkey_handler::add(hotkey& hotkey) -> void {
     log::info("hotkey \"{}\" initialized: key_bind = 0x{:08X}", hotkey.label, hotkey.bind.join());
-    pool.push_back(std::move(hotkey.with_handler(this)));
+    pool.push_back(hotkey.with_handler(this));
 }

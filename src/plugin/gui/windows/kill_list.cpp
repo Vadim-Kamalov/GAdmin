@@ -1,8 +1,10 @@
 #include "plugin/gui/windows/kill_list.h"
-#include "plugin/common_utils.h"
 #include "plugin/gui/widgets/aligner.h"
 #include "plugin/gui/widgets/text.h"
+#include "plugin/samp/core/kill_list.h"
 #include "plugin/server/user.h"
+#include "plugin/game/game.h"
+#include "plugin/common_utils.h"
 #include "plugin/plugin.h"
 #include <algorithm>
 
@@ -132,10 +134,16 @@ auto plugin::gui::windows::kill_list::render() -> void {
     if (!window_configuration["use"] || entries.empty() || !server::user::is_on_alogin())
         return;
     
+    widgets::aligner::mode_t align_mode = window_configuration["align"];
     bool show_title = window_configuration["show_title"];
     bool clist_color = window_configuration["clist_color"];
-    widgets::aligner::mode_t align_mode = window_configuration["align"];
+    bool hide_samp_window = window_configuration["hide_samp_window"];
+    auto [ size_x, size_y ] = game::get_screen_resolution();
 
+    if (hide_samp_window)
+        samp::kill_list::hide_window();
+
+    ImGui::SetNextWindowPos({ size_x / 1.29730f, size_y / 3.84411f }, ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize(get_window_size(show_title));
     ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground);
     {

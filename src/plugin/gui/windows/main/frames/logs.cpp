@@ -4,6 +4,7 @@
 #include "plugin/gui/widgets/button.h"
 #include "plugin/gui/gui.h"
 #include "plugin/types/u8regex.h"
+#include "plugin/samp/core/player_pool.h"
 #include <ctre.hpp>
 #include <ranges>
 
@@ -46,6 +47,7 @@ plugin::gui::windows::main::frames::logs::log_groups = {
     }}},
 
     { log_type_t::kills, { "Убийства" }},
+    { log_type_t::connections_disconnections, { "Входы/выходы" }},
     { log_type_t::other, { "Прочее" }}
 }; // std::map<plugin::gui::windows::main::frames::logs::log_type_t, plugin::gui::windows::main::frames::logs::log_group>
 
@@ -53,7 +55,7 @@ auto plugin::gui::windows::main::frames::logs::is_continuation_start(const std::
     return text.starts_with("... ");
 }
 
-auto plugin::gui::windows::main::frames::logs::is_continuation_end(const std::string& text) noexcept-> bool {
+auto plugin::gui::windows::main::frames::logs::is_continuation_end(const std::string& text) noexcept -> bool {
     return text.ends_with(" ..") || text.ends_with(" ..."); 
 }
 
@@ -67,6 +69,53 @@ auto plugin::gui::windows::main::frames::logs::trim_ellipsis(const std::string& 
         output.erase(output.find_last_not_of('.'));
 
     return output;
+}
+
+auto plugin::gui::windows::main::frames::logs::on_server_connect(const samp::event<samp::event_id::server_connect>& event)
+    -> bool
+{
+    log_groups[log_type_t::connections_disconnections].messages.emplace_back(std::format("{}[{}] подключился к серверу.",
+                                                                                         event.nickname, event.id));
+
+    return true;
+}
+
+auto plugin::gui::windows::main::frames::logs::on_server_quit(const samp::event<samp::event_id::server_quit>& event)
+    -> bool
+{
+    auto nickname = samp::player_pool::get_nickname(event.id);
+
+    if (!nickname)
+        return true;
+
+    std::string text = std::format("{}[{}] покинул сервер.", *nickname, event.id); 
+
+#define FINISH_CASE(TEXT) text.append(TEXT); break 
+    switch (event.reason) {
+        case 0: FINISH_CASE(" Причина: вылет из игры или таймаут.");
+        case 1: FINISH_CASE(" Причина: /q.");
+        case 2: FINISH_CASE(" Причина: отключен или заблокирован.");
+        default: break;
+    }
+#undef FINISH_CASE
+
+    log_groups[log_type_t::connections_disconnections].messages.emplace_back(text);
+
+    return true;
+}
+
+auto plugin::gui::windows::main::frames::logs::on_set_player_name(const samp::event<samp::event_id::set_player_name>& event)
+    -> bool
+{
+    auto source_nickname = samp::player_pool::get_nickname(event.id);
+
+    if (!source_nickname)
+        return true;
+
+    log_groups[log_type_t::connections_disconnections].messages.emplace_back(
+            std::format("{}[{}] сменил никнейм на {}.", *source_nickname, event.id, event.nickname));
+
+    return true;
 }
 
 auto plugin::gui::windows::main::frames::logs::on_unwrapped_message(const std::string& text, const types::color& color) -> void {
@@ -213,8 +262,14 @@ auto plugin::gui::windows::main::frames::logs::on_event(const samp::event_info& 
     if (event == samp::event_type::incoming_rpc) {
         if (event == samp::event_id::server_message)
             return on_server_message(event.create<samp::event_id::server_message>());
-        else if (event == samp::event_id::player_death_notification) {
+        else if (event == samp::event_id::player_death_notification)
             return on_death_notification(event.create<samp::event_id::player_death_notification>());
+        else if (event == samp::event_id::server_connect)
+            return on_server_connect(event.create<samp::event_id::server_connect>());
+        else if (event == samp::event_id::server_quit)
+            return on_server_quit(event.create<samp::event_id::server_quit>());
+        else if (event == samp::event_id::set_player_name) {
+            return on_set_player_name(event.create<samp::event_id::set_player_name>());
         }
     }
 

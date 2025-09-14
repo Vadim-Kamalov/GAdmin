@@ -1,4 +1,5 @@
 #include "plugin/gui/windows/report.h"
+#include "plugin/game/game.h"
 #include "plugin/gui/animation.h"
 #include "plugin/gui/icon.h"
 #include "plugin/gui/notify.h"
@@ -278,7 +279,10 @@ auto plugin::gui::windows::report::render() -> void {
     if (window_alpha == 0 && closing)
         closing = active = false;
 
-    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, window_alpha / 255.f);
+    auto [ size_x, size_y ] = game::get_screen_resolution();
+
+    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, window_alpha / 255.0f);
+    ImGui::SetNextWindowPos({ size_x / 2.0f, size_y / 2.0f }, ImGuiCond_FirstUseEver, { 0.5f, 0.5f });
     ImGui::SetNextWindowSizeConstraints({ 600, 300 }, { FLT_MAX, FLT_MAX });
     ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoTitleBar);
     {

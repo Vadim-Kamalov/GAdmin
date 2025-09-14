@@ -1,4 +1,5 @@
 #include "plugin/gui/windows/spectator_keys.h"
+#include "plugin/game/game.h"
 #include "plugin/server/spectator.h"
 #include "plugin/plugin.h"
 
@@ -83,6 +84,9 @@ auto plugin::gui::windows::spectator_keys::render() -> void {
     if (!use || !server::spectator::is_active())
         return;
 
+    auto [ size_x, size_y ] = game::get_screen_resolution();
+
+    ImGui::SetNextWindowPos({ size_x / 5.43909f, size_y / 1.28299f }, ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize({ 0, 0 });
     ImGui::SetNextWindowBgAlpha(0);
     ImGui::PushStyleColor(ImGuiCol_FrameBg, *types::color(ImGui::GetColorU32(ImGuiCol_FrameBg), 160));

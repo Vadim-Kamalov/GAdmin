@@ -1,4 +1,5 @@
 #include "plugin/gui/windows/spectator_actions.h"
+#include "plugin/game/game.h"
 #include "plugin/gui/icon.h"
 #include "plugin/gui/widgets/button.h"
 #include "plugin/samp/core/menu.h"
@@ -33,6 +34,7 @@ auto plugin::gui::windows::spectator_actions::render() -> void {
         return;
 
     server::spectator_information information = server::spectator::get_information();
+    auto [ size_x, size_y ] = game::get_screen_resolution();
 
     std::string left_information = std::format("{}", server::spectator::platform);
     std::string center_information = std::format("Скорость: {} / {} · Оружие: {} · Здоровье: {} · Пинг: {}",
@@ -41,6 +43,7 @@ auto plugin::gui::windows::spectator_actions::render() -> void {
 
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 2, 2 });
     ImGui::SetNextWindowSizeConstraints({ 700, 120 }, { FLT_MAX, FLT_MAX });
+    ImGui::SetNextWindowPos({ size_x / 83.47826f, size_y / 1.15543f }, ImGuiCond_FirstUseEver);
     ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoTitleBar);
     {
         ImGui::BeginGroup();

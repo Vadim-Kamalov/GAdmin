@@ -20,7 +20,7 @@ cmake_minimum_required(VERSION 4.0.0)
 project(plugin VERSION ${gadmin_VERSION} LANGUAGES CXX RC)
 
 set(SERVER_HOST_ADDRESS       "46.174.48.194")
-set(SERVER_COMMAND_DELAY_MS   "700")
+set(SERVER_COMMAND_DELAY_MS   "800")
 set(SERVER_NAME_TAGS_DISTANCE "20")
 set(SERVER_MAX_PLAYERS        "600")
 set(PROJECT_REPOSITORY        "https://github.com/Vadim-Kamalov/GAdmin/tree/plugin")

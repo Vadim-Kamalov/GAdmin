@@ -211,7 +211,7 @@ auto plugin::gui::windows::interaction_area::render_search_description(ImDrawLis
 }
 
 auto plugin::gui::windows::interaction_area::render() -> void {
-    auto window_configuration = (*configuration)["windows"]["interaction_area"];
+    auto& window_configuration = (*configuration)["windows"]["interaction_area"];
 
     if (!window_configuration["use"] || !server::user::is_on_alogin() ||
         !child->hotkey_handler->is_hotkey_active(activation_hotkey))

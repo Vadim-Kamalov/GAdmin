@@ -6,14 +6,14 @@
 
     "windows": {
         "admins": {
-            "use": true,
+            "use": false,
             "show_title": true,
             "show_count": false,
             "show_id": true,
             "show_level": true,
             "show_scrollbar_on": 10,
             "sort_by": "level",
-            "align": "left"
+            "align": "right"
         },
 
         "notify": {
@@ -71,7 +71,8 @@
         },
 
         "kill_list": {
-            "use": true,
+            "use": false,
+            "hide_samp_window": true,
             "show_time": true,
             "show_title": true,
             "clist_color": true,
@@ -80,7 +81,7 @@
         },
 
         "far_chat": {
-            "use": true,
+            "use": false,
             "duplicates_delay_ms": 1200,
             "max_count": 5,
             "show_time": true,
@@ -90,12 +91,12 @@
         },
 
         "players_nearby": {
-            "use": true,
+            "use": false,
             "max_count": 10,
             "show_distance": true,
             "show_title": true,
             "clist_color": true,
-            "align": "left",
+            "align": "right",
             "sort_by": "distance"
         },
 
@@ -114,14 +115,14 @@
         },
 
         "interaction_area": {
-            "use": true,
+            "use": false,
             "radius": 300
         },
 
         "player_checker": {
             "use": true,
             "show_offline": true,
-            "show_title": true,
+            "show_title": false,
             "clist_color": true,
             "notify": true,
             "sound_notify": true,
@@ -158,13 +159,13 @@
     "misc": {
         "hide_addresses": true,
         "nickname_colors": true,
-        "auto_aa_command": true,
-        "display_id_in_chat": true,
-        "auto_alogin": true,
+        "auto_aa_command": false,
+        "display_id_in_chat": false,
+        "auto_alogin": false,
         "fix_chat_opening": true,
 
         "auto_login": {
-            "use": true,
+            "use": false,
             "account_password": "",
             "alogin_password": ""
         },
@@ -182,12 +183,12 @@
         },
 
         "report_one_color": {
-            "use": true,
+            "use": false,
             "color": "FF00FFFF"
         },
 
         "death_notify_in_chat": {
-            "use": true,
+            "use": false,
             "color": "FFAFAFAF"
         },
 
@@ -212,7 +213,7 @@
         },
         
         "fish_eye": {
-            "use": true,
+            "use": false,
             "fov": 101
         },
 
@@ -227,22 +228,22 @@
         },
 
         "gun_info": {
-            "use": true,
+            "use": false,
             "font_size": 16
         },
 
         "car_info": {
-            "use": true,
+            "use": false,
             "font_size": 16
         },
 
         "admin_info": {
-            "use": true,
+            "use": false,
             "font_size": 16
         },
         
         "auto_alogout": {
-            "use": true,
+            "use": false,
             "seconds_until_warning": 90,
             "seconds_until_alogout": 120
         }
@@ -252,7 +253,7 @@
         "hide_text_draws": true,
         "hide_menu": true,
         "zoom_camera": {
-            "use": true,
+            "use": false,
             "step": 5
         }
     },
@@ -260,7 +261,6 @@
     "internal": {
         "last_time_join": 0,
         "main_window_frame": 0,
-
         "windows_customization": {},
         "hotkeys": {},
         "theme": {

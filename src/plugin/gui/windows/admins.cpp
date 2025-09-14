@@ -1,4 +1,5 @@
 #include "plugin/gui/windows/admins.h"
+#include "plugin/game/game.h"
 #include "plugin/gui/widgets/text.h"
 #include "plugin/misc/features/nickname_colors.h"
 #include "plugin/server/admins.h"
@@ -81,6 +82,9 @@ auto plugin::gui::windows::admins::render() -> void {
     if (!window_information.render)
         return;
 
+    auto [ size_x, size_y ] = game::get_screen_resolution();
+
+    ImGui::SetNextWindowPos({ size_x / 1.11953f, size_y / 2.35664f }, ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize({ window_information.window_width, 0 });
     ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoBackground);
     {

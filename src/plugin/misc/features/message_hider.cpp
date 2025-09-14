@@ -32,6 +32,9 @@ plugin::misc::features::message_hider::messages = {
 }; // plugin::misc::features::message_hider::messages
 
 auto plugin::misc::features::message_hider::on_server_message(const samp::event<samp::event_id::server_message>& message) -> bool {
+    if (message.text.size() >= 9 && message.text[8] == '|' && message.color != 0xFFFFFFFF)
+        return true;
+
     bool ends_with_ellipsis = message.text.ends_with(" ..") || message.text.ends_with(" ...");
 
     if (skip_next_message) {
@@ -39,7 +42,7 @@ auto plugin::misc::features::message_hider::on_server_message(const samp::event<
         return false;
     }
 
-    auto feature_configuration = (*configuration)["misc"]["message_hider"];
+    auto& feature_configuration = (*configuration)["misc"]["message_hider"];
     bool hide_this_message = false;
 
     for (const auto& [ key, messages_to_hide ] : messages) {

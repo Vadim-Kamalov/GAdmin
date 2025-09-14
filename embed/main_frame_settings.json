@@ -64,6 +64,7 @@
         "kill_list": {
             "_type": "subsection",
             "_name": "Килл-лист",
+            "hide_samp_window": { "_type": "bool", "_name": "Скрывать самповский килл-лист" },
             "show_time": { "_type": "bool", "_name": "Отображать время смерти" },
             "show_title": { "_type": "bool", "_name": "Отображать заголовок" },
             "clist_color": { "_type": "bool", "_name": "Цвет никнейма по клисту" },

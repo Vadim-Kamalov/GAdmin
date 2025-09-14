@@ -1,4 +1,5 @@
 #include "plugin/gui/windows/spectator_information.h"
+#include "plugin/game/game.h"
 #include "plugin/game/vehicle.h"
 #include "plugin/gui/style.h"
 #include "plugin/gui/widgets/hint.h"
@@ -222,6 +223,7 @@ auto plugin::gui::windows::spectator_information::render() -> void {
         return;
 
     std::vector<std::string> row_order = window_configuration["row_order"];
+    auto [ size_x, size_y ] = game::get_screen_resolution();
     std::vector<row> rows = get_rows();
 
     for (std::size_t i = 0; i < rows.size(); i++) {
@@ -230,6 +232,7 @@ auto plugin::gui::windows::spectator_information::render() -> void {
         std::swap(rows[new_index], rows[i]);
     }
 
+    ImGui::SetNextWindowPos({ size_x / 83.47826f, size_y / 2.17888f }, ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSizeConstraints({ 320, 0 }, { FLT_MAX, FLT_MAX });
     ImGui::PushStyleVarX(ImGuiStyleVar_WindowPadding, 0);
     ImGui::PushStyleVarY(ImGuiStyleVar_ItemSpacing, ImGui::GetStyle().ItemSpacing.y * 2);

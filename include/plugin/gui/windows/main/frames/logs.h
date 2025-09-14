@@ -26,6 +26,9 @@
 #include "plugin/gui/windows/main/widgets/submenu.h"
 #include "plugin/samp/events/server_message.h"
 #include "plugin/samp/events/player_death_notification.h"
+#include "plugin/samp/events/server_connect.h"
+#include "plugin/samp/events/server_quit.h"
+#include "plugin/samp/events/set_player_name.h"
 #include "plugin/string_utils.h"
 #include "plugin/types/color.h"
 #include "plugin/types/not_null.h"
@@ -49,6 +52,7 @@ private:
          ic_chat,
          ooc_chat,
          kills,
+         connections_disconnections,
          other
     }; // enum log_type_t : std::uint8_t
 
@@ -88,6 +92,10 @@ private:
     static auto is_continuation_start(const std::string& text) noexcept -> bool;
     static auto is_continuation_end(const std::string& text) noexcept -> bool;
     static auto trim_ellipsis(const std::string& text) noexcept -> std::string;
+
+    auto on_server_connect(const samp::event<samp::event_id::server_connect>& event) -> bool;
+    auto on_server_quit(const samp::event<samp::event_id::server_quit>& event) -> bool;
+    auto on_set_player_name(const samp::event<samp::event_id::set_player_name>& event) -> bool;
 
     auto on_unwrapped_message(const std::string& text, const types::color& color) -> void;
     auto on_server_message(const samp::event<samp::event_id::server_message>& message) -> bool;

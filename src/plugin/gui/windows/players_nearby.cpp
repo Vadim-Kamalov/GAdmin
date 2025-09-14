@@ -4,6 +4,7 @@
 #include "plugin/server/spectator.h"
 #include "plugin/server/user.h"
 #include "plugin/samp/player.h"
+#include "plugin/game/game.h"
 #include "plugin/plugin.h"
 
 auto plugin::gui::windows::players_nearby::get_window_information() const -> information_t {
@@ -92,7 +93,9 @@ auto plugin::gui::windows::players_nearby::render() -> void {
         return;
 
     auto window_information = get_window_information();
+    auto [ size_x, size_y ] = game::get_screen_resolution();
 
+    ImGui::SetNextWindowPos({ size_x / 1.13074f, size_y / 1.36992f }, ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize({ window_information.content_size.x, 0 });
     ImGui::SetNextWindowBgAlpha(0);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
