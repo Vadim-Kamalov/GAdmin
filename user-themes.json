@@ -52,16 +52,14 @@
     "author": "Timmy",
     "theme": {
       "interface_colors": {
-        "surface": [ "FF140E0A", "FF211713" ],
-        "text": [ "FFEED0D9", "FFCBB4A5" ],
-        "overlay": [ "FF2C211C", "FF453A35", "FF5E524C" ]
+        "surface": [ "FF0A0E14", "FF131721" ],
+        "text": [ "FFD9D0EE", "FFA5B4CB" ],
+        "overlay": [ "FF1C212C", "FF353A45", "FF4C525E" ]
       },
       "accent_colors": {
-        "red": "FF7F75FF",
-        "green": "FFA495FF",
-        "yellow": "FFA3E6FF",
-        "purple": "FFFF99C0",
-        "blue": "FFFFDD89"
+        "red": "FF757F7F",
+        "green": "FF95A4A4",
+        "yellow": "FFE6A3A3"
       }
     }
   }
