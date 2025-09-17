@@ -1,34 +1,74 @@
 #include "plugin/misc/features/display_id_in_chat.h"
 #include "plugin/samp/core/player_pool.h"
-#include "plugin/types/u8regex.h"
 #include "plugin/plugin.h"
+#include "plugin/samp/core/user.h"
+
+auto plugin::misc::features::display_id_in_chat::replace(const std::string& input, const std::string& target,
+                                                         const std::string& replacement) -> std::string
+{
+    std::string result = "";
+    std::size_t target_length = target.length();
+    std::size_t pos = 0;
+
+    while (pos < input.length()) {
+        std::size_t found = input.find(target, pos);
+
+        if (found == std::string::npos) {
+            result += input.substr(pos);
+            break;
+        }
+
+        bool has_bracket = false;
+        std::size_t check_pos = found + target_length;
+
+        while (check_pos < input.length() && std::isspace(input[check_pos]))
+            check_pos++;
+
+        if (check_pos < input.length() && input[check_pos] == '[')
+            has_bracket = true;
+
+        result += input.substr(pos, found - pos);
+
+        if (!has_bracket) {
+            result += replacement;
+            pos = found + target_length;
+
+            continue;
+        }
+
+        result += target;
+        pos = found + target_length;
+    }
+
+    return result;
+}
 
 auto plugin::misc::features::display_id_in_chat::on_server_message(const samp::event<samp::event_id::server_message>& message) const
     -> bool
 {
-    static constexpr ctll::fixed_string basic_pattern = "^\\w+.* ";
-    static constexpr ctll::fixed_string ic_chat_pattern = "^\\w+.* говорит:";
-    static constexpr ctll::fixed_string capture_pattern = "^([\\w ]+) (.*)";
+    std::string result = message.text;
 
-    if ((ctre::search<basic_pattern>(message.text) && message.color == 0xFF8054E7) ||
-        types::u8regex::search<ic_chat_pattern>(message.text))
-    {
-        auto [ whole, nickname_match, other ] = ctre::search<capture_pattern>(message.text);
+    for (std::uint16_t id = 0; id <= SERVER_MAX_PLAYERS; ++id) {
+        std::string nickname = "";
 
-        if (!whole)
-            return true;
+        if (id == samp::user::get_id())
+            nickname = samp::user::get_name();
+        else if (auto found_nickname = samp::player_pool::get_nickname(id))
+            nickname = *found_nickname;
         
-        std::string nickname = nickname_match.str();
-        
-        std::replace(nickname.begin(), nickname.end(), ' ', '_');
-        
-        auto possible_id = samp::player_pool::get_id(nickname);
+        if (nickname.empty())
+            continue;
 
-        if (!possible_id)
-            return true;
+        std::replace(nickname.begin(), nickname.end(), '_', ' ');
 
-        message.write_text(std::format("{}[{}] {}", nickname_match.str(), *possible_id, other.str()));
+        if (!result.contains(nickname))
+            continue;
+
+        result = replace(result, nickname, std::format("{}[{}]", nickname, id));
     }
+
+    if (result != message.text)
+        message.write_text(result);
 
     return true;
 }

@@ -112,8 +112,12 @@ auto plugin::gui::windows::spectator_information::render_centered_text(const std
             size = font->CalcTextSizeA(fonts_size, FLT_MAX, 0, text.c_str());
         }
 
-        render_centered_text(text, font);
-        render_centered_text(original.substr(text.length()), font);
+        ImGui::BeginGroup();
+        {
+            render_centered_text(text, font);
+            render_centered_text(original.substr(text.length()), font);
+        }
+        ImGui::EndGroup();
 
         return;
     }
@@ -217,9 +221,9 @@ auto plugin::gui::windows::spectator_information::get_rows() const -> std::vecto
 }
 
 auto plugin::gui::windows::spectator_information::render() -> void {
-    auto window_configuration = (*configuration)["windows"]["spectator_information"];
+    auto& window_configuration = (*configuration)["windows"]["spectator_information"];
 
-    if (!server::spectator::is_active() || !window_configuration["use"])
+    if (!window_configuration["use"] || !server::spectator::can_render())
         return;
 
     std::vector<std::string> row_order = window_configuration["row_order"];

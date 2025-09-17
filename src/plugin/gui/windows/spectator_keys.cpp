@@ -81,7 +81,7 @@ auto plugin::gui::windows::spectator_keys::get_keycaps(const samp::synchronizati
 auto plugin::gui::windows::spectator_keys::render() -> void {
     bool use = (*configuration)["windows"]["spectator_keys"];
 
-    if (!use || !server::spectator::is_active())
+    if (!use || !server::spectator::can_render())
         return;
 
     auto [ size_x, size_y ] = game::get_screen_resolution();

@@ -86,7 +86,7 @@ auto plugin::gui::windows::report::on_show_dialog(const samp::event<samp::event_
 
     if (!current_report.has_value())
         return true;
-    
+
     std::string dialog_text = dialog.text;
 
     if (auto matches = types::u8regex::search<report_information_pattern>(dialog_text); matches && current_report->text.empty()) {
@@ -97,9 +97,6 @@ auto plugin::gui::windows::report::on_show_dialog(const samp::event<samp::event_
         
         return false;
     }
-
-    if (!current_response.has_value())
-        return false; 
 
     if (dialog.style == samp::dialog::style::input) {
         dialog.send_response(samp::dialog::button::right, samp::dialog::list_item_none,
@@ -191,6 +188,9 @@ auto plugin::gui::windows::report::on_report_canceled() -> bool {
 }
 
 auto plugin::gui::windows::report::open_window() -> void {
+    if (reset)
+        return;
+
     time_switched_window = std::chrono::steady_clock::now();
     active = focus = true;
     notification_active = false;
@@ -202,6 +202,9 @@ auto plugin::gui::windows::report::open_window_with_dialog() -> void {
 }
 
 auto plugin::gui::windows::report::close_window() -> void {
+    if (reset)
+        return;
+
     time_switched_window = std::chrono::steady_clock::now();
     closing = true;
     child->disable_cursor();
@@ -213,8 +216,8 @@ auto plugin::gui::windows::report::close_window() -> void {
 }
 
 auto plugin::gui::windows::report::close_dialog() -> void {
-    dialog_active = false;
     samp::dialog::send_response(dialog_id, samp::dialog::button::left);
+    dialog_active = false;
     close_window();
 }
 
@@ -237,6 +240,9 @@ auto plugin::gui::windows::report::get_time_active() const -> std::string {
 }
 
 auto plugin::gui::windows::report::can_send_response() -> bool {
+    if (reset)
+        return false;
+
     if (answer_input.empty()) {
         time_hint_active = std::chrono::steady_clock::now();
         return false;
@@ -259,12 +265,9 @@ auto plugin::gui::windows::report::send_input_response(const dialog_option& opti
 }
 
 auto plugin::gui::windows::report::close_report() -> void {
-    current_report = {};
-    current_response = {};
+    reset = true;
     dialog_active = false;
-    
-    answer_input.clear();
-    close_window();
+    current_response = {};
 }
 
 auto plugin::gui::windows::report::render() -> void {
@@ -276,8 +279,16 @@ auto plugin::gui::windows::report::render() -> void {
     if (!closing && window_alpha != 255 && !child->is_cursor_active())
         child->enable_cursor();
 
-    if (window_alpha == 0 && closing)
+    if (window_alpha == 0 && closing) {
         closing = active = false;
+        if (reset) {
+            current_report = {};
+            answer_input.clear();
+            reset = false;
+
+            return;
+        }
+    }
 
     auto [ size_x, size_y ] = game::get_screen_resolution();
 
@@ -327,7 +338,7 @@ auto plugin::gui::windows::report::render() -> void {
                 .render();
             
             for (const auto& [ index, action_button ] : get_action_buttons() | std::views::enumerate) {
-                if (action_button.widget.render())
+                if (action_button.widget.render() && !reset)
                     action_button.callback();
 
                 if ((index + 1) % max_buttons_per_line != 0)
@@ -383,6 +394,15 @@ auto plugin::gui::windows::report::on_event(const samp::event_info& event) -> bo
         if (event == samp::event_id::show_dialog) {
             return on_show_dialog(event.create<samp::event_id::show_dialog>());
         }
+    }
+
+    return true;
+}
+
+auto plugin::gui::windows::report::on_event(unsigned int message, WPARAM wparam, LPARAM lparam) -> bool {
+    if (message == WM_KEYUP && wparam == VK_ESCAPE && active) {
+        close_window();
+        return false;
     }
 
     return true;

@@ -42,6 +42,7 @@ private:
     static inline spectator_information information;
     static inline bool keys_down[std::to_underlying(samp::synchronization_key::count)];
 
+    static inline bool can_render_interface = true;
     static inline bool checking_statistics = false;
     static inline std::chrono::steady_clock::time_point last_reload;
 
@@ -56,6 +57,7 @@ private:
     static auto on_passenger_synchronization(const samp::packet<samp::event_id::passenger_synchronization>& synchronization) -> bool;
     static auto on_bullet_synchronization(const samp::packet<samp::event_id::bullet_synchronization>& synchronization) -> bool;
 
+    static auto switch_interface_render_state(gui::hotkey&) -> void;
     static auto update_available_information() noexcept -> void;
     static auto convert_possible_absence_text(const std::string& text) noexcept -> std::string;
     static auto clear_keys_down() noexcept -> void;
@@ -82,7 +84,7 @@ public:
         "Покинуть /sp"                      ///< menu_option::exit
     }; // static constexpr types::zstring_t menu_option_descriptions[]
 public:
-    static inline std::string nickname = "";
+    static inline std::string nickname = "Неизвестно";
     static inline std::uint16_t id = SERVER_MAX_PLAYERS + 1;
     static inline samp::remote_player player;
 
@@ -94,6 +96,7 @@ public:
     static inline std::chrono::steady_clock::time_point last_checked;
 
     static inline auto is_active() noexcept -> bool;
+    static inline auto can_render() noexcept -> bool;
     static inline auto set_state(bool state) noexcept -> void;
 
     static auto assign(std::uint16_t new_id) noexcept -> void;
@@ -113,6 +116,10 @@ public:
 
 inline auto plugin::server::spectator::is_active() noexcept -> bool {
     return active && player.is_available() && user::is_on_alogin();
+}
+
+inline auto plugin::server::spectator::can_render() noexcept -> bool {
+    return is_active() && can_render_interface;
 }
 
 inline auto plugin::server::spectator::set_state(bool state) noexcept -> void {

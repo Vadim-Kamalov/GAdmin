@@ -12,6 +12,7 @@ class gui_initializer final {
 private:
     int cursor_last_x = -1;
     int cursor_last_y = -1;
+    bool cursor_active = false;
 
     auto push_window_customization(const std::string_view& id) const -> std::uint8_t;
     auto pop_window_customization(std::uint8_t times) const -> void;
@@ -30,6 +31,7 @@ public:
     auto main_loop() -> void;
 
     auto is_cursor_active() const -> bool;
+    auto center_cursor() -> void;
     auto enable_cursor() -> void;
     auto disable_cursor() -> void;
     auto switch_cursor() -> void;

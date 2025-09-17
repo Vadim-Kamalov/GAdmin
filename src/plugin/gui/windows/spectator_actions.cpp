@@ -28,9 +28,9 @@ auto plugin::gui::windows::from_json(const nlohmann::json& json, spectator_actio
 }
 
 auto plugin::gui::windows::spectator_actions::render() -> void {
-    auto window_configuration = (*configuration)["windows"]["spectator_actions"];
+    auto& window_configuration = (*configuration)["windows"]["spectator_actions"];
 
-    if (!server::spectator::is_active() || !window_configuration["use"])
+    if (!window_configuration["use"] || !server::spectator::can_render())
         return;
 
     server::spectator_information information = server::spectator::get_information();

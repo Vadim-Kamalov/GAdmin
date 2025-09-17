@@ -104,7 +104,7 @@ auto plugin::gui::windows::main::initializer::on_event(const samp::event_info& e
 }
 
 auto plugin::gui::windows::main::initializer::on_event(unsigned int message, WPARAM wparam, LPARAM) -> bool {
-    if (message == WM_KEYUP && wparam == VK_ESCAPE && active) {
+    if (message == WM_KEYDOWN && wparam == VK_ESCAPE && active) {
         switch_window();
         return false;
     }

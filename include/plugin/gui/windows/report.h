@@ -89,6 +89,7 @@ private:
     bool closing = false;
     bool active = false;
     bool focus = false;
+    bool reset = false;
     bool dialog_active = false;
     bool notification_active = false;
 
@@ -127,18 +128,21 @@ private:
 public:
     inline auto get_id() const -> types::zstring_t override;
     inline auto get_name() const -> types::zstring_t override;
+    
+    auto render() -> void override;
+
+    auto on_event(const samp::event_info& event) -> bool override;
+    auto on_event(unsigned int message, WPARAM wparam, LPARAM lparam) -> bool override;
 
     /// Create report window instance.
     ///
-    /// @param child GUI initializer.
-    /// @return Unique pointer to window
+    /// @param child[in] GUI initializer.
+    /// @return          Unique pointer to window
     static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
-    auto render() -> void override;
-    auto on_event(const samp::event_info& event) -> bool override;
 
-    /// Constructor.
+    /// Construct window.
     ///
-    /// @param child GUI initializer.
+    /// @param child[in] GUI initializer.
     explicit report(types::not_null<gui_initializer*> child);
 }; // class report final : public window 
 

@@ -49,6 +49,7 @@ private:
     bool need_to_update_cursor = false;
 
     std::optional<teleport_information_t> teleport_information;
+    gui_initializer* gui = nullptr;
 
     auto stop_selecting_place() -> void;
 public:

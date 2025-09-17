@@ -2,13 +2,14 @@
 #include "plugin/game/ped_model.h"
 #include "plugin/game/vehicle.h"
 #include "plugin/gui/hotkey.h"
+#include "plugin/gui/icon.h"
+#include "plugin/gui/notify.h"
 #include "plugin/samp/core/vehicle.h"
 #include "plugin/samp/core/dialog.h"
 #include "plugin/samp/core/player_pool.h"
 #include "plugin/samp/utils.h"
 #include "plugin/game/weapon.h"
 #include "plugin/plugin.h"
-#include "plugin/log.h"
 #include "plugin/types/u8regex.h"
 
 using namespace std::chrono_literals;
@@ -119,16 +120,20 @@ auto plugin::server::spectator::on_remove_3d_text(const samp::event<samp::event_
 
 auto plugin::server::spectator::on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog) -> bool {
     static constexpr ctll::fixed_string warnings_pattern = "Предупреждения: (\\d+)";
+    static constexpr ctll::fixed_string start_pattern = "Информация о игроке (.+)\\[\\d+]";
     static constexpr ctll::fixed_string information_pattern =
         "Банк: \\$([^\\n]+).*Фракция: ([^\\n]+).*Должность: ([^\\n]+).*Транспорт: ([^\\n]+).*"
         "Дом: ([^\\n]+).*Премиум аккаунт: ([^\\n]+).*Дата регистрации: ([^\\n]+)";
 
-    if (!dialog.text.contains("Информация о игроке") || !checking_statistics || !active)
+    std::string text = string_utils::remove_samp_colors(dialog.text);
+    auto dialog_start = types::u8regex::search<start_pattern>(text);
+
+    if (!dialog_start || !checking_statistics || !active)
         return true;
 
-    std::string text = string_utils::remove_samp_colors(dialog.text);
-    auto matches = types::u8regex::search<warnings_pattern>(text);
+    nickname = dialog_start.get_string<1>();
 
+    auto matches = types::u8regex::search<warnings_pattern>(text);
     information.warnings = (matches) ? std::stoul(matches.get_string<1>()) : 0;
 
     if (auto matches = types::u8regex::search<information_pattern>(text)) {
@@ -291,6 +296,17 @@ auto plugin::server::spectator::on_bullet_synchronization(const samp::packet<sam
     return true;
 }
 
+auto plugin::server::spectator::switch_interface_render_state(gui::hotkey&) -> void {
+    using namespace gui;
+
+    can_render_interface ^= true;
+
+    std::string postfix = (can_render_interface) ? " показаны." : " скрыты.";
+
+    notify::send(notification("Интерфейс в режиме наблюдения", "Теперь окна в режиме наблюдения" + postfix,
+                              ICON_WINDOW));
+}
+
 auto plugin::server::spectator::update_available_information() noexcept -> void {
     if (!is_active())
         return;
@@ -316,28 +332,16 @@ auto plugin::server::spectator::clear_keys_down() noexcept -> void {
 
 auto plugin::server::spectator::assign(std::uint16_t new_id) noexcept -> void {
     auto now = std::chrono::steady_clock::now();
-    
-    if (id == new_id || now - last_checked < 1s || samp::dialog::is_active() || checking_statistics)
-        return;
-    
-    auto new_nickname = samp::player_pool::get_nickname(new_id);
-
-    if (!new_nickname) {
-        log::error("failed to server::spectator::assign({}), player_pool::error = {} (on get_nickname)",
-                   new_id, std::to_underlying(new_nickname.error()));
-        return;
-    }
-    
-    auto new_player = samp::player_pool::get_remote_player(new_id);
-
-    if (!new_player || !new_player->get_ped().is_available())
-        return; // No need to report that because it occurs very often (server-related problems?).
 
     id = new_id;
-    nickname = *new_nickname;
-    player = *new_player;
     active = true;
-
+    
+    if (auto new_player = samp::player_pool::get_remote_player(new_id); new_player && new_player->get_ped().is_available())
+        player = *new_player;
+    
+    if (now - last_checked < 1s || samp::dialog::is_active() || checking_statistics)
+        return;
+    
     send_menu_option<menu_option::statistics>();
     clear_keys_down();
 
@@ -432,7 +436,10 @@ auto plugin::server::spectator::register_hotkeys(types::not_null<gui::hotkey_han
             .with_callback([](auto&) { send_menu_option<menu_option::next>(); }),
 
         hotkey("Предыдущий игрок в /sp", key_bind({ VK_LEFT, 0 }, bind_condition::in_spectator))
-            .with_callback([](auto&) { send_menu_option<menu_option::back>(); })
+            .with_callback([](auto&) { send_menu_option<menu_option::back>(); }),
+
+        hotkey("Скрыть/показать интерфейс в /sp", key_bind({ 'N', 0 }, bind_condition::in_spectator))
+            .with_callback(switch_interface_render_state)
     };
 
     for (auto& hotkey : hotkeys)

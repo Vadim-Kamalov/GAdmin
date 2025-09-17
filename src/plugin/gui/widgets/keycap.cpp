@@ -1,9 +1,9 @@
 #include "plugin/gui/widgets/keycap.h"
 #include "plugin/gui/animation.h"
 
-using namespace std::chrono_literals;
-
 auto plugin::gui::widgets::keycap::render() const -> void {
+    using namespace std::chrono_literals;
+
     types::color active_color = ImGui::GetColorU32(ImGuiCol_FrameBgActive);
     types::color default_color = ImGui::GetColorU32(ImGuiCol_FrameBg);
 

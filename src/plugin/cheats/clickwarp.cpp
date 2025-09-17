@@ -26,7 +26,6 @@
 #include "plugin/server/user.h"
 #include "plugin/plugin.h"
 #include "plugin/types/color.h"
-#include "plugin/game/cursor.h"
 #include <sstream>
 
 auto plugin::cheats::clickwarp::stop_selecting_place() -> void {
@@ -42,16 +41,23 @@ auto plugin::cheats::clickwarp::on_alogin_new_state(bool state) -> void {
 }
 
 auto plugin::cheats::clickwarp::on_event(unsigned int message, WPARAM wparam, LPARAM lparam) -> bool {
+    if (gui == nullptr)
+        return true;
+
     bool use = (*configuration)["cheats"]["clickwarp"];
 
     if (!use || !server::user::is_on_alogin() || server::spectator::is_active())
        return true;
 
     switch (message) {
-        case WM_MBUTTONDOWN:
-            game::cursor::set_state(true);
+        case WM_MBUTTONDOWN: {
+            gui->center_cursor();
+            gui->enable_cursor();
+
             selecting_place_to_warp = true;
+
             return false;
+        }
 
         case WM_LBUTTONDOWN: {
             if (!selecting_place_to_warp || !teleport_information.has_value())
@@ -74,7 +80,7 @@ auto plugin::cheats::clickwarp::on_event(unsigned int message, WPARAM wparam, LP
             }
 
             stop_selecting_place();
-            game::cursor::set_state(false);
+            gui->disable_cursor();
 
             return false;
         }
@@ -84,6 +90,9 @@ auto plugin::cheats::clickwarp::on_event(unsigned int message, WPARAM wparam, LP
 }
 
 auto plugin::cheats::clickwarp::render(types::not_null<gui_initializer*> child) -> void {
+    if (gui == nullptr)
+        gui = child.get();
+
     if (!selecting_place_to_warp)
         return;
 
