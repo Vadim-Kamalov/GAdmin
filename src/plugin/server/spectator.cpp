@@ -339,12 +339,13 @@ auto plugin::server::spectator::assign(std::uint16_t new_id) noexcept -> void {
     if (auto new_player = samp::player_pool::get_remote_player(new_id); new_player && new_player->get_ped().is_available())
         player = *new_player;
     
-    if (now - last_checked < 1s || samp::dialog::is_active() || checking_statistics)
+    if (previous_id == id || now - last_checked < 1s || samp::dialog::is_active() || checking_statistics)
         return;
     
     send_menu_option<menu_option::statistics>();
     clear_keys_down();
 
+    previous_id = id;
     checking_statistics = true;
     camera_switch_state = camera_switch_state_t::none;
     last_checked = now;

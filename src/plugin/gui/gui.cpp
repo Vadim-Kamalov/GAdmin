@@ -24,6 +24,16 @@
 #include <windows.h>
 #include <imgui.h>
 
+plugin::types::versioned_address_container<std::uintptr_t>
+plugin::gui_initializer::input_handler_address = { 0x5DA80, 0x60E20, 0x61590, 0x61010 };
+
+auto plugin::gui_initializer::input_handler_hooked(const decltype(input_handler_hook)& hook, unsigned int char_code) -> bool {
+    if (ImGui::GetCurrentContext() != nullptr && ImGui::GetIO().WantTextInput)
+        return true;
+
+    return hook.call_trampoline(char_code);
+}
+
 auto plugin::gui_initializer::push_window_customization(const std::string_view& id) const -> std::uint8_t {
     nlohmann::json& entries = (*configuration)["internal"]["windows_customization"][id];
 
@@ -78,6 +88,10 @@ auto plugin::gui_initializer::on_event(unsigned int message, WPARAM wparam, LPAR
 }
 
 auto plugin::gui_initializer::on_samp_initialize() -> void {
+    input_handler_hook.set_dest(**input_handler_address);
+    input_handler_hook.set_cb(&input_handler_hooked);
+    input_handler_hook.install();
+
     for (const auto& window : registered_windows)
         window->on_samp_initialize();
 }

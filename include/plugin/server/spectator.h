@@ -37,6 +37,7 @@ struct spectator_information final {
 class spectator final {
 private:
     static inline bool active = false;
+    static inline std::uint16_t previous_id = 0;
     static inline std::uint16_t text_draw_id = 0;
     static inline std::uint16_t stage_3d_text_id = 0;
     static inline spectator_information information;
@@ -62,8 +63,18 @@ private:
     static auto convert_possible_absence_text(const std::string& text) noexcept -> std::string;
     static auto clear_keys_down() noexcept -> void;
 public:
-    enum class camera_switch_state_t : std::uint8_t { none, player, vehicle };
-    enum class platform_t : std::uint8_t { none, desktop, mobile };
+    enum class camera_switch_state_t : std::uint8_t {
+        none,
+        player,
+        vehicle
+    }; // enum class camera_switch_state_t : std::uint8_t
+
+    enum class platform_t : std::uint8_t {
+        none,
+        desktop,
+        mobile
+    }; // enum class platform_t : std::uint8_t
+
     enum class menu_option : std::uint8_t {
         next,
         reload,
@@ -83,7 +94,7 @@ public:
         "Открыть инвентарь игрока",         ///< menu_option::frisk
         "Покинуть /sp"                      ///< menu_option::exit
     }; // static constexpr types::zstring_t menu_option_descriptions[]
-public:
+
     static inline std::string nickname = "Неизвестно";
     static inline std::uint16_t id = SERVER_MAX_PLAYERS + 1;
     static inline samp::remote_player player;

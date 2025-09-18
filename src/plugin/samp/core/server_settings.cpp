@@ -11,3 +11,7 @@ auto plugin::samp::server_settings::set_name_tags_render_behind_wall(bool state)
 {
     name_tags_render_behind_wall_offset.write(state, *pointer);
 }
+
+auto plugin::samp::server_settings::set_name_tags_render_state(bool state) const -> void {
+    name_tags_render_state.write(state, *pointer);
+}

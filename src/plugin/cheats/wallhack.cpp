@@ -73,6 +73,7 @@ auto plugin::cheats::wallhack::render(types::not_null<gui_initializer*> child) -
     auto& cheat_configuration = (*configuration)["cheats"]["wallhack"];
 
     if (!cheat_configuration["use"]) {
+        samp::net_game::get_server_settings().set_name_tags_render_state(true);
         set_wallhack_state(false);
         return;
     }
@@ -83,6 +84,8 @@ auto plugin::cheats::wallhack::render(types::not_null<gui_initializer*> child) -
     float font_size = cheat_configuration["font_size"];
     ImDrawList* draw_list = ImGui::GetBackgroundDrawList();
     ImFont* font = child->fonts->bold;
+
+    samp::net_game::get_server_settings().set_name_tags_render_state(false);
 
     for (const auto& [ player, ped ] : samp::player::get_stream_players()) {
         if (server::spectator::is_active() && player.id == server::spectator::id)
