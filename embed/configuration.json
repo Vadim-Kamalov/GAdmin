@@ -142,7 +142,7 @@
 
         "wallhack": {
             "use": true,
-            "custom_render": true,
+            "custom_render": false,
             "font_size": 18
         },
 
@@ -238,7 +238,7 @@
         },
 
         "admin_info": {
-            "use": false,
+            "use": true,
             "font_size": 16
         },
         

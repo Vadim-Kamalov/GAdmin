@@ -72,7 +72,9 @@ auto plugin::cheats::wallhack::register_hotkeys(types::not_null<gui::hotkey_hand
 auto plugin::cheats::wallhack::render(types::not_null<gui_initializer*> child) -> void {
     auto& cheat_configuration = (*configuration)["cheats"]["wallhack"];
 
-    if (!cheat_configuration["use"]) {
+    if ((!cheat_configuration["use"] || !cheat_configuration["custom_render"]) &&
+        (samp::get_base() != 0 && samp::net_game::instance_container->read() != 0))
+    {
         samp::net_game::get_server_settings().set_name_tags_render_state(true);
         set_wallhack_state(false);
         return;
