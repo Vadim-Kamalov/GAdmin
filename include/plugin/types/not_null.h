@@ -1,3 +1,21 @@
+/// GAdmin - Plugin simplifying the work of administrators on the Gambit-RP
+/// Copyright (C) 2023-2025 The Contributors.
+///
+/// This program is free software: you can redistribute it and/or modify
+/// it under the terms of the GNU General Public License as published by
+/// the Free Software Foundation, either version 3 of the License, or
+/// (at your option) any later version.
+///
+/// This program is distributed in the hope that it will be useful,
+/// but WITHOUT ANY WARRANTY; without even the implied warranty of
+/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+/// GNU General Public License for more details.
+///
+/// You should have received a copy of the GNU General Public License
+/// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+///
+/// SPDX-License-Identifier: GPL-3.0-only
+
 #ifndef GADMIN_PLUGIN_TYPES_NOT_NULL_H
 #define GADMIN_PLUGIN_TYPES_NOT_NULL_H
 
@@ -50,16 +68,16 @@ public:
     constexpr auto operator->() const { return get(); }
     constexpr auto operator*() const { return *get(); }
 
-    not_null(std::nullptr_t) = delete;
-    auto operator=(std::nullptr_t) -> not_null& = delete;
+    not_null(std::nullptr_t) = delete("construction with null pointer is not allowed");
+    auto operator=(std::nullptr_t) -> not_null& = delete("null pointer assigning is not allowed");
 
-    auto operator++() -> not_null& = delete;
-    auto operator--() -> not_null& = delete;
-    auto operator++(int) -> not_null = delete;
-    auto operator--(int) -> not_null = delete;
-    auto operator+=(std::ptrdiff_t) -> not_null& = delete;
-    auto operator-=(std::ptrdiff_t) -> not_null& = delete;
-    auto operator[](std::ptrdiff_t) const -> void = delete;
+    auto operator++() -> not_null& = delete("unwanted operator: pointers only point to single objects");
+    auto operator--() -> not_null& = delete("unwanted operator: pointers only point to single objects");
+    auto operator++(int) -> not_null = delete("unwanted operator: pointers only point to single objects");
+    auto operator--(int) -> not_null = delete("unwanted operator: pointers only point to single objects");
+    auto operator+=(std::ptrdiff_t) -> not_null& = delete("unwanted operator: pointers only point to single objects");
+    auto operator-=(std::ptrdiff_t) -> not_null& = delete("unwanted operator: pointers only point to single objects");
+    auto operator[](std::ptrdiff_t) const -> void = delete("unwanted operator: pointers only point to single objects");
 }; // class not_null final
 
 } // namespace types

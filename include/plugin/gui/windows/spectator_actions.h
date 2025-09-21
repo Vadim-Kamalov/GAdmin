@@ -33,26 +33,32 @@ namespace plugin::gui::windows {
 /// Supports customizable buttons with different action types.
 class spectator_actions final : public window {
 public:
-    /// Button configuration structure
+    /// Button configuration structure for the JSON interface.
     struct button final {
+        /// Whether need to render this button.
         bool use;
+
+        /// Button name.
         std::string name;
+        
+        /// Button action on click: evaluate binder's string or send action to the spectator menu.
         std::variant<std::string, int> action;
     }; // struct button final
     
     inline auto get_id() const -> types::zstring_t override;
     inline auto get_name() const -> types::zstring_t override;
-    
-    /// Create spectator actions window instance.
-    ///
-    /// @param child GUI initializer.
-    /// @return Unique pointer to window.
-    static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
-    auto render() -> void override;
 
-    /// Constructor.
+    auto render() -> void override;
+    
+    /// Create instance of the current window.
     ///
-    /// @param child GUI initializer.
+    /// @param child[in] Valid pointer to the GUI initializer.
+    /// @return          Unique pointer to window.
+    static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
+
+    /// Construct the window.
+    ///
+    /// @param child[in] Valid pointer to the GUI initializer.
     explicit spectator_actions(types::not_null<gui_initializer*> child)
         : window(child, get_id()) {}
 }; // class spectator_actions final : public window

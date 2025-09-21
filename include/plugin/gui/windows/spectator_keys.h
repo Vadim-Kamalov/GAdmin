@@ -47,17 +47,17 @@ public:
     inline auto get_id() const -> types::zstring_t override;
     inline auto get_name() const -> types::zstring_t override;
 
-    /// Window for displaying spectator keys.
-    ///
-    /// Shows current state of synchronization keys in spectator mode.
-    /// Provides visual representation of pressed keys with keycaps.
-    static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
     auto render() -> void override;
 
-    /// Create spectator keys window instance.
+    /// Create instance of the current window.
     ///
-    /// @param child GUI initializer.
-    /// @return Unique pointer to window.
+    /// @param child[in] Valid pointer to the GUI initializer.
+    /// @return          Unique pointer to window.
+    static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
+
+    /// Construct the window.
+    ///
+    /// @param child[in] Valid pointer to the GUI initializer.
     explicit spectator_keys(types::not_null<gui_initializer*> child)
         : window(child, get_id()) {}
 }; // class spectator_keys : public window

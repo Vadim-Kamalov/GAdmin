@@ -1,11 +1,34 @@
+/// GAdmin - Plugin simplifying the work of administrators on the Gambit-RP
+/// Copyright (C) 2023-2025 The Contributors.
+///
+/// This program is free software: you can redistribute it and/or modify
+/// it under the terms of the GNU General Public License as published by
+/// the Free Software Foundation, either version 3 of the License, or
+/// (at your option) any later version.
+///
+/// This program is distributed in the hope that it will be useful,
+/// but WITHOUT ANY WARRANTY; without even the implied warranty of
+/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+/// GNU General Public License for more details.
+///
+/// You should have received a copy of the GNU General Public License
+/// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+///
+/// SPDX-License-Identifier: GPL-3.0-only
+
 #include "plugin/samp/network/event_handler.h"
 #include "plugin/game/game.h"
 #include "plugin/samp/events/event.h"
 #include "plugin/samp/network/bit_stream.h"
-#include "plugin/samp/network/address.h"
 #include "plugin/samp/samp.h"
 #include "plugin/log.h"
 #include <cstdint>
+
+plugin::types::versioned_address_container<std::uintptr_t>
+plugin::samp::event_handler::rak_client_interface_constructor_container = { 0x33DC0, 0x37170, 0x378B0, 0x37370 };
+
+plugin::types::versioned_address_container<std::uintptr_t>
+plugin::samp::event_handler::incoming_rpc_handler_container = { 0x372F0, 0x3A6A0, 0x3ADE0, 0x3A8A0 };
 
 auto plugin::samp::event_handler::can_process_event() const -> bool {
     using namespace std::chrono_literals;
@@ -22,7 +45,7 @@ auto plugin::samp::event_handler::rak_client_interface_constructor_hooked(const 
     if (rak_client_interface) {
         rak_peer = reinterpret_cast<void*>(rak_client_interface - 0xDDE);
 
-        incoming_rpc_handler_hook.set_dest(address::incoming_rpc_handler());
+        incoming_rpc_handler_hook.set_dest(**incoming_rpc_handler_container);
         incoming_rpc_handler_hook.set_cb(std::bind(&event_handler::incoming_rpc_handler_hooked, this, _1, _2, _3, _4, _5));
         incoming_rpc_handler_hook.install();
 
@@ -187,8 +210,8 @@ auto plugin::samp::event_handler::get_incoming_rpc_trampoline() const -> signatu
     return incoming_rpc_handler_hook.get_trampoline();
 }
 
-auto plugin::samp::event_handler::attach(callback_t new_callback) -> void {
-    callback = new_callback;
+auto plugin::samp::event_handler::set_callback(callback_t new_callback) -> void {
+    callback = std::move(new_callback);
 }
 
 auto plugin::samp::event_handler::main_loop() -> void {
@@ -202,7 +225,7 @@ auto plugin::samp::event_handler::main_loop() -> void {
     if (initialized || !get_base() || get_version() == version::unknown)
         return;
 
-    rak_client_interface_constructor_hook.set_dest(address::rak_client_interface_constructor());
+    rak_client_interface_constructor_hook.set_dest(**rak_client_interface_constructor_container);
     rak_client_interface_constructor_hook.set_cb(std::bind(&event_handler::rak_client_interface_constructor_hooked, this, std::placeholders::_1));
     rak_client_interface_constructor_hook.install();
 

@@ -54,7 +54,7 @@ namespace plugin::misc {
 ///
 ///         [OPCODE_DATE][YY][MM][DD][OPCODE_ENTRY][COUNT][VALUE_1][VALUE_2]...[VALUE_N]
 /// 
-/// Data is handled by `features::statistics_updater`.
+/// Data is handled by the `features::statistics_updater`.
 class statistics_t final {
 public:
     /// Represents a date: year, month and day.
@@ -88,7 +88,7 @@ public:
 
         /// Get current local hour range: `[current_hour; (current_hour + 1) % 24]`
         ///
-        /// @return Curretn hour range.
+        /// @return Current hour range.
         static auto current_hours() noexcept -> range_t;
     }; // struct range_t final
 

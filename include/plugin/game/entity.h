@@ -37,6 +37,7 @@ class vehicle;
 /// Base class of `game::placeable`. Represents an in-game entity and its methods.
 class entity {
 public:
+    /// Entity handle.
     types::dynamic_address<std::uintptr_t> handle;
 protected:
     /// Set the coordinates for the entity.

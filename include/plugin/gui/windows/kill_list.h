@@ -81,15 +81,15 @@ public:
     auto render() -> void override;
     auto on_event(const samp::event_info& event) -> bool override;
 
-    /// Create kill list window instance.
+    /// Create instance of the current window.
     ///
-    /// @param child[in] GUI initializer.
+    /// @param child[in] Valid pointer to the GUI initializer.
     /// @return          Unique pointer to window.
     static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
 
-    /// Construct window.
+    /// Construct the window.
     ///
-    /// @param child[in] GUI initializer.
+    /// @param child[in] Valid pointer to the GUI initializer.
     explicit kill_list(types::not_null<gui_initializer*> child)
         : window(child, get_id()),
           bold_font(child->fonts->bold),

@@ -21,7 +21,6 @@
 #include "plugin/gui/icon.h"
 #include "plugin/gui/notify.h"
 #include "plugin/samp/player.h"
-#include "plugin/server/spectator.h"
 #include "plugin/server/user.h"
 #include "plugin/game/game.h"
 #include "plugin/plugin.h"
@@ -47,6 +46,7 @@ auto plugin::cheats::wallhack::hotkey_callback(gui::hotkey& hotkey) -> void {
     if (!server::user::is_on_alogin())
         return;
 
+    samp::net_game::get_server_settings().set_name_tags_render_state(cheat_active);
     set_wallhack_state(!cheat_active);
 
     std::string notify_title = "WallHack " + std::string((cheat_active) ? "включен" : "выключен");
@@ -88,9 +88,6 @@ auto plugin::cheats::wallhack::render(types::not_null<gui_initializer*> child) -
     samp::net_game::get_server_settings().set_name_tags_render_state(false);
 
     for (const auto& [ player, ped ] : samp::player::get_stream_players()) {
-        if (server::spectator::is_active() && player.id == server::spectator::id)
-            continue;
-
         game::ped game_ped = ped.get_game_ped();
 
         if (!game_ped.is_on_screen())

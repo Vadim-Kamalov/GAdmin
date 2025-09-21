@@ -62,16 +62,17 @@ public:
     inline auto get_id() const -> types::zstring_t override;
     inline auto get_name() const -> types::zstring_t override;
 
-    /// Create players nearby window instance.
-    ///
-    /// @param child GUI initializer.
-    /// @return Unique pointer to window.
-    static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
     auto render() -> void override;
 
-    /// Constructor.
+    /// Create instance of the current window.
     ///
-    /// @param child GUI initializer
+    /// @param child[in] Valid pointer to the GUI initializer.
+    /// @return          Unique pointer to window.
+    static auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
+
+    /// Construct the window.
+    ///
+    /// @param child[in] Valid pointer to the GUI initializer.
     explicit players_nearby(types::not_null<gui_initializer*> child)
         : window(child, get_id()),
           title_font(child->fonts->bold),
