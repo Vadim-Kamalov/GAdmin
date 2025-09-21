@@ -18,5 +18,8 @@
 
 #include "plugin/samp/core/game.h"
 
+plugin::types::versioned_address_container<int, plugin::types::version_container_option::offsets>
+plugin::samp::game::cursor_mode_offsets = { 0x55, 0x61, 0x61, 0x61 };
+
 plugin::types::versioned_address_container<std::uintptr_t>
 plugin::samp::game::instance_container = { 0x21A10C, 0x26E96C, 0x26EBAC, 0x2ACA3C };

@@ -332,12 +332,19 @@ auto __stdcall plugin::plugin_initializer::on_unhandled_exception(EXCEPTION_POIN
 }
 
 plugin::plugin_initializer::plugin_initializer() {
-    std::setlocale(LC_ALL, "Russian_Russia.UTF8");
+    std::string command_line = GetCommandLineA();
+
     initialize_logging();
 
     log::info("GAdmin v" PROJECT_VERSION " loaded. Copyright (C) 2023-2025 The Contributors");
     log::info("samp.dll base address: 0x{:X}", samp::get_base());
 
+    if (!command_line.contains(SERVER_HOST_ADDRESS)) {
+        log::fatal("plugin works only on \"sa.gambit-rp.ru:7777\" server");
+        return;
+    }
+
+    std::setlocale(LC_ALL, "Russian_Russia.UTF8");
     create_and_initialize_files();
     initialize_event_handler();
 

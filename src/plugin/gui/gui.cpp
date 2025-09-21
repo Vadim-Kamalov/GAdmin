@@ -37,6 +37,7 @@
 #include "plugin/gui/windows/command_requester.h"
 #include "plugin/gui/windows/report.h"
 #include "plugin/server/spectator.h"
+#include "plugin/samp/core/game.h"
 #include "plugin/plugin.h"
 #include <ranges>
 #include <windows.h>
@@ -45,11 +46,43 @@
 plugin::types::versioned_address_container<std::uintptr_t>
 plugin::gui_initializer::input_handler_address = { 0x5DA80, 0x60E20, 0x61590, 0x61010 };
 
+plugin::types::versioned_address_container<std::uintptr_t>
+plugin::gui_initializer::set_cursor_mode_address = { 0x9BD30, 0x9FFE0, 0xA06F0, 0xA0530 };
+
 auto plugin::gui_initializer::input_handler_hooked(const decltype(input_handler_hook)& hook, unsigned int char_code) -> bool {
     if (ImGui::GetCurrentContext() != nullptr && ImGui::GetIO().WantTextInput)
         return true;
 
     return hook.call_trampoline(char_code);
+}
+
+auto plugin::gui_initializer::set_cursor_mode_hooked(const decltype(set_cursor_mode_hook)& hook, std::uintptr_t game,
+                                                     int mode, int immediately_hide) -> int
+{
+    int current_cursor_mode = samp::game::cursor_mode_offsets->read(game);
+    int result = hook.call_trampoline(game, mode, immediately_hide);
+
+    if ((mode == 2 || mode == 3) && cursor_active && !cursor_state_intercepted) {
+        cursor_active = false;
+        cursor_state_intercepted = true;
+
+        game::cursor::set_state(false);
+
+        return result;
+    }
+
+    if (!cursor_active && mode == 0 && current_cursor_mode != 0 && cursor_state_intercepted) {
+        POINT cursor_pos;    
+        GetCursorPos(&cursor_pos);
+
+        cursor_last_x = cursor_pos.x;
+        cursor_last_y = cursor_pos.y;
+        cursor_state_intercepted = false;
+        
+        enable_cursor();
+    }
+
+    return result;
 }
 
 auto plugin::gui_initializer::push_window_customization(const std::string_view& id) const -> std::uint8_t {
@@ -106,9 +139,15 @@ auto plugin::gui_initializer::on_event(unsigned int message, WPARAM wparam, LPAR
 }
 
 auto plugin::gui_initializer::on_samp_initialize() -> void {
+    using namespace std::placeholders;
+
     input_handler_hook.set_dest(**input_handler_address);
     input_handler_hook.set_cb(&input_handler_hooked);
     input_handler_hook.install();
+
+    set_cursor_mode_hook.set_dest(**set_cursor_mode_address);
+    set_cursor_mode_hook.set_cb(std::bind(&gui_initializer::set_cursor_mode_hooked, this, _1, _2, _3, _4));
+    set_cursor_mode_hook.install();
 
     for (const auto& window : registered_windows)
         window->on_samp_initialize();

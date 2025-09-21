@@ -30,6 +30,7 @@ namespace plugin {
 namespace signatures {
 
 using input_handler_t = bool(__cdecl*)(unsigned int);
+using set_cursor_mode_t = int(__thiscall*)(std::uintptr_t, int, int);
 
 } // namespace signatures
 
@@ -37,13 +38,22 @@ using input_handler_t = bool(__cdecl*)(unsigned int);
 class gui_initializer final {
 private:
     static types::versioned_address_container<std::uintptr_t> input_handler_address;
+    static types::versioned_address_container<std::uintptr_t> set_cursor_mode_address;
+
     static inline kthook::kthook_simple<signatures::input_handler_t> input_handler_hook;
+    static inline kthook::kthook_simple<signatures::set_cursor_mode_t> set_cursor_mode_hook;
 
     int cursor_last_x = -1;
     int cursor_last_y = -1;
+
+    bool cursor_state_intercepted = false;
     bool cursor_active = false;
 
     static auto input_handler_hooked(const decltype(input_handler_hook)& hook, unsigned int char_code) -> bool;
+
+    auto set_cursor_mode_hooked(const decltype(set_cursor_mode_hook)& hook, std::uintptr_t game,
+                                int mode, int immediately_hide) -> int;
+
     auto push_window_customization(const std::string_view& id) const -> std::uint8_t;
     auto pop_window_customization(std::uint8_t times) const -> void;
 public:

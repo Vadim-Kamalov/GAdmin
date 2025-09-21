@@ -26,6 +26,9 @@ namespace plugin::samp {
 /// Represents information about the game details from the SA:MP clist.
 class game final {
 public:
+    /// Offsets to the cursor mode of the SA:MP game class.
+    static types::versioned_address_container<int, types::version_container_option::offsets> cursor_mode_offsets;
+
     /// Instance container of the SA:MP game class.
     static types::versioned_address_container<std::uintptr_t> instance_container;
 }; // class game final
