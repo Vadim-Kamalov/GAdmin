@@ -77,6 +77,7 @@ private:
 public:
     inline auto get_id() const -> types::zstring_t override;
     inline auto get_name() const -> types::zstring_t override;
+    inline auto without_background() const -> bool override;
 
     auto render() -> void override;
     auto on_event(const samp::event_info& event) -> bool override;
@@ -104,6 +105,10 @@ inline auto plugin::gui::windows::kill_list::get_id() const -> types::zstring_t 
 
 inline auto plugin::gui::windows::kill_list::get_name() const -> types::zstring_t {
     return "Килл-лист";
+}
+
+inline auto plugin::gui::windows::kill_list::without_background() const -> bool {
+    return true;
 }
 
 #endif // GADMIN_PLUGIN_GUI_WINDOWS_KILL_LIST_H

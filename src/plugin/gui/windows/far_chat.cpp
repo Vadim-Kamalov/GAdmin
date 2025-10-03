@@ -88,7 +88,7 @@ auto plugin::gui::windows::far_chat::render() -> void {
     bool show_title = window_configuration["show_title"];
     bool show_time = window_configuration["show_time"];
     bool clist_color = window_configuration["clist_color"];
-    auto flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoBackground;
+    auto flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize;
 
     ImGui::SetNextWindowSize({ window_width, 0 });
     ImGui::Begin(get_id(), nullptr, flags);

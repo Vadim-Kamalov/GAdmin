@@ -189,13 +189,23 @@ auto plugin::gui_initializer::render() const -> void {
         if (!window->can_render() || (game::is_menu_opened() && !window->render_on_game_paused()))
             continue;
 
-        std::uint8_t pop_times = push_window_customization(window->get_id());
+        std::uint8_t pop_times = 0;
+
+        if (window->without_background()) {
+            ImGui::PushStyleColor(ImGuiCol_WindowBg, { 0.0f, 0.0f, 0.0f, 0.0f });
+            pop_times++;
+        }
+
+        pop_times += push_window_customization(window->get_id());
 
         window->render();
 
         if (pop_times != 0)
             pop_window_customization(pop_times);
     }
+
+    ImGui::ShowDemoWindow();
+    ImGui::ShowMetricsWindow();
 }
 
 auto plugin::gui_initializer::main_loop() -> void {

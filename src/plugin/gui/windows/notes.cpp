@@ -49,7 +49,7 @@ auto plugin::gui::windows::notes::render_note(const note_t& note, const std::str
         return;
 
     note_information_t note_information = get_note_information(note);
-    auto flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoBackground;
+    auto flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize;
     auto [ size_x, size_y ] = game::get_screen_resolution();
 
     ImGui::SetNextWindowSize({ note_information.width, 0.0f });

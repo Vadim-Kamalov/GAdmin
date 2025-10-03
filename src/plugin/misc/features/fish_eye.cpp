@@ -2,18 +2,24 @@
 #include "plugin/server/spectator.h"
 #include "plugin/game/camera.h"
 #include "plugin/game/ped.h"
+#include "plugin/samp/core/game.h"
 #include "plugin/plugin.h"
 #include <windows.h>
 
 auto plugin::misc::features::fish_eye::on_event(unsigned int message, WPARAM wparam, LPARAM lparam) -> bool {
     if (message != WM_MOUSEWHEEL)
         return true;
-    
-    auto spectator_camera_zoom_configuration = (*configuration)["spectator_mode"]["zoom_camera"];
 
-    if (!spectator_camera_zoom_configuration["use"] || !server::spectator::is_active())
+    auto& spectator_camera_zoom_configuration = (*configuration)["spectator_mode"]["zoom_camera"];
+
+    if (!spectator_camera_zoom_configuration["use"]
+        || !server::spectator::is_active()
+        || GetCursor() != nullptr
+        || samp::game::cursor_mode_offsets->read(samp::game::instance_container->read() != 0))
+    {
         return true;
-    
+    }
+
     std::int16_t wheel_delta = GET_WHEEL_DELTA_WPARAM(wparam);
     float step = spectator_camera_zoom_configuration["step"];
     float current_fov = game::camera::get_fov();

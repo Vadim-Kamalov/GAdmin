@@ -61,6 +61,7 @@ private:
 public:
     inline auto get_id() const -> types::zstring_t override;
     inline auto get_name() const -> types::zstring_t override;
+    inline auto without_background() const -> bool override;
 
     auto on_event(const samp::event_info& event) -> bool override;
     auto render() -> void override;
@@ -88,6 +89,10 @@ inline auto plugin::gui::windows::far_chat::get_id() const -> types::zstring_t {
 
 inline auto plugin::gui::windows::far_chat::get_name() const -> types::zstring_t {
     return "Дальний чат";
+}
+
+inline auto plugin::gui::windows::far_chat::without_background() const -> bool {
+    return true;
 }
 
 #endif // GADMIN_PLUGIN_GUI_WINDOWS_FAR_CHAT_H

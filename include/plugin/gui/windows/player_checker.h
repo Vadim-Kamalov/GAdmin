@@ -88,6 +88,7 @@ private:
 public:
     inline auto get_id() const -> types::zstring_t override;
     inline auto get_name() const -> types::zstring_t override;
+    inline auto without_background() const -> bool override;
 
     auto on_event(const samp::event_info& event) -> bool override;
     auto render() -> void override;
@@ -115,6 +116,10 @@ inline auto plugin::gui::windows::player_checker::get_id() const -> types::zstri
 
 inline auto plugin::gui::windows::player_checker::get_name() const -> types::zstring_t {
     return "Чекер игроков";
+}
+
+inline auto plugin::gui::windows::player_checker::without_background() const -> bool {
+    return true;
 }
 
 #endif // GADMIN_PLUGIN_GUI_WINDOWS_PLAYER_CHECKER_H

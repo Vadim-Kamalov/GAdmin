@@ -85,6 +85,7 @@ private:
 
     std::chrono::steady_clock::time_point time_hint_active;
     std::chrono::steady_clock::time_point time_switched_window;
+    std::chrono::steady_clock::time_point time_active_report_ignored;
 
     bool closing = false;
     bool active = false;

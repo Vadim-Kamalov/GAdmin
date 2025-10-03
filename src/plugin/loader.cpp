@@ -119,16 +119,10 @@ auto d3d9_present_hooked(const decltype(d3d9_present_hook)&, IDirect3DDevice9* d
     if (!imgui_initialized) {
         ImGui_ImplWin32_EnableDpiAwareness();
 
-        float main_scale = ImGui_ImplWin32_GetDpiScaleForMonitor(MonitorFromPoint({ 0, 0 }, MONITOR_DEFAULTTOPRIMARY));
         auto game_hwnd = plugin::game::get_window();
         auto latest_wndproc_ptr = GetWindowLongPtrA(game_hwnd, GWLP_WNDPROC);
 
         ImGui::CreateContext();
-
-        ImGuiStyle& style = ImGui::GetStyle();
-        style.ScaleAllSizes(main_scale);
-        style.FontScaleDpi = main_scale;
-
         ImGui_ImplWin32_Init(game_hwnd);
         ImGui_ImplDX9_Init(device);
 

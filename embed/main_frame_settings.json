@@ -141,7 +141,15 @@
             "_name": "Улучшенный /greport",
             "notify": { "_type": "bool", "_name": "Показывать оповещение" },
             "sound_notify": { "_type": "bool", "_name": "Звуковое оповещение" },
-            "insert_buttons": { "_type": "custom", "_name": "Шаблоны (название - текст вставки)" }
+            "remind_active_report_after_seconds": {
+                "_type": "intrange",
+                "_name": "Оповещение об активном репорте после N секунд (0 - отключено)",
+                "_config": [ 0, 300 ]
+            },
+            "insert_buttons": {
+                "_type": "custom",
+                "_name": "Шаблоны (название - текст вставки)"
+            }
         },
         "interaction_area": {
             "_type": "subsection",

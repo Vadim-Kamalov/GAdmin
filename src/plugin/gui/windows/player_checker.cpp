@@ -186,7 +186,7 @@ auto plugin::gui::windows::player_checker::render() -> void {
     if (!window_information.render_configuration.render)
         return;
 
-    auto flags = ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration;
+    auto flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration;
 
     ImGui::SetNextWindowSize({ window_information.width, 0.0f });
     ImGui::Begin(get_id(), nullptr, flags);

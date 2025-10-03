@@ -37,10 +37,13 @@ namespace gui {
 /// and window's messages handling. Implementations must have next properties set using
 /// next overriden functions:
 ///
-///     - window::get_id():                Window's ID;
-///     - window::get_name():              Window's name;
+///     - window::get_id():   Window's ID;
+///     - window::get_name(): Window's name;
+///
 ///     - window::render_on_game_paused(): Whether window should be rendering while game
-///                                        is paused (optional, default = false).
+///                                        is paused (optional, default = false);
+///     
+///     - window::without_background(): Whether window's background should be hidden (default = false);
 ///
 /// Implementations may verify the user's `/alogin` state and check if the window is
 /// enabled in the configuration.
@@ -67,7 +70,12 @@ public:
     /// 
     /// @return True if the window should render on game pause.
     virtual inline auto render_on_game_paused() const -> bool;
-    
+
+    /// Window configuration, optional: if the window's background should be hidden.
+    ///
+    /// @return True if the windows's background should be hidden.
+    virtual inline auto without_background() const -> bool;
+
     /// Check whether the window can be rendered.
     /// 
     /// @return True if the window can be rendered.
@@ -117,6 +125,10 @@ inline auto plugin::gui::window::get_name() const -> types::zstring_t {
 }
 
 inline auto plugin::gui::window::render_on_game_paused() const -> bool {
+    return false;
+}
+
+inline auto plugin::gui::window::without_background() const -> bool {
     return false;
 }
 

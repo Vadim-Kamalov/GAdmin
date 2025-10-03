@@ -210,6 +210,8 @@ auto plugin::gui::windows::report::open_window() -> void {
         return;
 
     time_switched_window = std::chrono::steady_clock::now();
+    time_active_report_ignored = {};
+
     active = focus = true;
     notification_active = false;
 }
@@ -223,7 +225,7 @@ auto plugin::gui::windows::report::close_window() -> void {
     if (reset)
         return;
 
-    time_switched_window = std::chrono::steady_clock::now();
+    time_switched_window = time_active_report_ignored = std::chrono::steady_clock::now();
     closing = true;
     child->disable_cursor();
 
@@ -289,8 +291,32 @@ auto plugin::gui::windows::report::close_report() -> void {
 }
 
 auto plugin::gui::windows::report::render() -> void {
-    if (!active)
+    if (!active && !current_report.has_value())
         return;
+
+    if (!active) {
+        std::size_t remind_active_report_after_seconds =
+            (*configuration)["windows"]["report"]["remind_active_report_after_seconds"];
+
+        if (remind_active_report_after_seconds == 0)
+            return;
+
+        auto now = std::chrono::steady_clock::now();
+        auto seconds_to_notify = std::chrono::seconds(remind_active_report_after_seconds);
+
+        if (now - time_active_report_ignored <= seconds_to_notify)
+            return;
+
+        std::string description = std::format("Прошло {} секунд с момента открытия окна репорта.",
+                                              remind_active_report_after_seconds);
+
+        notify::send(notification("Напоминание про активный /greport", description, ICON_USER02)
+                .with_duration(std::clamp<std::chrono::seconds>(seconds_to_notify, 1s, 5s)));
+
+        time_active_report_ignored += seconds_to_notify;
+
+        return;
+    }
 
     window_alpha = animation::bring_to(window_alpha, (closing) ? 0 : 255, time_switched_window, animation_duration);
     

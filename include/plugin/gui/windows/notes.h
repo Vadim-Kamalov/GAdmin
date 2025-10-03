@@ -65,6 +65,7 @@ private:
 public:
     inline auto get_id() const -> types::zstring_t override;
     inline auto get_name() const -> types::zstring_t override;
+    inline auto without_background() const -> bool override;
 
     auto render() -> void override;
 
@@ -91,6 +92,10 @@ inline auto plugin::gui::windows::notes::get_id() const -> types::zstring_t {
 
 inline auto plugin::gui::windows::notes::get_name() const -> types::zstring_t {
     return "Заметки";
+}
+
+inline auto plugin::gui::windows::notes::without_background() const -> bool {
+    return true;
 }
 
 #endif // GADMIN_PLUGIN_GUI_WINDOWS_NOTES_H

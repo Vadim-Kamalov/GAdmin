@@ -48,8 +48,6 @@ public:
 /// Type alias for shared pointer to setter_proxy.
 ///
 /// @tparam T Type of value being proxied.
-///
-/// FIXME: std::shared_ptr is bad here. use std::unique_ptr
 template<typename T>
 using setter_proxy_ptr_t = std::shared_ptr<setter_proxy<T>>;
 

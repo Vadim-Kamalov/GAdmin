@@ -104,6 +104,7 @@
             "use": true,
             "notify": true,
             "sound_notify": true,
+            "remind_active_report_after_seconds": 120,
             "insert_buttons": [
                 { "name": "Приятной игры!", "insert": "Приятной игры!" },
                 { "name": "Передал", "insert": "Передал." },
