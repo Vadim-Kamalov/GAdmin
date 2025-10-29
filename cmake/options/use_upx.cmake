@@ -20,7 +20,7 @@ if(USE_UPX)
     find_program(UPX upx)
     
     if(NOT UPX)
-        message(FATAL_ERROR "upx command not found. Please ensure msgpack-cli is installed and mpk is in your PATH.")
+        message(FATAL_ERROR "upx command not found. Please ensure UPX is installed and upx is in your PATH.")
     endif()
 
     add_custom_command(
