@@ -115,7 +115,6 @@ auto plugin::gui::windows::players_nearby::render() -> void {
 
     ImGui::SetNextWindowPos({ size_x / 1.13074f, size_y / 1.36992f }, ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize({ window_information.content_size.x, 0 });
-    ImGui::SetNextWindowBgAlpha(0);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
     ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize);
     {

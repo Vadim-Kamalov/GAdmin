@@ -25,44 +25,54 @@
 #include "plugin/game/game.h"
 #include "plugin/plugin.h"
 
-auto plugin::cheats::wallhack::set_wallhack_state(bool state) -> void {
-    if (cheat_active == state)
-        return;
-    
+auto plugin::cheats::wallhack::enable() -> void {
+    cheat_active = true;
+    update();
+}
+
+auto plugin::cheats::wallhack::disable() -> void {
+    cheat_active = false;
+    update();
+}
+
+auto plugin::cheats::wallhack::toggle(bool when) -> void {
+    if (when)
+        enable();
+    else
+        disable();
+}
+
+auto plugin::cheats::wallhack::update() -> void {
     auto& cheat_configuration = (*configuration)["cheats"]["wallhack"];
-    
-    if (!cheat_configuration["use"])
-        return;
-    
-    cheat_active = state;
+    auto server_settings = samp::net_game::get_server_settings();
 
-    if (cheat_configuration["custom_render"])
-        return;
+    if (cheat_configuration["custom_render"]) {
+        if (server_settings.get_name_tags_render_distance() == max_render_distance) {
+            server_settings.set_name_tags_render_behind_wall(false);
+            server_settings.set_name_tags_render_distance(SERVER_NAME_TAGS_DISTANCE);
+        }
 
-    set_samp_render_state(!state, false);
+        return;
+    }
+
+    server_settings.set_name_tags_render_state(true);
+    server_settings.set_name_tags_render_behind_wall(!cheat_active);
+    server_settings.set_name_tags_render_distance((cheat_active) ? max_render_distance : SERVER_NAME_TAGS_DISTANCE);
 }
 
 auto plugin::cheats::wallhack::hotkey_callback(gui::hotkey& hotkey) -> void {
-    if (!server::user::is_on_alogin())
-        return;
+    using namespace gui;
 
-    samp::net_game::get_server_settings().set_name_tags_render_state(cheat_active);
-    set_wallhack_state(!cheat_active);
+    if (!(*configuration)["cheats"]["wallhack"]["use"] || !server::user::is_on_alogin())
+        return;
+    
+    toggle(!cheat_active);
 
     std::string notify_title = "WallHack " + std::string((cheat_active) ? "включен" : "выключен");
     std::string notify_description = std::format("Теперь вы {}можете видеть никнеймы сквозь стены. Переключить обратно - {}",
                                                  ((cheat_active) ? "" : "не "), hotkey.bind);
 
-    gui::notify::send(gui::notification(notify_title, notify_description, ICON_INFO));
-}
-
-auto plugin::cheats::wallhack::set_samp_render_state(bool state, bool ensure_usage_valid) noexcept -> void {
-    if (ensure_usage_valid && !server::user::is_on_alogin() && !(*configuration)["cheats"]["wallhack"]["use"])
-        return;
-
-    samp::server_settings settings = samp::net_game::get_server_settings();
-    settings.set_name_tags_render_behind_wall(state);
-    settings.set_name_tags_render_distance((state) ? SERVER_NAME_TAGS_DISTANCE : render_distance);
+    notify::send(notification(notify_title, notify_description, ICON_INFO));
 }
 
 auto plugin::cheats::wallhack::register_hotkeys(types::not_null<gui::hotkey_handler*> handler) -> void {
@@ -71,14 +81,6 @@ auto plugin::cheats::wallhack::register_hotkeys(types::not_null<gui::hotkey_hand
 
 auto plugin::cheats::wallhack::render(types::not_null<gui_initializer*> child) -> void {
     auto& cheat_configuration = (*configuration)["cheats"]["wallhack"];
-
-    if ((!cheat_configuration["use"] || !cheat_configuration["custom_render"]) &&
-        (samp::get_base() != 0 && samp::net_game::instance_container->read() != 0))
-    {
-        samp::net_game::get_server_settings().set_name_tags_render_state(true);
-        set_wallhack_state(false);
-        return;
-    }
 
     if (!cheat_active || !cheat_configuration["custom_render"] || game::is_menu_opened())
         return;
@@ -118,7 +120,7 @@ auto plugin::cheats::wallhack::render(types::not_null<gui_initializer*> child) -
 }
 
 auto plugin::cheats::wallhack::on_alogin_new_state(bool state) -> void {
-    set_wallhack_state(state);
+    toggle(state);
 }
 
 plugin::cheats::wallhack::wallhack() {

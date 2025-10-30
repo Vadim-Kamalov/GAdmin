@@ -32,7 +32,12 @@ private:
     static inline types::offset<bool> name_tags_render_behind_wall_offset = 0x2F;
     static inline types::offset<bool> name_tags_render_state = 0x38;
 public:
-    /// Set distance of the name tags' render
+    /// Get distance of the name tags' render.
+    /// 
+    /// @return Distance of the name tags' render.
+    auto get_name_tags_render_distance() const -> float;
+
+    /// Set distance of the name tags' render.
     ///
     /// @param distance[in] New distance of the name tags' render.
     auto set_name_tags_render_distance(float distance) const -> void;

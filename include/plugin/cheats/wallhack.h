@@ -33,21 +33,18 @@ namespace plugin::cheats {
 /// the cheat is enabled in the configuration.
 class wallhack final : public basic_cheat {
 private:
-    static constexpr float render_distance = 0x7D0;
+    static constexpr float max_render_distance = 0x7D0;
+    static inline bool cheat_active = false;
 
     gui::hotkey hotkey;
-    bool cheat_active = false;
 
-    auto set_wallhack_state(bool state) -> void;
     auto hotkey_callback(gui::hotkey& hotkey) -> void;
 public:
-    /// Set nametags to be rendered using default SA:MP methods with extended functionality.
-    ///
-    /// @param state[in]              New render state.
-    /// @param ensure_usage_valid[in] Whether to ensure the user is authenticated via `/alogin`
-    ///                               and the cheat is enabled in the configuration.
-    static auto set_samp_render_state(bool state, bool ensure_usage_valid = true) noexcept -> void;
-    
+    static auto enable() -> void;
+    static auto disable() -> void;
+    static auto toggle(bool when) -> void;
+    static auto update() -> void;
+
     auto register_hotkeys(types::not_null<gui::hotkey_handler*> handler) -> void override;
     auto render(types::not_null<gui_initializer*> child) -> void override;
     auto on_alogin_new_state(bool state) -> void override;

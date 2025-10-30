@@ -37,6 +37,8 @@ private:
     static constexpr float color_border_size = 3;
     static constexpr float close_button_height = 30;
 
+    static std::unordered_map<std::string, std::function<void(bool&)>> toggle_events;
+
     widgets::submenu submenu = widgets::submenu("Настройки##frames::settings");
     widgets::popup popup = widgets::popup("frames::settings::popup");
 

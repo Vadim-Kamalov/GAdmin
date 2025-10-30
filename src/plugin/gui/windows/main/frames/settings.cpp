@@ -26,6 +26,7 @@
 #include "plugin/gui/windows/main/custom_settings/short_commands.h"
 #include "plugin/gui/windows/main/custom_settings/spectator_actions.h"
 #include "plugin/gui/windows/main/custom_settings/spectator_information.h"
+#include "plugin/server/user.h"
 #include "plugin/plugin.h"
 #include <misc/cpp/imgui_stdlib.h>
 #include <unordered_map>
@@ -40,6 +41,19 @@ static constexpr std::uint8_t options_bytes[] = {
 #endif // USE_EMBEDDED_MESSAGE_PACK
 
 }; // static constexpr std::uint8_t options_bytes[]
+
+std::unordered_map<std::string, std::function<void(bool&)>> plugin::gui::windows::main::frames::settings::toggle_events = {
+    { "cheats::wallhack", [](bool& state) {
+        if (!server::user::is_on_alogin())
+            return;
+
+        cheats::wallhack::toggle(state);
+    }},
+
+    { "cheats::wallhack::custom_render", [](bool&) {
+        cheats::wallhack::update();
+    }}
+}; // std::unordered_map<std::string, std::function<void(bool&)>> plugin::gui::windows::main::frames::settings::toggle_events
 
 auto plugin::gui::windows::main::frames::settings::render_section_items(const std::string& key, nlohmann::ordered_json& items) -> void {
     for (const auto& [ item_key, item ] : items.items()) {
@@ -68,9 +82,11 @@ auto plugin::gui::windows::main::frames::settings::render_section_items(const st
         }
 
         std::string name = item["_name"];
+        nlohmann::ordered_json config = item["_config"];
         std::string label = ((type == item_type::subsection) ? "##" + name : name + "##") + item_key;
 
-        gui::widgets::toggle_button(label, *configuration_value).render();
+        if (gui::widgets::toggle_button(label, *configuration_value).render() && !config.is_null())
+            toggle_events[config](*configuration_value);
 
         if (type != item_type::subsection)
             continue;
@@ -245,14 +261,10 @@ auto plugin::gui::windows::main::frames::settings::render_custom(const std::stri
 }
 
 auto plugin::gui::windows::main::frames::settings::render_boolean(const std::string_view& label, nlohmann::ordered_json& config, bool& setter) const -> void {
-    static std::unordered_map<std::string, std::function<void(bool&)>> events = {
-        { "cheats::wallhack", [](bool& state) { cheats::wallhack::set_samp_render_state(state); }}
-    }; // static std::unorederd_map<std::string, std::function<void(bool&)>> events
-
     if (!gui::widgets::toggle_button(label, setter).render() || config.is_null())
         return;
 
-    events[config](setter);
+    toggle_events[config](setter);
 }
 
 auto plugin::gui::windows::main::frames::settings::render() -> void {

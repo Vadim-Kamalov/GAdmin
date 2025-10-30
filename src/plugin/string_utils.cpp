@@ -23,7 +23,9 @@
 #include <windows.h>
 #include <vector>
 
-auto plugin::string_utils::convert_encoding(const std::string& text, unsigned int code_page_from, unsigned int code_page_to) -> std::string {
+auto plugin::string_utils::convert_encoding(const std::string& text, unsigned int code_page_from, unsigned int code_page_to)
+    -> std::string
+{
     int wide_char_size = MultiByteToWideChar(code_page_from, 0, text.c_str(), -1, nullptr, 0);
     std::vector<wchar_t> wide_char_string(wide_char_size);
     

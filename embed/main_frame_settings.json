@@ -195,10 +195,11 @@
         "wallhack": {
             "_type": "subsection",
             "_name": "WallHack",
+            "_config": "cheats::wallhack",
             "custom_render": {
                 "_type": "bool",
                 "_name": "ImGui отрисовка",
-                "_config": "cheats::wallhack"
+                "_config": "cheats::wallhack::custom_render"
             },
             "font_size": {
                 "_type": "intrange",

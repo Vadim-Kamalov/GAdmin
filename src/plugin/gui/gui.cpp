@@ -193,7 +193,8 @@ auto plugin::gui_initializer::render() const -> void {
 
         if (window->without_background()) {
             ImGui::PushStyleColor(ImGuiCol_WindowBg, { 0.0f, 0.0f, 0.0f, 0.0f });
-            pop_times++;
+            ImGui::PushStyleColor(ImGuiCol_Border, { 0.0f, 0.0f, 0.0f, 0.0f });
+            pop_times += 2;
         }
 
         pop_times += push_window_customization(window->get_id());

@@ -161,6 +161,7 @@ auto plugin::gui::windows::report::on_server_message(const samp::event<samp::eve
 auto plugin::gui::windows::report::on_new_report_message(const std::string& nickname, std::uint16_t id) -> bool {
     auto window_configuration = (*configuration)["windows"]["report"];
 
+    time_received_report = std::chrono::steady_clock::now();
     current_report = { nickname, "", id };
 
     if (window_configuration["notify"]) {
@@ -210,7 +211,7 @@ auto plugin::gui::windows::report::open_window() -> void {
         return;
 
     time_switched_window = std::chrono::steady_clock::now();
-    time_active_report_ignored = {};
+    time_active_report_ignored = time_received_report = {};
 
     active = focus = true;
     notification_active = false;
@@ -246,6 +247,28 @@ auto plugin::gui::windows::report::switch_window() -> void {
         return;
 
     (active) ? close_window() : open_window_with_dialog();
+}
+
+auto plugin::gui::windows::report::handle_remind_notification() -> void {
+    std::size_t remind_active_report_after_seconds =
+        (*configuration)["windows"]["report"]["remind_active_report_after_seconds"];
+
+    if (remind_active_report_after_seconds == 0)
+        return;
+
+    auto now = std::chrono::steady_clock::now();
+    auto seconds_to_notify = std::chrono::seconds(remind_active_report_after_seconds);
+
+    if (now - time_active_report_ignored < seconds_to_notify)
+        return;
+
+    std::string description = std::format("Прошло {} секунд с момента открытия окна репорта.",
+                                          remind_active_report_after_seconds);
+
+    notify::send(notification("Напоминание про активный /greport", description, ICON_USER02)
+            .with_duration(std::clamp<std::chrono::seconds>(seconds_to_notify, 1s, 5s)));
+
+    time_active_report_ignored = {};
 }
 
 auto plugin::gui::windows::report::get_time_active() const -> std::string {
@@ -291,29 +314,19 @@ auto plugin::gui::windows::report::close_report() -> void {
 }
 
 auto plugin::gui::windows::report::render() -> void {
-    if (!active && !current_report.has_value())
-        return;
+    if (animation::is_time_available(time_received_report)
+        && current_report.has_value()
+        && std::chrono::steady_clock::now() - time_received_report >= 15s)
+    {
+        current_report = {};
+        time_received_report = {};
+    }
 
     if (!active) {
-        std::size_t remind_active_report_after_seconds =
-            (*configuration)["windows"]["report"]["remind_active_report_after_seconds"];
-
-        if (remind_active_report_after_seconds == 0)
+        if (current_report.has_value() && animation::is_time_available(time_active_report_ignored)) {
+            handle_remind_notification();
             return;
-
-        auto now = std::chrono::steady_clock::now();
-        auto seconds_to_notify = std::chrono::seconds(remind_active_report_after_seconds);
-
-        if (now - time_active_report_ignored <= seconds_to_notify)
-            return;
-
-        std::string description = std::format("Прошло {} секунд с момента открытия окна репорта.",
-                                              remind_active_report_after_seconds);
-
-        notify::send(notification("Напоминание про активный /greport", description, ICON_USER02)
-                .with_duration(std::clamp<std::chrono::seconds>(seconds_to_notify, 1s, 5s)));
-
-        time_active_report_ignored += seconds_to_notify;
+        }
 
         return;
     }

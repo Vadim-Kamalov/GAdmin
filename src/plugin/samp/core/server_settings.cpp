@@ -18,6 +18,10 @@
 
 #include "plugin/samp/core/server_settings.h"
 
+auto plugin::samp::server_settings::get_name_tags_render_distance() const -> float {
+    return name_tags_render_distance_offset.read(*pointer);
+}
+
 auto plugin::samp::server_settings::set_name_tags_render_distance(float distance) const
     -> void
 {

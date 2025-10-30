@@ -83,6 +83,7 @@ private:
     std::uint8_t window_alpha = 0;
     std::uint16_t dialog_id = 0;
 
+    std::chrono::steady_clock::time_point time_received_report;
     std::chrono::steady_clock::time_point time_hint_active;
     std::chrono::steady_clock::time_point time_switched_window;
     std::chrono::steady_clock::time_point time_active_report_ignored;
@@ -116,6 +117,7 @@ private:
     auto open_window_with_dialog() -> void;
     auto close_window() -> void;
     auto switch_window() -> void;
+    auto handle_remind_notification() -> void;
 
     auto get_time_active() const -> std::string;
 
