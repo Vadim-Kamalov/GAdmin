@@ -84,9 +84,9 @@ private:
     std::uint16_t dialog_id = 0;
 
     std::chrono::steady_clock::time_point time_received_report;
+    std::chrono::steady_clock::time_point time_holding_report;
     std::chrono::steady_clock::time_point time_hint_active;
     std::chrono::steady_clock::time_point time_switched_window;
-    std::chrono::steady_clock::time_point time_active_report_ignored;
 
     bool closing = false;
     bool active = false;
@@ -117,8 +117,8 @@ private:
     auto open_window_with_dialog() -> void;
     auto close_window() -> void;
     auto switch_window() -> void;
-    auto handle_remind_notification() -> void;
 
+    auto handle_remind_notification() -> void;
     auto get_time_active() const -> std::string;
 
     auto can_send_response() -> bool;

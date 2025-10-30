@@ -96,14 +96,11 @@ auto plugin::gui::windows::report::block_action_button() -> void {
 auto plugin::gui::windows::report::on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog) -> bool {
     static constexpr ctll::fixed_string report_information_pattern = R"(Описание репорта:\s+\{FFFFFF\}(.+)\n)";
 
-    if (!dialog || dialog.title != "Обработка репорта")
+    if (!dialog || dialog.title != "Обработка репорта" || !current_report.has_value())
         return true;
 
     dialog_active = true;
     dialog_id = dialog.id;
-
-    if (!current_report.has_value())
-        return true;
 
     std::string dialog_text = dialog.text;
 
@@ -211,8 +208,7 @@ auto plugin::gui::windows::report::open_window() -> void {
         return;
 
     time_switched_window = std::chrono::steady_clock::now();
-    time_active_report_ignored = time_received_report = {};
-
+    time_received_report = {};
     active = focus = true;
     notification_active = false;
 }
@@ -226,7 +222,7 @@ auto plugin::gui::windows::report::close_window() -> void {
     if (reset)
         return;
 
-    time_switched_window = time_active_report_ignored = std::chrono::steady_clock::now();
+    time_switched_window = std::chrono::steady_clock::now();
     closing = true;
     child->disable_cursor();
 
@@ -250,25 +246,27 @@ auto plugin::gui::windows::report::switch_window() -> void {
 }
 
 auto plugin::gui::windows::report::handle_remind_notification() -> void {
-    std::size_t remind_active_report_after_seconds =
-        (*configuration)["windows"]["report"]["remind_active_report_after_seconds"];
+    long seconds_until_notification_raw = (*configuration)["windows"]["report"]["remind_active_report_after_seconds"];
 
-    if (remind_active_report_after_seconds == 0)
+    if (seconds_until_notification_raw <= 0)
         return;
 
     auto now = std::chrono::steady_clock::now();
-    auto seconds_to_notify = std::chrono::seconds(remind_active_report_after_seconds);
+    auto seconds_until_notification = std::chrono::seconds(seconds_until_notification_raw);
 
-    if (now - time_active_report_ignored < seconds_to_notify)
+    if (!animation::is_time_available(time_holding_report))
+        time_holding_report = now;
+
+    if (now - time_holding_report < seconds_until_notification)
         return;
 
     std::string description = std::format("Прошло {} секунд с момента открытия окна репорта.",
-                                          remind_active_report_after_seconds);
+                                          seconds_until_notification_raw);
 
     notify::send(notification("Напоминание про активный /greport", description, ICON_USER02)
-            .with_duration(std::clamp<std::chrono::seconds>(seconds_to_notify, 1s, 5s)));
+            .with_duration(std::clamp<std::chrono::seconds>(seconds_until_notification, 1s, 5s)));
 
-    time_active_report_ignored = {};
+    time_holding_report = now;
 }
 
 auto plugin::gui::windows::report::get_time_active() const -> std::string {
@@ -314,23 +312,22 @@ auto plugin::gui::windows::report::close_report() -> void {
 }
 
 auto plugin::gui::windows::report::render() -> void {
-    if (animation::is_time_available(time_received_report)
-        && current_report.has_value()
-        && std::chrono::steady_clock::now() - time_received_report >= 15s)
-    {
-        current_report = {};
+    auto now = std::chrono::steady_clock::now();
+
+    if (animation::is_time_available(time_received_report) && now - time_received_report >= 15s) {
         time_received_report = {};
+        current_report = {};
+        return;
     }
 
     if (!active) {
-        if (current_report.has_value() && animation::is_time_available(time_active_report_ignored)) {
+        if (dialog_active)
             handle_remind_notification();
-            return;
-        }
 
         return;
     }
 
+    time_holding_report = {};
     window_alpha = animation::bring_to(window_alpha, (closing) ? 0 : 255, time_switched_window, animation_duration);
     
     if (!closing && window_alpha != 255 && !child->is_cursor_active())

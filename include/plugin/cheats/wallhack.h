@@ -40,9 +40,19 @@ private:
 
     auto hotkey_callback(gui::hotkey& hotkey) -> void;
 public:
+    /// Enable wallhack.
     static auto enable() -> void;
+    
+    /// Disable wallhack.
     static auto disable() -> void;
+    
+    /// Switch wallhack with depending on the passed state.
+    ///
+    /// @param when[in] Pass true to enable, false to disable.
     static auto toggle(bool when) -> void;
+
+    /// Update states of the wallhack renderers (custom render,
+    /// SA:MP render) based on the current cheat configuration.
     static auto update() -> void;
 
     auto register_hotkeys(types::not_null<gui::hotkey_handler*> handler) -> void override;
