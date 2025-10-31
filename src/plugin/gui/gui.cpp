@@ -204,9 +204,6 @@ auto plugin::gui_initializer::render() const -> void {
         if (pop_times != 0)
             pop_window_customization(pop_times);
     }
-
-    ImGui::ShowDemoWindow();
-    ImGui::ShowMetricsWindow();
 }
 
 auto plugin::gui_initializer::main_loop() -> void {
