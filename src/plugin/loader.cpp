@@ -54,6 +54,10 @@ public:
         game_loop_hook.set_dest(0x53BEE0);
         game_loop_hook.set_cb(&game_loop_hooked);
         game_loop_hook.install();
+
+        wndproc_hook.set_dest(0x747EB0);
+        wndproc_hook.set_cb(&wndproc_hooked);
+        wndproc_hook.install();
     }
 
     ~loader_t() {
@@ -118,19 +122,12 @@ auto d3d9_present_hooked(const decltype(d3d9_present_hook)&, IDirect3DDevice9* d
 
     if (!imgui_initialized) {
         ImGui_ImplWin32_EnableDpiAwareness();
-
-        auto game_hwnd = plugin::game::get_window();
-        auto latest_wndproc_ptr = GetWindowLongPtrA(game_hwnd, GWLP_WNDPROC);
-
         ImGui::CreateContext();
-        ImGui_ImplWin32_Init(game_hwnd);
+        ImGui_ImplWin32_Init(plugin::game::get_window());
         ImGui_ImplDX9_Init(device);
 
         plugin_to_load->on_render_initialize();
 
-        wndproc_hook.set_dest(latest_wndproc_ptr);
-        wndproc_hook.set_cb(&wndproc_hooked);
-        wndproc_hook.install();
         imgui_initialized = true;
     }
 
