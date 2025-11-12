@@ -75,7 +75,7 @@ auto plugin::gui::windows::report::get_action_buttons() -> std::array<action_but
         ImVec2 button_size = (i == 7 || i == 10) ? middle_button_size : corner_button_size;
 
         output[i] = { widgets::button("> " + button.name + id, button_size),
-                      [this, button] { answer_input = button.insert; }};
+                      [this, &button] { answer_input = button.insert; }};
     }
 
     return output;
@@ -156,7 +156,7 @@ auto plugin::gui::windows::report::on_server_message(const samp::event<samp::eve
 }
 
 auto plugin::gui::windows::report::on_new_report_message(const std::string& nickname, std::uint16_t id) -> bool {
-    auto window_configuration = (*configuration)["windows"]["report"];
+    auto& window_configuration = (*configuration)["windows"]["report"];
 
     time_received_report = std::chrono::steady_clock::now();
     current_report = { nickname, "", id };
@@ -312,6 +312,11 @@ auto plugin::gui::windows::report::close_report() -> void {
 }
 
 auto plugin::gui::windows::report::render() -> void {
+    auto& window_configuration = (*configuration)["windows"]["report"];
+
+    if (!window_configuration["use"])
+        return;
+
     auto now = std::chrono::steady_clock::now();
 
     if (animation::is_time_available(time_received_report) && now - time_received_report >= 15s) {
