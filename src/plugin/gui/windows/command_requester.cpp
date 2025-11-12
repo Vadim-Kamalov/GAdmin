@@ -160,14 +160,17 @@ auto plugin::gui::windows::command_requester::try_handle_new_request(const std::
             return false;
 
         if (auto request_command = try_parse_request(command); request_command.has_value()) {
-            if ((*configuration)["user"]["level"].get<std::size_t>() < request_command->command.level)
+            auto& command_requester_configuration = (*configuration)["misc"]["command_requester"];
+
+            if (command_requester_configuration["check_level_for_approve"] &&
+                (*configuration)["user"]["level"].get<std::size_t>() < request_command->command.level)
+            {
                 return false;
+            }
 
             time_request_sent = std::chrono::steady_clock::now();
             current_request = { request_command->receiver_id, sender_nickname,
                                 sender_id, command, request_command->command };
-
-            auto command_requester_configuration = (*configuration)["misc"]["command_requester"];
 
             if (command_requester_configuration["sound_notify"])
                 samp::audio::play_sound(samp::audio::sound_id::bell);

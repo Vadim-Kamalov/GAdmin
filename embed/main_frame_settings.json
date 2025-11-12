@@ -240,7 +240,8 @@
         "command_requester": {
             "_type": "subsection",
             "_name": "Запросы команд в /a",
-            "notify_by_window": { "_type": "bool", "_name": "Оповещать ImGui окном" },
+            "notify_by_window": { "_type": "bool", "_name": "Оповещать с помощью ImGui окна" },
+            "check_level_for_approve": { "_type": "bool", "_name": "Проверять уровень перед запросом" },
             "sound_notify": { "_type": "bool", "_name": "Звуковое оповещение" }
         },
         "mentions": {
