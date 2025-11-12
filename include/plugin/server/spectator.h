@@ -26,6 +26,7 @@
 #include "plugin/server/user.h"
 #include "plugin/types/simple.h"
 #include "plugin/samp/events/synchronization.h"
+#include "plugin/samp/events/spectating.h"
 #include "plugin/samp/events/dialog.h"
 #include "plugin/samp/events/3d_text.h"
 #include "plugin/samp/events/text_draw.h"
@@ -64,11 +65,11 @@ private:
     static inline bool active = false;
 
     static inline std::uint16_t previous_id = 0;
-    static inline std::uint16_t text_draw_id = 0;
     static inline std::uint16_t stage_3d_text_id = 0;
 
     static inline spectator_information information;
     static inline std::chrono::steady_clock::time_point last_reload;
+    static inline std::chrono::steady_clock::time_point time_before_check_statistics;
     
     static inline bool keys_down[std::to_underlying(samp::synchronization_key::count)];
     static inline bool can_render_interface = true;
@@ -76,10 +77,11 @@ private:
 
     static auto on_show_text_draw(const samp::event<samp::event_id::show_text_draw>& text_draw) -> bool;
     static auto on_text_draw_set_string(const samp::event<samp::event_id::set_text_draw_string>& text_draw) -> bool;
-    static auto on_text_draw_hide(const samp::event<samp::event_id::hide_text_draw>& text_draw) -> bool;
     static auto on_show_3d_text(const samp::event<samp::event_id::create_3d_text>& created_3d_text) -> bool;
     static auto on_remove_3d_text(const samp::event<samp::event_id::remove_3d_text>& removed_3d_text) -> bool;
     static auto on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog) -> bool;
+    static auto on_spectating_player(const samp::event<samp::event_id::spectating_player>& player) -> bool;
+    static auto on_spectating_vehicle() -> bool;
     static auto on_player_synchronization(const samp::packet<samp::event_id::player_synchronization>& synchronization) -> bool;
     static auto on_vehicle_synchronization(const samp::packet<samp::event_id::vehicle_synchronization>& synchronization) -> bool;
     static auto on_passenger_synchronization(const samp::packet<samp::event_id::passenger_synchronization>& synchronization) -> bool;
@@ -91,6 +93,9 @@ private:
     static auto clear_keys_down() noexcept -> void;
 
     static auto assign(std::uint16_t new_id) noexcept -> void;
+    static auto assign(std::uint16_t new_id, const std::string_view& new_nickname) noexcept -> void;
+    static auto update_spectator_details() noexcept -> void;
+    static auto request_checking_statistics() noexcept -> void;
 public:
     /// Camera switch states.
     enum class camera_switch_state_t : std::uint8_t {

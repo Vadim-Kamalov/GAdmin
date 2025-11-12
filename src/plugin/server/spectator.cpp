@@ -30,12 +30,10 @@
 #include "plugin/plugin.h"
 #include "plugin/types/u8regex.h"
 
-using namespace std::chrono_literals;
-
 auto plugin::server::spectator::on_show_text_draw(const samp::event<samp::event_id::show_text_draw>& text_draw) -> bool {
     static constexpr types::zstring_t dirty_title = "Adadadad_Dfghsadersasd(111)";
     static constexpr types::zstring_t dirty_body = "2282282~n~$400000~n~90 MP/H~n~100/20~n~M4A1/Pustinniy Orel~n~999 ms~n~127.23.42.123";
-    static constexpr ctll::fixed_string text_draw_id_pattern = "~y~\\((\\d+)\\)";
+    static constexpr ctll::fixed_string text_draw_id_pattern = "~y~\\(\\d+\\)";
 
     bool hide = (*configuration)["spectator_mode"]["hide_text_draws"];
 
@@ -44,33 +42,15 @@ auto plugin::server::spectator::on_show_text_draw(const samp::event<samp::event_
     if (hide && (text_draw.text == dirty_title || text_draw.text == dirty_body))
         return false;
 
-    if (auto [ whole, id ] = ctre::search<text_draw_id_pattern>(text_draw.text); whole) {
-        assign(std::stoul(id.str()));
-        return !hide;
-    }
-
-    if (text_draw.text.contains("ID Akkay")) {
-        text_draw_id = text_draw.id;
-        return !hide;
-    }
-
-    return true;
+    return !hide || (!ctre::search<text_draw_id_pattern>(text_draw.text) && !text_draw.text.contains("ID Akkay"));
 }
 
 auto plugin::server::spectator::on_text_draw_set_string(const samp::event<samp::event_id::set_text_draw_string>& text_draw) -> bool {
-    static constexpr ctll::fixed_string text_draw_id_pattern = "~y~\\((\\d+)\\)";
     static constexpr ctll::fixed_string spectator_information =
         "ID Akkay.+a: (\\d+)~n~Ha.+e: (\\d+)~n~Ckopoc.+: (\\d+) / \\d+"
         "~n~Opy.+e: .+~n~Ping: \\d+ ms~n~HP: (.+)~n~Android: (.+)~n~Mo.+y.+p: (\\d+)";
 
-    if (auto [ whole, id ] = ctre::search<text_draw_id_pattern>(text_draw.text); whole) {
-        assign(std::stoul(id.str()));
-        return true;
-    }
-
     if (auto matches = types::u8regex::search<spectator_information>(text_draw.text)) {
-        text_draw_id = text_draw.id;
-        
         information.account_id = std::stoul(matches.get_string<1>());
         information.money_hand = matches.get_string<2>();
         information.health = std::stoul(matches.get_string<4>());
@@ -92,24 +72,11 @@ auto plugin::server::spectator::on_text_draw_set_string(const samp::event<samp::
     return true;
 }
 
-auto plugin::server::spectator::on_text_draw_hide(const samp::event<samp::event_id::hide_text_draw>& text_draw) -> bool {
-    if (text_draw.id == text_draw_id)
-        active = false;
-    
-    return true;
-}
-
 auto plugin::server::spectator::on_show_3d_text(const samp::event<samp::event_id::create_3d_text>& text_3d) -> bool {
     static constexpr ctll::fixed_string first_stage_pattern = R"(\(\( Данный персонаж ранен \d+ раз\(-а\) - /dm \d+ \)\))";
     static constexpr ctll::fixed_string second_stage_pattern = R"(\(\( ДАННЫЙ ПЕРСОНАЖ .+ \)\))";
 
-    if (!active)
-        return true;
-
-    if (text_3d.attached_player_id == 0xFFFF)
-        return true;
-
-    if (text_3d.attached_player_id != id)
+    if (!active || text_3d.attached_player_id == 0xFFFF || text_3d.attached_player_id != id)
         return true;
 
     if (types::u8regex::search<first_stage_pattern>(text_3d.text)) {
@@ -138,7 +105,7 @@ auto plugin::server::spectator::on_remove_3d_text(const samp::event<samp::event_
 
 auto plugin::server::spectator::on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog) -> bool {
     static constexpr ctll::fixed_string warnings_pattern = "Предупреждения: (\\d+)";
-    static constexpr ctll::fixed_string start_pattern = "Информация о игроке (.+)\\[\\d+]";
+    static constexpr ctll::fixed_string start_pattern = "Информация о игроке (.+)\\[(\\d+)]";
     static constexpr ctll::fixed_string information_pattern =
         "Банк: \\$([^\\n]+).*Фракция: ([^\\n]+).*Должность: ([^\\n]+).*Транспорт: ([^\\n]+).*"
         "Дом: ([^\\n]+).*Премиум аккаунт: ([^\\n]+).*Дата регистрации: ([^\\n]+)";
@@ -146,10 +113,13 @@ auto plugin::server::spectator::on_show_dialog(const samp::event<samp::event_id:
     std::string text = string_utils::remove_samp_colors(dialog.text);
     auto dialog_start = types::u8regex::search<start_pattern>(text);
 
-    if (!dialog_start || !checking_statistics || !active)
+    if (!dialog_start || !active)
         return true;
 
-    nickname = dialog_start.get_string<1>();
+    std::uint16_t new_id = std::stoull(dialog_start.get_string<2>());
+
+    if (previous_id != new_id)
+        assign(new_id, dialog_start.get_string<1>());
 
     auto matches = types::u8regex::search<warnings_pattern>(text);
     information.warnings = (matches) ? std::stoul(matches.get_string<1>()) : 0;
@@ -163,13 +133,35 @@ auto plugin::server::spectator::on_show_dialog(const samp::event<samp::event_id:
         information.vip = convert_possible_absence_text(matches.get_string<6>());
         information.registration_date = matches.get_string<7>();
     
-        checking_statistics = false;
-    
         std::replace(information.vehicle.begin(), information.vehicle.end(), ',', ' ');
-        dialog.send_response(samp::dialog::button::left);
     }
-    
-    return false;
+
+    if (checking_statistics) {
+        dialog.send_response(samp::dialog::button::left);
+        checking_statistics = false;
+        return false;
+    }
+
+    return !checking_statistics;
+}
+
+auto plugin::server::spectator::on_spectating_player(const samp::event<samp::event_id::spectating_player>& player) -> bool {
+    if (!active || previous_id == player.id)
+        return true;
+
+    assign(player.id);
+    request_checking_statistics();
+
+    return true;
+}
+
+auto plugin::server::spectator::on_spectating_vehicle() -> bool {
+    if (!active)
+        return true;
+
+    request_checking_statistics();
+
+    return true;
 }
 
 #define SET_KEY_STATE(KEY, CONDITION) get_key_state(samp::synchronization_key::KEY) = CONDITION
@@ -349,26 +341,37 @@ auto plugin::server::spectator::clear_keys_down() noexcept -> void {
 }
 
 auto plugin::server::spectator::assign(std::uint16_t new_id) noexcept -> void {
-    auto now = std::chrono::steady_clock::now();
+    auto new_nickname = samp::player_pool::get_nickname(new_id);
 
-    id = new_id;
-    active = true;
-    
-    if (auto new_player = samp::player_pool::get_remote_player(new_id); new_player && new_player->get_ped().is_available())
-        player = *new_player;
-    
-    if (previous_id == id || now - last_checked < 1s || samp::dialog::is_active() || checking_statistics)
+    if (!new_nickname)
         return;
-    
-    send_menu_option<menu_option::statistics>();
+
+    assign(new_id, *new_nickname);
+}
+
+auto plugin::server::spectator::assign(std::uint16_t new_id, const std::string_view& new_nickname) noexcept -> void {
+    id = new_id;
+    nickname = std::move(new_nickname);
+
+    if (auto new_player = samp::player_pool::get_remote_player(id); new_player && new_player->get_ped().is_available())
+        player = *new_player;
+
+    if (previous_id == id)
+        return;
+
+    update_spectator_details();
+}
+
+auto plugin::server::spectator::update_spectator_details() noexcept -> void {
     clear_keys_down();
-
     previous_id = id;
-    checking_statistics = true;
     camera_switch_state = camera_switch_state_t::none;
-    last_checked = now;
-
     information.total_shots = information.hit_shots = 0;
+    last_checked = std::chrono::steady_clock::now();
+}
+
+auto plugin::server::spectator::request_checking_statistics() noexcept -> void {
+    time_before_check_statistics = std::chrono::steady_clock::now();
 }
 
 auto plugin::server::spectator::get_information() noexcept -> spectator_information {
@@ -377,48 +380,80 @@ auto plugin::server::spectator::get_information() noexcept -> spectator_informat
 }
 
 auto plugin::server::spectator::on_event(const samp::event_info& event) -> bool {
-    if (event == samp::event_type::incoming_rpc) {
-        if (event == samp::event_id::show_text_draw)
-            return on_show_text_draw(event.create<samp::event_id::show_text_draw>());
-        else if (event == samp::event_id::set_text_draw_string)
-            return on_text_draw_set_string(event.create<samp::event_id::set_text_draw_string>());
-        else if (event == samp::event_id::hide_text_draw)
-            return on_text_draw_hide(event.create<samp::event_id::hide_text_draw>());
-        else if (event == samp::event_id::create_3d_text)
-            return on_show_3d_text(event.create<samp::event_id::create_3d_text>());
-        else if (event == samp::event_id::remove_3d_text)
-            return on_remove_3d_text(event.create<samp::event_id::remove_3d_text>());
-        else if (event == samp::event_id::show_menu)
-            return !(*configuration)["spectator_mode"]["hide_menu"];
-        else if (event == samp::event_id::show_dialog) {
-            if (auto dialog_event = event.create<samp::event_id::show_dialog>()) {
-                return on_show_dialog(dialog_event);
+    switch (event.type) {
+        case samp::event_type::incoming_rpc: {
+            if (event == samp::event_id::show_text_draw)
+                return on_show_text_draw(event.create<samp::event_id::show_text_draw>());
+            else if (event == samp::event_id::set_text_draw_string)
+                return on_text_draw_set_string(event.create<samp::event_id::set_text_draw_string>());
+            else if (event == samp::event_id::create_3d_text)
+                return on_show_3d_text(event.create<samp::event_id::create_3d_text>());
+            else if (event == samp::event_id::remove_3d_text)
+                return on_show_3d_text(event.create<samp::event_id::create_3d_text>());
+            else if (event == samp::event_id::spectating_player)
+                return on_spectating_player(event.create<samp::event_id::spectating_player>());
+            else if (event == samp::event_id::spectating_vehicle)
+                return on_spectating_vehicle();
+            else if (event == samp::event_id::show_menu) {
+                active = true;
+                return !(*configuration)["spectator_mode"]["hide_menu"];
+            } else if (event == samp::event_id::hide_menu) {
+                active = false;
+                last_checked = time_before_check_statistics = {};
+                break;
+            } else if (event == samp::event_id::show_dialog) {
+                if (auto dialog_event = event.create<samp::event_id::show_dialog>()) {
+                    return on_show_dialog(dialog_event);
+                }
             }
+
+            break;
         }
-    } else if (event == samp::event_type::incoming_packet) {
-        if (event == samp::event_id::player_synchronization)
-            return on_player_synchronization(event.create<samp::event_id::player_synchronization, samp::event_type::incoming_packet>());
-        if (event == samp::event_id::vehicle_synchronization)
-            return on_vehicle_synchronization(event.create<samp::event_id::vehicle_synchronization, samp::event_type::incoming_packet>());
-        if (event == samp::event_id::passenger_synchronization)
-            return on_passenger_synchronization(event.create<samp::event_id::passenger_synchronization, samp::event_type::incoming_packet>());
-        if (event == samp::event_id::bullet_synchronization) {
-            return on_bullet_synchronization(event.create<samp::event_id::bullet_synchronization, samp::event_type::incoming_packet>());
+
+        case samp::event_type::incoming_packet: {
+            if (event == samp::event_id::player_synchronization)
+                return on_player_synchronization(event.create<samp::event_id::player_synchronization,
+                                                              samp::event_type::incoming_packet>());
+            else if (event == samp::event_id::vehicle_synchronization)
+                return on_vehicle_synchronization(event.create<samp::event_id::vehicle_synchronization,
+                                                               samp::event_type::incoming_packet>());
+            else if (event == samp::event_id::passenger_synchronization)
+                return on_passenger_synchronization(event.create<samp::event_id::passenger_synchronization,
+                                                                 samp::event_type::incoming_packet>());
+            else if (event == samp::event_id::bullet_synchronization) {
+                return on_bullet_synchronization(event.create<samp::event_id::bullet_synchronization,
+                                                              samp::event_type::incoming_packet>());
+            }
+
+            break;
         }
+        
+        default:
+            break;
     }
 
     return true;
 }
 
 auto plugin::server::spectator::main_loop() -> void {
-    if (!active || !user::is_on_alogin())
+    using namespace std::chrono_literals;
+
+    if (!user::is_on_alogin() || !active)
         return;
+
+    auto now = std::chrono::steady_clock::now();
+
+    if (time_before_check_statistics != std::chrono::steady_clock::time_point {} && now - time_before_check_statistics >= 1s) {
+        send_menu_option<menu_option::statistics>();
+        time_before_check_statistics = {};
+        checking_statistics = true;
+    }
 
     if (!player.is_available() || (player.is_available() && !player.get_ped().is_available()))
         if (auto new_player = samp::player_pool::get_remote_player(id))
             player = *new_player;
 
-    if (player.get_ped().is_available()) {
+    if (player.is_available() && player.get_ped().is_available()) {
         if (samp::vehicle vehicle = player.get_vehicle(); vehicle.is_available()) {
             information.move_speed_max = game::get_max_vehicle_model_speed(vehicle.get_model_index());
             return;
@@ -431,8 +466,6 @@ auto plugin::server::spectator::main_loop() -> void {
     
         return;
     }
-
-    auto now = std::chrono::steady_clock::now();
 
     if (samp::utils::is_inputs_active() || now - last_reload < 1s)
         return;

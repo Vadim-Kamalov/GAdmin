@@ -35,10 +35,13 @@ enum class event_id : std::uint8_t {
     remove_3d_text = 58,            ///< Sent when server wants to destroy 3D text.
     player_chat_bubble = 59,        ///< Sent when server wants to display any player's chat bubble.
     show_dialog = 61,               ///< Sent when server wants to display dialog to the user.
-    show_menu = 77,                 ///< Sent when server wants to show menu.
+    show_menu = 77,                 ///< Sent when server wants to show a menu.
+    hide_menu = 78,                 ///< Sent when server wants to hide a menu.
     server_message = 93,            ///< Sent when server wants to add entry in the chat window.
     send_chat = 101,                ///< Message sent by the user.
     set_text_draw_string = 105,     ///< Sent when server wants to update any text draw's text.
+    spectating_player = 126,        ///< Sent when server wants the user to spectate a player.
+    spectating_vehicle = 127,       ///< Sent when server wants the user to spectate a vehicle.
     show_text_draw = 134,           ///< Sent when server wants to display the text draw to the user.
     hide_text_draw = 135,           ///< Sent when server wants to destroy the text draw.
     server_connect = 137,           ///< Sent when server wants to add connected player.

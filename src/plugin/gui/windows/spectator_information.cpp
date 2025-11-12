@@ -71,10 +71,12 @@ auto plugin::gui::windows::spectator_information::vehicles_custom_renderer(const
 auto plugin::gui::windows::spectator_information::vehicle_information_custom_renderer(const std::string_view&, types::color) const
     -> void
 {
-    samp::vehicle vehicle = server::spectator::player.get_vehicle();
+    auto vehicle = samp::vehicle(0);
 
-    if (!vehicle.is_available())
+    if (!server::spectator::player.is_available() || !server::spectator::player.get_vehicle().is_available())
         return render_centered_text("Недоступно", regular_font, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
+
+    vehicle = server::spectator::player.get_vehicle();
 
     std::string engine = "Заглушен", doors = "Открыты";
     ImVec4 engine_color = ImGui::ColorConvertU32ToFloat4(*style::get_current_accent_colors().red);
@@ -178,17 +180,20 @@ auto plugin::gui::windows::spectator_information::get_rows() const -> std::vecto
     using namespace std::placeholders;
 
     server::spectator_information information = server::spectator::get_information();
-    
-    samp::vehicle vehicle = server::spectator::player.get_vehicle();
+    bool spectator_player_available = server::spectator::player.is_available();
     std::string vehicle_name = "Отсутствует";
 
-    if (vehicle.is_available()) {
-        std::uint16_t id = 0xFFFF;
+    if (spectator_player_available) {
+        samp::vehicle vehicle = server::spectator::player.get_vehicle();
 
-        if (auto new_id = samp::vehicle_pool::get_id(vehicle))
-            id = *new_id;
+        if (vehicle.is_available()) {
+            std::uint16_t id = 0xFFFF;
 
-        vehicle_name = std::format("{} ({})", game::get_vehicle_name(vehicle.get_model_index()), id);
+            if (auto new_id = samp::vehicle_pool::get_id(vehicle))
+                id = *new_id;
+
+            vehicle_name = std::format("{} ({})", game::get_vehicle_name(vehicle.get_model_index()), id);
+        }
     }
 
     return {
@@ -220,8 +225,12 @@ auto plugin::gui::windows::spectator_information::get_rows() const -> std::vecto
         row("Модульный мир", std::to_string(information.world)),
 
         row("Тек./макс. скорость", std::format("{} / {}", information.move_speed_current, information.move_speed_max), [=] -> types::color {
-            if (server::spectator::player.get_vehicle().is_available() && information.move_speed_current > information.move_speed_max)
+            if (spectator_player_available
+                && server::spectator::player.get_vehicle().is_available()
+                && information.move_speed_current > information.move_speed_max)
+            {
                 return style::get_current_accent_colors().red;
+            }
 
             return ImGui::GetColorU32(ImGuiCol_Text);
         }),

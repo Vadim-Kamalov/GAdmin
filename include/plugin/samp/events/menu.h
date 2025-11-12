@@ -26,6 +26,9 @@ namespace plugin::samp {
 template<>
 struct event<event_id::show_menu> final {};
 
+template<>
+struct event<event_id::hide_menu> final {};
+
 } // namespace plugin::samp
 
 #endif // GADMIN_PLUGIN_SAMP_EVENTS_MENU_H
