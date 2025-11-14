@@ -221,7 +221,7 @@ auto plugin::misc::features::statistics_updater::try_increment_punishment(const 
 auto plugin::misc::features::statistics_updater::on_server_message(const samp::event<samp::event_id::server_message>& message) const
     -> bool
 {
-    static constexpr ctll::fixed_string a_chat_message_pattern = R"(^\[A\] \S+\[(\d+)\]:)";
+    static constexpr ctll::fixed_string a_chat_message_pattern = R"(^\[A\d\] \S+\[(\d+)\]:)";
     static constexpr ctll::fixed_string answer_pattern = R"(^\[A\] \S+\[(\d+)\] ответил \S+\[\d+\]:)";
 
     std::uint16_t found_id = 0xFFFF;

@@ -53,7 +53,7 @@ auto plugin::misc::features::mentions::is_user_mentioned(const std::string_view&
 auto plugin::misc::features::mentions::on_server_message(const samp::event<samp::event_id::server_message>& message) const
     -> bool
 {
-    static constexpr ctll::fixed_string pattern = R"(^\[A\] (\S+)\[(\d+)\]: (\S+))";
+    static constexpr ctll::fixed_string pattern = R"(^\[A\d\] (\S+)\[(\d+)\]: (\S+))";
 
     std::string clean_text = string_utils::remove_samp_colors(message.text);
 

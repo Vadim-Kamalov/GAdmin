@@ -54,7 +54,7 @@ auto plugin::server::user::on_server_message(const samp::event<samp::event_id::s
         "^\\{FFFF00\\}\\| \\{ffffff\\}За сессию администратирования вы заработали "
         "\\{4a86b6\\}\\d+ \\{FFFFFF\\}GMoney.$";
 
-    static constexpr ctll::fixed_string admin_chat_message_pattern = R"(^\[A\] (\S+)\[(\d+)\]: )";
+    static constexpr ctll::fixed_string admin_chat_message_pattern = R"(^\[A(\d)\] (\S+)\[(\d+)\]: )";
 
     if (std::find_if(authorization_strings.begin(), authorization_strings.end(), [message](const std::string& str) {
         return message.text.contains(str);
@@ -70,16 +70,20 @@ auto plugin::server::user::on_server_message(const samp::event<samp::event_id::s
     if (types::u8regex::search<alogout_pattern>(message.text) && is_on_alogin())
         set_alogin_state(false);
 
-    if (auto [ whole, nickname, id_match ] = ctre::search<admin_chat_message_pattern>(message.text); whole) {
+    if (auto [ whole, level, nickname, id_match ] = ctre::search<admin_chat_message_pattern>(message.text); whole) {
         if (samp::user::get_id() != std::stoul(id_match.str()))
             return true;
 
         auto& user_information = (*configuration)["user"];
         std::string user_ooc_nickname = user_information["nickname"];
         std::uint8_t user_level = user_information["level"];
+        std::uint8_t current_user_level = std::stoul(level.str());
 
-        if (user_ooc_nickname == "Администратор" && user_level == 6)
+        if (user_ooc_nickname == "Администратор")
             user_information["nickname"] = nickname;
+
+        if (current_user_level != user_level)
+            user_information["level"] = current_user_level;
     }
 
     return true;

@@ -25,12 +25,12 @@ auto plugin::misc::features::nickname_colors::write_nickname_colors() -> void {
 }
 
 auto plugin::misc::features::nickname_colors::on_server_message(const samp::event<samp::event_id::server_message>& message) -> bool {
-    static constexpr ctll::fixed_string message_pattern = R"(^\[A\] (\S+)(\[\d+\].*))";
+    static constexpr ctll::fixed_string message_pattern = R"(^\[A(\d)\] (\S+)(\[\d+\].*))";
     
     if (entries.empty())
         return true;
 
-    if (auto [ whole, nickname, other ] = ctre::search<message_pattern>(message.text);
+    if (auto [ whole, level, nickname, other ] = ctre::search<message_pattern>(message.text);
         whole && message.color == 0xAA33AA33)
     {
         if (auto entry = std::find_if(entries.begin(), entries.end(), [nickname](const entry_t& entry) {
@@ -43,7 +43,7 @@ auto plugin::misc::features::nickname_colors::on_server_message(const samp::even
             std::string color = std::format("{:06X}", random_color.cast<types::color_type::rgba>()).substr(0, 6);
             std::string new_nickname = std::format("{{{}}}{}{{33AA33}}", color, nickname.str());
             
-            message.write_text(std::format("[A] {}{}", new_nickname, other.str()));
+            message.write_text(std::format("[A{}] {}{}", level.str(), new_nickname, other.str()));
         }
     }
 

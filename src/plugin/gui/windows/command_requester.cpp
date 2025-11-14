@@ -149,7 +149,7 @@ auto plugin::gui::windows::command_requester::on_server_message(const samp::even
 }
 
 auto plugin::gui::windows::command_requester::try_handle_new_request(const std::string& text) -> bool {
-    static constexpr ctll::fixed_string command_request_pattern = R"(\[A\] (.+)\[(\d+)\]: (/.*))";
+    static constexpr ctll::fixed_string command_request_pattern = R"(\[A\d\] (.+)\[(\d+)\]: (/.*))";
             
     if (auto matches = ctre::match<command_request_pattern>(text)) {
         std::string sender_nickname = matches.get<1>().str();
@@ -200,7 +200,7 @@ auto plugin::gui::windows::command_requester::try_handle_approved_request(const 
 
     static constexpr ctll::fixed_string answer_request_pattern = R"(\[A\] .+\[\d+\] ответил .+\[\d+\]: \S+ by (.+))";
     static constexpr ctll::fixed_string reason_request_pattern = R"(Администратор .+\. Причина: .+ // (.+))";
-    static constexpr ctll::fixed_string none_request_pattern = R"(\[A\] .+\[\d+\]: (\d+), \+)";
+    static constexpr ctll::fixed_string none_request_pattern = R"(\[A\d\] .+\[\d+\]: (\d+), \+)";
 
     auto matches = types::u8regex::match<answer_request_pattern>(text);
     std::string to_compare = current_request->sender_nickname;
