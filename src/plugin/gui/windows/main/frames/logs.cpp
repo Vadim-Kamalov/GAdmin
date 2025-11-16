@@ -30,10 +30,10 @@ std::map<plugin::gui::windows::main::frames::logs::log_type_t, plugin::gui::wind
 plugin::gui::windows::main::frames::logs::log_groups = {
     { log_type_t::administration_chat, { "Чат администрации", log_group::conditions_t {
         .start = { "[A] " },
-        .colors = { 0xAA33AA33 },
+        .colors = { 0xFF00C281 },
         .callback = [](const std::string& text, const types::color& color) -> bool {
             static constexpr ctll::fixed_string pattern = R"(^\[A\d\] \S+\[\d+\]: )";
-            return color == 0xAA33AA33 && (text.starts_with("[A] ") || !!ctre::search<pattern>(text));
+            return color == 0xFF00C281 && (text.starts_with("[A] ") || !!ctre::search<pattern>(text));
         }
     }}},
     

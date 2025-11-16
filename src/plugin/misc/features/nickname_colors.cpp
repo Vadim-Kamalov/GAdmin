@@ -31,12 +31,12 @@ auto plugin::misc::features::nickname_colors::on_server_message(const samp::even
         return true;
 
     if (auto [ whole, level, nickname, other ] = ctre::search<message_pattern>(message.text);
-        whole && message.color == 0xAA33AA33)
+        whole && message.color == 0xFF00C281)
     {
         if (auto entry = std::find_if(entries.begin(), entries.end(), [nickname](const entry_t& entry) {
             return entry.nickname == nickname;
         }); entry != entries.end()) {
-            if (entry->colors[0] == 0xAA33AA33)
+            if (entry->colors[0] == 0xFF00C281)
                 return true;
 
             types::color random_color = *common_utils::select_randomly(entry->colors.begin(), entry->colors.end());
@@ -53,7 +53,7 @@ auto plugin::misc::features::nickname_colors::on_server_message(const samp::even
 auto plugin::misc::features::nickname_colors::append_entries(nlohmann::json& object) -> void {
     for (const auto& [ key, value ] : object.items()) {
         if (value.is_null()) {
-            entries.push_back({ key, { 0xAA33AA33 }});
+            entries.push_back({ key, { 0xFF00C281 }});
             continue;
         }
 

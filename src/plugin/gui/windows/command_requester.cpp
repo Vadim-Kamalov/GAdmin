@@ -139,7 +139,7 @@ auto plugin::gui::windows::command_requester::on_server_message(const samp::even
         return true;
     }
 
-    if (event.color == 0xAA33AA33 && try_handle_new_request(event.text))
+    if (event.color == 0xFF00C281 && try_handle_new_request(event.text))
         return true;
 
     if (try_handle_approved_request(event.text, event.color))
@@ -212,7 +212,7 @@ auto plugin::gui::windows::command_requester::try_handle_approved_request(const 
             matches = types::u8regex::match<reason_request_pattern>(text);
             break;
         case command_t::type_t::none: {
-            if (color != 0xAA33AA33)
+            if (color != 0xFF00C281)
                 return false;
 
             matches = types::u8regex::match<none_request_pattern>(text);

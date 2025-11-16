@@ -74,7 +74,7 @@ auto plugin::server::admins::on_server_message(const samp::event<samp::event_id:
         R"(\[A\] (\S+)\[(\d+)\] авторизовался как администратор (\d+) уровня.)";
 
     static constexpr ctll::fixed_string disconnect_pattern
-        = R"(\[A\] \S+\[(\d+)\] вышел как администратор.)";
+        = R"(\[A\d\] \S+\[(\d+)\] вышел как администратор.)";
     
     if (auto matches = types::u8regex::match<authorization_pattern>(message.text)) {
         std::string nickname = matches.get_string<1>();
