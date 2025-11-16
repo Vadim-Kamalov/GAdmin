@@ -41,7 +41,7 @@ auto plugin::misc::features::nickname_colors::on_server_message(const samp::even
 
             types::color random_color = *common_utils::select_randomly(entry->colors.begin(), entry->colors.end());
             std::string color = std::format("{:06X}", random_color.cast<types::color_type::rgba>()).substr(0, 6);
-            std::string new_nickname = std::format("{{{}}}{}{{33AA33}}", color, nickname.str());
+            std::string new_nickname = std::format("{{{}}}{}{{81C200}}", color, nickname.str());
             
             message.write_text(std::format("[A{}] {}{}", level.str(), new_nickname, other.str()));
         }
