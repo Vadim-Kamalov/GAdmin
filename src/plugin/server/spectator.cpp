@@ -47,8 +47,18 @@ auto plugin::server::spectator::on_show_text_draw(const samp::event<samp::event_
 
 auto plugin::server::spectator::on_text_draw_set_string(const samp::event<samp::event_id::set_text_draw_string>& text_draw) -> bool {
     static constexpr ctll::fixed_string spectator_information =
-        "ID Akkay.+a: (\\d+)~n~Ha.+e: (\\d+)~n~Ckopoc.+: (\\d+) / \\d+"
-        "~n~Opy.+e: .+~n~Ping: \\d+ ms~n~HP: (.+)~n~Android: (.+)~n~Mo.+y.+p: (\\d+)";
+        "epco.+: (\\d+)~n~Ha.+e: (\\d+)~n~Ckopoc.+: (\\d+) / \\d+"
+        ".+~n~.+opo.+e: (.+)~n~Android: (.+)~n~Mo.+y.+p: (\\d+)";
+
+    // Њepco®a›: 606529
+    // ~n~Haћњ¤®Ёe: 2190
+    // ~n~Ckopoc¦©: 0 / 0
+    // ~n~Opy›њe: Fist
+    // ~n~Њњ®™: 89 Їc
+    // ~n~€љopoў©e: 96.22
+    // ~n~Android: He¦
+    // ~n~Moљyћ©®Ёќ Їњp: 0
+    // ~n~ѓўњ™a¦eћ© ЏC: He¦
 
     if (auto matches = types::u8regex::search<spectator_information>(text_draw.text)) {
         information.account_id = std::stoul(matches.get_string<1>());
