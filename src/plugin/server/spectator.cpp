@@ -50,16 +50,6 @@ auto plugin::server::spectator::on_text_draw_set_string(const samp::event<samp::
         "epco.+: (\\d+)~n~Ha.+e: (\\d+)~n~Ckopoc.+: (\\d+) / \\d+"
         ".+~n~.+opo.+e: (.+)~n~Android: (.+)~n~Mo.+y.+p: (\\d+)";
 
-    // Њepco®a›: 606529
-    // ~n~Haћњ¤®Ёe: 2190
-    // ~n~Ckopoc¦©: 0 / 0
-    // ~n~Opy›њe: Fist
-    // ~n~Њњ®™: 89 Їc
-    // ~n~€љopoў©e: 96.22
-    // ~n~Android: He¦
-    // ~n~Moљyћ©®Ёќ Їњp: 0
-    // ~n~ѓўњ™a¦eћ© ЏC: He¦
-
     if (auto matches = types::u8regex::search<spectator_information>(text_draw.text)) {
         information.account_id = std::stoul(matches.get_string<1>());
         information.money_hand = matches.get_string<2>();

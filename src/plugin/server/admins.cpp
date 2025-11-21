@@ -21,6 +21,7 @@
 #include "plugin/samp/core/user.h"
 #include "plugin/log.h"
 #include "plugin/plugin.h"
+#include "plugin/string_utils.h"
 #include "plugin/types/u8regex.h"
 #include <algorithm>
 #include <spanstream>
@@ -50,10 +51,10 @@ auto plugin::server::admins::on_show_dialog(const samp::event<samp::event_id::sh
         return false;
     }
 
-    if (dialog.text.contains("Администраторы в сети:")) {
+    if (dialog.title == "Администрация онлайн") {
         auto& user_information = (*configuration)["user"];
 
-        update_admins(dialog.text);
+        update_admins(string_utils::remove_samp_colors(dialog.text));
 
         if (user_information["nickname"] == "Администратор" && user_information["level"] == 0) {
             user_information["nickname"] = "Technical Admin";
@@ -103,15 +104,15 @@ auto plugin::server::admins::on_set_player_name(const samp::event<samp::event_id
 }
 
 auto plugin::server::admins::update_admins(const std::string_view& dialog_text) -> void {
-    static constexpr ctll::fixed_string entry_pattern = R"(\{FFFFFF\}(.*)\[(\d+)\] - ([1-5]) уровень)";
+    static constexpr ctll::fixed_string entry_pattern = R"((.*) \(([1-5]) уровень\).+\((\d+)\))";
 
     std::ispanstream stream(dialog_text);
 
     for (std::string entry; std::getline(stream, entry);) {
         if (auto matches = types::u8regex::search<entry_pattern>(entry)) {
             std::string nickname = matches.get_string<1>();
-            std::uint16_t id = static_cast<std::uint16_t>(std::stoul(matches.get_string<2>()));
-            std::uint8_t level = static_cast<std::uint8_t>(std::stoul(matches.get_string<3>()));
+            std::uint8_t level = static_cast<std::uint8_t>(std::stoul(matches.get_string<2>()));
+            std::uint16_t id = static_cast<std::uint16_t>(std::stoul(matches.get_string<3>()));
                 
             if (id == samp::user::get_id()) {
                 auto& user_information = (*configuration)["user"];
