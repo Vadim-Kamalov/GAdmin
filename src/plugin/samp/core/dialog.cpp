@@ -36,5 +36,5 @@ auto plugin::samp::dialog::send_response(std::uint16_t id, const button& button,
 }
 
 auto plugin::samp::dialog::is_active() noexcept -> bool {
-    return active_address.read(instance_container->read());
+    return active_offset.read(instance_container->read());
 }

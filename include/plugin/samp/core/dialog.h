@@ -28,7 +28,7 @@ namespace plugin::samp {
 class dialog final {
 private:
     static types::versioned_address_container<std::uintptr_t> instance_container;
-    static inline types::offset<int> active_address = 0x50; 
+    static inline types::offset<int> active_offset = 0x28; 
 public:
     static constexpr std::uint16_t list_item_none = 0xFFFF; ///< None list item.
     static constexpr std::uint16_t invalid_id = 0xFFFF;     ///< Invalid dialog ID.
