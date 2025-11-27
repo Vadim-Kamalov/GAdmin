@@ -53,6 +53,8 @@ struct admin final {
 /// and disconnections providing actual administrators' list.
 class admins final {
 private:
+    static constexpr std::uint8_t next_page_list_item_index = 14;
+
     static auto on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog) -> bool;
     static auto on_server_message(const samp::event<samp::event_id::server_message>& message) -> bool;
     static auto on_server_quit(const samp::event<samp::event_id::server_quit>& disconnected) -> bool;

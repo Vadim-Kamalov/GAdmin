@@ -43,7 +43,7 @@ auto plugin::server::admin::sort(std::vector<admin>& admins, const sort_option& 
 }
 
 auto plugin::server::admins::on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog) -> bool {
-    if (!list.empty() || user::is_on_alogin())
+    if (user::is_on_alogin())
         return true;
 
     if (dialog.text.contains("Лог отключений")) {
@@ -52,9 +52,16 @@ auto plugin::server::admins::on_show_dialog(const samp::event<samp::event_id::sh
     }
 
     if (dialog.title == "Администрация онлайн") {
-        auto& user_information = (*configuration)["user"];
+        std::string raw_dialog_text = string_utils::remove_samp_colors(dialog.text);
 
-        update_admins(string_utils::remove_samp_colors(dialog.text));
+        update_admins(raw_dialog_text);
+
+        if (raw_dialog_text.contains("Следующая страница")) {
+            dialog.send_response(samp::dialog::button::right, next_page_list_item_index);
+            return false;
+        }
+
+        auto& user_information = (*configuration)["user"];
 
         if (user_information["nickname"] == "Администратор" && user_information["level"] == 0) {
             user_information["nickname"] = "Technical Admin";
