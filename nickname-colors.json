@@ -31,6 +31,7 @@
         "frantsuz": "FF0000",
         "GFFG": "FF0000",
         "goshkin": "FFFFFF",
-        "marcy": "0000FF"
+        "marcy": "0000FF",
+        "const": "FFFF00"
     }
 }
