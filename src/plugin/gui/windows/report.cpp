@@ -75,7 +75,7 @@ auto plugin::gui::windows::report::get_action_buttons() -> std::array<action_but
         ImVec2 button_size = (i == 7 || i == 10) ? middle_button_size : corner_button_size;
 
         output[i] = { widgets::button("> " + button.name + id, button_size),
-                      [this, &button] { answer_input = button.insert; }};
+                      [this, button] { answer_input = button.insert; }};
     }
 
     return output;
