@@ -125,9 +125,11 @@ auto plugin::gui::windows::main::widgets::submenu::render_menu(types::not_null<i
             child_height -= button_size.y + ImGui::GetStyle().ItemSpacing.y;
 
         ImGui::SetCursorPosX(0);
-        ImGui::BeginChild("scrollable_area", { ImGui::GetWindowWidth(), child_height },
+        ImGui::BeginChild("scrollable_area", { child_width, child_height },
                           ImGuiChildFlags_AlwaysUseWindowPadding, child->window_flags);
         {
+            ImGui::SetScrollX(0);
+
             for (const auto& [ index, entry ] : entries | std::views::enumerate)
                 render_entry(index, entry, button_size);
         }

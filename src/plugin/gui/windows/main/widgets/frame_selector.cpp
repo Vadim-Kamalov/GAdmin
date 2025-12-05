@@ -87,6 +87,7 @@ auto plugin::gui::windows::main::widgets::frame_selector::render() -> void {
     ImGui::BeginChild("windows::main::menu", { width, child->window_size.y }, ImGuiChildFlags_Borders, window_flags);
     {
         ImGui::SetCursorPos({ 0, 0 });
+        ImGui::SetScrollX(0); 
         widgets::frame_selector_toggle::instance(this).render();
         ImGui::SetCursorPos({ state_width.first + ImGui::GetStyle().ItemSpacing.x, ImGui::GetStyle().WindowPadding.y });
         ImGui::BeginGroup();
