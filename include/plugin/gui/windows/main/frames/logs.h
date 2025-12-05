@@ -84,20 +84,15 @@ private:
     types::not_null<initializer*> child;
     widgets::submenu submenu = widgets::submenu("Логи##frames::logs");
     gui::widgets::search search = gui::widgets::search("frames::logs::search");
-    std::string message_buffer = "";
+    std::string wrap_storage = "";
 
     ImFont* bold_font = nullptr;
     ImFont* regular_font = nullptr;
     
-    static auto is_continuation_start(const std::string& text) noexcept -> bool;
-    static auto is_continuation_end(const std::string& text) noexcept -> bool;
-    static auto trim_ellipsis(const std::string& text) noexcept -> std::string;
-
     auto on_server_connect(const samp::event<samp::event_id::server_connect>& event) -> bool;
     auto on_server_quit(const samp::event<samp::event_id::server_quit>& event) -> bool;
     auto on_set_player_name(const samp::event<samp::event_id::set_player_name>& event) -> bool;
 
-    auto on_unwrapped_message(const std::string& text, const types::color& color) -> void;
     auto on_server_message(const samp::event<samp::event_id::server_message>& message) -> bool;
     auto on_death_notification(const samp::event<samp::event_id::player_death_notification>& notification) const -> bool;
 

@@ -73,26 +73,6 @@ plugin::gui::windows::main::frames::logs::log_groups = {
     { log_type_t::other, { "Прочее" }}
 }; // std::map<plugin::gui::windows::main::frames::logs::log_type_t, plugin::gui::windows::main::frames::logs::log_group>
 
-auto plugin::gui::windows::main::frames::logs::is_continuation_start(const std::string& text) noexcept -> bool {
-    return text.starts_with("... ");
-}
-
-auto plugin::gui::windows::main::frames::logs::is_continuation_end(const std::string& text) noexcept -> bool {
-    return text.ends_with(" ..") || text.ends_with(" ..."); 
-}
-
-auto plugin::gui::windows::main::frames::logs::trim_ellipsis(const std::string& text) noexcept -> std::string {
-    std::string output = text;
-
-    if (is_continuation_start(output))
-        output.erase(0, output.find_first_not_of('.'));
-
-    if (is_continuation_end(output))
-        output.erase(output.find_last_not_of('.'));
-
-    return output;
-}
-
 auto plugin::gui::windows::main::frames::logs::on_server_connect(const samp::event<samp::event_id::server_connect>& event)
     -> bool
 {
@@ -140,66 +120,43 @@ auto plugin::gui::windows::main::frames::logs::on_set_player_name(const samp::ev
     return true;
 }
 
-auto plugin::gui::windows::main::frames::logs::on_unwrapped_message(const std::string& text, const types::color& color) -> void {
-    for (auto& [ _, group ] : log_groups) {
-        if (!group.conditions.has_value())
-            continue;
-
-        if (group.conditions->callback.has_value()) {
-            if ((*group.conditions->callback)(text, color)) {
-                group.messages.emplace_back(text);
-                return;
-            }
-
-            continue;
-        }
-
-        bool text_matches = group.conditions->start.empty() ||
-            std::ranges::any_of(group.conditions->start, [&text](const std::string& prefix) {
-                return text.starts_with(prefix);
-            });
-
-        bool color_matches = group.conditions->colors.empty() ||
-            std::ranges::any_of(group.conditions->colors, [&color](const types::color& it) {
-                return color == it;
-            });
-
-        if (text_matches && color_matches) {
-            group.messages.emplace_back(text);
-            return;
-        }
-    }
-
-    log_groups[log_type_t::other].messages.emplace_back(text);
-}
-
 auto plugin::gui::windows::main::frames::logs::on_server_message(const samp::event<samp::event_id::server_message>& message)
     -> bool
 {
-    std::string text = message.text;
+    message.set_continuous_text_callback(wrap_storage, [this](const std::string_view& text_view, const types::color& color) {
+        std::string text(text_view);
 
-    if (message_buffer.empty()) {
-        if (is_continuation_end(text)) {
-            message_buffer = text;
-        } else {
-            on_unwrapped_message(text, message.color);
-        }
-    } else {
-        if (is_continuation_start(text)) {
-            message_buffer = trim_ellipsis(message_buffer) + trim_ellipsis(text);
-            if (!is_continuation_end(text)) {
-                on_unwrapped_message(message_buffer, message.color);
-                message_buffer.clear();
+        for (auto& [ _, group ] : log_groups) {
+            if (!group.conditions.has_value())
+                continue;
+
+            if (group.conditions->callback.has_value()) {
+                if ((*group.conditions->callback)(text, color)) {
+                    group.messages.emplace_back(text);
+                    return;
+                }
+
+                continue;
             }
-        } else {
-            on_unwrapped_message(message_buffer, message.color);
-            if (is_continuation_end(text)) {
-                message_buffer = text;
-            } else {
-                message_buffer.clear();
+
+            bool text_matches = group.conditions->start.empty() ||
+                std::ranges::any_of(group.conditions->start, [&text](const std::string& prefix) {
+                    return text.starts_with(prefix);
+                });
+
+            bool color_matches = group.conditions->colors.empty() ||
+                std::ranges::any_of(group.conditions->colors, [&color](const types::color& it) {
+                    return color == it;
+                });
+
+            if (text_matches && color_matches) {
+                group.messages.emplace_back(text);
+                return;
             }
         }
-    }
+
+        log_groups[log_type_t::other].messages.emplace_back(text);
+    });
 
     return true;
 }

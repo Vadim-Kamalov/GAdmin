@@ -98,6 +98,7 @@ private:
     std::optional<report_information_t> current_report;
     std::optional<dialog_response> current_response;
     std::string answer_input;
+    std::string wrap_storage;
 
     ImFont* bold_font;
     ImFont* regular_font;
@@ -110,8 +111,8 @@ private:
 
     auto on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog) -> bool;
     auto on_server_message(const samp::event<samp::event_id::server_message>& message) -> bool;
-    auto on_new_report_message(const std::string& nickname, std::uint16_t id) -> bool;
-    auto on_report_canceled() -> bool;
+    auto on_new_report_message(const std::string& nickname, std::uint16_t id) -> void;
+    auto on_report_canceled() -> void;
 
     auto open_window() -> void;
     auto open_window_with_dialog() -> void;

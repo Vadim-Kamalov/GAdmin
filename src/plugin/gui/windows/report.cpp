@@ -140,22 +140,27 @@ auto plugin::gui::windows::report::on_show_dialog(const samp::event<samp::event_
 }
 
 auto plugin::gui::windows::report::on_server_message(const samp::event<samp::event_id::server_message>& message) -> bool {
-    static constexpr ctll::fixed_string new_report_pattern
-        = R"(^\{FFFF00\}\| \{ffffff\}На вас был назначен репорт от игрока \{4a86b6\}(\S+)\[(\d+)\]\{FFFFFF\})";
+    static constexpr ctll::fixed_string new_report_pattern = R"(^\| На вас был назначен репорт от игрока (\S+)\[(\d+)\])";
+    static constexpr types::zstring_t report_canceled_message = "| Обработка репорта завершена.";
 
-    static constexpr types::zstring_t report_canceled_message
-        = "{FFFF00}| {ffffff}Обработка репорта завершена.";
+    message.set_continuous_text_callback(wrap_storage, [this](const std::string_view& text, const types::color&) {
+        if (text.substr(0, std::char_traits<char>::length(report_canceled_message)) == report_canceled_message) {
+            on_report_canceled();
+            return;
+        }
+        
+        auto matches = types::u8regex::search<new_report_pattern>(text);
 
-    if (auto matches = types::u8regex::search<new_report_pattern>(message.text))
-        return on_new_report_message(matches.get_string<1>(), std::stoi(matches.get_string<2>()));
+        if (!matches)
+            return;
 
-    if (message.text.substr(0, std::char_traits<char>::length(report_canceled_message)) == report_canceled_message)
-        return on_report_canceled();
+        on_new_report_message(matches.get_string<1>(), std::stoi(matches.get_string<2>()));
+    });
 
     return true;
 }
 
-auto plugin::gui::windows::report::on_new_report_message(const std::string& nickname, std::uint16_t id) -> bool {
+auto plugin::gui::windows::report::on_new_report_message(const std::string& nickname, std::uint16_t id) -> void {
     auto& window_configuration = (*configuration)["windows"]["report"];
 
     time_received_report = std::chrono::steady_clock::now();
@@ -180,27 +185,27 @@ auto plugin::gui::windows::report::on_new_report_message(const std::string& nick
             .with_duration(15s));
     }
 
-    if (window_configuration["sound_notify"])
-        samp::audio::play_sound(samp::audio::sound_id::bell);
+    if (!window_configuration["sound_notify"])
+        return;
 
-    return true;
+    samp::audio::play_sound(samp::audio::sound_id::bell);
 }
 
-auto plugin::gui::windows::report::on_report_canceled() -> bool {
+auto plugin::gui::windows::report::on_report_canceled() -> void {
     notification_active = false;
     current_report = {};
 
     if (active)
         close_window();
 
-    auto window_configuration = (*configuration)["windows"]["report"];
+    auto& window_configuration = (*configuration)["windows"]["report"];
 
-    if (window_configuration["notify"])
-        notify::send(notification("Обработка репорта завершена",
-                                  "Игрок был отсоединен от сервера",
-                                  ICON_CLOSE_M_D));
+    if (!window_configuration["notify"])
+        return;
 
-    return true;
+    notify::send(notification("Обработка репорта завершена",
+                              "Игрок был отсоединен от сервера",
+                              ICON_CLOSE_M_D));
 }
 
 auto plugin::gui::windows::report::open_window() -> void {

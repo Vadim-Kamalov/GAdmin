@@ -22,6 +22,7 @@
 #include "plugin/samp/events/event.h"
 #include "plugin/string_utils.h"
 #include "plugin/types/color.h"
+#include <functional>
 
 namespace plugin::samp {
 
@@ -29,9 +30,29 @@ template<>
 class event<event_id::server_message> final {
 private:
     bit_stream* stream;
+
+    static auto is_continuation_start(const std::string& text) noexcept -> bool;
+    static auto is_continuation_end(const std::string& text) noexcept -> bool;
+    static auto trim_ellipsis(const std::string& text) noexcept -> std::string;
 public:
+    /// Callback for the receiving continuous text, i.e. whole text without server-wrapping (if present).
+    ///
+    /// @see set_continuous_text_callback
+    /// 
+    /// @param text[in] Text without SA:MP colors (because there may be cases when a server inserts
+    ///                 those before/after ellipsis).
+    /// 
+    /// @param color[in] Color.
+    using on_unwrapped_text_callback_t = std::function<void(const std::string_view& text, const types::color& color)>;
+
     types::color color; ///< Chat Message's color.
     std::string text;   ///< Chat Message's text.
+
+    /// Set callback for the receiving continuous text, i.e. whole text without server-wrapping (if present).
+    ///
+    /// @param storage[out] Storage for any wrapped messages encountered during processing.
+    /// @param callback[in] Callback which accepts continuous text.
+    auto set_continuous_text_callback(std::string& storage, on_unwrapped_text_callback_t callback) const -> void;
 
     /// Update message text and color on the user side.
     ///
