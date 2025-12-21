@@ -324,18 +324,25 @@ auto plugin::gui::windows::report::render() -> void {
 
     auto now = std::chrono::steady_clock::now();
 
-    if (animation::is_time_available(time_received_report) && now - time_received_report >= 15s) {
-        time_received_report = {};
-        current_report = {};
-        return;
-    }
+    current_report = report_information_t {
+        .nickname = "DEV_defaultzone",
+        .text = "Как заспавнить свою машину?",
+        .id = 0xFFFF,
+        .time_taken = now
+    };
 
-    if (!active) {
-        if (dialog_active)
-            handle_remind_notification();
-
-        return;
-    }
+    // if (animation::is_time_available(time_received_report) && now - time_received_report >= 15s) {
+    //     time_received_report = {};
+    //     current_report = {};
+    //     return;
+    // }
+    //
+    // if (!active) {
+    //     if (dialog_active)
+    //         handle_remind_notification();
+    //
+    //     return;
+    // }
 
     time_holding_report = {};
     window_alpha = animation::bring_to(window_alpha, (closing) ? 0 : 255, time_switched_window, animation_duration);

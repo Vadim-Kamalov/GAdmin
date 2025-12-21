@@ -68,14 +68,14 @@
     "author": "morhetz (port: DEV_defaultzone)",
     "theme": {
       "interface_colors": {
-        "surface": [ "FF282828", "FF1D2021" ],
-        "text": [ "FFEBDBB2", "FFA89984" ],
-        "overlay": [ "FF3C3836", "FF504945", "FF665C54" ]
+        "surface": [ "FF282828", "FF21201D" ],
+        "text": [ "FFB2DBEB", "FF8499A8" ],
+        "overlay": [ "FF36383C", "FF454950", "FF545C66" ]
       },
       "accent_colors": {
-        "red": "FFCC241D",
-        "green": "FF98971A",
-        "yellow": "FFD79921"
+        "red": "FF1D24CC",
+        "green": "FF1A7189",
+        "yellow": "FF2199D7"
       }
     }
   }

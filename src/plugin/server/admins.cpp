@@ -56,10 +56,10 @@ auto plugin::server::admins::on_show_dialog(const samp::event<samp::event_id::sh
 
         update_admins(raw_dialog_text);
 
-        if (raw_dialog_text.contains("Следующая страница")) {
-            dialog.send_response(samp::dialog::button::right, next_page_list_item_index);
-            return false;
-        }
+        // if (raw_dialog_text.contains("Следующая страница")) {
+        //     dialog.send_response(samp::dialog::button::right, next_page_list_item_index);
+        //     return false;
+        // }
 
         auto& user_information = (*configuration)["user"];
 
