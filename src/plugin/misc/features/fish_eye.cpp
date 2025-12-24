@@ -15,7 +15,7 @@ auto plugin::misc::features::fish_eye::on_event(unsigned int message, WPARAM wpa
     if (!spectator_camera_zoom_configuration["use"]
         || !server::spectator::is_active()
         || GetCursor() != nullptr
-        || samp::game::cursor_mode_offsets->read(samp::game::instance_container->read() != 0))
+        || samp::game::cursor_mode_offsets->read(samp::game::instance_container->read()) != 0)
     {
         return true;
     }
