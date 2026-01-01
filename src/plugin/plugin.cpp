@@ -1,5 +1,5 @@
 /// GAdmin - Plugin simplifying the work of administrators on the Gambit-RP
-/// Copyright (C) 2023-2025 The Contributors.
+/// Copyright (C) 2023-2026 The Contributors.
 ///
 /// This program is free software: you can redistribute it and/or modify
 /// it under the terms of the GNU General Public License as published by
@@ -336,7 +336,7 @@ plugin::plugin_initializer::plugin_initializer() {
 
     initialize_logging();
 
-    log::info("GAdmin v" PROJECT_VERSION " loaded. Copyright (C) 2023-2025 The Contributors");
+    log::info("GAdmin v" PROJECT_VERSION " loaded. Copyright (C) 2023-2026 The Contributors");
     log::info("samp.dll base address: 0x{:X}", samp::get_base());
 
     if (!command_line.contains(SERVER_HOST_ADDRESS)) {

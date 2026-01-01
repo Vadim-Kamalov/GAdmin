@@ -1,5 +1,5 @@
 /// GAdmin - Plugin simplifying the work of administrators on the Gambit-RP
-/// Copyright (C) 2023-2025 The Contributors.
+/// Copyright (C) 2023-2026 The Contributors.
 ///
 /// This program is free software: you can redistribute it and/or modify
 /// it under the terms of the GNU General Public License as published by
@@ -72,6 +72,9 @@ auto plugin::samp::event_handler::rak_client_interface_constructor_hooked(const 
 auto plugin::samp::event_handler::incoming_rpc_handler_hooked(const decltype(incoming_rpc_handler_hook)& hook, void* ptr,
                                                               types::zstring_t data, int length, PlayerID player_id) -> bool
 {
+    if (!can_process_event())
+        return hook.call_trampoline(ptr, data, length, player_id);
+
     user_id = player_id;
 
     std::uint8_t id = 0;
@@ -88,9 +91,6 @@ auto plugin::samp::event_handler::incoming_rpc_handler_hooked(const decltype(inc
     int offset = stream.GetReadOffset();
 
     stream.Read(id);
-
-    if (!can_process_event())
-        return hook.call_trampoline(ptr, data, length, player_id);
 
     if (!stream.ReadCompressed(bits_data))
         return false;
@@ -139,11 +139,11 @@ auto plugin::samp::event_handler::outgoing_packet_handler_hooked(const decltype(
                                                                  PacketPriority priority, PacketReliability reliability, char ordering_channel)
     -> bool
 {
-    bit_stream new_stream(stream);
-    std::uint8_t event_id = new_stream.read<std::uint8_t>();
-
     if (!can_process_event())
         return hook.call_trampoline(ptr, stream, priority, reliability, ordering_channel);
+
+    bit_stream new_stream(stream);
+    std::uint8_t event_id = new_stream.read<std::uint8_t>();
 
     if (callback.has_value()) {
         new_stream.reset_read_pointer();
@@ -159,14 +159,14 @@ auto plugin::samp::event_handler::outgoing_packet_handler_hooked(const decltype(
 auto plugin::samp::event_handler::incoming_packet_handler_hooked(const decltype(incoming_packet_handler_hook)& hook, void* ptr) -> Packet* {
     Packet* packet = hook.call_trampoline(ptr);
 
+    if (!can_process_event())
+        return packet;
+
     if (packet == nullptr || packet->data == nullptr || packet->length == 0 || packet->bitSize == 0)
         return nullptr;
 
     bit_stream new_stream(packet->data, packet->bitSize, false);
     std::uint8_t id = new_stream.read<std::uint8_t>();
-
-    if (!can_process_event())
-        return packet;
 
     if (callback.has_value()) {
         while (packet) {

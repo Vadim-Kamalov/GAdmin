@@ -1,5 +1,5 @@
 # GAdmin - Plugin simplifying the work of administrators on the Gambit-RP
-# Copyright (C) 2023-2025 The Contributors.
+# Copyright (C) 2023-2026 The Contributors.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ set(SERVER_NAME_TAGS_DISTANCE "20")
 set(SERVER_MAX_PLAYERS        "600")
 set(PROJECT_REPOSITORY        "https://github.com/Vadim-Kamalov/GAdmin")
 set(PROJECT_DATABASE          "https://raw.githubusercontent.com/Vadim-Kamalov/GAdmin/refs/heads/main")
-set(PROJECT_COPYRIGHT_YEARS   "2023-2025")
+set(PROJECT_COPYRIGHT_YEARS   "2023-2026")
 
 configure_file(version.rc.in ${CMAKE_BINARY_DIR}/plugin_version.rc)
 file(GLOB_RECURSE SOURCES *.cpp)

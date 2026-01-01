@@ -86,4 +86,4 @@ distribute the software in accordance with the terms of this license. For more d
 [LICENSE](https://github.com/Vadim-Kamalov/GAdmin/blob/main/LICENSE) file or visit the
 [GNU GPLv3 website](https://www.gnu.org/licenses/gpl-3.0.html).
 
-Copyright (C) 2023-2025 The Contributors.
+Copyright (C) 2023-2026 The Contributors.
