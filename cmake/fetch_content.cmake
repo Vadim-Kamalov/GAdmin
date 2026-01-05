@@ -18,8 +18,20 @@
 
 include(FetchContent)
 
-FetchContent_Declare(imgui  GIT_REPOSITORY https://github.com/ocornut/imgui.git)
-FetchContent_Declare(kthook GIT_REPOSITORY https://github.com/defaultzone/kthook.git)
+FetchContent_Declare(imgui
+    GIT_REPOSITORY https://github.com/ocornut/imgui.git
+
+    # Backends: OpenGL3: call ImGui_ImplOpenGL3_InitLoader() in
+    # ImGui_ImplOpenGL3_CreateDeviceObjects() / ImGui_ImplOpenGL3_DestroyDeviceObjects(). (#9112)
+    GIT_TAG 69a501df6e6887a074b3c17a1c1bdd40a4c06dee
+)
+
+FetchContent_Declare(kthook
+    GIT_REPOSITORY https://github.com/defaultzone/kthook.git
+
+    # fix(warning): unused-but-set-parameter in kthook_x86_64_detail.hpp:419:40
+    GIT_TAG 7c8091223f7edc65f588f124a156537754083438
+)
 
 FetchContent_Declare(json
     GIT_REPOSITORY https://github.com/nlohmann/json.git
@@ -31,15 +43,15 @@ FetchContent_Declare(json
 FetchContent_Declare(ctre
     GIT_REPOSITORY https://github.com/hanickadot/compile-time-regular-expressions.git
 
-    # fix for changes in comparison in old compilers, failing in bug introduced lately (branch: main)
-    GIT_TAG aa31a2537e6563c1792e9bef0fe2be7122c4a8ee
+    # fix for overly sensitive gcc
+    GIT_TAG 6225211806c48230e5d17a1e555ef69e7325051c
 )
 
 FetchContent_Declare(imgui_markdown
     GIT_REPOSITORY https://github.com/enkisoftware/imgui_markdown.git
 
-    # Added dynamic font support to MarkdownHeadingFormat (branch: dev)
-    GIT_TAG 3914f24ddd3a6369308efd48dfcace3bc6096783
+    # Fix wrapping for older ImGui versions
+    GIT_TAG 62bd48e8a76bc230bfa32c3f6971626c8124e8cd
 )
 
 FetchContent_MakeAvailable(json kthook imgui ctre imgui_markdown)
