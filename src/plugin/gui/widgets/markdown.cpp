@@ -29,9 +29,9 @@ auto plugin::gui::widgets::markdown::link_callback(ImGui::MarkdownLinkCallbackDa
 
 auto plugin::gui::widgets::markdown::render() const -> void {
     markdown_config.linkCallback = link_callback;
-    markdown_config.headingFormats[0] = { font, 26, false };
-    markdown_config.headingFormats[1] = { font, 22, false };
-    markdown_config.headingFormats[2] = { font, 20, false };
+    markdown_config.headingFormats[0] = { font, false, 26 };
+    markdown_config.headingFormats[1] = { font, false, 22 };
+    markdown_config.headingFormats[2] = { font, false, 20 };
 
     ImGui::Markdown(text.c_str(), text.length(), markdown_config);
 }
