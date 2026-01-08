@@ -56,10 +56,13 @@ auto plugin::server::admins::on_show_dialog(const samp::event<samp::event_id::sh
 
         update_admins(raw_dialog_text);
 
-        if (raw_dialog_text.contains("Следующая страница")) {
-            dialog.send_response(samp::dialog::button::right, next_page_list_item_index);
-            return false;
-        }
+        // The next page button doesn't actually do anything
+        // and is currently just there for show. Server issue.
+        //
+        // if (raw_dialog_text.contains("Следующая страница")) {
+        //     dialog.send_response(samp::dialog::button::right, next_page_list_item_index);
+        //     return false;
+        // }
 
         auto& user_information = (*configuration)["user"];
 
