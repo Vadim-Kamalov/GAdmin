@@ -33,7 +33,8 @@
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 auto loader_t::load_plugin(const file_information_t& plugin) -> void {
-    plugin_handle = LoadLibraryA(plugin.path.string().c_str());
+    std::wstring path = plugin.path.wstring();
+    plugin_handle = LoadLibraryW(path.c_str());
 }
 
 auto loader_t::check_updates(const file_information_t& plugin) -> void {
@@ -139,15 +140,15 @@ auto loader_t::save_release_information(const release_information_t& information
 auto loader_t::try_get_file_information(const std::filesystem::path& path) const
     -> std::optional<file_information_t>
 {
-    std::string filename = path.string().c_str();
-    DWORD dummy, size = GetFileVersionInfoSizeA(filename.c_str(), &dummy);
+    std::wstring filename = path.wstring();
+    DWORD dummy, size = GetFileVersionInfoSizeW(filename.c_str(), &dummy);
 
     if (size == 0)
         return {};
 
     std::vector<BYTE> data(size);
 
-    if (!GetFileVersionInfoA(filename.c_str(), 0, size, data.data()))
+    if (!GetFileVersionInfoW(filename.c_str(), 0, size, data.data()))
         return {};
 
     std::array<std::string, 2> result;
