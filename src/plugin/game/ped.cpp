@@ -17,6 +17,7 @@
 /// SPDX-License-Identifier: GPL-3.0-only
 
 #include "plugin/game/ped.h"
+#include "plugin/log.h"
 #include <cmath>
 
 auto plugin::game::ped::is_in_the_air() const -> bool {
@@ -39,10 +40,10 @@ auto plugin::game::ped::get_bone_bosition(const bone& bone_id) const -> types::v
 }
 
 auto plugin::game::ped::get_current_weapon() const -> weapon {
-    auto weapons = weapons_offset.read(*handle);
+    auto weapons_array_start = *handle + *weapons_offset;
     auto current_weapon_slot = current_weapon_slot_offset.read(*handle);
-    auto current_weapon_type = *reinterpret_cast<int*>(weapons + current_weapon_slot * weapon_size);
-    return static_cast<weapon>(current_weapon_type);
+    auto current_weapon_type = reinterpret_cast<int*>(weapons_array_start + current_weapon_slot * weapon_size);
+    return static_cast<weapon>(*current_weapon_type);
 }
 
 auto plugin::game::ped::get_player() noexcept -> ped {
