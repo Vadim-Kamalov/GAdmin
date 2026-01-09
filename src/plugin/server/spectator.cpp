@@ -31,18 +31,16 @@
 #include "plugin/types/u8regex.h"
 
 auto plugin::server::spectator::on_show_text_draw(const samp::event<samp::event_id::show_text_draw>& text_draw) -> bool {
-    static constexpr types::zstring_t dirty_title = "Adadadad_Dfghsadersasd(111)";
-    static constexpr types::zstring_t dirty_body = "2282282~n~$400000~n~90 MP/H~n~100/20~n~M4A1/Pustinniy Orel~n~999 ms~n~127.23.42.123";
+    static constexpr types::zstring_t title_placeholder = "admin_player_name";
+    static constexpr types::zstring_t body_placeholder = "admin_player_info";
     static constexpr ctll::fixed_string text_draw_id_pattern = "~y~\\(\\d+\\)";
 
     bool hide = (*configuration)["spectator_mode"]["hide_text_draws"];
 
-    // These values of `text_draw.text` received only once after the user had entered the spectator mode; these texts
-    // don't visible for the user. (because the server immediately changes it in `samp::event_id::set_text_draw_string`?)
-    if (hide && (text_draw.text == dirty_title || text_draw.text == dirty_body))
+    if (hide && (text_draw.text == title_placeholder || text_draw.text == body_placeholder))
         return false;
 
-    return !hide || (!ctre::search<text_draw_id_pattern>(text_draw.text) && !text_draw.text.contains("ID Akkay"));
+    return !hide || (!ctre::search<text_draw_id_pattern>(text_draw.text) && !text_draw.text.contains("Android: "));
 }
 
 auto plugin::server::spectator::on_text_draw_set_string(const samp::event<samp::event_id::set_text_draw_string>& text_draw) -> bool {
@@ -298,6 +296,9 @@ auto plugin::server::spectator::on_passenger_synchronization(const samp::packet<
 auto plugin::server::spectator::on_bullet_synchronization(const samp::packet<samp::event_id::bullet_synchronization>& synchronization)
     -> bool
 {
+    if (synchronization.player_id != id)
+        return true;
+
     information.total_shots++;
     
     if (synchronization.hit_type == 0 || synchronization.hit_type == 3)
