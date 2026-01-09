@@ -17,7 +17,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 cmake_minimum_required(VERSION 4.0.0)
-project(loader VERSION 1.0 LANGUAGES CXX)
+project(loader VERSION 1.0.1 LANGUAGES CXX)
 
 set(ORIGINAL_FILENAME_TO_SEARCH "gadmin.dll")
 set(UPDATE_REPOSITORY           "Vadim-Kamalov/GAdmin")
