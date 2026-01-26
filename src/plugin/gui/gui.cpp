@@ -204,6 +204,11 @@ auto plugin::gui_initializer::render() const -> void {
         if (pop_times != 0)
             pop_window_customization(pop_times);
     }
+
+#ifndef NDEBUG
+    ImGui::ShowDemoWindow();
+    ImGui::ShowAboutWindow();
+#endif // !defined(NDEBUG)
 }
 
 auto plugin::gui_initializer::main_loop() -> void {

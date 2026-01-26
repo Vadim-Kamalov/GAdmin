@@ -17,6 +17,7 @@
 /// SPDX-License-Identifier: GPL-3.0-only
 
 #include "plugin/gui/hotkey.h"
+#include "imgui.h"
 #include "plugin/gui/key_names.h"
 #include "plugin/gui/style.h"
 #include "plugin/gui/widgets/button.h"
@@ -109,10 +110,14 @@ auto plugin::gui::hotkey::hint_renderer() -> void {
     float window_width = std::max(ImGui::GetWindowWidth(), 200.0f);
     float item_full_width = window_width - ImGui::GetStyle().WindowPadding.x * 2;
 
-    std::string new_label = string_utils::truncate_until_hashtag(label);
+    std::string label_without_id = string_utils::truncate_until_hashtag(label);
+    std::string hash_safe_label = label;
+    
+    hash_safe_label.erase(hash_safe_label.begin(),
+                          std::ranges::find_if(hash_safe_label, [](unsigned char c) { return c != '#'; }));
 
-    if (!new_label.empty())
-        widgets::text(bold_font, fonts_size, 0, "{}", label);
+    if (!label_without_id.empty())
+        widgets::text(bold_font, fonts_size, 0, "{}", label_without_id);
     
     ImGui::BeginGroup();
     {
@@ -131,8 +136,8 @@ auto plugin::gui::hotkey::hint_renderer() -> void {
     {
         for (std::uint8_t i = 0; i < hint_settings.size(); i++) {
             types::setter<bool> setter = types::setter<bool>::from_proxy(bind.conditions[i]);
-            std::string button_label = hint_settings[i] + "##" + label;
-        
+            std::string button_label = hint_settings[i] + "##" + hash_safe_label;
+
             if (widgets::toggle_button(button_label, setter).render())
                 saved_hotkeys[label] = bind.join(); 
         }
@@ -141,7 +146,7 @@ auto plugin::gui::hotkey::hint_renderer() -> void {
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() - ImGui::GetStyle().ItemSpacing.y + ImGui::GetStyle().WindowPadding.y);
     ImGui::PushFont(regular_font, fonts_size);
     {
-        if (widgets::button("Сбросить##" + label, { item_full_width, 30 }).render()) {
+        if (widgets::button("Сбросить##" + hash_safe_label, { item_full_width, 30 }).render()) {
             saved_hotkeys[label] = 0;
             bind = {};
         }
