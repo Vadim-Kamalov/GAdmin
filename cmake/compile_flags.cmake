@@ -25,7 +25,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
 # O1, O2, and O3 optimization levels cause undefined behavior when compiling for cxx_std_26.
 # At some functions, for example, the ClickWarp activation triggers a SIGSEGV at an unknown
 # address (0x44F00000). Possibly, there is a bug in the compiler I am using: i686-w64-mingw32-g++ (v15.1.0).
-set(CMAKE_CXX_FLAGS_RELEASE "-O0")
+set(CMAKE_CXX_FLAGS_RELEASE "-O0 -DNDEBUG")
 
 target_compile_options(${PROJECT_NAME} PRIVATE -ffunction-sections -fdata-sections -fmerge-all-constants)
 target_link_options(${PROJECT_NAME} PRIVATE -Wl,--gc-sections -ffast-math -static -fno-stack-protector -Wl,--no-insert-timestamp)
