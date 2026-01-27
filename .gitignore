@@ -1,6 +1,8 @@
 LICENSE
 build/
 .cache/
+nsis/pre-build-out/
+nsis/gadmin-web-installer.exe
 
 # Files produced from converting JSON files to MessagePack format
 # when `USE_EMBEDDED_MESSAGE_PACK` options is enabled in CMake.
