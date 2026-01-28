@@ -18,7 +18,7 @@
 
 !include      "LogicLib.nsh"
 !include      "StrFunc.nsh"
-!addplugindir "pre-build-out"
+!addplugindir "../build/plugins"
 
 ${using:strfunc} strloc
 

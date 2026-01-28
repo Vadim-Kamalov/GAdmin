@@ -44,7 +44,7 @@ sectionend
 !insertmacro OPTIONAL_COMPONENT_SECTION "Microsoft Visual C++ Redistributable x86 (2015)" "${COMPONENTS_TO_INSTALL}/vcredist_x86_2015.exe"
 
 !insertmacro MUI_PAGE_WELCOME
-!insertmacro MUI_PAGE_LICENSE "../LICENSE"
+!insertmacro MUI_PAGE_LICENSE "../../LICENSE"
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_INSTFILES
