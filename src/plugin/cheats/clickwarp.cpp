@@ -51,10 +51,27 @@ auto plugin::cheats::clickwarp::on_event(unsigned int message, WPARAM wparam, LP
 
     switch (message) {
         case WM_MBUTTONDOWN: {
+            if (selecting_place_to_warp)
+                return false;
+
             gui->center_cursor();
             gui->enable_cursor();
+            selecting_place_to_warp = recently_pressed_middle_mouse_button = true;
 
-            selecting_place_to_warp = true;
+            return false;
+        }
+
+        case WM_MBUTTONUP: {
+            if (!selecting_place_to_warp)
+                return false;
+
+            if (recently_pressed_middle_mouse_button) {
+                recently_pressed_middle_mouse_button = false;
+                return false;
+            }
+
+            stop_selecting_place();
+            gui->disable_cursor();
 
             return false;
         }
