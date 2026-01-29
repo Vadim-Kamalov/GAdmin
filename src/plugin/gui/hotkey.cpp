@@ -171,7 +171,7 @@ auto plugin::gui::hotkey::render(const ImVec2& size) -> void {
             saved_hotkeys[label] = bind.join();
             handler->changing_any_hotkey = changing = false;
             new_bind = {};
-        } else if (handler->current_keys == bind) {
+        } else if (handler->current_keys == bind && !bind.empty()) {
             handler->changing_any_hotkey = false;
         } else {
             already_registered = handler->is_bind_defined(handler->current_keys);
