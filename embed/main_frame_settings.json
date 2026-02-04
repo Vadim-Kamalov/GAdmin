@@ -277,15 +277,10 @@
                 "_config": [ 70, 150 ]
             }
         },
-        "message_hider": {
+        "message_recolorer": {
             "_type": "subsection",
-            "_name": "Скрытие сообщений",
-            "hide_anticheat": { "_type": "bool", "_name": "Античит" },
-            "hide_punishments": { "_type": "bool", "_name": "Наказания" },
-            "hide_player_actions": { "_type": "bool", "_name": "Действия игроков" },
-            "hide_complaints": { "_type": "bool", "_name": "Жалобы" },
-            "hide_questions": { "_type": "bool", "_name": "Вопросы" },
-            "hide_admin_actions": { "_type": "bool", "_name": "Действия администраторов" }
+            "_name": "Изменение цветов сообщений в чате",
+            "items": { "_type": "custom", "_name": "Сообщения" }
         },
         "gun_info": {
             "_type": "subsection",

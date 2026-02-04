@@ -25,14 +25,12 @@ auto plugin::misc::features::nickname_colors::write_nickname_colors() -> void {
 }
 
 auto plugin::misc::features::nickname_colors::on_server_message(const samp::event<samp::event_id::server_message>& message) -> bool {
-    static constexpr ctll::fixed_string message_pattern = R"(^\[A(\d)\] (\S+)(\[\d+\].*))";
+    static constexpr ctll::fixed_string message_pattern = R"(^\[A(\d)\] (\S+)(\[\d+\]:.*))";
     
     if (entries.empty())
         return true;
 
-    if (auto [ whole, level, nickname, other ] = ctre::search<message_pattern>(message.text);
-        whole && message.color == 0xFF00C281)
-    {
+    if (auto [ whole, level, nickname, other ] = ctre::search<message_pattern>(message.text); whole){
         if (auto entry = std::find_if(entries.begin(), entries.end(), [nickname](const entry_t& entry) {
             return entry.nickname == nickname;
         }); entry != entries.end()) {

@@ -19,6 +19,7 @@
 #include "plugin/gui/windows/interaction_area.h"
 #include "plugin/game/game.h"
 #include "plugin/game/vehicle.h"
+#include "plugin/gui/animation.h"
 #include "plugin/plugin.h"
 #include "plugin/samp/core/input.h"
 #include "plugin/samp/core/user.h"
@@ -175,10 +176,12 @@ auto plugin::gui::windows::interaction_area::render_stroked_text(ImDrawList* dra
                                                                  const types::color& color, types::zstring_t text) const
     -> void
 {
-    draw_list->AddText(font, fonts_size, { pos.x + 1, pos.y + 1 }, 0xFF000000, text);
-    draw_list->AddText(font, fonts_size, { pos.x - 1, pos.y - 1 }, 0xFF000000, text);
-    draw_list->AddText(font, fonts_size, { pos.x + 1, pos.y - 1 }, 0xFF000000, text);
-    draw_list->AddText(font, fonts_size, { pos.x - 1, pos.y + 1 }, 0xFF000000, text);
+    ImU32 black_color = color.value.alpha << 24;
+
+    draw_list->AddText(font, fonts_size, { pos.x + 1, pos.y + 1 }, black_color, text);
+    draw_list->AddText(font, fonts_size, { pos.x - 1, pos.y - 1 }, black_color, text);
+    draw_list->AddText(font, fonts_size, { pos.x + 1, pos.y - 1 }, black_color, text);
+    draw_list->AddText(font, fonts_size, { pos.x - 1, pos.y + 1 }, black_color, text);
     draw_list->AddText(font, fonts_size, pos, *color, text);
 }
 
@@ -231,14 +234,26 @@ auto plugin::gui::windows::interaction_area::render_search_description(ImDrawLis
 auto plugin::gui::windows::interaction_area::render() -> void {
     auto& window_configuration = (*configuration)["windows"]["interaction_area"];
 
-    if (!window_configuration["use"] || !server::user::is_on_alogin() ||
-        !child->hotkey_handler->is_hotkey_active(activation_hotkey))
-    {
+    if (!window_configuration["use"] || !server::user::is_on_alogin())
         return;
+
+    bool hotkey_active = child->hotkey_handler->is_hotkey_active(activation_hotkey);
+
+    if (hotkey_active)
+        handle_controls();
+
+    if (animation_state != hotkey_active) {
+        animation_state = hotkey_active;
+        animation_time = std::chrono::steady_clock::now();
     }
 
-    handle_controls();
+    window_alpha = animation::bring_to(window_alpha, (animation_state) ? 1.0f : 0.0f,
+                                       animation_time, animation_duration);
 
+    if (window_alpha == 0.0f)
+        return;
+
+    std::string search_description = "";
     float radius = window_configuration["radius"];
     ImDrawList* draw_list = ImGui::GetBackgroundDrawList();
 
@@ -247,7 +262,8 @@ auto plugin::gui::windows::interaction_area::render() -> void {
     
     types::color color_active = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_Text]);
     types::color color_disabled = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
-    std::string search_description = "";
+
+    color_active.value.alpha = color_disabled.value.alpha = window_alpha * 255.0f;
 
     draw_list->AddCircle(center, radius, *color_active, 64, 2);
     
