@@ -59,6 +59,7 @@ private:
     static auto on_server_message(const samp::event<samp::event_id::server_message>& message) -> bool;
     static auto on_server_quit(const samp::event<samp::event_id::server_quit>& disconnected) -> bool;
     static auto on_set_player_name(const samp::event<samp::event_id::set_player_name>& player) -> bool;
+    static auto on_continuous_text_callback(const std::string_view& text, const types::color& color) -> void;
 
     static auto update_admins(const std::string_view& dialog_text) -> void;
     static auto add_connected_admin(const admin& connected_admin) -> void;
