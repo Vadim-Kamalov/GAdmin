@@ -230,6 +230,20 @@
             "hide_admin_actions": false
         },
 
+        "message_recolorer": {
+            "use": true,
+            "items": [
+                { "key": "Репорт", "value": "FF00FFFF", "use": true },
+                { "key": "Чат администрации", "value": "FF33AA33", "use": true },
+                { "key": "Входы/выходы администрации", "value": "FF33AA33", "use": true },
+                { "key": "Обработка репортов", "value": "FFAFAFAF", "use": true },
+                { "key": "Ответы", "value": "FF4599FF", "use": true },
+                { "key": "Действия администрации", "value": "FFAFAFAF", "use": true },
+                { "key": "Наказания", "value": "FF4763FF", "use": true },
+                { "key": "Античит", "value": "FFAFAFAF", "use": true }
+            ]
+        },
+
         "gun_info": {
             "use": false,
             "font_size": 16
