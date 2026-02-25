@@ -201,10 +201,16 @@
                 "_name": "ImGui отрисовка",
                 "_config": "cheats::wallhack::custom_render"
             },
+            "show_bones": { "_type": "bool", "_name": "Отображать кости" },
             "font_size": {
                 "_type": "intrange",
                 "_name": "Размер шрифта",
                 "_config": [ 1, 255 ]
+            },
+            "bone_width": {
+                "_type": "intrange",
+                "_name": "Ширина кости",
+                "_config": [ 1, 16 ]
             }
         },
         "tracers": {

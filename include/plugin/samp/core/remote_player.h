@@ -35,6 +35,16 @@ namespace samp {
 
 /// Represents remote player in the SA:MP client.
 class remote_player final {
+public:
+    /// Remote player connection state.
+    enum class state : int {
+        paused = 2,  ///< Remote player is currently in the pause mode (AFK).
+        onfoot = 17, ///< Remote player is currently onfoot.
+        passenger,   ///< Remote player is currently a passenger.
+        driver = 19, ///< Remote player is currently a driver.
+        wasted = 32, ///< Remote player is recently died.
+        spawned      ///< Remote player is recently spawned.
+    }; // enum class state : int
 private:
     types::dynamic_address<std::uintptr_t> handle = 0;
 
@@ -43,6 +53,7 @@ private:
     static types::versioned_address_container<float, types::version_container_option::offsets> armor_container;
     static types::versioned_address_container<signatures::get_color_as_argb> get_color_container;
     static types::versioned_address_container<std::uint16_t, types::version_container_option::offsets> id_container;
+    static types::versioned_address_container<int, types::version_container_option::offsets> state_container;
 public:
     /// Check if the remote player's pointer is not null. Equivalent to `handle.is_available()`.
     ///
@@ -73,6 +84,11 @@ public:
     ///
     /// @return Remote player's ID.
     auto get_id() const -> std::uint16_t;
+
+    /// Check if remote player's current and passed states are equal.
+    ///
+    /// @return True if current and passed state of remote player are equal.
+    auto is_current_state(const remote_player::state& state) const -> bool;
 
     /// Construct remote player class.
     /// 

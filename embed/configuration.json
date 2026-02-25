@@ -144,6 +144,8 @@
         "wallhack": {
             "use": true,
             "custom_render": false,
+            "show_bones": true,
+            "bone_width": 1,
             "font_size": 18
         },
 
@@ -231,7 +233,7 @@
         },
 
         "message_recolorer": {
-            "use": true,
+            "use": false,
             "items": [
                 { "key": "Репорт", "value": "FF00FFFF", "use": true },
                 { "key": "Чат администрации", "value": "FF33AA33", "use": true },

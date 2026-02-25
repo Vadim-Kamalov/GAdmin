@@ -59,7 +59,12 @@ public:
     ///
     /// @return True if a player is on the server.
     auto is_available() const -> bool;
-    
+
+    /// Check if a player is in the pause mode.
+    ///
+    /// @return True if a player is in the pause mode.
+    auto is_paused() const -> bool;
+
     /// Boolean operator to check if a player is on the server.
     /// Same as `is_available()` but as the operator function.
     explicit operator bool() const;
