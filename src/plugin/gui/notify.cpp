@@ -33,6 +33,11 @@ auto plugin::gui::notification::with_condition(condition_t new_condition) -> not
     return *this;
 }
 
+auto plugin::gui::notification::only_unique() -> notification& {
+    notify_only_unique = true;
+    return *this;
+}
+
 auto plugin::gui::notification::remove() -> void {
     condition = []{ return false; };
 }
@@ -50,9 +55,18 @@ auto plugin::gui::notify::notifications_count() noexcept -> std::size_t {
 }
 
 auto plugin::gui::notify::send(const notification& to_send) -> void {
+    if (to_send.notify_only_unique && std::ranges::find_if(notifications, [&to_send](const auto& it) {
+        return to_send.title == it.title;
+    }) != notifications.end()) {
+        return;
+    }
+
     notification new_notification(to_send);
-    if (on_send_callback(new_notification))
-        notifications.push_back(std::move(new_notification));
+
+    if (!on_send_callback(new_notification))
+        return;
+
+    notifications.push_back(std::move(new_notification));
 }
 
 auto plugin::gui::notify::set_callback(callback_t callback) noexcept -> void {

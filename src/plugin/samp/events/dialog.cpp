@@ -17,7 +17,6 @@
 /// SPDX-License-Identifier: GPL-3.0-only
 
 #include "plugin/samp/events/dialog.h"
-#include "plugin/string_utils.h"
 #include <utility>
 
 auto plugin::samp::event<plugin::samp::event_id::show_dialog>::send_response(const dialog::button& button,

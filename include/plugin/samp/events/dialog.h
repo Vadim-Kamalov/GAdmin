@@ -21,6 +21,7 @@
 
 #include "plugin/samp/core/dialog.h"
 #include "plugin/samp/events/event.h"
+#include "plugin/string_utils.h"
 #include <utility>
 
 namespace plugin::samp {
@@ -62,6 +63,23 @@ public:
     /// @param bit_stream[in] Bit stream with the event parameters.
     explicit event(bit_stream* stream);
 }; // class event<event_id::show_dialog> final
+
+template<>
+struct event<event_id::dialog_response, event_type::outgoing_rpc> final {
+    std::uint16_t dialog_id;    ///< Dialog's ID.
+    dialog::button button;      ///< Selected button by the user in the dialog.
+    std::uint16_t list_item_id; ///< Selected list item by the user in the dialog.
+    std::string input;          ///< Input text sent by the user in the dialog.
+
+    /// Construct an event.
+    ///
+    /// @param bit_stream[in] Bit stream with the event parameters.
+    explicit event(bit_stream* stream)
+        : dialog_id(stream->read<std::uint16_t>()),
+          button(static_cast<dialog::button>(stream->read<std::uint8_t>())),
+          list_item_id(stream->read<std::uint16_t>()),
+          input(string_utils::to_utf8(stream->read_string<std::uint8_t>())) {}
+}; // struct event<event_id::dialog_response, event_type::outgoing_rpc> final
 
 } // namespace plugin::samp
 

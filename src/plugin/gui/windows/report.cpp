@@ -41,8 +41,8 @@
 auto plugin::gui::windows::report::get_action_buttons() -> std::array<action_button, 12> {
     std::array<action_button, 12> output;
     std::string id = std::format("##{}", get_id());
-    
-    auto window_configuration = (*configuration)["windows"]["report"];
+
+    auto& window_configuration = (*configuration)["windows"]["report"];
     ImVec2 padding = ImGui::GetStyle().WindowPadding;
     ImVec2 spacing = ImGui::GetStyle().ItemSpacing;
 
@@ -93,20 +93,106 @@ auto plugin::gui::windows::report::block_action_button() -> void {
     ImGui::OpenPopup("block_time_selection");
 }
 
-auto plugin::gui::windows::report::on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog) -> bool {
-    static constexpr ctll::fixed_string report_information_pattern = R"(Описание репорта:\s+\{FFFFFF\}(.+)\n)";
+auto plugin::gui::windows::report::on_dialog_response(const samp::out_event<samp::event_id::dialog_response>& id) -> bool {
+    if (current_report_type == report_type::waiting)
+        current_report_type = static_cast<report_type>(id.list_item_id);
 
-    if (!dialog || dialog.title != "Обработка репорта" || !current_report.has_value())
+    return true;
+}
+
+auto plugin::gui::windows::report::on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog) -> bool {
+    if (!dialog || !server::user::is_on_alogin())
         return true;
+
+    if (current_report_type == report_type::waiting)
+        current_report_type = report_type::none;
+
+    if (dialog.title == "Активные репорты")
+        return try_handle_active_reports_dialog(dialog);
+
+    if (dialog.title == "Обработка репорта")
+        return try_handle_active_report_dialog(dialog);
+
+    return true;
+}
+
+auto plugin::gui::windows::report::on_server_message(const samp::event<samp::event_id::server_message>& message) -> bool {
+    if (!try_handle_report_searching(message.text))
+        return false;
+
+    if (!message.text.contains("Обработка репорта завершена."))
+        return true;
+
+    current_report_type = report_type::none;
+    time_holding_report = {};
+    current_report = {};
+
+    if (active)
+        close_window();
+
+    auto& window_configuration = (*configuration)["windows"]["report"];
+
+    if (!window_configuration["notify"])
+        return true;
+
+    notify::send(notification("Обработка репорта завершена",
+                              "Игрок был отсоединен от сервера",
+                              ICON_CLOSE_M_D));
+
+    return true;
+}
+
+auto plugin::gui::windows::report::try_handle_active_reports_dialog(const samp::event<samp::event_id::show_dialog>& dialog) -> bool {
+    if (dialog.buttons.first == "Принять" && dialog.buttons.second == "Назад") {
+        if (!searching_reports)
+            return true;
+
+        dialog.send_response(samp::dialog::button::right);
+        searching_reports = false;
+
+        return false;
+    }
+
+    if (dialog.text.contains("Репорты игровых помощников")) {
+        if ((current_report_type == report_type::question || current_report_type == report_type::complaint)
+            && (searching_reports || current_report.has_value()))
+        {
+            dialog.send_response(samp::dialog::button::right, std::to_underlying(current_report_type));
+            return false;
+        }
+
+        current_report_type = report_type::waiting;
+
+        return true;
+    }
+
+    if (!dialog.text.contains("{FFFFFF}Номер") || !searching_reports)
+        return true;
+
+    dialog.send_response(samp::dialog::button::right, 0);
+
+    return false;
+}
+
+auto plugin::gui::windows::report::try_handle_active_report_dialog(const samp::event<samp::event_id::show_dialog>& dialog) -> bool {
+    static constexpr ctll::fixed_string report_information_pattern =
+        R"(\{4a86b6\}.* (\d+:\d+:\d+).*\{FFFFFF\}Игрок \(ID\): \{4a86b6\}(.+) \((\d)+\).*Описание репорта:\s+\{FFFFFF\}(.+)\n)";
 
     dialog_active = true;
     dialog_id = dialog.id;
 
-    std::string dialog_text = dialog.text;
+    if (auto matches = types::u8regex::search<report_information_pattern>(dialog.text); !current_report.has_value() && matches) {
+        if (current_report_type == report_type::none)
+            current_report_type = report_type::complaint;
 
-    if (auto matches = types::u8regex::search<report_information_pattern>(dialog_text); matches && current_report->text.empty()) {
-        current_report->time_taken = std::chrono::steady_clock::now();
-        current_report->text = matches.get_string<1>();
+        notification_active = false;
+        current_report = report_information_t {
+            .nickname = matches.get_string<2>(),
+            .str_time = matches.get_string<1>(),
+            .text = matches.get_string<4>(),
+            .id = static_cast<std::uint16_t>(std::stoull(matches.get_string<3>())),
+            .time_taken = std::chrono::steady_clock::now()
+        };
 
         open_window();
         
@@ -122,7 +208,7 @@ auto plugin::gui::windows::report::on_show_dialog(const samp::event<samp::event_
         return false;
     }
 
-    if (dialog_text.contains("Перейти в режим наблюдения за игроком")) {
+    if (dialog.text.contains("Перейти в режим наблюдения за игроком")) {
         dialog.send_response(samp::dialog::button::right, std::to_underlying(current_response->option));
         
         if (current_response->option == dialog_option::return_to_administration)
@@ -131,7 +217,7 @@ auto plugin::gui::windows::report::on_show_dialog(const samp::event<samp::event_
         return false; 
     }
 
-    if (dialog_text.contains("Заблокировать на")) {
+    if (dialog.text.contains("Заблокировать на")) {
         dialog.send_response(samp::dialog::button::right, current_response->block_time);
         close_report();
     }
@@ -139,88 +225,17 @@ auto plugin::gui::windows::report::on_show_dialog(const samp::event<samp::event_
     return false;
 }
 
-auto plugin::gui::windows::report::on_server_message(const samp::event<samp::event_id::server_message>& message) -> bool {
-    static constexpr ctll::fixed_string new_report_pattern = R"(^\| На вас был назначен репорт от игрока (\S+)\[(\d+)\])";
-    static constexpr types::zstring_t report_canceled_message = "| Обработка репорта завершена.";
-
-    message.set_continuous_text_callback(wrap_storage, [this](const std::string_view& text, const types::color&) {
-        if (text.substr(0, std::char_traits<char>::length(report_canceled_message)) == report_canceled_message) {
-            on_report_canceled();
-            return;
-        }
-        
-        auto matches = types::u8regex::search<new_report_pattern>(text);
-
-        if (!matches)
-            return;
-
-        on_new_report_message(matches.get_string<1>(), std::stoi(matches.get_string<2>()));
-    });
-
-    return true;
-}
-
-auto plugin::gui::windows::report::on_new_report_message(const std::string& nickname, std::uint16_t id) -> void {
-    auto& window_configuration = (*configuration)["windows"]["report"];
-
-    time_received_report = std::chrono::steady_clock::now();
-    current_report = { nickname, "", id };
-
-    if (window_configuration["notify"]) {
-        std::string title = std::format("Репорт от {}[{}]", nickname, id);
-        std::string description = std::format("У вас есть 15 секунд принять. Введите /grep(ort) или нажмите на {}.",
-                                              switch_window_hotkey.bind);
-
-        notification::button second_button = { "Закрыть", [](notification& it) { it.remove(); }};
-        notification::button first_button = { "Принять", [this](notification& it) {
-            open_window_with_dialog();
-            it.remove();
-        }};
-
-        notification_active = true;
-
-        notify::send(notification(title, description, ICON_USER02)
-            .with_buttons(first_button, second_button)
-            .with_condition([this] { return notification_active; })
-            .with_duration(15s));
-    }
-
-    if (!window_configuration["sound_notify"])
-        return;
-
-    samp::audio::play_sound(samp::audio::sound_id::bell);
-}
-
-auto plugin::gui::windows::report::on_report_canceled() -> void {
-    notification_active = false;
-    current_report = {};
-
-    if (active)
-        close_window();
-
-    auto& window_configuration = (*configuration)["windows"]["report"];
-
-    if (!window_configuration["notify"])
-        return;
-
-    notify::send(notification("Обработка репорта завершена",
-                              "Игрок был отсоединен от сервера",
-                              ICON_CLOSE_M_D));
-}
-
 auto plugin::gui::windows::report::open_window() -> void {
     if (reset)
         return;
 
     time_switched_window = std::chrono::steady_clock::now();
-    time_received_report = {};
     active = focus = true;
-    notification_active = false;
 }
 
 auto plugin::gui::windows::report::open_window_with_dialog() -> void {
     open_window();
-    samp::input::send_command("/greport");
+    samp::input::send_command("/reports");
 }
 
 auto plugin::gui::windows::report::close_window() -> void {
@@ -250,6 +265,45 @@ auto plugin::gui::windows::report::switch_window() -> void {
     (active) ? close_window() : open_window_with_dialog();
 }
 
+auto plugin::gui::windows::report::try_handle_report_searching(const std::string& text) -> bool {
+    if ((!searching_reports && !current_report.has_value()) &&
+        text.starts_with("[H] Репорт от ") || text.starts_with("[A] Репорт от "))
+    {
+        auto& window_configuration = (*configuration)["windows"]["report"];
+
+        current_report_type = (text[1] == 'H') ? report_type::question : report_type::complaint;
+
+        if (window_configuration["sound_notify"])
+            samp::audio::play_sound(samp::audio::sound_id::bell);
+
+        if (window_configuration["notify"]) {
+            notification_active = true;
+
+            std::string description = std::format("Для принятия введите /reports или нажмите на {}.", try_accept_last_report_hotkey.bind);
+            notification::button first_button = { "Принять", [this](auto& it) { try_accept_last_report(); it.remove(); }};
+            notification::button second_button = { "Закрыть", [](auto& it) { it.remove(); }}; 
+
+            notify::send(notification("Пришел новый репорт!", description, ICON_USER02)
+                    .with_buttons(first_button, second_button)
+                    .with_condition([this] { return notification_active; })
+                    .only_unique());
+        }
+
+        return true;
+    }
+
+    if (!searching_reports || !text.contains("В данный момент нет активных репортов от игроков."))
+        return true;
+
+    notify::send(notification("Не удалось принять репорт", "В данный момент нет активных репортов от игроков.",
+                              ICON_USER02));
+ 
+    current_report_type = report_type::none;
+    searching_reports = false;
+
+    return false;
+}
+
 auto plugin::gui::windows::report::handle_remind_notification() -> void {
     long seconds_until_notification_raw = (*configuration)["windows"]["report"]["remind_active_report_after_seconds"];
 
@@ -268,7 +322,7 @@ auto plugin::gui::windows::report::handle_remind_notification() -> void {
     std::string description = std::format("Прошло {} секунд с момента открытия окна репорта.",
                                           seconds_until_notification_raw);
 
-    notify::send(notification("Напоминание про активный /greport", description, ICON_USER02)
+    notify::send(notification("Напоминание про активный репорт", description, ICON_USER02)
             .with_duration(std::clamp<std::chrono::seconds>(seconds_until_notification, 1s, 5s)));
 
     time_holding_report = now;
@@ -282,7 +336,34 @@ auto plugin::gui::windows::report::get_time_active() const -> std::string {
     
     auto seconds = std::chrono::duration_cast<std::chrono::seconds>(duration);
 
-    return std::format("{:02}:{:02}", minutes.count(), seconds.count());
+    return std::format("{:02}:{:02} ({})", minutes.count(), seconds.count(), current_report->str_time);
+}
+
+auto plugin::gui::windows::report::try_accept_last_report() -> void {
+    if (searching_reports || !server::user::is_on_alogin())
+        return;
+
+    switch (current_report_type) {
+        case report_type::waiting:
+            return;
+        case report_type::none:
+            current_report_type = report_type::complaint;
+            break;
+        default:
+            break;
+    }
+
+    if (current_report.has_value()) {
+        std::string description = std::format("За вами уже закреплен репорт: для его открытия, нажмите на {}",
+                                              switch_window_hotkey.bind);
+
+        notify::send(notification("Не удалось принять репорт", description, ICON_CIRCLE_WARNING));
+
+        return;
+    }
+
+    searching_reports = true;
+    samp::input::send_command("/reports");
 }
 
 auto plugin::gui::windows::report::can_send_response() -> bool {
@@ -322,14 +403,6 @@ auto plugin::gui::windows::report::render() -> void {
     if (!window_configuration["use"])
         return;
 
-    auto now = std::chrono::steady_clock::now();
-
-    if (animation::is_time_available(time_received_report) && now - time_received_report >= 15s) {
-        time_received_report = {};
-        current_report = {};
-        return;
-    }
-
     if (!active) {
         if (dialog_active)
             handle_remind_notification();
@@ -346,6 +419,7 @@ auto plugin::gui::windows::report::render() -> void {
     if (window_alpha == 0 && closing) {
         closing = active = false;
         if (reset) {
+            current_report_type = report_type::none;
             current_report = {};
             answer_input.clear();
             reset = false;
@@ -458,6 +532,8 @@ auto plugin::gui::windows::report::on_event(const samp::event_info& event) -> bo
         if (event == samp::event_id::show_dialog) {
             return on_show_dialog(event.create<samp::event_id::show_dialog>());
         }
+    } else if (event == samp::event_type::outgoing_rpc && event == samp::event_id::dialog_response) {
+        return on_dialog_response(event.create<samp::event_id::dialog_response, samp::event_type::outgoing_rpc>());
     }
 
     return true;
@@ -484,5 +560,9 @@ plugin::gui::windows::report::report(types::not_null<gui_initializer*> child)
     switch_window_hotkey = hotkey("Открыть/закрыть окно репорта", key_bind({ 'K', 0 }, bind_condition::on_alogin))
         .with_callback(std::bind(&report::switch_window, this));
 
+    try_accept_last_report_hotkey = hotkey("Принять последний репорт", key_bind({ 'O', 0 }, bind_condition::on_alogin))
+        .with_callback(std::bind(&report::try_accept_last_report, this));
+
     child->hotkey_handler->add(switch_window_hotkey);
+    child->hotkey_handler->add(try_accept_last_report_hotkey);
 }

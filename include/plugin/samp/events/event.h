@@ -35,6 +35,7 @@ enum class event_id : std::uint8_t {
     remove_3d_text = 58,            ///< Sent when server wants to destroy 3D text.
     player_chat_bubble = 59,        ///< Sent when server wants to display any player's chat bubble.
     show_dialog = 61,               ///< Sent when server wants to display dialog to the user.
+    dialog_response = 62,           ///< Dialog response sent by the user.
     show_menu = 77,                 ///< Sent when server wants to show a menu.
     hide_menu = 78,                 ///< Sent when server wants to hide a menu.
     server_message = 93,            ///< Sent when server wants to add entry in the chat window.

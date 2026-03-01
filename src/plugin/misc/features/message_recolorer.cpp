@@ -24,11 +24,11 @@
 plugin::misc::features::message_recolorer::messages_to_recolor_t
 plugin::misc::features::message_recolorer::messages_to_recolor = {
     { "Репорт", [](const std::string_view& text, const types::color&) {
-        return text.starts_with("[A] Жалоба от ") || text.starts_with("[A] Репорт от ");
+        return text.starts_with("[A] Репорт от ") || text.starts_with("[H] Репорт от ");
     }},
 
     { "Чат администрации", [](const std::string_view& text, const types::color&) {
-        static constexpr ctll::fixed_string pattern = R"(^\[A\d\] \S+\[\d+\]: )";
+        static constexpr ctll::fixed_string pattern = R"(^\[[AH]\d\] \S+\[\d+\]: )";
         return !!ctre::search<pattern>(text);
     }},
 
@@ -42,12 +42,12 @@ plugin::misc::features::message_recolorer::messages_to_recolor = {
     }},
 
     { "Обработка репортов", [](const std::string_view& text, const types::color&) {
-        static constexpr ctll::fixed_string pattern = R"(^\[A\] \S+\[\d+\] взялся за обработку репорта)";
+        static constexpr ctll::fixed_string pattern = R"(^\[[AH]\] \S+\[\d+\] взялся за обработку репорта)";
         return !!types::u8regex::search<pattern>(text);
     }},
 
     { "Ответы", [](const std::string_view& text, const types::color&) {
-        static constexpr ctll::fixed_string pattern = R"(^\[A\] \S+\[\d+\] ответил \S+\[\d+\]:)";
+        static constexpr ctll::fixed_string pattern = R"(^\[[AH]\] \S+\[\d+\] ответил \S+\[\d+\]:)";
         return !!types::u8regex::search<pattern>(text);
     }},
 

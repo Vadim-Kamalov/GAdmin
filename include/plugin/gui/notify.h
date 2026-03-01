@@ -81,6 +81,10 @@ public:
     condition_t condition = []{ return true; };      ///< Notification condition to show.
     std::optional<backend_t> backend;                ///< Notification optional backend.
 
+    /// Whether this notification must be notified by the pool
+    /// if there is no another notification with the same title.
+    bool notify_only_unique = false;
+
     /// Construct notification with the specified duration on the screen.
     ///
     /// @param new_duration[in] New duration to set.
@@ -99,6 +103,12 @@ public:
     /// @param new_condition[in] New condition to set.
     /// @return                  Reference to this notification to allow chain-calls.
     auto with_condition(condition_t new_condition) -> notification&;
+
+    /// Construct notification with the `notify_only_unique` variable set to true.
+    ///
+    /// @see    notification::notify_only_unique
+    /// @return Reference to this notification to allow chain-calls.
+    auto only_unique() -> notification&;
 
     /// Remove notification from the screen.
     auto remove() -> void;
