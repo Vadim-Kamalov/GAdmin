@@ -128,22 +128,25 @@ auto plugin::gui::windows::command_requester::on_server_message(const samp::even
     if (!server::user::is_on_alogin())
         return true;
 
-    if (event.text == "{AA3333}| {ffffff}У Вас нет доступа для использования данной команды." &&
-        !last_command.empty() && try_parse_request(last_command).has_value())
-    {
-        command_to_send = "/a " + last_command;
-        time_to_send_command = std::chrono::steady_clock::now() + std::chrono::milliseconds(SERVER_COMMAND_DELAY_MS);
+    event.set_continuous_text_callback(wrap_storage, [this](const std::string_view& text_view, const types::color& color) {
+        std::string text(text_view);
+            
+        if (text == "{AA3333}| {ffffff}У Вас нет доступа для использования данной команды." &&
+            !last_command.empty() && try_parse_request(last_command).has_value())
+        {
+            command_to_send = "/a " + last_command;
+            time_to_send_command = std::chrono::steady_clock::now() + std::chrono::milliseconds(SERVER_COMMAND_DELAY_MS);
         
-        last_command.clear();
+            last_command.clear();
 
-        return true;
-    }
+            return;
+        }
 
-    if (event.color == 0xFF00C281 && try_handle_new_request(event.text))
-        return true;
+        if (color == 0xFF00C281 && try_handle_new_request(text))
+            return;
 
-    if (try_handle_approved_request(event.text, event.color))
-        return true;
+        try_handle_approved_request(text, color);
+    });
 
     return true;
 }
@@ -194,9 +197,9 @@ auto plugin::gui::windows::command_requester::try_handle_new_request(const std::
     return false;
 }
 
-auto plugin::gui::windows::command_requester::try_handle_approved_request(const std::string& text, const types::color& color) -> bool {
+auto plugin::gui::windows::command_requester::try_handle_approved_request(const std::string& text, const types::color& color) -> void {
     if (!current_request.has_value())
-        return false;
+        return;
 
     static constexpr ctll::fixed_string answer_request_pattern = R"(\[A\] .+\[\d+\] ответил .+\[\d+\]: \S+ by (.+))";
     static constexpr ctll::fixed_string reason_request_pattern = R"(Администратор .+\. Причина: .+ // (.+))";
@@ -213,7 +216,7 @@ auto plugin::gui::windows::command_requester::try_handle_approved_request(const 
             break;
         case command_t::type_t::none: {
             if (color != 0xFF00C281)
-                return false;
+                return;
 
             matches = types::u8regex::match<none_request_pattern>(text);
             to_compare = std::to_string(current_request->sender_id);
@@ -222,12 +225,10 @@ auto plugin::gui::windows::command_requester::try_handle_approved_request(const 
         }
     }
 
-    if (matches && matches.get_string<1>() == to_compare) {
-        current_request = {};
-        return true;
-    }
+    if (!matches || matches.get_string<1>() != to_compare)
+        return;
 
-    return false;
+    current_request = {};
 }
 
 auto plugin::gui::windows::command_requester::approve_request() -> void {
