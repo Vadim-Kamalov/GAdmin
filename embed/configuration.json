@@ -144,6 +144,8 @@
         "wallhack": {
             "use": true,
             "custom_render": false,
+            "show_bones": true,
+            "bone_width": 1,
             "font_size": 18
         },
 
@@ -228,6 +230,20 @@
             "hide_complaints": false,
             "hide_questions": false,
             "hide_admin_actions": false
+        },
+
+        "message_recolorer": {
+            "use": false,
+            "items": [
+                { "key": "Репорт", "value": "FF00FFFF", "use": true },
+                { "key": "Чат администрации", "value": "FF33AA33", "use": true },
+                { "key": "Входы/выходы администрации", "value": "FF33AA33", "use": true },
+                { "key": "Обработка репортов", "value": "FFAFAFAF", "use": true },
+                { "key": "Ответы", "value": "FF4599FF", "use": true },
+                { "key": "Действия администрации", "value": "FFAFAFAF", "use": true },
+                { "key": "Наказания", "value": "FF4763FF", "use": true },
+                { "key": "Античит", "value": "FFAFAFAF", "use": true }
+            ]
         },
 
         "gun_info": {

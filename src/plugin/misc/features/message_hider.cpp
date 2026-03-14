@@ -6,7 +6,8 @@ std::unordered_map<std::string, std::vector<plugin::misc::features::message_hide
 plugin::misc::features::message_hider::messages = {
     { "hide_anticheat", {
         text_to_find { "Античит" },
-        text_to_find { "[BOT DETECTOR]" }
+        text_to_find { "[BOT DETECTOR]" },
+        text_to_find { "ADS <" }
     }},
 
     { "hide_punishments", {

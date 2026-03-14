@@ -33,6 +33,9 @@ plugin::samp::remote_player::get_color_container = { 0x12A00, 0x15C10, 0x16180, 
 plugin::types::versioned_address_container<std::uint16_t, plugin::types::version_container_option::offsets>
 plugin::samp::remote_player::id_container = { 0xAB, 0x8, 0x1E5, 0x0 };
 
+plugin::types::versioned_address_container<int, plugin::types::version_container_option::offsets>
+plugin::samp::remote_player::state_container = { 0x1D1, 0x1D1, 0x1C5, 0x1D1 };
+
 auto plugin::samp::remote_player::is_available() const -> bool {
     return handle.is_available();
 }
@@ -55,4 +58,8 @@ auto plugin::samp::remote_player::get_color() const -> types::color {
 
 auto plugin::samp::remote_player::get_id() const -> std::uint16_t {
     return id_container->read(*handle);
+}
+
+auto plugin::samp::remote_player::is_current_state(const remote_player::state& state) const -> bool {
+    return state_container->read(*handle) == std::to_underlying(state);
 }

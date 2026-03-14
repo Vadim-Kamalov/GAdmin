@@ -50,12 +50,6 @@ auto plugin::plugin_initializer::on_event(const samp::event_info& event) -> bool
     if (!server::admins::on_event(event))
         return false;
 
-    if (!gui->on_event(event))
-        return false;
-
-    if (!cheats_initializer->on_event(event))
-        return false;
-
     event.stream->reset_read_pointer();
 
     if (!server::user::on_event(event)) 
@@ -64,6 +58,16 @@ auto plugin::plugin_initializer::on_event(const samp::event_info& event) -> bool
     event.stream->reset_read_pointer();
 
     if (!server::spectator::on_event(event))
+        return false;
+
+    event.stream->reset_read_pointer();
+
+    if (!gui->on_event(event))
+        return false;
+
+    event.stream->reset_read_pointer();
+
+    if (!cheats_initializer->on_event(event))
         return false;
 
     event.stream->reset_read_pointer();

@@ -19,6 +19,7 @@
 #ifndef GADMIN_PLUGIN_CHEATS_WALLHACK_H
 #define GADMIN_PLUGIN_CHEATS_WALLHACK_H
 
+#include "plugin/samp/player.h"
 #include "plugin/cheats/base.h"
 
 namespace plugin::cheats {
@@ -36,9 +37,27 @@ private:
     static constexpr float max_render_distance = 0x7D0;
     static inline bool cheat_active = false;
 
+    struct name_tag_settings_t final {
+        ImDrawList* draw_list;
+        ImFont* font;
+        float font_size;
+        const types::color& color;
+        const samp::player& player;
+        const game::ped& ped;
+    }; // struct name_tag_settings_t final
+
+    struct bones_settings_t final {
+        ImDrawList* draw_list;
+        float bone_width;
+        const types::color& color;
+        const game::ped& ped;
+    }; // struct bones_settings_t final
+
     gui::hotkey hotkey;
 
     auto hotkey_callback(gui::hotkey& hotkey) -> void;
+    auto render_custom_name_tag(const name_tag_settings_t& settings) const -> void;
+    auto render_bones(const bones_settings_t& settings) const -> void;
 public:
     /// Enable wallhack.
     static auto enable() -> void;

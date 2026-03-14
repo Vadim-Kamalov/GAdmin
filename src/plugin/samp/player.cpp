@@ -50,6 +50,16 @@ auto plugin::samp::player::is_available() const -> bool {
     return valid;
 }
 
+auto plugin::samp::player::is_paused() const -> bool {
+    if (local_player)
+        return false;
+
+    if (auto remote_player = player_pool::get_remote_player(id))
+        return remote_player->is_current_state(remote_player::state::paused);
+
+    return false;
+}
+
 auto plugin::samp::player::get_stream_players() -> std::deque<stream_entry_t> {
     std::deque<stream_entry_t> players;
 

@@ -17,6 +17,7 @@
 /// SPDX-License-Identifier: GPL-3.0-only
 
 #include "plugin/gui/windows/main/frames/windows_customization.h"
+#include "plugin/gui/animation.h"
 #include "plugin/gui/style.h"
 #include "plugin/gui/widgets/button.h"
 #include "plugin/gui/widgets/hint.h"
@@ -28,6 +29,48 @@
 
 auto plugin::gui::windows::main::frames::windows_customization::get_windows_customization() -> nlohmann::json& {
     return (*configuration)["internal"]["windows_customization"];
+}
+
+auto plugin::gui::windows::main::frames::windows_customization::handle_theme_change_animation() -> void {
+    if (!animation::is_time_available(time_theme_changed))
+        return;
+
+    auto now = std::chrono::steady_clock::now();
+
+    if (now - time_theme_changed > theme_change_duration) {
+        style::get_saved_theme() = new_theme;
+        style::apply_theme(new_theme);
+
+        get_windows_customization().clear();
+        color_pool.clear();
+
+        time_theme_changed = std::chrono::steady_clock::time_point {};
+
+        return;
+    }
+
+#define MAKE_COLOR_TRANSITION(COLOR)                             \
+    old_theme.COLOR = animation::bring_to(old_theme.COLOR,       \
+                                          new_theme.COLOR,       \
+                                          time_theme_changed,    \
+                                          theme_change_duration)
+
+    MAKE_COLOR_TRANSITION(accent_colors.red);
+    MAKE_COLOR_TRANSITION(accent_colors.green);
+    MAKE_COLOR_TRANSITION(accent_colors.yellow);
+
+    for (std::uint8_t i = 0; i < new_theme.interface_colors.overlay.size(); i++)
+        MAKE_COLOR_TRANSITION(interface_colors.overlay[i]);
+
+    for (std::uint8_t i = 0; i < new_theme.interface_colors.surface.size(); i++)
+        MAKE_COLOR_TRANSITION(interface_colors.surface[i]);
+
+    for (std::uint8_t i = 0; i < new_theme.interface_colors.text.size(); i++)
+        MAKE_COLOR_TRANSITION(interface_colors.text[i]);
+
+#undef MAKE_COLOR_TRANSITION
+    
+    style::apply_theme(old_theme);
 }
 
 auto plugin::gui::windows::main::frames::windows_customization::render_color_edit(types::zstring_t label, const std::string& id,
@@ -236,7 +279,8 @@ auto plugin::gui::windows::main::frames::windows_customization::popup_renderer()
     
     float name_placeholder_width = bold_font->CalcTextSizeA(common_font_size, FLT_MAX, 0.0f, "Название:").x;
     float author_placeholder_width = bold_font->CalcTextSizeA(common_font_size, FLT_MAX, 0.0f, "Автор:").x;
-    
+
+    handle_theme_change_animation();
     gui::widgets::text(bold_font, title_font_size, 0, "Каталог тем");
     
     for (const auto& user_theme : user_themes) {
@@ -251,14 +295,15 @@ auto plugin::gui::windows::main::frames::windows_customization::popup_renderer()
 
         button_size.x = std::max<float>(button_size.x + frame_padding.x * 2, ImGui::GetContentRegionAvail().x);
 
-        if (gui::widgets::button("", "user_theme:" + user_theme.name, button_size).render()) {
-            nlohmann::json& saved_theme = style::get_saved_theme();
-
+        if (gui::widgets::button("", "user_theme:" + user_theme.name, button_size).render()
+            && !animation::is_time_available(time_theme_changed))
+        {
             get_windows_customization().clear();
             color_pool.clear();
 
-            saved_theme = user_theme.theme;
-            style::apply_theme(saved_theme);
+            old_theme = style::get_saved_theme();
+            new_theme = user_theme.theme;
+            time_theme_changed = std::chrono::steady_clock::now();
         }
 
         ImVec2 start = ImGui::GetItemRectMin();

@@ -48,8 +48,16 @@ private:
     static constexpr std::chrono::milliseconds animation_duration = 500ms;
     static constexpr int block_time_options[4] = { 10, 30, 60, 90 };
 
+    enum class report_type : std::uint8_t {
+        question,
+        complaint,
+        waiting,
+        none
+    }; // enum class report_type : std::uint8_t
+
     struct report_information_t final {
         std::string nickname;
+        std::string str_time;
         std::string text;
         std::uint16_t id;
         std::chrono::steady_clock::time_point time_taken;
@@ -83,7 +91,6 @@ private:
     std::uint8_t window_alpha = 0;
     std::uint16_t dialog_id = 0;
 
-    std::chrono::steady_clock::time_point time_received_report;
     std::chrono::steady_clock::time_point time_holding_report;
     std::chrono::steady_clock::time_point time_hint_active;
     std::chrono::steady_clock::time_point time_switched_window;
@@ -93,34 +100,40 @@ private:
     bool focus = false;
     bool reset = false;
     bool dialog_active = false;
+    bool searching_reports = false;
     bool notification_active = false;
 
+    report_type current_report_type = report_type::none;
     std::optional<report_information_t> current_report;
     std::optional<dialog_response> current_response;
     std::string answer_input;
-    std::string wrap_storage;
 
     ImFont* bold_font;
     ImFont* regular_font;
 
     hotkey switch_window_hotkey;
+    hotkey try_accept_last_report_hotkey;
 
     auto get_action_buttons() -> std::array<action_button, 12>;
     auto send_chat_action_button() const -> void;
     auto block_action_button() -> void;
 
+    auto on_dialog_response(const samp::out_event<samp::event_id::dialog_response>& id) -> bool;
     auto on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog) -> bool;
     auto on_server_message(const samp::event<samp::event_id::server_message>& message) -> bool;
-    auto on_new_report_message(const std::string& nickname, std::uint16_t id) -> void;
-    auto on_report_canceled() -> void;
+
+    auto try_handle_active_reports_dialog(const samp::event<samp::event_id::show_dialog>& dialog) -> bool;
+    auto try_handle_active_report_dialog(const samp::event<samp::event_id::show_dialog>& dialog) -> bool;
 
     auto open_window() -> void;
     auto open_window_with_dialog() -> void;
     auto close_window() -> void;
     auto switch_window() -> void;
 
+    auto try_handle_report_searching(const std::string& text) -> bool;
     auto handle_remind_notification() -> void;
     auto get_time_active() const -> std::string;
+    auto try_accept_last_report() -> void;
 
     auto can_send_response() -> bool;
     auto close_dialog() -> void;

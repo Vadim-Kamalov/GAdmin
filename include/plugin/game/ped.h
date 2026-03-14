@@ -49,7 +49,24 @@ public:
     }; // struct flags_t final
 
     /// Pedestrian's bone identifiers.
-    enum class bone : std::uint8_t { torso = 3, head = 6 };
+    enum class bone : std::uint8_t {
+        stomach = 2,
+        torso,
+        neck,
+        head = 6,
+        right_hand_shoulder = 22,
+        right_hand_elbow,
+        right_hand_palm,
+        right_hand_middle_finger,
+        left_hand_shoulder = 32,
+        left_hand_elbow,
+        left_hand_palm,
+        left_hand_middle_finger,
+        right_leg_elbow = 52,
+        right_leg_ankle,
+        left_leg_elbow = 42,
+        left_leg_ankle
+    }; // enum class bone : std::uint8_t
 private:
     static inline types::address<signatures::teleport> teleport_address = 0x5E4110;
     static inline types::address<signatures::get_bone_position> get_bone_position_address = 0x5E4280;

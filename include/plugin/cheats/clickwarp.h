@@ -45,6 +45,7 @@ private:
         game::vehicle vehicle_to_jump;
     }; // struct teleport_information_t final
 
+    bool recently_pressed_middle_mouse_button = false;
     bool selecting_place_to_warp = false;
     bool need_to_update_cursor = false;
 

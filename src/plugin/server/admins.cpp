@@ -81,25 +81,8 @@ auto plugin::server::admins::on_show_dialog(const samp::event<samp::event_id::sh
 }
 
 auto plugin::server::admins::on_server_message(const samp::event<samp::event_id::server_message>& message) -> bool {
-    static constexpr ctll::fixed_string authorization_pattern = 
-        R"(\[A\] (\S+)\[(\d+)\] авторизовался как администратор (\d+) уровня.)";
-
-    static constexpr ctll::fixed_string disconnect_pattern
-        = R"(\[A\d\] \S+\[(\d+)\] вышел как администратор.)";
-    
-    if (auto matches = types::u8regex::match<authorization_pattern>(message.text)) {
-        std::string nickname = matches.get_string<1>();
-        std::uint16_t id = static_cast<std::uint16_t>(std::stoul(matches.get_string<2>()));
-        std::uint8_t level = static_cast<std::uint8_t>(std::stoul(matches.get_string<3>()));
-
-        add_connected_admin({ nickname, id, level });
-
-        return true;
-    }
-
-    if (auto matches = types::u8regex::match<disconnect_pattern>(message.text))
-        remove_disconnected_admin(static_cast<std::uint16_t>(std::stoul(matches.get_string<1>())));
-
+    static std::string continuous_text_storage;
+    message.set_continuous_text_callback(continuous_text_storage, admins::on_continuous_text_callback);
     return true;
 }
 
@@ -111,6 +94,33 @@ auto plugin::server::admins::on_server_quit(const samp::event<samp::event_id::se
 auto plugin::server::admins::on_set_player_name(const samp::event<samp::event_id::set_player_name>& player) -> bool {
     remove_disconnected_admin(player.id);
     return true;
+}
+
+auto plugin::server::admins::on_continuous_text_callback(const std::string_view& text, const types::color& color)
+    -> void
+{
+    static constexpr ctll::fixed_string authorization_pattern = 
+        R"(\[A\] (\S+)\[(\d+)\] авторизовался как администратор (\d+) уровня.)";
+
+    static constexpr ctll::fixed_string disconnect_pattern
+        = R"(\[A\d\] \S+\[(\d+)\] вышел как администратор.)";
+    
+    if (auto matches = types::u8regex::match<authorization_pattern>(text)) {
+        std::string nickname = matches.get_string<1>();
+        std::uint16_t id = static_cast<std::uint16_t>(std::stoul(matches.get_string<2>()));
+        std::uint8_t level = static_cast<std::uint8_t>(std::stoul(matches.get_string<3>()));
+
+        add_connected_admin({ nickname, id, level });
+
+        return;
+    }
+
+    auto matches = types::u8regex::match<disconnect_pattern>(text);
+
+    if (!matches)
+        return;
+
+    remove_disconnected_admin(static_cast<std::uint16_t>(std::stoul(matches.get_string<1>())));
 }
 
 auto plugin::server::admins::update_admins(const std::string_view& dialog_text) -> void {

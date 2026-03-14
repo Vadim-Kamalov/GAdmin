@@ -24,7 +24,9 @@
 #include <imgui.h>
 #include <misc/cpp/imgui_stdlib.h>
 
-auto plugin::gui::windows::main::custom_settings::spectator_actions::render_lines(float width, nlohmann::json& setter) -> void {
+auto plugin::gui::windows::main::custom_settings::spectator_actions::render_lines(float width, nlohmann::json& setter)
+    -> void
+{
     float frame_height = ImGui::GetFrameHeight();
     std::size_t size = setter.size();
 
@@ -82,8 +84,12 @@ auto plugin::gui::windows::main::custom_settings::spectator_actions::render_line
     }
 }
 
-auto plugin::gui::windows::main::custom_settings::spectator_actions::render(types::not_null<gui_initializer*> gui, nlohmann::json& setter) -> void {
-    ImGui::BeginChild(get_id(), { std::max<float>(450.0f, ImGui::GetContentRegionAvail().x), 400.0f }, ImGuiChildFlags_AlwaysUseWindowPadding);
+auto plugin::gui::windows::main::custom_settings::spectator_actions::render(types::not_null<gui_initializer*> gui,
+                                                                            nlohmann::json& setter)
+    -> void
+{
+    ImGui::BeginChild(get_id(), { std::max<float>(450.0f, ImGui::GetContentRegionAvail().x), 400.0f },
+                      ImGuiChildFlags_AlwaysUseWindowPadding);
     {
         float width = ImGui::GetContentRegionAvail().x;
         float font_size = ImGui::GetFontSize();

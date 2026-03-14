@@ -27,6 +27,7 @@
 #include "plugin/types/not_null.h"
 #include <nlohmann/json.hpp>
 #include <unordered_map>
+#include <chrono>
 #include <deque>
 #include <thread>
 
@@ -35,6 +36,7 @@ namespace plugin::gui::windows::main::frames {
 /// Represents the window customization and theme downloading in the main window.
 class windows_customization final : public basic_frame {
 private:
+    static constexpr std::chrono::milliseconds theme_change_duration = 500ms;
     static constexpr float title_font_size = 24;
     static constexpr float common_font_size = 18;
     static constexpr float buttons_height = 30;
@@ -60,8 +62,13 @@ private:
     std::deque<user_theme_t> user_themes;
     std::jthread network_thread;
 
+    style::theme_t old_theme;
+    style::theme_t new_theme;
+    std::chrono::steady_clock::time_point time_theme_changed;
+
     static auto get_windows_customization() -> nlohmann::json&;
 
+    auto handle_theme_change_animation() -> void;
     auto render_color_edit(types::zstring_t label, const std::string& id, nlohmann::json& setter) -> void;
     auto render_accent_color_edit(types::zstring_t label, const std::string& id) -> void;
     auto render_interface_color_edit(types::zstring_t label, const std::string& id, std::size_t index) -> void;

@@ -24,8 +24,11 @@
 #include "plugin/gui/gui.h"
 #include "plugin/types/color.h"
 #include "plugin/types/simple.h"
+#include <chrono>
 #include <optional>
 #include <string>
+
+using namespace std::chrono_literals;
 
 namespace plugin::gui::windows {
 
@@ -56,6 +59,7 @@ private:
     
     static constexpr std::uint8_t response_player_offset = std::to_underlying(search_response::player_spectate);
     static constexpr std::uint8_t response_vehicle_offset = std::to_underlying(search_response::vehicle_repair);
+    static constexpr std::chrono::milliseconds animation_duration = 100ms;
 
     struct search_result final {
         ImVec2 point = { 0, 0 };
@@ -74,7 +78,12 @@ private:
           "Узнать владельца [5]", "Телепортировать к себе [6]" }
     }; // static constexpr types::zstring_t actions_description[2]
 
-    ImFont *bold_font, *regular_font;
+    std::chrono::steady_clock::time_point animation_time;
+    float window_alpha = 0.0f;
+    bool animation_state = false;
+
+    ImFont *bold_font = nullptr;
+    ImFont* regular_font = nullptr;
     hotkey activation_hotkey;
 
     search_type current_search_type = search_type::players;

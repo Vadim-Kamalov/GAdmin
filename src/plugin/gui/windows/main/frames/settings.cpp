@@ -22,6 +22,7 @@
 #include "plugin/gui/widgets/text_button.h"
 #include "plugin/gui/widgets/toggle_button.h"
 #include "plugin/gui/widgets/text.h"
+#include "plugin/gui/windows/main/custom_settings/message_recolorer.h"
 #include "plugin/gui/windows/main/custom_settings/report.h"
 #include "plugin/gui/windows/main/custom_settings/short_commands.h"
 #include "plugin/gui/windows/main/custom_settings/spectator_actions.h"
@@ -215,8 +216,7 @@ auto plugin::gui::windows::main::frames::settings::render_color(const std::strin
 
         ImGui::BeginGroup();
         {
-            std::string hexadecimal_color = std::format("{:02X}{:02X}{:02X}", color.value.red,
-                                                        color.value.green, color.value.blue);
+            std::string hexadecimal_color = std::format("{:06X}", color.cast<types::color_type::rgba>() >> 8);
 
             ImGui::SetCursorScreenPos({ pos.x + frame_padding.x,
                     pos.y + (frame_height - ImGui::CalcTextSize(hexadecimal_color.c_str()).y) / 2.0f });
@@ -246,7 +246,8 @@ auto plugin::gui::windows::main::frames::settings::render_custom(const std::stri
         std::make_unique<custom_settings::report>(),
         std::make_unique<custom_settings::short_commands>(),
         std::make_unique<custom_settings::spectator_information>(),
-        std::make_unique<custom_settings::spectator_actions>()
+        std::make_unique<custom_settings::spectator_actions>(),
+        std::make_unique<custom_settings::message_recolorer>()
     }); // static auto custom_settings = std::to_array<custom_setting_ptr_t>({ ... })
 
     auto custom_setting = std::find_if(custom_settings.begin(), custom_settings.end(),

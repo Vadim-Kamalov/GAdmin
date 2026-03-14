@@ -77,7 +77,8 @@ private:
 
     std::chrono::steady_clock::time_point time_request_sent;
     std::optional<request_t> current_request;
-    
+
+    std::string wrap_storage = "";
     std::string last_command = "";
     std::string command_to_send = "";
 
@@ -89,7 +90,7 @@ private:
 
     auto try_parse_request(const std::string_view& usage) const -> std::optional<parsed_request_t>;
     auto try_handle_new_request(const std::string& text) -> bool;
-    auto try_handle_approved_request(const std::string& text, const types::color& color) -> bool;
+    auto try_handle_approved_request(const std::string& text, const types::color& color) -> void;
 
     auto approve_request() -> void;
     
