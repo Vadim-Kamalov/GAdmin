@@ -70,7 +70,7 @@ auto plugin::gui::windows::main::frames::server_information::handle_row_controls
         return;
 
     ImGui::SetClipboardText(text_to_copy.c_str());
-    gui::notify::send(gui::notification("Текст скопирован", "Информация об оружии успешно скопирована!", ICON_COPY));
+    gui::notify::send(gui::notification("Текст скопирован", "Информация из строки таблицы успешно скопирована!", ICON_COPY));
 }
 
 auto plugin::gui::windows::main::frames::server_information::render_complex_table(const std::string& id, const nlohmann::json& config) const

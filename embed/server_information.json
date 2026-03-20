@@ -142,153 +142,290 @@
         }
     },
     {
+        "_title": "Цены на дома",
+        "_type": "complextable",
+        "_config": {
+            "heading": [
+                { "label": "Локация", "width": 100 },
+                { "label": "Название", "width": 145 },
+                { "label": "Район", "width": 145 },
+                { "label": "Мин. цена", "width": 80 },
+                { "label": "Макс. цена", "width": 80 }
+            ],
+            "rows": [
+                {
+                    "copy": "Los Santos (Playa del Seville): от 15.000$ до 30.000$",
+                    "items": [ "Город", "Los Santos", "Playa del Seville", "15.000$", "30.000$" ]
+                },
+                {
+                    "copy": "Los Santos (Ocean Dock): от 15.000$ до 25.000$",
+                    "items": [ "Город", "Los Santos", "Ocean Dock", "15.000$", "25.000$" ]
+                },
+                {
+                    "copy": "Los Santos (El Corona): от 15.000$ до 25.000$",
+                    "items": [ "Город", "Los Santos", "El Corona", "15.000$", "25.000$" ]
+                },
+                {
+                    "copy": "Los Santos (Willowfield): от 15.000$ до 35.000$",
+                    "items": [ "Город", "Los Santos", "Willowfield", "15.000$", "35.000$" ]
+                },
+                {
+                    "copy": "Los Santos (East LS): от 25.000$ до 35.000$",
+                    "items": [ "Город", "Los Santos", "East LS", "25.000$", "35.000$" ]
+                },
+                {
+                    "copy": "Los Santos (Los Flores): от 25.000$ до 35.000$",
+                    "items": [ "Город", "Los Santos", "Los Flores", "25.000$", "35.000$" ]
+                },
+                {
+                    "copy": "Los Santos (Las Colinas): от 25.000$ до 45.000$",
+                    "items": [ "Город", "Los Santos", "Las Colinas", "25.000$", "45.000$" ]
+                },
+                {
+                    "copy": "Los Santos (Ganton): от 25.000$ до 50.000$",
+                    "items": [ "Город", "Los Santos", "Ganton", "25.000$", "50.000$" ]
+                },
+                {
+                    "copy": "Los Santos (Idlewood): от 25.000$ до 50.000$",
+                    "items": [ "Город", "Los Santos", "Idlewood", "25.000$", "50.000$" ]
+                },
+                {
+                    "copy": "Los Santos (Glen Park): от 25.000$ до 55.000$",
+                    "items": [ "Город", "Los Santos", "Glen Park", "25.000$", "55.000$" ]
+                },
+                {
+                    "copy": "Los Santos (Jefferson): от 25.000$ до 50.000$",
+                    "items": [ "Город", "Los Santos", "Jefferson", "25.000$", "50.000$" ]
+                },
+                {
+                    "copy": "Los Santos (Commerce): от 280.000$ до 300.000$",
+                    "items": [ "Город", "Los Santos", "Commerce", "280.000$", "300.000$" ]
+                },
+                {
+                    "copy": "Los Santos (Market): от 75.000$ до 120.000$",
+                    "items": [ "Город", "Los Santos", "Market", "75.000$", "120.000$" ]
+                },
+                {
+                    "copy": "Los Santos (SunRise): от 80.000$ до 120.000$",
+                    "items": [ "Город", "Los Santos", "SunRise", "80.000$", "120.000$" ]
+                },
+                {
+                    "copy": "Los Santos (Verona Beach): от 80.000$ до 120.000$",
+                    "items": [ "Город", "Los Santos", "Verona Beach", "80.000$", "120.000$" ]
+                },
+                {
+                    "copy": "Los Santos (Santa Maria Beach): от 100.000$ до 150.000$",
+                    "items": [ "Город", "Los Santos", "Santa Maria Beach", "100.000$", "150.000$" ]
+                },
+                {
+                    "copy": "Los Santos (Rodeo): от 120.000$ до 180.000$",
+                    "items": [ "Город", "Los Santos", "Rodeo", "120.000$", "180.000$" ]
+                },
+                {
+                    "copy": "Los Santos (Mulholland): от 200.000$ до 350.000$",
+                    "items": [ "Город", "Los Santos", "Mulholland", "200.000$", "350.000$" ]
+                },
+                {
+                    "copy": "Los Santos (RichMan): от 250.000$ до 400.000$",
+                    "items": [ "Город", "Los Santos", "RichMan", "250.000$", "400.000$" ]
+                },
+                {
+                    "copy": "Los Santos (VineWood): от 250.000$ до 450.000$",
+                    "items": [ "Город", "Los Santos", "VineWood", "250.000$", "450.000$" ]
+                },
+                {
+                    "copy": "Las Payasadas: от 5.000$ до 15.000$",
+                    "items": [ "Город", "Las Payasadas", "", "5.000$", "15.000$" ]
+                },
+                {
+                    "copy": "Montgomery: от 10.000$ до 35.000$",
+                    "items": [ "Деревня", "Montgomery", "", "10.000$", "35.000$" ]
+                },
+                {
+                    "copy": "Bluberry: от 15.000$ до 35.000$",
+                    "items": [ "Деревня", "Bluberry", "", "15.000$", "35.000$" ]
+                },
+                {
+                    "copy": "Fort Carson: от 15.000$ до 35.000$",
+                    "items": [ "Деревня", "Fort Carson", "", "15.000$", "35.000$" ]
+                },
+                {
+                    "copy": "Palomino Creek: от 35.000$ до 80.000$",
+                    "items": [ "Деревня", "Palomino Creek", "", "35.000$", "80.000$" ]
+                },
+                {
+                    "copy": "Dillimore: от 30.000$ до 60.000$",
+                    "items": [ "Деревня", "Dillimore", "", "30.000$", "60.000$" ]
+                },
+                {
+                    "copy": "Red County: от 10.000$ до 70.000$",
+                    "items": [ "Округ", "Red County", "", "10.000$", "70.000$" ]
+                },
+                {
+                    "copy": "Bone County: от 5.000$ до 55.000$",
+                    "items": [ "Округ", "Bone County", "", "5.000$", "55.000$" ]
+                }
+            ]
+        }
+    },
+    {
         "_title": "Цены на автомобили",
         "_type": "map",
         "_config": [
-            [ "Sadler", "2.500$" ],
-            [ "Perenniel", "4.000$" ],
-            [ "Tampa", "4.000$" ],
-            [ "Walton", "4.000$" ],
-            [ "Regina", "4.500$" ],
-            [ "Nebula", "4.950$" ],
-            [ "Hustler", "5.000$" ],
-            [ "Manana", "5.000$" ],
-            [ "Picador", "5.500$" ],
-            [ "Virgo", "5.950$" ],
-            [ "Previon", "6.000$" ],
-            [ "Majestic", "6.438$" ],
-            [ "Rumpo", "6.500$" ],
-            [ "Solair", "6.500$" ],
-            [ "Topfunvan", "6.500$" ],
-            [ "Bravura", "6.750$" ],
-            [ "Esperanto", "7.000$" ],
-            [ "Clover", "7.000$" ],
-            [ "Moonbeam", "7.500$" ],
-            [ "Voodoo", "7.500$" ],
-            [ "Broadway", "7.500$" ],
-            [ "Hermes", "7.500$" ],
-            [ "Camper", "8.000$" ],
-            [ "Buccaneer", "8.000$" ],
-            [ "Primo", "8.300$" ],
-            [ "Glendale", "8.400$" ],
-            [ "Pony", "8.500$" ],
-            [ "Remington", "8.500$" ],
-            [ "Sabre", "8.500$" ],
-            [ "Blade", "8.500$" ],
-            [ "Oceanic", "9.500$" ],
-            [ "Tornado", "9.500$" ],
-            [ "Greenwood", "9.800$" ],
-            [ "Fortune", "10.000$" ],
-            [ "Slamwan", "10.000$" ],
-            [ "Sunrise", "11.500$" ],
-            [ "Stallion", "12.500$" ],
-            [ "Savanna", "14.500$" ],
-            [ "Tahoma", "17.500$" ],
-            [ "Intruder", "6.500$" ],
-            [ "Emperor", "7.000$" ],
-            [ "Sentinel", "7.500$" ],
-            [ "Willard", "8.000$" ],
-            [ "Cadrona", "8.500$" ],
-            [ "Vincent", "9.000$" ],
-            [ "Merit", "10.000$" ],
-            [ "Admiral", "10.000$" ],
-            [ "Windsor", "10.500$" ],
-            [ "Bobcat", "11.500$" ],
-            [ "Blistacompact", "11.500$" ],
-            [ "Burrito", "12.500$" ],
-            [ "Premier", "13.000$" ],
-            [ "Elegant", "13.500$" ],
-            [ "Phoenix", "13.500$" ],
-            [ "Club", "14.000$" ],
-            [ "Alpha", "14.500$" ],
-            [ "Feltzer", "14.500$" ],
-            [ "Stafford", "15.000$" ],
-            [ "Mesa", "16.000$" ],
-            [ "Washington", "17.500$" ],
-            [ "Yosemite", "17.500$" ],
-            [ "Uranus", "17.500$" ],
-            [ "Rancher", "18.000$" ],
-            [ "Euros", "19.000$" ],
-            [ "Landstalker", "20.000$" ],
-            [ "Jester", "20.000$" ],
-            [ "Flash", "20.000$" ],
-            [ "Stratum", "23.000$" ],
-            [ "Sultan", "25.000$" ],
-            [ "Elegy", "27.500$" ],
-            [ "Huntley", "27.500$" ],
-            [ "Comet", "28.000$" ],
-            [ "Hotknife", "27.500$" ],
-            [ "Yankee", "35.000$" ],
-            [ "ZR-350", "40.000$" ],
-            [ "Buffalo", "75.000$" ],
-            [ "Banshee", "215.000$" ],
-            [ "SuperGT", "250.000$" ],
-            [ "Cheetah", "575.000$" ],
-            [ "Turismo", "625.000$" ],
-            [ "Infernus", "725.000$" ],
-            [ "Bullet", "745.000$" ]
+            [ "Sadler", "9.900$" ],
+            [ "Perenniel", "7.150$" ],
+            [ "Tampa", "25.300$" ],
+            [ "Walton", "8.250$" ],
+            [ "Regina", "8.800$" ],
+            [ "Nebula", "11.550$" ],
+            [ "Hustler", "13.200$" ],
+            [ "Manana", "4.950$" ],
+            [ "Picador", "19.800$" ],
+            [ "Virgo", "13.750$" ],
+            [ "Previon", "5.500$" ],
+            [ "Majestic", "14.300$" ],
+            [ "Rumpo", "8.250$" ],
+            [ "Solair", "24.200$" ],
+            [ "Topfunvan", "8.800$" ],
+            [ "Bravura", "27.500$" ],
+            [ "Esperanto", "7.700$" ],
+            [ "Clover", "30.800$" ],
+            [ "Moonbeam", "10.450$" ],
+            [ "Voodoo", "8.800$" ],
+            [ "Broadway", "23.100$" ],
+            [ "Hermes", "19.800$" ],
+            [ "Camper", "19.800$" ],
+            [ "Buccaneer", "20.900$" ],
+            [ "Primo", "17.600$" ],
+            [ "Glendale", "12.100$" ],
+            [ "Pony", "9.900$" ],
+            [ "Remington", "27.500$" ],
+            [ "Sabre", "38.500$" ],
+            [ "Blade", "35.200$" ],
+            [ "Oceanic", "14.300$" ],
+            [ "Tornado", "24.200$" ],
+            [ "Greenwood", "15.400$" ],
+            [ "Fortune", "35.200$" ],
+            [ "Slamvan", "24.200$" ],
+            [ "Sunrise", "23.100$" ],
+            [ "Stallion", "17.600$" ],
+            [ "Savanna", "28.600$" ],
+            [ "Tahoma", "26.400$" ],
+            [ "Intruder", "18.700$" ],
+            [ "Emperor", "20.900$" ],
+            [ "Sentinel", "60.500$" ],
+            [ "Willard", "19.800$" ],
+            [ "Cadrona", "30.800$" ],
+            [ "Vincent", "20.900$" ],
+            [ "Merit", "29.700$" ],
+            [ "Admiral", "13.200$" ],
+            [ "Windsor", "52.800$" ],
+            [ "Bobcat", "46.200$" ],
+            [ "Blista Compact", "22.000$" ],
+            [ "Burrito", "23.100$" ],
+            [ "Premier", "71.500$" ],
+            [ "Elegant", "41.800$" ],
+            [ "Phoenix", "35.200$" ],
+            [ "Club", "33.000$" ],
+            [ "Alpha", "46.200$" ],
+            [ "Feltzer", "41.800$" ],
+            [ "Stafford", "44.000$" ],
+            [ "Mesa", "52.800$" ],
+            [ "Washington", "77.000$" ],
+            [ "Yosemite", "41.800$" ],
+            [ "Uranus", "60.500$" ],
+            [ "Rancher", "38.500$" ],
+            [ "Euros", "41.800$" ],
+            [ "Landstalker", "68.200$" ],
+            [ "Jester", "52.800$" ],
+            [ "Flash", "39.600$" ],
+            [ "Stratum", "29.700$" ],
+            [ "Sultan", "60.500$" ],
+            [ "Elegy", "74.800$" ],
+            [ "Huntley", "79.200$" ],
+            [ "Comet", "57.200$" ],
+            [ "Hotknife", "33.500$" ],
+            [ "ZR-350", "104.500$" ],
+            [ "Buffalo", "214.500$" ],
+            [ "Banshee", "462.000$" ],
+            [ "SuperGT", "308.000$" ],
+            [ "Cheetah", "649.000$" ],
+            [ "Turismo", "715.000$" ],
+            [ "Infernus", "825.000$" ],
+            [ "Bullet", "858.000$" ]
         ]
     },
     {
         "_title": "Цены на грузовое Т/C",
         "_type": "map",
         "_config": [
-            [ "Benson", "8.000$" ],
-            [ "Boxvile", "11.000$" ],
-            [ "Mule", "18.500$" ],
-            [ "Utility Van", "25.000$" ],
-            [ "Yankee", "35.000$" ],
-            [ "DFT-30", "35.000$" ],
-            [ "Flatbed", "55.000$" ],
-            [ "Linerunner", "75.000$" ],
-            [ "Tanker", "85.000$" ],
-            [ "Roadtrain", "100.000$" ]
+            [ "Benson", "19.800$" ],
+            [ "Boxvile", "24.200$" ],
+            [ "Mule", "27.500$" ],
+            [ "Utility Van", "33.000$" ],
+            [ "Yankee", "104.500$" ],
+            [ "DFT-30", "49.500$" ],
+            [ "Flatbed", "66.000$" ],
+            [ "Linerunner", "181.500$" ],
+            [ "Tanker", "104.500$" ],
+            [ "Roadtrain", "132.000$" ]
         ]
     },
     {
         "_title": "Цены на мотоциклы",
         "_type": "map",
         "_config": [
-            [ "BMX", "250$" ],
-            [ "Bike", "300$" ],
-            [ "Faggio", "1.000$" ],
-            [ "Mountainbike", "1.750$" ],
-            [ "Sanchez", "4.500$" ],
-            [ "PCJ-600", "5.000$" ],
-            [ "Quad", "6.000$" ],
-            [ "BF-400", "7.500$" ],
-            [ "FCR-900", "7.500$" ],
-            [ "Freeway", "10.000$" ],
-            [ "Wayfarer", "10.000$" ],
-            [ "NRG-500", "31.500$" ]
+            [ "BMX", "550$" ],
+            [ "Bike", "800$" ],
+            [ "Faggio", "3.500$" ],
+            [ "Mountainbike", "2.200$" ],
+            [ "Sanchez", "9.500$" ],
+            [ "PCJ-600", "120.000$" ],
+            [ "Quad", "9.900$" ],
+            [ "BF-400", "35.000$" ],
+            [ "FCR-900", "185.000$" ],
+            [ "Freeway", "28.000$" ],
+            [ "Wayfarer", "30.000$" ],
+            [ "NRG-500", "230.000$" ]
         ]
     },
     {
         "_title": "Цены на воздушное Т/C",
         "_type": "map",
         "_config": [
-            [ "Maverick", "725.000$" ],
-            [ "Sparrow", "470.000$" ],
-            [ "Nevada", "2.100.000$" ],
-            [ "Shamal", "1.300.000$" ],
-            [ "Stuntplane", "710.000$" ],
-            [ "Cropduster", "690.000$" ],
-            [ "Skimmer", "500.000$" ],
-            [ "Rustler", "420.000$" ],
-            [ "Beagle", "200.000$" ]
+            [ "Maverick", "572.500$" ],
+            [ "Sparrow", "374.000$" ],
+            [ "Nevada", "1.672.000$" ],
+            [ "Shamal", "1.034.000$" ],
+            [ "Stuntplane", "561.000$" ],
+            [ "Cropduster", "544.500$" ],
+            [ "Rustler", "450.000$" ],
+            [ "Beagle", "159.500$" ]
         ]
     },
     {
         "_title": "Цены на водное Т/C",
         "_type": "map",
         "_config": [
-            [ "Jetmax", "900.000$" ],
-            [ "Squallo", "830.000$" ],
-            [ "Speeder", "260.000$" ],
-            [ "Reefer", "100.000$" ],
-            [ "Dinghy", "50.000$" ],
-            [ "Marquis", "1.600.000$" ],
-            [ "Tropic", "700.000$" ]
+            [ "Jetmax", "365.500$" ],
+            [ "Squallo", "341.000$" ],
+            [ "Speeder", "115.500$" ],
+            [ "Reefer", "49.500$" ],
+            [ "Dinghy", "24.200$" ],
+            [ "Marquis", "638.000$" ],
+            [ "Tropic", "291.500$" ]
+        ]
+    },
+    {
+        "_title": "Цены на уникальное Т/C",
+        "_type": "map",
+        "_config": [
+            [ "BF Injection", "49.500$" ],
+            [ "FBI Rancher", "44.000$" ],
+            [ "Hotring Racer A", "132.000$" ],
+            [ "Hotring Racer B", "132.000$" ],
+            [ "Romero", "49.500$" ],
+            [ "Sandking", "93.500$" ]
         ]
     },
     {
