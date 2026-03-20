@@ -88,13 +88,18 @@ auto plugin::misc::features::message_recolorer::on_server_message(const samp::ev
     -> bool
 {
     std::size_t text_size = message.text.size();
-    std::string end = (text_size > 3) ? message.text.substr(text_size - 3) : "";
-    bool have_ellipsis = (end == "..." || end == " ..");
+
+    bool ends_with_ellipsis = message.text.ends_with(" ...") || message.text.end_with(" ..");
+    bool starts_with_ellipsis = message.text.starts_with(".. ") || message.text.starts_with("... ");
 
     if (change_next_message_color) {
-        change_next_message_color = have_ellipsis;
-        message.write(get_recolored_text(message.text, message.color), new_message_color);
-        return true;
+        if (starts_with_ellipsis) {
+            change_next_message_color = ends_with_ellipsis;
+            message.write(get_recolored_text(message.text, message.color), new_message_color);
+            return true;
+        } else {
+            change_next_message_color = false;
+        }
     }
 
     auto& items = (*configuration)["misc"]["message_recolorer"]["items"];
@@ -111,7 +116,7 @@ auto plugin::misc::features::message_recolorer::on_server_message(const samp::ev
 
         new_message_color = item["value"];
 
-        if (have_ellipsis)
+        if (ends_with_ellipsis)
             change_next_message_color = true;
 
         message.write(get_recolored_text(message.text, message.color), new_message_color);
