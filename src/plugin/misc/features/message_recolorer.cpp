@@ -89,7 +89,7 @@ auto plugin::misc::features::message_recolorer::on_server_message(const samp::ev
 {
     std::size_t text_size = message.text.size();
 
-    bool ends_with_ellipsis = message.text.ends_with(" ...") || message.text.end_with(" ..");
+    bool ends_with_ellipsis = message.text.ends_with(" ...") || message.text.ends_with(" ..");
     bool starts_with_ellipsis = message.text.starts_with(".. ") || message.text.starts_with("... ");
 
     if (change_next_message_color) {
