@@ -16,7 +16,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
-cmake_minimum_required(VERSION 4.0.0)
+cmake_minimum_required(VERSION 4.2.3)
 project(gadmin VERSION 1.8.15 LANGUAGES CXX RC)
 
 # We use the content of the JSON files from the `embed/` directory directly
