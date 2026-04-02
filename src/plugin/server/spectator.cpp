@@ -25,6 +25,7 @@
 #include "plugin/samp/core/vehicle.h"
 #include "plugin/samp/core/dialog.h"
 #include "plugin/samp/core/player_pool.h"
+#include "plugin/samp/core/user.h"
 #include "plugin/samp/utils.h"
 #include "plugin/game/weapon.h"
 #include "plugin/plugin.h"
@@ -115,6 +116,9 @@ auto plugin::server::spectator::on_show_dialog(const samp::event<samp::event_id:
         return true;
 
     std::uint16_t new_id = std::stoull(dialog_start.get_string<2>());
+
+    if (new_id == samp::user::get_id())
+        return true;
 
     if (previous_id != new_id)
         assign(new_id, dialog_start.get_string<1>());
