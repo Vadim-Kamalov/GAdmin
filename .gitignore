@@ -1,4 +1,6 @@
 LICENSE
+TASKS
+
 build/
 .cache/
 web-installer/build/
