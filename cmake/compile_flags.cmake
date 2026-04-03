@@ -20,23 +20,41 @@ if (NOT ${CMAKE_C_COMPILER_ID} STREQUAL "GNU" OR NOT ${CMAKE_CXX_COMPILER_ID} ST
     message(FATAL_ERROR "The C or C++ compiler is not GCC. Please set the C and C++ compilers to GCC.")
 endif()
 
-set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
+if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_link_options(${PROJECT_NAME} PRIVATE
+        -Wl,--strip-all
+        -Wl,--exclude-all-symbols
+    )
+endif()
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wpedantic -pedantic-errors -Wextra -Werror")
+
+# TODO(03-04-2026): The statement below is false.
+# 
 # O1, O2, and O3 optimization levels cause undefined behavior when compiling for cxx_std_26.
 # At some functions, for example, the ClickWarp activation triggers a SIGSEGV at an unknown
 # address (0x44F00000). Possibly, there is a bug in the compiler I am using: i686-w64-mingw32-g++ (v15.1.0).
 set(CMAKE_CXX_FLAGS_RELEASE "-O0 -DNDEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
 
-target_compile_options(${PROJECT_NAME} PRIVATE -ffunction-sections -fdata-sections -fmerge-all-constants)
-target_link_options(${PROJECT_NAME} PRIVATE -Wl,--gc-sections -ffast-math -static -fno-stack-protector -Wl,--no-insert-timestamp)
-target_link_options(${PROJECT_NAME} PRIVATE -Wl,--disable-runtime-pseudo-reloc -Wl,--large-address-aware)
-   
-if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_link_options(${PROJECT_NAME} PRIVATE -Wl,--strip-all -Wl,--exclude-all-symbols)
-endif()
+target_link_options(${PROJECT_NAME} PRIVATE
+    -Wl,--gc-sections
+    -Wl,--no-insert-timestamp
+    -Wl,--disable-runtime-pseudo-reloc
+    -Wl,--large-address-aware
+    -ffast-math -static
+    -fno-stack-protector
+    -static-libgcc
+    -static-libstdc++
+    -lstdc++exp
+)
 
-target_link_options(${PROJECT_NAME} PRIVATE -static-libgcc -static-libstdc++ -lstdc++exp)
+target_compile_options(${PROJECT_NAME} PRIVATE
+    -ffunction-sections
+    -fdata-sections
+    -fmerge-all-constants
 
-# Bug 110572 - ld.lld: error: duplicate symbol: std::type_info::operator==(std::type_info const&) const
-# See: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=110572
-target_compile_options(${PROJECT_NAME} PRIVATE -fno-rtti)
+    # Bug 110572 - ld.lld: error: duplicate symbol: std::type_info::operator==(std::type_info const&) const
+    # See: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=110572
+    -fno-rtti
+)

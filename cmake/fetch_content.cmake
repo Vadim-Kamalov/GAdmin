@@ -29,8 +29,8 @@ FetchContent_Declare(imgui
 FetchContent_Declare(kthook
     GIT_REPOSITORY https://github.com/defaultzone/kthook.git
 
-    # fix(warning): unused-but-set-parameter in kthook_x86_64_detail.hpp:419:40
-    GIT_TAG 7c8091223f7edc65f588f124a156537754083438
+    # fix(warning): 'thiscall' attribute is used for non-class method in kthook_x86_64_detail.hpp:42:42
+    GIT_TAG 4bac72d0ab429a46449b5827bc2342cebb4a590c
 )
 
 FetchContent_Declare(json
@@ -48,10 +48,10 @@ FetchContent_Declare(ctre
 )
 
 FetchContent_Declare(imgui_markdown
-    GIT_REPOSITORY https://github.com/enkisoftware/imgui_markdown.git
+    GIT_REPOSITORY https://github.com/defaultzone/imgui_markdown.git
 
-    # Fix wrapping for older ImGui versions
-    GIT_TAG 62bd48e8a76bc230bfa32c3f6971626c8124e8cd
+    # fix(warning): unused variable 'style' in ImGui::Markdown
+    GIT_TAG 8fa932f0dd94f38e92bbe33072766c9fad35cbe7
 )
 
 FetchContent_MakeAvailable(json kthook imgui ctre imgui_markdown)
