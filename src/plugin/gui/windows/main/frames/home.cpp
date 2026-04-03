@@ -31,14 +31,19 @@ auto plugin::gui::windows::main::frames::home::convert_time(const std::time_t& t
 }
 
 auto plugin::gui::windows::main::frames::home::get_greeting_text() const -> std::string {
-    std::time_t now_time_t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    auto now_time_t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    auto tm_hour = std::localtime(&now_time_t)->tm_hour;
 
-    switch (std::localtime(&now_time_t)->tm_hour) {
-        case 6 ... 11: return "Доброе утро, ";
-        case 12 ... 18: return "Добрый день, ";
-        case 19 ... 23: return "Добрый вечер, ";
-        default: return "Доброй ночи, ";
-    }
+    if (tm_hour >= 6 && tm_hour <= 11)
+        return "Доброе утро, ";
+    
+    if (tm_hour >= 12 && tm_hour <= 18)
+        return "Добрый день, ";
+
+    if (tm_hour >= 19 && tm_hour <= 23)
+        return "Добрый вечер, ";
+
+    return "Доброй ночи, ";
 }
 
 auto plugin::gui::windows::main::frames::home::render_line(const line_t& line) const -> void {

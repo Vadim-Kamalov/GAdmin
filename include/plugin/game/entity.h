@@ -21,12 +21,13 @@
 
 #include "plugin/types/address.h"
 #include "plugin/types/simple.h"
+#include "plugin/types/signatures.h"
 
 namespace plugin {
 namespace signatures {
 
-using is_vehicle_pointer_valid = bool(__stdcall*)(std::uintptr_t);
-using is_on_screen = bool(__thiscall*)(std::uintptr_t);
+using is_vehicle_pointer_valid = types::signatures::stdcall_t<bool, std::uintptr_t>;
+using is_on_screen = types::signatures::thiscall_t<bool, std::uintptr_t>;
 
 } // namespace signatures
 

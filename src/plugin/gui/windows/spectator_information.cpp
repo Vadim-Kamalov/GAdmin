@@ -81,7 +81,6 @@ auto plugin::gui::windows::spectator_information::vehicle_information_custom_ren
     std::string engine = "Заглушен", doors = "Открыты";
     ImVec4 engine_color = ImGui::ColorConvertU32ToFloat4(*style::get_current_accent_colors().red);
     ImVec4 doors_color = ImGui::ColorConvertU32ToFloat4(*style::get_current_accent_colors().green);
-    ImVec2 text_size = regular_font->CalcTextSizeA(fonts_size, FLT_MAX, 0, std::format("{} / {}", engine, doors).c_str());
 
     if (vehicle.is_engine_active()) {
         engine = "Заведен";

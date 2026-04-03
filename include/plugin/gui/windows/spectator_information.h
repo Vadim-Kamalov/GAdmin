@@ -47,8 +47,8 @@ private:
         std::optional<color_updater_t> updater;
         std::optional<custom_renderer_t> custom_renderer;
     public:
-        std::string value = "";
         std::string label = "";
+        std::string value = "";
         types::color color = ImGui::GetColorU32(ImGuiCol_Text);
         
         inline auto is_updater_available() const -> bool { return updater.has_value(); }
@@ -58,13 +58,13 @@ private:
         inline auto use_custom_renderer() const -> void { (*custom_renderer)(value, color); }
 
         explicit row(const std::string_view& label, const std::string_view& value, color_updater_t updater)
-            : label(std::move(label)), value(std::move(value)), updater(updater) { color = updater(); }
+            : updater(updater), label(std::move(label)), value(std::move(value)) { color = updater(); }
 
         explicit row(const std::string_view& label, const std::string_view& value)
             : label(std::move(label)), value(value) {}
 
         explicit row(const std::string_view& label, const std::string_view& value, custom_renderer_t custom_renderer)
-            : label(std::move(label)), value(std::move(value)), custom_renderer(custom_renderer) {}
+            : custom_renderer(custom_renderer), label(std::move(label)), value(std::move(value)) {}
     }; // class row final
     
     ImFont* bold_font;

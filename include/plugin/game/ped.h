@@ -24,13 +24,14 @@
 #include "plugin/game/weapon.h"
 #include "plugin/types/address.h"
 #include "plugin/types/simple.h"
+#include "plugin/types/signatures.h"
 
 namespace plugin {
 namespace signatures {
 
-using teleport = void(__thiscall*)(std::uintptr_t, types::vector_3d, bool);
-using get_bone_position = void(__thiscall*)(std::uintptr_t, types::vector_3d*, int, bool);
-using task_process_ped = bool(__thiscall*)(std::uintptr_t, std::uintptr_t);
+using teleport = types::signatures::thiscall_t<void, std::uintptr_t, types::vector_3d, bool>;
+using get_bone_position = types::signatures::thiscall_t<void, std::uintptr_t, types::vector_3d*, int, bool>;
+using task_process_ped = types::signatures::thiscall_t<bool, std::uintptr_t, std::uintptr_t>;
 
 } // namespace signatures
 

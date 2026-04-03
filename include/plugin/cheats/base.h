@@ -44,12 +44,12 @@ public:
     /// Register any hotkeys used in the cheat.
     /// 
     /// @param handler[in] Pointer to the hotkey handler.
-    virtual auto register_hotkeys(types::not_null<gui::hotkey_handler*> handler) -> void {}
+    virtual auto register_hotkeys([[maybe_unused]] types::not_null<gui::hotkey_handler*> handler) -> void {}
 
     /// Render cheat-specific GUI elements. Must be called each frame.
     /// 
     /// @param child[in] Valid GUI initializer pointer.
-    virtual auto render(types::not_null<gui_initializer*> child) -> void {}
+    virtual auto render([[maybe_unused]] types::not_null<gui_initializer*> child) -> void {}
     
     /// Main loop for the cheat.
     virtual auto main_loop() -> void {}
@@ -57,20 +57,25 @@ public:
     /// Process user's new state of the `/alogin`.
     ///
     /// @param state[in] New user's state of the /alogin.
-    virtual auto on_alogin_new_state(bool state) -> void {}
+    virtual auto on_alogin_new_state([[maybe_unused]] bool state) -> void {}
 
     /// Process SA:MP event.
     /// 
     /// @param event[in] SA-MP event information.
     /// @return          Whether the event should continue processing.
-    virtual auto on_event(const samp::event_info& event) -> bool { return true; }
+    virtual auto on_event([[maybe_unused]] const samp::event_info& event) -> bool { return true; }
 
     /// Process window's message.
     ///
     /// @param message[in]            Message ID.
     /// @param wparam[in], lparam[in] Message parameters.
     /// @return                       Whether the message should continue processing.
-    virtual auto on_event(unsigned int message, WPARAM wparam, LPARAM lparam) -> bool { return true; }
+    virtual auto on_event([[maybe_unused]] unsigned int message,
+                          [[maybe_unused]] WPARAM wparam,
+                          [[maybe_unused]] LPARAM lparam) -> bool
+    {
+        return true;
+    }
 }; // class basic_cheat
 
 /// RAII pointer to the cheat.

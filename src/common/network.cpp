@@ -37,8 +37,8 @@ auto common::internet_t::read_file(read_file_callback_t callback) const -> bool 
 }
 
 common::internet_t::internet_t(const std::string_view& link, std::stop_token stop_token)
-    : handle(InternetOpen(nullptr, INTERNET_OPEN_TYPE_DIRECT, nullptr, nullptr, 0)),
-      stop_token(stop_token)
+    : stop_token(stop_token),
+      handle(InternetOpen(nullptr, INTERNET_OPEN_TYPE_DIRECT, nullptr, nullptr, 0))
 {
     if (!handle) {
         valid = false;

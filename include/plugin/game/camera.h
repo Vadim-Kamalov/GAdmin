@@ -21,13 +21,14 @@
 
 #include "plugin/types/simple.h"
 #include "plugin/types/address.h"
+#include "plugin/types/signatures.h"
 #include <cstdint>
 
 namespace plugin {
 namespace signatures {
 
-using lerp_fov = void(__thiscall*)(std::uintptr_t, float, float, float, bool);
-using find_fov = float(__thiscall*)(std::uintptr_t);
+using lerp_fov = types::signatures::thiscall_t<void, std::uintptr_t, float, float, float, bool>;
+using find_fov = types::signatures::thiscall_t<float, std::uintptr_t>;
 
 } // namespace signatures
 

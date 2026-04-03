@@ -19,10 +19,14 @@
 #include "plugin/plugin.h"
 #include "plugin/game/game.h"
 #include <d3d9types.h>
-#include <kthook/kthook.hpp>
 #include <backends/imgui_impl_dx9.h>
 #include <backends/imgui_impl_win32.h>
 #include <imgui.h>
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wreorder"
+#include <kthook/kthook.hpp>
+#pragma GCC diagnostic pop
 
 using game_loop_t = void(__cdecl*)();
 using d3d9_present_t = HRESULT(__stdcall*)(IDirect3DDevice9*, const RECT*, const RECT*, HWND, const RGNDATA*);

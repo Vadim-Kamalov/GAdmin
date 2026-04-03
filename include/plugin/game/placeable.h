@@ -21,13 +21,14 @@
 
 #include "plugin/game/entity.h"
 #include "plugin/types/address.h"
+#include "plugin/types/signatures.h"
 #include <numbers>
 
 namespace plugin {
 namespace signatures {
 
-using get_placeable_rotation = float(__thiscall*)(std::uintptr_t);
-using set_placeable_heading = void(__thiscall*)(std::uintptr_t, float);
+using get_placeable_rotation = types::signatures::thiscall_t<float, std::uintptr_t>;
+using set_placeable_heading = types::signatures::thiscall_t<void, std::uintptr_t, float>;
 
 } // namespace signatures
 

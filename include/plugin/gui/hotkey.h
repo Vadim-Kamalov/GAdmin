@@ -73,14 +73,14 @@ public:
     ///
     /// Both left and right-hand variations of the modifiers are prohibited.
     struct raw_modifiers {
-        std::uint8_t internal_first_key_down : 1;  ///< Internal data.
-        std::uint8_t internal_second_key_down : 1; ///< Internal data.
-        std::uint8_t uses_right_hand_shift : 1;    ///< Whether shift key is right-handed.
-        std::uint8_t shift : 1;                    ///< Uses shift key.
-        std::uint8_t uses_right_hand_control : 1;  ///< Whether control key is right-handed.
-        std::uint8_t control : 1;                  ///< Uses control key.
-        std::uint8_t uses_right_hand_alt : 1;      ///< Whether alt key is right-handed.
-        std::uint8_t alt : 1;                      ///< Uses alt key.
+        std::uint8_t internal_first_key_down : 1 = 0;  ///< Internal data.
+        std::uint8_t internal_second_key_down : 1 = 0; ///< Internal data.
+        std::uint8_t uses_right_hand_shift : 1 = 0;    ///< Whether shift key is right-handed.
+        std::uint8_t shift : 1 = 0;                    ///< Uses shift key.
+        std::uint8_t uses_right_hand_control : 1 = 0;  ///< Whether control key is right-handed.
+        std::uint8_t control : 1 = 0;                  ///< Uses control key.
+        std::uint8_t uses_right_hand_alt : 1 = 0;      ///< Whether alt key is right-handed.
+        std::uint8_t alt : 1 = 0;                      ///< Uses alt key.
     }; // struct raw_modifiers
 
     /// Wrapper for the `raw_modifiers` bit-field with
@@ -161,14 +161,14 @@ public:
     /// @param keys[in]      Key pair to use.
     /// @param modifiers[in] Raw modifiers to use.
     constexpr explicit key_bind(const keys_t& keys, const raw_modifiers& modifiers)
-        : keys(keys), modifiers(modifiers) {}
+        : modifiers(modifiers), keys(keys) {}
 
     /// Construct from key pair and conditions.
     ///
     /// @param keys[in]       Key pair to use.
     /// @param conditions[in] Activation conditions.
     constexpr explicit key_bind(const keys_t& keys, const types::options<bind_condition>& conditions)
-        : keys(keys), conditions(conditions) {}
+        : conditions(conditions), keys(keys) {}
 
     /// Construct from key pair, modifiers, and conditions.
     ///
@@ -177,7 +177,7 @@ public:
     /// @param conditions[in] Activation conditions.
     constexpr explicit key_bind(const keys_t& keys, const raw_modifiers& modifiers,
                                 const types::options<bind_condition>& conditions)
-        : keys(keys), conditions(conditions), modifiers(modifiers) {}
+        : conditions(conditions), modifiers(modifiers), keys(keys) {}
 
     /// Default constructor.
     constexpr key_bind() = default;

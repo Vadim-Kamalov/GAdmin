@@ -22,11 +22,12 @@
 #include <cstdint>
 #include "plugin/types/address.h"
 #include "plugin/types/simple.h"
+#include "plugin/types/signatures.h"
 
 namespace plugin {
 namespace signatures {
 
-using play_sound_t = void(__thiscall*)(std::uintptr_t, int, types::vector_3d);
+using play_sound_t = types::signatures::thiscall_t<void, std::uintptr_t, int, types::vector_3d>;
 
 } // namespace signatures
 

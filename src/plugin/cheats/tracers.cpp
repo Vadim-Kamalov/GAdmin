@@ -66,7 +66,7 @@ auto plugin::cheats::tracers::on_event(const samp::event_info& event) -> bool {
     return true;
 }
 
-auto plugin::cheats::tracers::render(types::not_null<gui_initializer*> child) -> void {
+auto plugin::cheats::tracers::render(types::not_null<gui_initializer*>) -> void {
     if (current_tracers.empty() || game::is_menu_opened())
         return;
 

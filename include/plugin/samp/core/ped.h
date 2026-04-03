@@ -22,11 +22,12 @@
 #include "plugin/game/ped.h"
 #include "plugin/game/weapon.h"
 #include "plugin/samp/core/entity.h"
+#include "plugin/types/signatures.h"
 
 namespace plugin {
 namespace signatures {
 
-using get_current_weapon_t = char(__thiscall*)(std::uintptr_t);
+using get_current_weapon_t = types::signatures::thiscall_t<char, std::uintptr_t>;
 
 } // namespace signatures
 

@@ -51,7 +51,6 @@ auto plugin::gui::windows::far_chat::on_player_chat_bubble(const samp::event<sam
     if (!player || is_duplicate_entry(event.message, event.player_id, std::chrono::milliseconds(duplicates_delay_ms)))
         return true;
 
-    bool show_time = window_configuration["show_time"];
     std::size_t max_count = window_configuration["max_count"];
 
     entry_t entry = {

@@ -40,7 +40,7 @@ auto plugin::cheats::clickwarp::on_alogin_new_state(bool state) -> void {
     stop_selecting_place();
 }
 
-auto plugin::cheats::clickwarp::on_event(unsigned int message, WPARAM wparam, LPARAM lparam) -> bool {
+auto plugin::cheats::clickwarp::on_event(unsigned int message, WPARAM, LPARAM) -> bool {
     if (gui == nullptr)
         return true;
 

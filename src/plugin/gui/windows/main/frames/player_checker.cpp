@@ -137,7 +137,7 @@ auto plugin::gui::windows::main::frames::player_checker::render_right_group(floa
                 added_player_t& player = added_players[i];
                 std::string label = std::format("{}##{}", player.nickname, i);
 
-                if (!ImGui::Selectable(label.c_str(), selected_player_index == i))
+                if (!ImGui::Selectable(label.c_str(), selected_player_index == static_cast<std::size_t>(i)))
                     continue;
 
                 selected_player_index = i;

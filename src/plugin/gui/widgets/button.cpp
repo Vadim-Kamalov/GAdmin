@@ -111,8 +111,8 @@ auto plugin::gui::widgets::button::render() -> bool {
 }
 
 plugin::gui::widgets::button::button(const std::string_view& new_label)
-    : label(std::move(new_label)),
-      id(std::move(new_label))
+    : id(std::move(new_label)),
+      label(std::move(new_label))
 {
     ImVec2 text_size = ImGui::CalcTextSize(label.c_str(), nullptr, true);
     ImVec2 frame_padding = ImGui::GetStyle().FramePadding;

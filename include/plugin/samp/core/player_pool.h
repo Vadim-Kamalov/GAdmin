@@ -22,6 +22,7 @@
 #include "plugin/samp/core/remote_player.h"
 #include "plugin/types/address.h"
 #include "plugin/types/simple.h"
+#include "plugin/types/signatures.h"
 #include <cstdint>
 #include <string>
 #include <expected>
@@ -29,11 +30,11 @@
 namespace plugin {
 namespace signatures {
 
-using get_player_pool_t = std::uintptr_t(__thiscall*)(std::uintptr_t);
-using get_nickname_t = types::zstring_t(__thiscall*)(std::uintptr_t, std::uint16_t);
-using get_remote_player_t = std::uintptr_t(__thiscall*)(std::uintptr_t, std::uint16_t);
-using is_connected_t = bool(__thiscall*)(std::uintptr_t, std::uint16_t);
-using get_ping_t = std::int32_t(__thiscall*)(std::uintptr_t, std::uint16_t);
+using get_player_pool_t = types::signatures::thiscall_t<std::uintptr_t, std::uintptr_t>;
+using get_nickname_t = types::signatures::thiscall_t<types::zstring_t, std::uintptr_t, std::uint16_t>;
+using get_remote_player_t = types::signatures::thiscall_t<std::uintptr_t, std::uintptr_t, std::uint16_t>;
+using is_connected_t = types::signatures::thiscall_t<bool, std::uintptr_t, std::uint16_t>;
+using get_ping_t = types::signatures::thiscall_t<std::int32_t, std::uintptr_t, std::uint16_t>;
 
 } // namespace signatures
 

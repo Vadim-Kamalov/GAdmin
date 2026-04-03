@@ -96,7 +96,7 @@ auto plugin::server::admins::on_set_player_name(const samp::event<samp::event_id
     return true;
 }
 
-auto plugin::server::admins::on_continuous_text_callback(const std::string_view& text, const types::color& color)
+auto plugin::server::admins::on_continuous_text_callback(const std::string_view& text, const types::color&)
     -> void
 {
     static constexpr ctll::fixed_string authorization_pattern = 

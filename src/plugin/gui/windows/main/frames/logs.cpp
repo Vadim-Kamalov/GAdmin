@@ -28,56 +28,66 @@
 
 std::map<plugin::gui::windows::main::frames::logs::log_type_t, plugin::gui::windows::main::frames::logs::log_group>
 plugin::gui::windows::main::frames::logs::log_groups = {
-    { log_type_t::administration_chat, { "Чат администрации", log_group::conditions_t {
+    { log_type_t::administration_chat, log_group("Чат администрации", log_group::conditions_t {
         .start = { "[A] " },
         .colors = { 0xFF00C281 },
         .callback = [](const std::string& text, const types::color& color) -> bool {
             static constexpr ctll::fixed_string pattern = R"(^\[A\d\] \S+\[\d+\]: )";
             return color == 0xFF00C281 && (text.starts_with("[A] ") || !!ctre::search<pattern>(text));
         }
-    }}},
+    }) },
     
-    { log_type_t::reports, { "Репорты и ответы", log_group::conditions_t {
+    { log_type_t::reports, log_group("Репорты и ответы", log_group::conditions_t {
+        .start = {},
+        .colors = {},
         .callback = [](const std::string& text, const types::color& color) -> bool {
             return text.starts_with("[A] Жалоба от ") || text.starts_with("[A] Вопрос от ")
                 || (text.starts_with("[A]" ) && color == 0xAA4599FF);
         }
-    }}},
+    }) },
 
-    { log_type_t::actions, { "Все действия", log_group::conditions_t {
+    { log_type_t::actions, log_group("Все действия", log_group::conditions_t {
         .start = { "[A] ", "[GBUY] " },
-        .colors = { 0xAAAFAFAF, 0xAA32CD9A, 0xAA00FFFF }
-    }}},
+        .colors = { 0xAAAFAFAF, 0xAA32CD9A, 0xAA00FFFF },
+        .callback = {}    
+    }) },
 
-    { log_type_t::puhishments, { "Наказания", log_group::conditions_t {
+    { log_type_t::puhishments, log_group("Наказания", log_group::conditions_t {
         .start = { "Администратор " },
-        .colors = { 0xAA4763FF }
-    }}},
+        .colors = { 0xAA4763FF },
+        .callback = {}
+    }) },
 
-    { log_type_t::ic_chat, { "IC чат", log_group::conditions_t {
+    { log_type_t::ic_chat, log_group("IC чат", log_group::conditions_t {
+        .start = {},
+        .colors = {},
         .callback = [](const std::string& text, const types::color& color) -> bool {
             static constexpr ctll::fixed_string pattern = R"(^(\w+(?: \w+)*) (?:.+?) (говорит|шепчет|кричит):)";
             return color == 0xFF8054E7 || !!types::u8regex::search<pattern>(text);
         }
-    }}},
+    }) },
 
-    { log_type_t::ooc_chat, { "OOC чат", log_group::conditions_t {
-        .callback = [](const std::string& text, const types::color& color) -> bool {
+    { log_type_t::ooc_chat, log_group("OOC чат", log_group::conditions_t {
+        .start = {},
+        .colors = {},
+        .callback = [](const std::string& text, const types::color&) -> bool {
             static constexpr ctll::fixed_string pattern = R"(\(\( \w+ .+\[\d+\]: .* \)\))";
             return !!ctre::match<pattern>(text);
         }
-    }}},
+    }) },
 
-    { log_type_t::kills, { "Убийства" }},
-    { log_type_t::connections_disconnections, { "Входы/выходы" }},
-    { log_type_t::other, { "Прочее" }}
+    { log_type_t::kills, log_group("Убийства") },
+    { log_type_t::connections_disconnections, log_group("Входы/выходы") },
+    { log_type_t::other, log_group("Прочее") }
 }; // std::map<plugin::gui::windows::main::frames::logs::log_type_t, plugin::gui::windows::main::frames::logs::log_group>
 
 auto plugin::gui::windows::main::frames::logs::on_server_connect(const samp::event<samp::event_id::server_connect>& event)
     -> bool
 {
-    log_groups[log_type_t::connections_disconnections].messages.emplace_back(std::format("{}[{}] подключился к серверу.",
-                                                                                         event.nickname, event.id));
+    auto& messages = log_groups[log_type_t::connections_disconnections].messages;
+    auto message = std::format("{}[{}] подключился к серверу.", event.nickname, event.id);
+
+    messages.push_back(log_group::message(message));
 
     return true;
 }

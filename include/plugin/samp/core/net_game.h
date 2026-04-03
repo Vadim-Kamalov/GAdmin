@@ -22,12 +22,13 @@
 #include "plugin/samp/core/server_settings.h"
 #include "plugin/types/address.h"
 #include "plugin/types/simple.h"
+#include "plugin/types/signatures.h"
 #include <cstdint>
 
 namespace plugin {
 namespace signatures {
 
-using update_players_t = void(__thiscall*)(std::uintptr_t);
+using update_players_t = types::signatures::thiscall_t<void, std::uintptr_t>;
 
 } // namespace signatures
 

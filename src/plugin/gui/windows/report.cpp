@@ -70,7 +70,7 @@ auto plugin::gui::windows::report::get_action_buttons() -> std::array<action_but
     output[5] = { widgets::button("Передать репорт" + id, corner_button_size),
                   std::bind(&report::send_response, this, dialog_option::return_to_administration) };
 
-    for (int i = 6; i < output.size(); i++) {
+    for (std::size_t i = 6; i < output.size(); i++) {
         insert_button button = window_configuration["insert_buttons"][i - 6];
         ImVec2 button_size = (i == 7 || i == 10) ? middle_button_size : corner_button_size;
 
@@ -267,7 +267,7 @@ auto plugin::gui::windows::report::switch_window() -> void {
 
 auto plugin::gui::windows::report::try_handle_report_searching(const std::string& text) -> bool {
     if ((!searching_reports && !current_report.has_value()) &&
-        text.starts_with("[H] Репорт от ") || text.starts_with("[A] Репорт от "))
+        (text.starts_with("[H] Репорт от ") || text.starts_with("[A] Репорт от ")))
     {
         auto& window_configuration = (*configuration)["windows"]["report"];
 
@@ -280,8 +280,8 @@ auto plugin::gui::windows::report::try_handle_report_searching(const std::string
             notification_active = true;
 
             std::string description = std::format("Для принятия введите /reports или нажмите на {}.", try_accept_last_report_hotkey.bind);
-            notification::button first_button = { "Принять", [this](auto& it) { try_accept_last_report(); it.remove(); }};
-            notification::button second_button = { "Закрыть", [](auto& it) { it.remove(); }}; 
+            notification::button first_button("Принять", [this](auto& it) { try_accept_last_report(); it.remove(); });
+            notification::button second_button("Закрыть", [](auto& it) { it.remove(); });
 
             notify::send(notification("Пришел новый репорт!", description, ICON_USER02)
                     .with_buttons(first_button, second_button)
@@ -539,7 +539,7 @@ auto plugin::gui::windows::report::on_event(const samp::event_info& event) -> bo
     return true;
 }
 
-auto plugin::gui::windows::report::on_event(unsigned int message, WPARAM wparam, LPARAM lparam) -> bool {
+auto plugin::gui::windows::report::on_event(unsigned int message, WPARAM wparam, LPARAM) -> bool {
     if (message == WM_KEYUP && wparam == VK_ESCAPE && active) {
         close_window();
         return false;

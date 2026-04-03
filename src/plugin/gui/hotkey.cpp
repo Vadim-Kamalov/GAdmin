@@ -329,7 +329,7 @@ auto plugin::gui::hotkey_handler::main_loop() -> void {
     write_current_modifiers();
 }
 
-auto plugin::gui::hotkey_handler::on_event(unsigned int message, WPARAM wparam, LPARAM lparam) -> bool {
+auto plugin::gui::hotkey_handler::on_event(unsigned int message, WPARAM wparam, LPARAM) -> bool {
     if (wparam == 0)
         return true;
 

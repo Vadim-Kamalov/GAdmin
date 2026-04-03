@@ -21,6 +21,7 @@
 
 #include "plugin/samp/core/vehicle.h"
 #include "plugin/types/address.h"
+#include "plugin/types/signatures.h"
 #include <cstdint>
 #include <deque>
 #include <expected>
@@ -28,7 +29,7 @@
 namespace plugin {
 namespace signatures {
 
-using get_vehicle_pool_t = std::uintptr_t(__thiscall*)(std::uintptr_t);
+using get_vehicle_pool_t = types::signatures::thiscall_t<std::uintptr_t, std::uintptr_t>;
 
 } // namespace signatures
 

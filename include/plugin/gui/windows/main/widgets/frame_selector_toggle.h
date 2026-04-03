@@ -66,7 +66,7 @@ public:
     ///
     /// @param frame_selector[in] Parent frame selector instance.
     explicit frame_selector_toggle(types::not_null<frame_selector*> frame_selector)
-        : child(frame_selector), icon_font(frame_selector->child->child->fonts->icon) {}
+        : icon_font(frame_selector->child->child->fonts->icon), child(frame_selector) {}
 }; // class frame_selector_toggle final : public types::singleton<frame_selector_toggle>
 
 } // namespace plugin::gui::windows::main::widgets

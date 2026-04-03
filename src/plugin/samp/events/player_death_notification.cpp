@@ -48,8 +48,12 @@ auto plugin::samp::event<plugin::samp::event_id::player_death_notification>::get
         case special_reason_explosion: return "Explosion";
         case special_reason_drowned: return "Drowned";
         case special_reason_suicide: return "Suicide";
-        case 0 ... 18: case 22 ... 46: return game::weapon_names[reason];
-        default: return "Unknown";
+        default: {
+            if ((reason <= 18) || (reason >= 22 && reason <= 46))
+                return game::weapon_names[reason];
+
+            return "Unknown";
+        }
     }
 }
 

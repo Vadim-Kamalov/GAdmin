@@ -84,7 +84,7 @@ private:
     
     struct dialog_response final {
         dialog_option option;
-        std::optional<std::string> message;
+        std::optional<std::string> message = {};
         std::uint8_t block_time = 0;
     }; // struct dialog_response final
 

@@ -22,16 +22,17 @@
 #include "plugin/string_utils.h"
 #include "plugin/types/address.h"
 #include "plugin/types/simple.h"
+#include "plugin/types/signatures.h"
 #include <format>
 
 namespace plugin {
 namespace signatures {
 
-using send_command_t = void(__thiscall*)(std::uintptr_t, types::zstring_t);
-using get_text_t = types::zstring_t(__thiscall*)(std::uintptr_t);
-using set_text_t = void(__thiscall*)(std::uintptr_t, types::zstring_t, bool);
-using open_t = void(__thiscall*)(std::uintptr_t);
-using process_input_t = void(__thiscall*)(std::uintptr_t);
+using send_command_t = types::signatures::thiscall_t<void, std::uintptr_t, types::zstring_t>;
+using get_text_t = types::signatures::thiscall_t<types::zstring_t, std::uintptr_t>;
+using set_text_t = types::signatures::thiscall_t<void, std::uintptr_t, types::zstring_t, bool>;
+using open_t = types::signatures::thiscall_t<void, std::uintptr_t>;
+using process_input_t = types::signatures::thiscall_t<void, std::uintptr_t>;
 
 } // namespace signatures
 

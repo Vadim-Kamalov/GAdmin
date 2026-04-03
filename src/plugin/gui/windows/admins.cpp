@@ -52,7 +52,11 @@ auto plugin::gui::windows::admins::get_window_information() const -> window_info
     }
 
     for (const auto& admin : admins) {
-        entry_t entry = { .color = ImGui::GetColorU32(ImGuiCol_Text), .text = admin.nickname };
+        entry_t entry = {
+            .color = ImGui::GetColorU32(ImGuiCol_Text),
+            .text = admin.nickname,
+            .aligner = widgets::aligner()
+        };
 
         if (show_level)
             entry.text = std::format("[LVL: {}] {}", admin.level, admin.nickname);

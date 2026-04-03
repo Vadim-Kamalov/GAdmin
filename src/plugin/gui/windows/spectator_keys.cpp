@@ -64,6 +64,7 @@ auto plugin::gui::windows::spectator_keys::get_keycaps(const samp::synchronizati
                         make_keycap<synchronization_key::h>()
                     };
             }
+            break;
         }
 
         case spectator::platform_t::mobile: {
@@ -86,7 +87,8 @@ auto plugin::gui::windows::spectator_keys::get_keycaps(const samp::synchronizati
                         make_keycap<synchronization_key::braking>({ 65, keycap_height }),
                         make_keycap<synchronization_key::f>()
                     };
-            }
+            }    
+            break;
         }
 
         case spectator::platform_t::none:

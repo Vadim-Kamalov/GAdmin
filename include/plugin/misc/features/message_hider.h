@@ -40,8 +40,8 @@ namespace plugin::misc::features {
 class message_hider final : public feature {
 private:
     struct text_to_find final {
-        std::string start;
-        std::optional<std::string> continuation;
+        std::string start = "";
+        std::optional<std::string> continuation = {};
         bool skip_nickname_after_start = false;
     }; // struct text_to_find final
     

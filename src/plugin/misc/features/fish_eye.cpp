@@ -6,7 +6,7 @@
 #include "plugin/plugin.h"
 #include <windows.h>
 
-auto plugin::misc::features::fish_eye::on_event(unsigned int message, WPARAM wparam, LPARAM lparam) -> bool {
+auto plugin::misc::features::fish_eye::on_event(unsigned int message, WPARAM wparam, LPARAM) -> bool {
     if (message != WM_MOUSEWHEEL)
         return true;
 

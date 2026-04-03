@@ -71,12 +71,20 @@ private:
 
             std::deque<std::string> start;
             std::deque<types::color> colors;
-            std::optional<callback_t> callback;
+            std::optional<callback_t> callback; 
         }; // struct conditions_t final
 
-        std::string title;
-        std::optional<conditions_t> conditions;
-        std::deque<message> messages;
+        std::string title = "";
+        std::optional<conditions_t> conditions = {};
+        std::deque<message> messages = {};
+
+        explicit log_group(const std::string_view& title)
+            : title(std::move(title)) {}
+        
+        explicit log_group(const std::string_view& title, const conditions_t& conditions)
+            : title(std::move(title)), conditions(std::move(conditions)) {}
+    
+        log_group() = default;
     }; // struct log_group final
     
     static std::map<log_type_t, log_group> log_groups;

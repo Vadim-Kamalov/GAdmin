@@ -50,11 +50,9 @@ auto plugin::game::camera::screen_to_coordinates(float x, float y, float depth)
     noexcept -> types::vector_3d
 {
     alignas(16) D3DXMATRIX view_proj_matrix;
-    alignas(16) D3DXMATRIX inv_matrix;
+    alignas(16) D3DXMATRIX inv_matrix = { 0 };
 
     std::memcpy(&view_proj_matrix, reinterpret_cast<char*>(0xB6FA2C), sizeof(D3DXMATRIX));
-    std::memset(&inv_matrix, 0, sizeof(D3DXMATRIX));
-
     view_proj_matrix._44 = 1.0f;
 
     D3DXMatrixInverse(&inv_matrix, nullptr, &view_proj_matrix);

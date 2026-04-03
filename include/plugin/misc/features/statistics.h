@@ -125,8 +125,8 @@ public:
 
     /// Represents a date associated with entries in the statistics.
     struct date_entry_t final {
-        date_t date;       ///< Date when the entries are valid.
-        entries_t entries; ///< Entries for this date.
+        date_t date;            ///< Date when the entries are valid.
+        entries_t entries = {}; ///< Entries for this date.
 
         /// Increment value in the entries for a specific `entry_type` and range.
         ///

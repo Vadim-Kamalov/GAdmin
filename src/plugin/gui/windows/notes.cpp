@@ -24,22 +24,25 @@
 #include <ranges>
 
 auto plugin::gui::windows::notes::get_note_information(const note_t& note) const -> note_information_t {
-    note_information_t information = { .processed_text = server::binder::process(note.text) };
-    
+    std::string processed_text = server::binder::process(note.text);
+
     float title_width = bold_font->CalcTextSizeA(note.title_size, FLT_MAX, 0.0f, note.title.c_str()).x
         + text_border_size * 2;
 
-    float text_width = regular_font->CalcTextSizeA(note.text_size, FLT_MAX, 0.0f, information.processed_text.c_str()).x
+    float text_width = regular_font->CalcTextSizeA(note.text_size, FLT_MAX, 0.0f, processed_text.c_str()).x
         + text_border_size * 2;
 
-    information.width = title_width;
+    note_information_t information = {
+        .width = title_width,
+        .processed_text = processed_text,
+        .title_aligner = widgets::aligner(note.align_mode, title_width),
+        .align_mode = note.align_mode
+    };
 
     if (information.width < text_width)
         information.width = text_width;
 
     information.width += ImGui::GetStyle().WindowPadding.x * 2;
-    information.title_aligner = widgets::aligner(note.align_mode, title_width);
-    information.align_mode = note.align_mode;
 
     return information;
 }

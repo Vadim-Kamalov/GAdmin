@@ -64,7 +64,8 @@ auto plugin::gui::widgets::text(ImFont* font, float font_size, std::uint8_t bord
         .text = std::format(fmt, std::forward<Args>(args)...).c_str(),
         .border_size = border_size,
         .font = font,
-        .font_size = font_size
+        .font_size = font_size,
+        .colors = basic_text::colors_t {}
     }.render();
 }
 

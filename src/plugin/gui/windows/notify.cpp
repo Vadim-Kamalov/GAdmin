@@ -167,7 +167,7 @@ auto plugin::gui::windows::notify::render() -> void {
                     float new_height = (gui::notify::notifications_count() - 1) * (notification_size[1] + padding); 
                     auto new_time = time + it->backend->open_close_duration;
 
-                    height = animation::bring_to(height, new_height, time + it->backend->open_close_duration, it->backend->drop_duration);
+                    height = animation::bring_to(height, new_height, new_time, it->backend->drop_duration);
                     
                     if (height == new_height) {
                         it = static_cast<decltype(it)>(notifications.erase(std::next(it).base()));

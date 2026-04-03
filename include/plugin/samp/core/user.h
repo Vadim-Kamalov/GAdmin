@@ -27,13 +27,14 @@
 #include "plugin/types/address.h"
 #include "plugin/types/color.h"
 #include "plugin/types/simple.h"
+#include "plugin/types/signatures.h"
 
 namespace plugin {
 namespace signatures {
 
-using get_local_player_ping_t = int(__thiscall*)(std::uintptr_t);
-using local_player_chat_t = void(__thiscall*)(std::uintptr_t, types::zstring_t);
-using get_local_player_color_as_argb = std::uint32_t(__thiscall*)(std::uintptr_t);
+using get_local_player_ping_t = types::signatures::thiscall_t<int, std::uintptr_t>;
+using local_player_chat_t = types::signatures::thiscall_t<void, std::uintptr_t, types::zstring_t>;
+using get_local_player_color_as_argb = types::signatures::thiscall_t<std::uint32_t, std::uintptr_t>;
 
 } // namespace signatures
 

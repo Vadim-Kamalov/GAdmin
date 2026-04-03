@@ -74,8 +74,8 @@ private:
             bool sound_notify : 1 = false;
         } configuration;
 
-        std::string nickname;
-        std::uint16_t id;
+        std::string nickname = "";
+        std::uint16_t id = 0xFFFF;
     }; // struct state_notification_t final
 
     ImFont* bold_font = nullptr;

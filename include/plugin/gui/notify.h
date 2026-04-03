@@ -60,6 +60,9 @@ public:
         std::string name;                 ///< Button name.
         button_callback_t callback;       ///< Button callback function executed on click.
         std::optional<backend_t> backend; ///< Button optional backend parameters.
+    
+        explicit button(const std::string_view& name, button_callback_t&& callback)
+            : name(std::move(name)), callback(std::move(callback)) {}
     }; // struct button final
 
     /// Notification backend information.
@@ -121,8 +124,8 @@ public:
     notification(const std::string_view& title, const std::string_view& description, icon_t icon)
         : title(std::move(title)),
           description(std::move(description)),
-          icon(icon),
-          time_sent(std::chrono::steady_clock::now()) {}
+          time_sent(std::chrono::steady_clock::now()),
+          icon(icon) {}
 }; // class notification final
 
 /// Notification initialization and management class.

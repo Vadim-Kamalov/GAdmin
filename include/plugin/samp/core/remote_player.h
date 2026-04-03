@@ -23,11 +23,12 @@
 #include "plugin/samp/core/vehicle.h"
 #include "plugin/types/address.h"
 #include "plugin/types/color.h"
+#include "plugin/types/signatures.h"
 
 namespace plugin {
 namespace signatures {
 
-using get_color_as_argb = std::uint32_t(__thiscall*)(std::uintptr_t);
+using get_color_as_argb = types::signatures::thiscall_t<std::uint32_t, std::uintptr_t>;
 
 } // namespace signatures
 

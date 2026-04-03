@@ -22,6 +22,7 @@
 #include "plugin/samp/events/event.h"
 #include "plugin/types/address.h"
 #include "plugin/types/simple.h"
+#include "plugin/types/signatures.h"
 #include "raknet/rak_client.h"
 #include <chrono>
 #include <kthook/kthook.hpp>
@@ -30,12 +31,12 @@
 namespace plugin {
 namespace signatures {
 
-using rak_client_interface_constructor_t = std::uintptr_t(*)();
-using incoming_rpc_handler_t = bool(__thiscall*)(void*, types::zstring_t, int, PlayerID);
-using outgoing_packet_handler_t = bool(__thiscall*)(void*, BitStream*, PacketPriority, PacketReliability, char);
-using incoming_packet_handler_t = Packet*(__thiscall*)(void*);
-using outgoing_rpc_handler_t = bool(__thiscall*)(void*, int*, BitStream*, PacketPriority, PacketReliability, char, bool);
-using dealocate_packet_t = void(__thiscall*)(void*, Packet*);
+using rak_client_interface_constructor_t = types::signatures::cdecl_t<std::uintptr_t>;
+using incoming_rpc_handler_t = types::signatures::thiscall_t<bool, void*, types::zstring_t, int, PlayerID>;
+using outgoing_packet_handler_t = types::signatures::thiscall_t<bool, void*, BitStream*, PacketPriority, PacketReliability, char>;
+using incoming_packet_handler_t = types::signatures::thiscall_t<Packet*, void*>;
+using outgoing_rpc_handler_t = types::signatures::thiscall_t<bool, void*, int*, BitStream*, PacketPriority, PacketReliability, char, bool>;
+using dealocate_packet_t = types::signatures::thiscall_t<void, void*, Packet*>;
 
 } // namespace signatures
 
@@ -48,7 +49,7 @@ public:
     /// Callback function for receiving events.
     using callback_t = std::function<bool(const event_info&)>;
 private:
-    static constexpr std::uint32_t max_alloca_stack_allocation = 0x100000;
+    static constexpr int max_alloca_stack_allocation = 0x100000;
     static constexpr std::uint8_t timestamp_rpc_id = 40;
 
     static types::versioned_address_container<std::uintptr_t> rak_client_interface_constructor_container;

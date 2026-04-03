@@ -23,14 +23,19 @@
 #include "plugin/gui/fonts.h"
 #include "plugin/gui/hotkey.h"
 #include "plugin/types/address.h"
+#include "plugin/types/signatures.h"
 #include <minwindef.h>
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wreorder"
 #include <kthook/kthook.hpp>
+#pragma GCC diagnostic pop
 
 namespace plugin {
 namespace signatures {
 
-using input_handler_t = bool(__cdecl*)(unsigned int);
-using set_cursor_mode_t = int(__thiscall*)(std::uintptr_t, int, int);
+using input_handler_t = types::signatures::cdecl_t<bool, unsigned int>;
+using set_cursor_mode_t = types::signatures::thiscall_t<int, std::uintptr_t, int, int>;
 
 } // namespace signatures
 

@@ -118,6 +118,7 @@ auto plugin::gui::windows::kill_list::on_player_death_notification(const samp::e
 
     entry_t entry = {
         .left = player_t(left_player),
+        .right = {},
         .reason = notification.get_reason(),
         .time = (show_time) ? common_utils::get_current_timestamp() : ""
     };

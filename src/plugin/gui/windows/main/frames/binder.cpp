@@ -155,7 +155,12 @@ auto plugin::gui::windows::main::frames::binder::frame_renderer(std::string& lab
 }
 
 auto plugin::gui::windows::main::frames::binder::add_callback() -> void {
-    bind_t new_bind = { "##" + generate_uuid(), "Новый бинд" };
+    bind_t new_bind = {
+        .uuid = "##" + generate_uuid(),
+        .title = "Новый бинд",
+        .command_name = "",
+        .text = ""
+    };
 
     add_hotkey(new_bind.uuid);
     get_binds().push_back(new_bind);

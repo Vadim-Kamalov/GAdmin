@@ -182,8 +182,8 @@ auto plugin::gui::windows::command_requester::try_handle_new_request(const std::
                 std::string description = std::format("Команда: {}. Принять можно в течении 5 секунд биндом на {}",
                                                       command, approve_request_hotkey.bind);
 
-                notification::button first_button = { "Принять", [&](auto) { approve_request(); } };
-                notification::button second_button = { "Закрыть", [&](notification& it) { it.remove(); } };
+                notification::button first_button("Принять", [&](auto) { approve_request(); });
+                notification::button second_button("Закрыть", [&](notification& it) { it.remove(); });
 
                 gui::notify::send(notification("Запрос команды от " + sender_nickname, description, ICON_CHAT_CIRCLE_CHECK)
                         .with_buttons(first_button, second_button)

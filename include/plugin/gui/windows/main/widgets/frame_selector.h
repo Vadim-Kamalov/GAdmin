@@ -70,10 +70,10 @@ public:
     ///
     /// @param window[in] Valid pointer to the main window.
     explicit frame_selector(types::not_null<initializer*> window)
-        : child(window),
-          state_width({ compute_width_on_state(false), compute_width_on_state(true) }),
-          bold_font(window->child->fonts->bold),
-          regular_font(window->child->fonts->regular) {}
+        : bold_font(window->child->fonts->bold),
+          regular_font(window->child->fonts->regular),
+          child(window),
+          state_width({ compute_width_on_state(false), compute_width_on_state(true) }) {}
 }; // class frame_selector final : public types::singleton<frame_selector>
 
 } // namespace plugin::gui::windows::main::widgets

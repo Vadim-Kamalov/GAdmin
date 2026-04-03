@@ -23,19 +23,20 @@
 #include "raknet/rak_client.h"
 #include "plugin/types/simple.h"
 #include "plugin/types/address.h"
+#include "plugin/types/signatures.h"
 #include <string>
 #include <cstdint>
 
 namespace plugin {
 namespace signatures {
 
-using encoded_reader_t = bool(__thiscall*)(std::uintptr_t, char*, int, BitStream*, int);
-using encoded_writer_t = void(__thiscall*)(std::uintptr_t, types::zstring_t, int, BitStream*, int);
-using allocate_packet_t = Packet*(*)(int);
-using write_lock_t = Packet**(__thiscall*)(void*);
-using write_unlock_t = void(__thiscall*)(void*);
-using send_rpc_t = bool(__thiscall*)(std::uintptr_t, int*, BitStream*, PacketPriority, PacketReliability, char, bool);
-using send_packet_t = bool(__thiscall*)(std::uintptr_t, BitStream*, PacketPriority, PacketReliability, char);
+using encoded_reader_t = types::signatures::thiscall_t<bool, std::uintptr_t, char*, int, BitStream*, int>;
+using encoded_writer_t = types::signatures::thiscall_t<void, std::uintptr_t, types::zstring_t, int, BitStream*, int>;
+using allocate_packet_t = types::signatures::cdecl_t<Packet*, int>;
+using write_lock_t = types::signatures::thiscall_t<Packet**, void*>;
+using write_unlock_t = types::signatures::thiscall_t<void, void*>;
+using send_rpc_t = types::signatures::thiscall_t<bool, std::uintptr_t, int*, BitStream*, PacketPriority, PacketReliability, char, bool>;
+using send_packet_t = types::signatures::thiscall_t<bool, std::uintptr_t, BitStream*, PacketPriority, PacketReliability, char>;
 
 } // namespace signatures
 

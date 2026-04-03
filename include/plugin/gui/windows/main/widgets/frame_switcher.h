@@ -81,9 +81,9 @@ public:
     /// @param switch_frame[in]   Target frame to switch to.
     explicit frame_switcher(types::not_null<frame_selector*> frame_selector, const frame& switch_frame)
         : child(frame_selector),
-          switch_frame(switch_frame),
           icon_font(frame_selector->child->child->fonts->icon),
-          bold_font(frame_selector->child->child->fonts->bold) {}
+          bold_font(frame_selector->child->child->fonts->bold),
+          switch_frame(switch_frame) {}
 }; // class frame_switcher final
 
 } // namespace plugin::gui::windows::main::widgets

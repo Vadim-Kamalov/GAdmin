@@ -106,7 +106,7 @@ public:
     /// @param id[in]     Event's id.
     /// @param stream[in] Event's Bit Stream.
     explicit event_info(const event_type& type, std::uint8_t id, bit_stream* stream)
-        : type(type), id(id), stream(stream) {}
+        : stream(stream), type(type), id(id) {}
 }; // class event_info final
 
 } // namespace plugin::samp

@@ -23,12 +23,13 @@
 #include "plugin/types/address.h"
 #include "plugin/types/color.h"
 #include "plugin/types/simple.h"
+#include "plugin/types/signatures.h"
 #include <format>
 
 namespace plugin {
 namespace signatures {
 
-using add_message_t = void(__thiscall*)(std::uintptr_t, unsigned long, types::zstring_t);
+using add_message_t = types::signatures::thiscall_t<void, std::uintptr_t, unsigned long, types::zstring_t>;
 
 } // namespace signatures
 

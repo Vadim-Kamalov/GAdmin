@@ -83,8 +83,8 @@ auto plugin::configuration_initializer::save(std::chrono::milliseconds after) co
 }
 
 plugin::configuration_initializer::configuration_initializer(const std::filesystem::path& configuration_file)
-    : last_time_saved(std::chrono::steady_clock::now()),
-      configuration_file(configuration_file)
+    : configuration_file(configuration_file),
+      last_time_saved(std::chrono::steady_clock::now())
 {
 #ifdef USE_EMBEDDED_MESSAGE_PACK
     main_json = nlohmann::json::from_msgpack(configuration_bytes);

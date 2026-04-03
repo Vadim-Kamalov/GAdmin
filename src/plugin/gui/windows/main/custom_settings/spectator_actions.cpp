@@ -37,8 +37,6 @@ auto plugin::gui::windows::main::custom_settings::spectator_actions::render_line
         for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++) {
             std::string str_index = std::to_string(i);
             std::string item_name = setter[i]["name"];
-                
-            ImVec2 start_pos = ImGui::GetCursorScreenPos();
             ImVec2 button_size = { button_width, frame_height - button_border_size * button_count_on_line };
 
             auto up_button = widgets::button("Вверх##spectator_actions:" + str_index, button_size)
@@ -68,7 +66,7 @@ auto plugin::gui::windows::main::custom_settings::spectator_actions::render_line
 
                     ImGui::SameLine(0, button_border_size);
 
-                    if (down_button.render() && i + 1 < size)
+                    if (down_button.render() && i + 1ULL < size)
                         std::swap(setter[i], setter[i + 1]);
                     
                     ImGui::SameLine(0, button_border_size);

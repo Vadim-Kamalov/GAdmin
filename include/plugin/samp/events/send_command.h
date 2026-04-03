@@ -40,8 +40,8 @@ public:
     ///
     /// @param bit_stream[in] Bit stream with the event parameters.
     explicit event(bit_stream* stream)
-        : command(string_utils::to_utf8(stream->read_string<std::uint32_t>())),
-          stream(stream) {}
+        : stream(stream),
+          command(string_utils::to_utf8(stream->read_string<std::uint32_t>())) {}
 }; // class event<event_id::send_command, event_type::outgoing_rpc>
 
 } // namespace plugin::samp

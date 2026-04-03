@@ -74,7 +74,7 @@ static auto select_variable_callback(const std::vector<std::string>& params) noe
         return "";
 
     try {
-        int index = std::stoull(params[0]) - 1;
+        std::size_t index = std::stoull(params[0]) - 1;
 
         if (index >= binder::select_parameters.size())
             return "";

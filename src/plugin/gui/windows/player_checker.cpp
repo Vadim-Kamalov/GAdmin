@@ -86,7 +86,8 @@ auto plugin::gui::windows::player_checker::get_window_information() const -> win
             .nickname_color = (remote_player && clist_color)
                 ? get_render_safe_color(remote_player->get_color())
                 : ImGui::GetColorU32(ImGuiCol_Text),
-            .id = (remote_player) ? remote_player->get_id() : id_none
+            .id = (remote_player) ? remote_player->get_id() : id_none,
+            .aligner = widgets::aligner()
         };
 
         float entry_width = get_entry_width(entry, window_information.render_configuration.show_offline);

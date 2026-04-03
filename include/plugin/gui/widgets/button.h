@@ -84,7 +84,7 @@ public:
     /// @param id[in]    ID of the button.
     /// @param size[in]  Size of the button.
     explicit button(const std::string_view& label, const std::string_view& id, const ImVec2& size)
-        : label(std::move(label)), size(std::move(size)), id(std::move(id)) { register_in_pool(); }
+        : id(std::move(id)), size(std::move(size)), label(std::move(label)) { register_in_pool(); }
 
     /// Construct button with a size.
     /// 
@@ -92,7 +92,7 @@ public:
     /// @param label[in] Label of the button.
     /// @param size[in]  Size of the button.
     explicit button(const std::string_view& label, const ImVec2& size)
-        : label(std::move(label)), size(std::move(size)), id(std::move(label)) { register_in_pool(); }
+        : id(std::move(label)), size(std::move(size)), label(std::move(label)) { register_in_pool(); }
 
     button() = default;
 }; // class button final

@@ -20,11 +20,12 @@
 #define GADMIN_PLUGIN_SAMP_CORE_ENTITY_H
 
 #include "plugin/types/address.h"
+#include "plugin/types/signatures.h"
 
 namespace plugin {
 namespace signatures {
 
-using get_model_index_t = int(__thiscall*)(std::uintptr_t);
+using get_model_index_t = types::signatures::thiscall_t<int, std::uintptr_t>;
 
 } // namespace signatures
 
