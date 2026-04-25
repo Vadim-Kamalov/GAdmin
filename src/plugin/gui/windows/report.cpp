@@ -169,7 +169,7 @@ auto plugin::gui::windows::report::try_handle_active_reports_dialog(const samp::
     if (!dialog.text.contains("{FFFFFF}Номер") || !searching_reports)
         return true;
 
-    dialog.send_response(samp::dialog::button::right, 0);
+    dialog.send_response(samp::dialog::button::right, std::ranges::count(dialog.text, '\n'));
 
     return false;
 }
