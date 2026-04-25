@@ -35,14 +35,11 @@ target_sources(${PROJECT_NAME} PUBLIC
 )
 
 set(LIBRARIES_LINKAGE
-    d3d9
-    d3dx9
     kthook
     gdi32
     dwmapi
     common
     dbghelp
-    rpcrt4
     nlohmann_json::nlohmann_json
     ctre::ctre
 )

@@ -23,6 +23,7 @@
 #include "plugin/gui/widgets/text.h"
 #include "plugin/plugin.h"
 #include <algorithm>
+#include <random>
 #include <misc/cpp/imgui_stdlib.h>
 
 auto plugin::gui::windows::main::frames::binder::get_binds() -> nlohmann::json& {
@@ -30,20 +31,24 @@ auto plugin::gui::windows::main::frames::binder::get_binds() -> nlohmann::json& 
 }
 
 auto plugin::gui::windows::main::frames::binder::generate_uuid() -> std::string {
-    UUID uuid;
-    RPC_CSTR uuid_str;
-    std::string uuid_out;
+    static constexpr std::array<int, 4> dash_indices = { 4, 6, 8, 10 };
+    static constexpr std::string_view alphabet = "0123456789abcdef";
 
-    if (UuidCreate(&uuid) != RPC_S_OK)
-        log::error("binder::generate_uuid(): failed to create UUID; error code: {}", GetLastError());
+    static std::random_device dev;
+    static std::mt19937 rng(dev());
 
-    if (UuidToStringA(&uuid, &uuid_str) != RPC_S_OK)
-        log::error("binder::generate_uuid(): failed to convert UUID to RPC_CSTR; error code: {}", GetLastError());
+    std::uniform_int_distribution<int> dist(0, 15);
+    std::string result;
 
-    uuid_out = reinterpret_cast<char*>(uuid_str);
-    RpcStringFreeA(&uuid_str);
+    for (int i = 0; i < 16; i++) {
+        if (std::ranges::contains(dash_indices, i))
+            result.push_back('-');
+    
+        result.push_back(alphabet[dist(rng)]);
+        result.push_back(alphabet[dist(rng)]);
+    }
 
-    return uuid_out;
+    return result;
 }
 
 auto plugin::gui::windows::main::frames::binder::hotkey_callback(hotkey& hotkey) -> void {

@@ -29,6 +29,7 @@ namespace signatures {
 
 using lerp_fov = types::signatures::thiscall_t<void, std::uintptr_t, float, float, float, bool>;
 using find_fov = types::signatures::thiscall_t<float, std::uintptr_t>;
+using matrix_invert = types::signatures::stdcall_t<void, std::uintptr_t, std::uintptr_t, std::uintptr_t>;
 
 } // namespace signatures
 
@@ -47,6 +48,7 @@ private:
     static inline types::offset<std::uint8_t> active_camera_index_offset = 0x59;
     static inline types::address<signatures::lerp_fov> lerp_fov_address = 0x50D280;
     static inline types::address<signatures::find_fov> find_fov_address = 0x50AD20;
+    static inline types::address<signatures::matrix_invert> matrix_invert_address = 0x76795B;
     static inline types::address<types::vector_3d> front_camera_address = 0xB6F32C;
     static inline types::address<types::vector_3d> source_camera_address = 0xB6F338;
 
