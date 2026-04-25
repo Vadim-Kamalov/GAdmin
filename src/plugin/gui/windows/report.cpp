@@ -176,7 +176,7 @@ auto plugin::gui::windows::report::try_handle_active_reports_dialog(const samp::
 
 auto plugin::gui::windows::report::try_handle_active_report_dialog(const samp::event<samp::event_id::show_dialog>& dialog) -> bool {
     static constexpr ctll::fixed_string report_information_pattern =
-        R"(\{4a86b6\}.* (\d+:\d+:\d+).*\{FFFFFF\}Игрок \(ID\): \{4a86b6\}(.+) \((\d)+\).*Описание репорта:\s+\{FFFFFF\}(.+)\n)";
+        R"(\{4a86b6\}.* (\d+:\d+:\d+).*\{FFFFFF\}Игрок \(ID\): \{4a86b6\}(.+) \((\d+)\).*Описание репорта:\s+\{FFFFFF\}(.+)\n)";
 
     dialog_active = true;
     dialog_id = dialog.id;
