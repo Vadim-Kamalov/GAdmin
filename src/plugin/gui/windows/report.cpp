@@ -123,6 +123,7 @@ auto plugin::gui::windows::report::on_server_message(const samp::event<samp::eve
     if (!message.text.contains("Обработка репорта завершена."))
         return true;
 
+    log::info("[windows::report] report closed by the server");
     current_report_type = report_type::none;
     time_holding_report = {};
     current_report = {};
@@ -169,7 +170,8 @@ auto plugin::gui::windows::report::try_handle_active_reports_dialog(const samp::
     if (!dialog.text.contains("{FFFFFF}Номер") || !searching_reports)
         return true;
 
-    dialog.send_response(samp::dialog::button::right, std::ranges::count(dialog.text, '\n'));
+    log::info("[windows::report] accepting the last report");
+    dialog.send_response(samp::dialog::button::right, std::ranges::count(dialog.text, '\n') - 2);
 
     return false;
 }
@@ -194,12 +196,19 @@ auto plugin::gui::windows::report::try_handle_active_report_dialog(const samp::e
             .time_taken = std::chrono::steady_clock::now()
         };
 
+        log::info("[windows::report] registered a new report. details:");
+        log::info("| sender: {}[{}]", current_report->nickname, current_report->id);
+        log::info("| str_time: {}", current_report->str_time);
+        log::info("| text: {}", current_report->text);
+
         open_window();
         
         return false;
     }
 
     if (dialog.style == samp::dialog::style::input) {
+        log::info("[windows::report] handling dialog_option::answer. text: {}", *current_response->message);
+
         dialog.send_response(samp::dialog::button::right, samp::dialog::list_item_none,
                              string_utils::to_cp1251(*current_response->message));
 
@@ -209,6 +218,9 @@ auto plugin::gui::windows::report::try_handle_active_report_dialog(const samp::e
     }
 
     if (dialog.text.contains("Перейти в режим наблюдения за игроком")) {
+        log::info("[windows::report] handling dialog_option::< {} >",
+                  std::to_underlying(current_response->option));
+
         dialog.send_response(samp::dialog::button::right, std::to_underlying(current_response->option));
         
         if (current_response->option == dialog_option::return_to_administration)
@@ -218,6 +230,9 @@ auto plugin::gui::windows::report::try_handle_active_report_dialog(const samp::e
     }
 
     if (dialog.text.contains("Заблокировать на")) {
+        log::info("[windows::report] handling dialog_option::block. block_time: {}",
+                  static_cast<int>(current_response->block_time));
+
         dialog.send_response(samp::dialog::button::right, current_response->block_time);
         close_report();
     }
@@ -229,11 +244,13 @@ auto plugin::gui::windows::report::open_window() -> void {
     if (reset)
         return;
 
+    log::info("[windows::report] opening the window...");
     time_switched_window = std::chrono::steady_clock::now();
     active = focus = true;
 }
 
 auto plugin::gui::windows::report::open_window_with_dialog() -> void {
+    log::info("[windows::report] opening the window with a dialog...");
     open_window();
     samp::input::send_command("/reports");
 }
@@ -242,6 +259,7 @@ auto plugin::gui::windows::report::close_window() -> void {
     if (reset)
         return;
 
+    log::info("[windows::report] closing the window...");
     time_switched_window = std::chrono::steady_clock::now();
     closing = true;
     child->disable_cursor();
@@ -253,6 +271,7 @@ auto plugin::gui::windows::report::close_window() -> void {
 }
 
 auto plugin::gui::windows::report::close_dialog() -> void {
+    log::info("[windows::report] closed the dialog");
     samp::dialog::send_response(dialog_id, samp::dialog::button::left);
     dialog_active = false;
     close_window();
@@ -269,6 +288,9 @@ auto plugin::gui::windows::report::try_handle_report_searching(const std::string
     if ((!searching_reports && !current_report.has_value()) &&
         (text.starts_with("[H] Репорт от ") || text.starts_with("[A] Репорт от ")))
     {
+        log::info("[windows::report] found a new report available to accept. details:");
+        log::info("| text: {}", text);
+
         auto& window_configuration = (*configuration)["windows"]["report"];
 
         current_report_type = (text[1] == 'H') ? report_type::question : report_type::complaint;
@@ -295,6 +317,7 @@ auto plugin::gui::windows::report::try_handle_report_searching(const std::string
     if (!searching_reports || !text.contains("В данный момент нет активных репортов от игроков."))
         return true;
 
+    log::info("[windows::report] failed to accept a report. reason: no active reports");
     notify::send(notification("Не удалось принять репорт", "В данный момент нет активных репортов от игроков.",
                               ICON_USER02));
  
@@ -340,8 +363,10 @@ auto plugin::gui::windows::report::get_time_active() const -> std::string {
 }
 
 auto plugin::gui::windows::report::try_accept_last_report() -> void {
-    if (searching_reports || !server::user::is_on_alogin())
+    if (searching_reports || !server::user::is_on_alogin()) {
+        log::info("[windows::report] failed to accept a report. reason: currently searching a report or user is not on the /alogin");
         return;
+    }
 
     switch (current_report_type) {
         case report_type::waiting:
@@ -354,6 +379,8 @@ auto plugin::gui::windows::report::try_accept_last_report() -> void {
     }
 
     if (current_report.has_value()) {
+        log::info("[windows::report] failed to accept a report. reason: current_report.has_value()");
+
         std::string description = std::format("За вами уже закреплен репорт: для его открытия, нажмите на {}",
                                               switch_window_hotkey.bind);
 
@@ -361,6 +388,8 @@ auto plugin::gui::windows::report::try_accept_last_report() -> void {
 
         return;
     }
+
+    log::info("[windows::report] searching any active reports");
 
     searching_reports = true;
     samp::input::send_command("/reports");
@@ -392,6 +421,7 @@ auto plugin::gui::windows::report::send_input_response(const dialog_option& opti
 }
 
 auto plugin::gui::windows::report::close_report() -> void {
+    log::info("[windows::report] closing the report...");
     reset = true;
     dialog_active = false;
     current_response = {};
@@ -413,16 +443,21 @@ auto plugin::gui::windows::report::render() -> void {
     time_holding_report = {};
     window_alpha = animation::bring_to(window_alpha, (closing) ? 0 : 255, time_switched_window, animation_duration);
     
-    if (!closing && window_alpha != 255 && !child->is_cursor_active())
+    if (!closing && window_alpha != 255 && !child->is_cursor_active()) {
+        log::info("[windows::report] opening the window... done!");
         child->enable_cursor();
+    }
 
     if (window_alpha == 0 && closing) {
         closing = active = false;
+        log::info("[windows::report] closing the window... done!");
         if (reset) {
             current_report_type = report_type::none;
             current_report = {};
             answer_input.clear();
             reset = false;
+
+            log::info("[windows::report] closing the report... done!");
 
             return;
         }
