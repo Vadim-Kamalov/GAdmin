@@ -17,36 +17,44 @@
 /// SPDX-License-Identifier: GPL-3.0-only
 
 #include "plugin/log.h"
+#include <libloaderapi.h>
+#include <windows.h>
 #include <chrono>
 
-auto plugin::log::get_current_time() noexcept -> std::string {
+extern "C" IMAGE_DOS_HEADER __ImageBase;
+
+auto plugin::log_handler::load_file(const std::filesystem::path& path) -> void {
+    using namespace std::placeholders;
+
+    // Unfortunately, we can't open the log file stream immediately with both
+    // appending and truncate modes (e.g., `std::ios::trunc | std::ios::app`).
+    //
+    // We can combine these modes using the pipe operator, but it will have no effect.
+    std::ofstream(path, std::ios::trunc).close();
+    log_file_stream.open(path, std::ios::app);
+    log::set_write_callback(std::bind(&log_handler::write_callback, this, _1, _2));
+}
+
+auto plugin::log_handler::write_callback(const std::string_view& text, const message_severity& severity) -> void {
+    std::lock_guard<std::mutex> lock(log_mutex);
+    log_file_stream << std::format("{} [{}] {}\n", get_full_iso_8601_timestamp(), severity, text);
+    log_file_stream.flush();
+}
+
+auto plugin::log_handler::get_full_iso_8601_timestamp() const -> std::string {
     auto now = std::chrono::system_clock::now();
+
     std::time_t now_time_t = std::chrono::system_clock::to_time_t(now);
+    std::time_t local_time = std::mktime(std::localtime(&now_time_t));
+    std::time_t gmt_time = std::mktime(std::gmtime(&now_time_t));
 
-    std::tm now_tm = *std::localtime(&now_time_t);
-    std::tm gmt_tm = *std::gmtime(&now_time_t);
-
-    std::time_t local_time = std::mktime(&now_tm);
-    std::time_t gmt_time = std::mktime(&gmt_tm);
-
-    int timezone_offset = std::difftime(local_time, gmt_time);
-    int hours_offset = timezone_offset / 3600;
-    int minutes_offset = (timezone_offset / 60) % 60;
+    auto formattable_time = std::chrono::system_clock::from_time_t(local_time);
+    int hours_offset = (std::difftime(local_time, gmt_time)) / 3600;
 
     auto duration = now.time_since_epoch();
     auto seconds = std::chrono::duration_cast<std::chrono::seconds>(duration);
     auto nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(duration - seconds);
 
-    std::ostringstream oss;
-    oss << std::put_time(&now_tm, "%Y-%m-%dT%H:%M:%S")
-        << '.' << std::setfill('0') << std::setw(9) << nanoseconds.count()
-        << (hours_offset >= 0 ? '+' : '-')
-        << std::setfill('0') << std::setw(2) << std::abs(hours_offset)
-        << ':' << std::setfill('0') << std::setw(2) << std::abs(minutes_offset);
-    
-    return oss.str();
-}
-
-auto plugin::log::set_handler(handler_t new_handler) noexcept -> void {
-    handler = new_handler;
+    return std::format("{:%FT%T}.{:09}{}{:02}:00", std::chrono::time_point_cast<std::chrono::seconds>(formattable_time),
+                       nanoseconds.count(), (hours_offset >= 0) ? '+' : '-', std::abs(hours_offset));
 }

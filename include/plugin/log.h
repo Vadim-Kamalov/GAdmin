@@ -20,42 +20,64 @@
 #define GADMIN_PLUGIN_LOG_H
 
 #include "plugin/types/simple.h"
+#include <cstdint>
+#include <filesystem>
 #include <functional>
-#include <string_view>
 #include <format>
+#include <string>
+#include <mutex>
+#include <fstream>
 #include <utility>
 
 namespace plugin {
 
-/// Provides logging functionality with different severity levels.
+/// Log message severity levels.
 ///
-/// Supports information, warning, error, and fatal log messages.
-/// Allows customization of log message handling through callback functions.
+/// @see std::formatter<plugin::message_severity>
+enum class message_severity : std::uint8_t {
+    info,       ///< Informational message.
+    warning,    ///< Warning message.
+    error,      ///< Error message
+    fatal_error ///< Fatal error message (unloads plugin when received).
+}; // enum class message_severity : std::uint8_t
+
+/// Represents a handler that processes and forwards each log message in the file.
+class log_handler final {
+private:
+    std::mutex log_mutex;
+    std::ofstream log_file_stream;
+
+    auto get_full_iso_8601_timestamp() const -> std::string;
+    auto write_callback(const std::string_view& text, const message_severity& severity) -> void;
+public:
+    /// Start the log handler with the selected file to output all log messages in.
+    ///
+    /// @param path[in] Path to the file which will contain all log messages.
+    auto load_file(const std::filesystem::path& path) -> void;
+}; // class log_handler final
+
+/// Represents logging functionality with different severity levels.
 class log final {
 public:
-    /// Log message severity levels.
-    enum class type {
-        info,  ///< Informational message.
-        warn,  ///< Warning message.
-        error, ///< Error message.
-        fatal  ///< Fatal error message (unloads plugin).
-    }; // enum class type
+    /// Write callback that will receive any messages from the `log::{info,warn,error,fatal}` functions.
+    using write_callback_t = std::function<void(const std::string_view& text,
+                                                const message_severity& severity)>;
 
-    /// Callback function that accepts all log messages sent during plugin runtime.
-    using handler_t = std::function<void(const type&, const std::string_view&)>;
+    /// Unload callback that will be called when `log::fatal` function is executed.
+    using unload_callback_t = std::function<void()>;
 private:
-    static inline handler_t handler = [](const type&, const std::string_view&) {};
-    static constexpr types::zstring_t types[] = { "INFO", "WARN", "ERROR", "FATAL" };
-
-    static auto get_current_time() noexcept -> std::string;
-
-    template<type message_type>
-    static auto write(const std::string_view& text) noexcept -> void;
+    static inline write_callback_t write_callback = [](const auto&, const auto&) {};
+    static inline unload_callback_t unload_callback = [] {};
 public:
-    /// Set custom log message handler.
+    /// Set write callback.
     ///
-    /// @param new_handler[in] New function to handle log messages.
-    static auto set_handler(handler_t new_handler) noexcept -> void;
+    /// @param new_write_callback[in] New write callback to set.
+    static inline auto set_write_callback(write_callback_t new_write_callback) noexcept -> void;
+    
+    /// Set unload callback.
+    ///
+    /// @param new_unload_callback[in] New unload callback to set.
+    static inline auto set_unload_callback(unload_callback_t new_unload_callback) noexcept -> void;
 
     /// Log informational message.
     ///
@@ -81,7 +103,7 @@ public:
     template<typename... Args>
     static auto error(std::format_string<Args...> fmt, Args&&... args) noexcept -> void;
 
-    /// Log fatal error message and unload the plugin.
+    /// Log fatal error message and unload (free) the plugin.
     ///
     /// @tparam Args    Types of format arguments.
     /// @param fmt[in]  Format string.
@@ -92,30 +114,47 @@ public:
 
 } // namespace plugin
 
-template<plugin::log::type message_type>
-auto plugin::log::write(const std::string_view& text) noexcept -> void {
-    handler(message_type, std::format("{} [{}] {}", get_current_time(),
-                                      types[std::to_underlying(message_type)], text));
+template<>
+struct std::formatter<plugin::message_severity> : std::formatter<std::string_view> {
+    auto format(const plugin::message_severity& severity, std::format_context& ctx) const {
+        static constexpr plugin::types::zstring_t names[] = {
+            "INFO",  ///< plugin::message_severity::info
+            "WARN",  ///< plugin::message_severity::warning
+            "ERROR", ///< plugin::message_severity::error
+            "FATAL"  ///< plugin::message_severity::fatal_error
+        }; // static constexpr plugin::types::zstring_t names[]
+
+        return std::formatter<std::string_view>::format(names[std::to_underlying(severity)], ctx);
+    }
+}; // struct std::formatter<plugin::message_severity> : std::formatter<std::string_view>
+
+inline auto plugin::log::set_write_callback(write_callback_t new_write_callback) noexcept -> void {
+    write_callback = std::move(new_write_callback);
+}
+
+inline auto plugin::log::set_unload_callback(unload_callback_t new_unload_callback) noexcept -> void {
+    unload_callback = std::move(new_unload_callback);
 }
 
 template<typename... Args>
 inline auto plugin::log::info(std::format_string<Args...> fmt, Args&&... args) noexcept -> void {
-    write<type::info>(std::format(fmt, std::forward<Args>(args)...));
+    write_callback(std::format(fmt, std::forward<Args>(args)...), message_severity::info);
 }
 
 template<typename... Args>
 inline auto plugin::log::warn(std::format_string<Args...> fmt, Args&&... args) noexcept -> void {
-    write<type::warn>(std::format(fmt, std::forward<Args>(args)...));
+    write_callback(std::format(fmt, std::forward<Args>(args)...), message_severity::warning);
 }
 
 template<typename... Args>
 inline auto plugin::log::error(std::format_string<Args...> fmt, Args&&... args) noexcept -> void {
-    write<type::error>(std::format(fmt, std::forward<Args>(args)...));
+    write_callback(std::format(fmt, std::forward<Args>(args)...), message_severity::error);
 }
 
 template<typename... Args>
 inline auto plugin::log::fatal(std::format_string<Args...> fmt, Args&&... args) noexcept -> void {
-    write<type::fatal>(std::format(fmt, std::forward<Args>(args)...));
+    write_callback(std::format(fmt, std::forward<Args>(args)...), message_severity::fatal_error);
+    unload_callback();
 }
 
 #endif // GADMIN_PLUGIN_LOG_H

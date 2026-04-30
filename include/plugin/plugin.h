@@ -58,26 +58,13 @@ private:
     std::ofstream log_file_stream;
     std::unique_ptr<gui_initializer> gui;
 
-    bool plugin_working = true;
-
     auto on_samp_initialize() -> void;
-    auto on_log_message(const log::type& type, const std::string_view& message) -> void;
-    auto initialize_logging() -> void;
     auto initialize_event_handler() -> void;
     auto create_and_initialize_files() -> void;
     
     static auto on_terminate() noexcept -> void;
     static auto __stdcall on_unhandled_exception(EXCEPTION_POINTERS* exception_info) noexcept -> long;
 public:
-    /// Unload the plugin. Sets `plugin_working` variable
-    /// to `false` and waits for the `loader.cpp` response.
-    auto unload() -> void;
-
-    /// Check if plugin is active. Used internally by `loader.cpp`.
-    ///
-    /// @return True if plugin is active.
-    auto is_active() const -> bool;
-
     /// Process SA:MP event.
     /// 
     /// @param event[in] SA-MP event information.
@@ -108,9 +95,6 @@ public:
 
     /// Construct the plugin.
     explicit plugin_initializer();
-
-    /// Destroy the plugin.
-    ~plugin_initializer() noexcept;
 }; // class plugin_initializer final
 
 } // namespace plugin

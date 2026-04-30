@@ -38,14 +38,6 @@
 
 using namespace std::chrono_literals;
 
-auto plugin::plugin_initializer::on_log_message(const log::type& type, const std::string_view& message) -> void {
-    std::lock_guard<std::mutex> lock(log_mutex);
-    log_file_stream << message << std::endl;
-
-    if (type == log::type::fatal)
-        unload();
-}
-
 auto plugin::plugin_initializer::on_event(const samp::event_info& event) -> bool {
     if (!server::admins::on_event(event))
         return false;
@@ -83,7 +75,6 @@ auto plugin::plugin_initializer::can_initialize_render() const -> bool {
 }
 
 auto plugin::plugin_initializer::on_render_initialize() -> void {
-    log::info("render initialized");
     gui->on_initialize();
 }
 
@@ -144,16 +135,6 @@ auto plugin::plugin_initializer::main_loop() -> void {
     }
 }
 
-auto plugin::plugin_initializer::initialize_logging() -> void {
-    using namespace std::placeholders;
-
-    std::filesystem::path log_file = std::filesystem::current_path() / "gadmin.log";
-
-    std::ofstream(log_file, std::ios::trunc).close();
-    log_file_stream.open(log_file, std::ios::app);
-    log::set_handler(std::bind(&plugin_initializer::on_log_message, this, _1, _2));
-}
-
 auto plugin::plugin_initializer::initialize_event_handler() -> void {
     using namespace std::placeholders;
     
@@ -174,14 +155,6 @@ auto plugin::plugin_initializer::create_and_initialize_files() -> void {
     } catch (const std::exception& e) {
         log::fatal("failed to create and initialize files: {}", e.what());
     }
-}
-
-auto plugin::plugin_initializer::unload() -> void {
-    plugin_working = false;
-}
-
-auto plugin::plugin_initializer::is_active() const -> bool {
-    return plugin_working;
 }
 
 auto plugin::plugin_initializer::on_terminate() noexcept -> void {
@@ -336,17 +309,8 @@ auto __stdcall plugin::plugin_initializer::on_unhandled_exception(EXCEPTION_POIN
 }
 
 plugin::plugin_initializer::plugin_initializer() {
-    std::string command_line = GetCommandLineA();
-
-    initialize_logging();
-
     log::info("GAdmin v" PROJECT_VERSION " loaded. Copyright (C) 2023-2026 The Contributors");
     log::info("samp.dll base address: 0x{:X}", samp::get_base());
-
-    if (!command_line.contains(SERVER_HOST_ADDRESS)) {
-        log::fatal("plugin works only on \"sa.gambit-rp.ru:7777\" server");
-        return;
-    }
 
     std::setlocale(LC_ALL, "Russian_Russia.UTF8");
     create_and_initialize_files();
@@ -358,16 +322,4 @@ plugin::plugin_initializer::plugin_initializer() {
     gui = std::make_unique<gui_initializer>();
     cheats_initializer = std::make_unique<cheats::initializer>(gui.get());
     misc_initializer = std::make_unique<misc::initializer>();
-}
-
-plugin::plugin_initializer::~plugin_initializer() noexcept {
-    log::info("plugin terminated");
-
-    event_handler.reset(nullptr);
-    configuration.reset(nullptr);
-    misc_initializer.reset(nullptr);
-    gui.reset(nullptr);
-
-    if (log_file_stream.is_open())
-        log_file_stream.close();
 }

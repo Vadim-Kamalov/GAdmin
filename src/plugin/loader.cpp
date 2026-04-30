@@ -16,134 +16,124 @@
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
 
-#include "plugin/plugin.h"
+#include "plugin/loader.h"
 #include "plugin/game/game.h"
-#include <d3d9types.h>
 #include <backends/imgui_impl_dx9.h>
 #include <backends/imgui_impl_win32.h>
 #include <imgui.h>
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wreorder"
-#include <kthook/kthook.hpp>
-#pragma GCC diagnostic pop
+// This will run `plugin::loader::loader()` and so the rest of the plugin.
+static plugin::loader _;
 
-using game_loop_t = void(__cdecl*)();
-using d3d9_present_t = HRESULT(__stdcall*)(IDirect3DDevice9*, const RECT*, const RECT*, HWND, const RGNDATA*);
-using d3d9_reset_t = HRESULT(__stdcall*)(IDirect3DDevice9*, D3DPRESENT_PARAMETERS*);
-using wnd_proc_t = LRESULT(__stdcall*)(HWND, UINT, WPARAM, LPARAM);
+extern IMGUI_IMPL_API auto ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wparam,
+                                                          LPARAM lparam) -> LRESULT;
 
-std::unique_ptr<plugin::plugin_initializer> plugin_to_load;
+extern "C" IMAGE_DOS_HEADER __ImageBase;
 
-kthook::kthook_simple<game_loop_t> game_loop_hook;
-static auto game_loop_hooked(const decltype(game_loop_hook)& hook) -> void;
-
-kthook::kthook_simple<wnd_proc_t> wndproc_hook;
-static auto wndproc_hooked(const decltype(wndproc_hook)& hook, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) -> LRESULT;
-
-kthook::kthook_signal<d3d9_present_t> d3d9_present_hook;
-static auto d3d9_present_hooked(const decltype(d3d9_present_hook)&, IDirect3DDevice9* device,
-                                const RECT*, const RECT*, HWND, const RGNDATA*) -> std::optional<HRESULT>;
-
-kthook::kthook_signal<d3d9_reset_t> d3d9_reset_hook;
-static auto d3d9_reset_hooked(const decltype(d3d9_reset_hook)&, IDirect3DDevice9*, D3DPRESENT_PARAMETERS*) -> std::optional<HRESULT>;
-
-extern IMGUI_IMPL_API auto ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) -> LRESULT;
-
-class loader_t {
-public:
-    loader_t() {
-        plugin_to_load = std::make_unique<plugin::plugin_initializer>();
-
-        game_loop_hook.set_dest(0x53BEE0);
-        game_loop_hook.set_cb(&game_loop_hooked);
-        game_loop_hook.install();
+auto plugin::loader::ensure_hook_installed(const std::string_view& name, bool result) -> bool {
+    if (result) {
+        log::info("installed \"{}\" hook", name);
+        return true;
     }
 
-    ~loader_t() {
-        plugin_to_load.reset(nullptr);
-        ImGui_ImplDX9_Shutdown();
-        ImGui_ImplWin32_Shutdown();
-        ImGui::DestroyContext();
-    }
-} loader;
+    log::fatal("failed to install \"{}\" hook", name);
 
-auto game_loop_hooked(const decltype(game_loop_hook)& hook) -> void {
-    static bool initialized = false;
-    
-    hook.call_trampoline();
+    return false;
+}
 
-    if (!plugin_to_load)
-        return;
+auto plugin::loader::install_d3d9_hooks() -> void {
+    using namespace std::placeholders;
 
-    if (!plugin_to_load->is_active()) {
-        plugin_to_load.reset(nullptr);
-        return;
-    }
-
-    plugin_to_load->main_loop();
-
-    if (initialized)
-        return;
-
-    void** v_table = *reinterpret_cast<void***>(plugin::game::get_device());
+    void** v_table = *reinterpret_cast<void***>(game::get_device());
 
     d3d9_present_hook.set_dest(v_table[17]);
-    d3d9_present_hook.before.connect(&d3d9_present_hooked);
-    d3d9_present_hook.install();
+    d3d9_present_hook.before.connect(std::bind(&loader::d3d9_present_hooked, this, _1, _2, _3, _4, _5, _6));
+    
+    if (!ensure_hook_installed("loader::d3d9_present_hook", d3d9_present_hook.install()))
+        return;
 
     d3d9_reset_hook.set_dest(v_table[16]);
     d3d9_reset_hook.before.connect(&d3d9_reset_hooked);
-    d3d9_reset_hook.install();
-
-    initialized = true;
+    ensure_hook_installed("loader::d3d9_reset_hook", d3d9_reset_hook.install());
 }
 
-auto wndproc_hooked(const decltype(wndproc_hook)& hook, HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) -> LRESULT {
-    if (!plugin_to_load)
+auto plugin::loader::install_wndproc_hook() -> void {
+    using namespace std::placeholders;
+
+    auto game_hwnd = plugin::game::get_window();
+    auto latest_wndproc_ptr = GetWindowLongPtrA(game_hwnd, GWLP_WNDPROC);
+
+    wndproc_hook.set_dest(latest_wndproc_ptr);
+    wndproc_hook.set_cb(std::bind(&loader::wndproc_hooked, this, _1, _2, _3, _4, _5));
+    ensure_hook_installed("loader::wndproc_hook", wndproc_hook.install());
+}
+
+auto plugin::loader::initialize_imgui_render(IDirect3DDevice9* device) -> void {
+    ImGui::CreateContext();
+
+    ImGui_ImplWin32_EnableDpiAwareness();
+    ImGui_ImplWin32_Init(plugin::game::get_window());
+    ImGui_ImplDX9_Init(device);
+        
+    core->on_render_initialize();
+
+    log::info("initialized ImGui render");
+}
+
+auto plugin::loader::game_loop_hooked(const decltype(game_loop_hook)& hook) -> void {
+    if (core == nullptr) {
+        hook.call_trampoline();
+        return;
+    }
+
+    core->main_loop();
+
+    if (first_game_loop_call) {
+        install_d3d9_hooks();
+        first_game_loop_call = false;
+    }
+
+    hook.call_trampoline();
+}
+
+auto plugin::loader::wndproc_hooked(const decltype(wndproc_hook)& hook, HWND hwnd,
+                                    UINT message, WPARAM wparam, LPARAM lparam) -> LRESULT
+{
+    if (core == nullptr)
         return hook.call_trampoline(hwnd, message, wparam, lparam);
 
-    if (ImGui_ImplWin32_WndProcHandler(hwnd, message, wparam, lparam))
+    if (ImGui_ImplWin32_WndProcHandler(hwnd, message, wparam, lparam)
+        || !core->on_message(message, wparam, lparam))
+    {
         return true;
-
-    if (!plugin_to_load->on_message(message, wparam, lparam))
-        return true;
+    }
 
     return hook.call_trampoline(hwnd, message, wparam, lparam);
 }
 
-auto d3d9_present_hooked(const decltype(d3d9_present_hook)&, IDirect3DDevice9* device, const RECT*, const RECT*, HWND, const RGNDATA*)
+auto plugin::loader::d3d9_present_hooked(const decltype(d3d9_present_hook)&, IDirect3DDevice9* device,
+                                         const RECT*, const RECT*, HWND, const RGNDATA*)
     -> std::optional<HRESULT>
 {
-    static bool imgui_initialized = false;
+    if (!installed_wndproc_hook) {
+        install_wndproc_hook();
+        installed_wndproc_hook = true;
+    }
 
-    if (!plugin_to_load || !plugin_to_load->can_initialize_render())
+    if (core == nullptr || !core->can_initialize_render())
         return {};
 
-    if (!imgui_initialized) {
-        ImGui_ImplWin32_EnableDpiAwareness();
-
-        auto game_hwnd = plugin::game::get_window();
-        auto latest_wndproc_ptr = GetWindowLongPtrA(game_hwnd, GWLP_WNDPROC);
-
-        ImGui::CreateContext();
-        ImGui_ImplWin32_Init(game_hwnd);
-        ImGui_ImplDX9_Init(device);
-
-        plugin_to_load->on_render_initialize();
-
-        wndproc_hook.set_dest(latest_wndproc_ptr);
-        wndproc_hook.set_cb(&wndproc_hooked);
-        wndproc_hook.install();
-        imgui_initialized = true;
+    if (!initialized_imgui_render) {
+        initialize_imgui_render(device);
+        initialized_imgui_render = true;
     }
 
     ImGui_ImplDX9_NewFrame();
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
-
-    plugin_to_load->on_frame();
-
+    {
+        core->on_frame();
+    }
     ImGui::EndFrame();
     ImGui::Render();
     ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
@@ -151,8 +141,33 @@ auto d3d9_present_hooked(const decltype(d3d9_present_hook)&, IDirect3DDevice9* d
     return {};
 }
 
-auto d3d9_reset_hooked(const decltype(d3d9_reset_hook)&, IDirect3DDevice9*, D3DPRESENT_PARAMETERS*) -> std::optional<HRESULT> {
+auto plugin::loader::d3d9_reset_hooked(const decltype(d3d9_reset_hook)&, IDirect3DDevice9*,
+                                       D3DPRESENT_PARAMETERS*)
+    noexcept -> std::optional<HRESULT>
+{
     ImGui_ImplDX9_InvalidateDeviceObjects();
     return {};
 }
 
+plugin::loader::loader() {
+    using namespace std::placeholders;
+
+    DisableThreadLibraryCalls(reinterpret_cast<HMODULE>(&__ImageBase));
+
+    log_handler.load_file(std::filesystem::current_path() / "gadmin.log");
+    log::set_unload_callback([this] { core.reset(nullptr); });
+    log::info("logging initialized");
+
+    game_loop_hook.set_dest(0x53BEE0);
+    game_loop_hook.set_cb(std::bind(&loader::game_loop_hooked, this, _1));
+    ensure_hook_installed("loader::game_loop_hook", game_loop_hook.install());
+
+    core = std::make_unique<plugin_initializer>();
+}
+
+plugin::loader::~loader() noexcept {
+    ImGui_ImplDX9_Shutdown();
+    ImGui_ImplWin32_Shutdown();
+    ImGui::DestroyContext();
+    log::info("plugin unloaded");
+}
