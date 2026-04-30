@@ -53,7 +53,6 @@ private:
     plugin::log_handler log_handler;
 
     bool first_game_loop_call : 1 = true;
-    bool installed_wndproc_hook : 1 = false;
     bool initialized_imgui_render : 1 = false;
 
     kthook::kthook_simple<signatures::game_loop_t> game_loop_hook;
@@ -64,7 +63,6 @@ private:
     static auto ensure_hook_installed(const std::string_view& name, bool result) -> bool;
 
     auto install_d3d9_hooks() -> void;
-    auto install_wndproc_hook() -> void;
     auto initialize_imgui_render(IDirect3DDevice9* device) -> void;
     auto game_loop_hooked(const decltype(game_loop_hook)& hook) -> void;
 
