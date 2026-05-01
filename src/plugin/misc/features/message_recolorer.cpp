@@ -24,7 +24,8 @@
 plugin::misc::features::message_recolorer::messages_to_recolor_t
 plugin::misc::features::message_recolorer::messages_to_recolor = {
     { "Репорт", [](const std::string_view& text, const types::color&) {
-        return text.starts_with("[A] Репорт от ") || text.starts_with("[H] Репорт от ");
+        return text.starts_with("[A] Репорт от ")
+            || text.starts_with("[A] /ask");
     }},
 
     { "Чат администрации", [](const std::string_view& text, const types::color&) {
@@ -62,7 +63,8 @@ plugin::misc::features::message_recolorer::messages_to_recolor = {
     { "Античит", [](const std::string_view& text, const types::color&) {
         return text.starts_with("Античит")
                || text.starts_with("[BOT DETECTOR]")
-               || text.starts_with("ADS <");
+               || text.starts_with("ADS <")
+               || text.starts_with("FLOOD <");
     }}
 }; // plugin::misc::features::message_recolorer::messages_to_recolor
 
