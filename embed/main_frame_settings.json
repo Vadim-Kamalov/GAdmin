@@ -255,11 +255,6 @@
             "sound_notify": { "_type": "bool", "_name": "Звуковое оповещение" },
             "color": { "_type": "color", "_name": "Цвет" }
         },
-        "report_one_color": {
-            "_type": "subsection",
-            "_name": "Репорт одного цвета",
-            "color": { "_type": "color", "_name": "Цвет" }
-        },
         "death_notify_in_chat": {
             "_type": "subsection",
             "_name": "Оповещения смертей в чате",

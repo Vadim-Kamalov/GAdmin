@@ -185,11 +185,6 @@
             "color": "FFB6864A"
         },
 
-        "report_one_color": {
-            "use": false,
-            "color": "FF00FFFF"
-        },
-
         "death_notify_in_chat": {
             "use": false,
             "color": "FFAFAFAF"
