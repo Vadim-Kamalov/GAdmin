@@ -286,7 +286,7 @@ auto plugin::gui::windows::report::switch_window() -> void {
 
 auto plugin::gui::windows::report::try_handle_report_searching(const std::string& text) -> bool {
     if ((!searching_reports && !current_report.has_value()) &&
-        (text.starts_with("[H] Репорт от ") || text.starts_with("[A] Репорт от ")))
+        (text.starts_with("[H] Репорт от ") || text.starts_with("[A] Репорт от ") || text.starts_with("[A] /ask")))
     {
         log::info("[windows::report] found a new report available to accept. details:");
         log::info("| text: {}", text);
