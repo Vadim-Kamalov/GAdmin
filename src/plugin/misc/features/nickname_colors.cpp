@@ -30,7 +30,7 @@ auto plugin::misc::features::nickname_colors::on_server_message(const samp::even
     if (entries.empty())
         return true;
 
-    if (auto [ whole, level, nickname, other ] = ctre::search<message_pattern>(message.text); whole){
+    if (auto [ whole, level, nickname, other ] = ctre::search<message_pattern>(message.text); whole) {
         if (auto entry = std::find_if(entries.begin(), entries.end(), [nickname](const entry_t& entry) {
             return entry.nickname == nickname;
         }); entry != entries.end()) {

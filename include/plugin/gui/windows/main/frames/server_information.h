@@ -54,7 +54,6 @@ private:
     static auto get_filtered_map(const gui::widgets::search& search, const nlohmann::json& config)
         -> std::vector<std::array<std::string, 2>>;
 
-    auto handle_row_controls(const std::string& text_to_copy) const -> void;
     auto render_complex_table(const std::string& id, const nlohmann::json& config) const -> void;
     auto render_map(const std::string& id, const nlohmann::json& config) const -> void;
     auto frame_renderer(std::string& label, std::any& payload) -> void;
