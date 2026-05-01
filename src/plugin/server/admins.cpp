@@ -23,6 +23,8 @@
 #include "plugin/plugin.h"
 #include "plugin/string_utils.h"
 #include "plugin/types/u8regex.h"
+#include "plugin/gui/icon.h"
+#include "plugin/gui/notify.h"
 #include <algorithm>
 #include <spanstream>
 
@@ -73,7 +75,8 @@ auto plugin::server::admins::on_show_dialog(const samp::event<samp::event_id::sh
         
         log::info("user is on /alogin; admins::list is not empty and available now");
         user::set_alogin_state(true);
-    
+        handle_sponsorship_notification();
+
         return false;
     }
 
@@ -166,6 +169,26 @@ auto plugin::server::admins::remove_disconnected_admin(std::uint16_t id) -> void
             it++;
         }
     }
+}
+
+auto plugin::server::admins::handle_sponsorship_notification() -> void {
+    auto& alogins_until_sponshorship_notification =
+        (*configuration)["internal"]["alogins_until_sponshorship_notification"].get_ref<nlohmann::json::number_unsigned_t&>();
+
+    if (alogins_until_sponshorship_notification == 0) {
+        static constexpr types::zstring_t notification_description =
+            "Поддержите разработку, став спонсором и получив цветной никнейм в чате! "
+            "Подробнее: главное окно -> информация";
+
+        gui::notify::send(gui::notification("Поддержите разработку проекта!", notification_description, ICON_HEART01)
+                .with_duration(15s));
+
+        alogins_until_sponshorship_notification = 50;
+
+        return;
+    }
+
+    alogins_until_sponshorship_notification--;
 }
 
 auto plugin::server::admins::get_admin(std::uint16_t id) -> std::optional<admin> {

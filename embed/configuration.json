@@ -279,6 +279,8 @@
     "internal": {
         "last_time_join": 0,
         "main_window_frame": 0,
+        "alogins_until_sponshorship_notification": 0,
+
         "windows_customization": {},
         "hotkeys": {},
         "theme": {
