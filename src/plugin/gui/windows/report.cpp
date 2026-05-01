@@ -422,6 +422,20 @@ auto plugin::gui::windows::report::send_input_response(const dialog_option& opti
 
 auto plugin::gui::windows::report::close_report() -> void {
     log::info("[windows::report] closing the report...");
+
+    if (!active) {
+        current_report_type = report_type::none;
+        reset = dialog_active = false;
+
+        current_report = {};
+        current_response = {};
+
+        answer_input.clear();
+        log::info("[windows::report] closing the report... done!");
+        
+        return;
+    }
+
     reset = true;
     dialog_active = false;
     current_response = {};
