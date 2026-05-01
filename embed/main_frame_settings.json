@@ -287,6 +287,15 @@
             "_name": "Изменение цветов сообщений в чате",
             "items": { "_type": "custom", "_name": "Сообщения" }
         },
+        "message_hider": {
+            "_type": "subsection",
+            "_name": "Скрытие сообщений",
+            "hide_anticheat": { "_type": "bool", "_name": "Античит" },
+            "hide_punishments": { "_type": "bool", "_name": "Наказания" },
+            "hide_complaints": { "_type": "bool", "_name": "Вопросы/Жалобы" },
+            "hide_player_actions": { "_type": "bool", "_name": "Действия игроков" },
+            "hide_admin_actions": { "_type": "bool", "_name": "Действия администраторов" }
+        },
         "gun_info": {
             "_type": "subsection",
             "_name": "Отображение оружие игрока",
