@@ -65,6 +65,7 @@ private:
     struct action_button final {
         widgets::button widget;
         std::function<void()> callback;
+        bool requires_alogin = false;
     }; // struct action_button final
     
     struct insert_button final {
