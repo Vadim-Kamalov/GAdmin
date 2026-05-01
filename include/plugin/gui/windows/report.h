@@ -42,7 +42,6 @@ class report final : public window {
 private:
     static constexpr float bold_font_size = 18;
     static constexpr float regular_font_size = 16;
-    static constexpr float answer_button_height = 30;
     static constexpr std::size_t max_buttons_per_line = 3;
     static constexpr std::size_t max_action_buttons_lines = 4;
     static constexpr std::chrono::milliseconds animation_duration = 500ms;

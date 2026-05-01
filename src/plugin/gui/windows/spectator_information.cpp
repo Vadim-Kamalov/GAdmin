@@ -115,7 +115,7 @@ auto plugin::gui::windows::spectator_information::render_centered_text(const std
     text.erase(0, text.find_first_not_of(' '));
     text.erase(text.find_last_not_of(' ') + 1);
 
-    ImVec2 size = font->CalcTextSizeA(fonts_size, FLT_MAX, 0, text.c_str());
+    ImVec2 size = font->CalcTextSizeA(fonts_size * ImGui::GetStyle().FontScaleDpi, FLT_MAX, 0, text.c_str());
     float column_width = ImGui::GetContentRegionAvail().x;
 
     if (size.x >= column_width && column_width >= min_wrap_width && text.contains(' ')) {
@@ -263,12 +263,15 @@ auto plugin::gui::windows::spectator_information::render() -> void {
     }
 
     ImGui::SetNextWindowPos({ size_x / 83.47826f, size_y / 2.17888f }, ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSizeConstraints({ 320, 0 }, { FLT_MAX, FLT_MAX });
     ImGui::PushStyleVarX(ImGuiStyleVar_WindowPadding, 0);
     ImGui::PushStyleVarY(ImGuiStyleVar_ItemSpacing, ImGui::GetStyle().ItemSpacing.y * 2);
-    ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoTitleBar);
+    ImGui::SetNextWindowSize({ ImGui::GetStyle().FontScaleDpi * 320, 0 });
+    ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
     {
         if (ImGui::BeginTable("windows::spectator_information::table", 2)) {
+            ImGui::TableSetupColumn("left", ImGuiTableColumnFlags_WidthFixed, ImGui::GetContentRegionAvail().x / 2.0f);
+            ImGui::TableSetupColumn("right", ImGuiTableColumnFlags_WidthStretch);
+
             for (auto& row : rows) {
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);

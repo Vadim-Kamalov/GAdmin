@@ -22,24 +22,35 @@
 #include "plugin/gui/animation.h"
 #include "plugin/plugin.h"
 
+auto plugin::gui::windows::notify::get_notification_size() noexcept -> ImVec2 {
+    float scale = ImGui::GetStyle().FontScaleDpi;
+    return { scale * 400, scale * 70 };
+}
+
 auto plugin::gui::windows::notify::on_send_notification(notification& notification) -> bool {
-    auto window_configuration = (*configuration)["windows"]["notify"];
+    auto& window_configuration = (*configuration)["windows"]["notify"];
+    
+    std::size_t current_count = gui::notify::notifications_count();
     std::size_t max_count = window_configuration["max_count"];
 
-    if (gui::notify::notifications_count() >= max_count)
+    if (current_count >= max_count)
         return false;
 
-    float start_pos_x = (window_configuration["align"] == "left") ? -notification_size[0] : notification_size[0];
+    ImVec2 notification_size = get_notification_size();
+    float start_pos_x = (window_configuration["align"] == "left") ? -notification_size.x : notification_size.x;
+    float item_spacing_y = ImGui::GetStyle().ItemSpacing.y;
+    float padding_y = ImGui::GetStyle().WindowPadding.y;
 
-    notification.backend = notification::backend_t { start_pos_x }; 
-    height += notification_size[1] + padding;
+    notification.backend = notification::backend_t { start_pos_x };
+    height = (current_count + 1) * (notification_size.y + item_spacing_y) - item_spacing_y + padding_y * 2;
 
     return true;
 }
 
 auto plugin::gui::windows::notify::get_buttons_max_size(ImFont* font, float font_size, const notification::buttons_t& buttons) const -> ImVec2 {
-    ImVec2 first_size = font->CalcTextSizeA(font_size, FLT_MAX, 0, buttons.first.name.c_str());
-    ImVec2 second_size = font->CalcTextSizeA(font_size, FLT_MAX, 0, buttons.second.name.c_str());
+    float scale = ImGui::GetStyle().FontScaleDpi;
+    ImVec2 first_size = font->CalcTextSizeA(font_size * scale, FLT_MAX, 0, buttons.first.name.c_str());
+    ImVec2 second_size = font->CalcTextSizeA(font_size * scale, FLT_MAX, 0, buttons.second.name.c_str());
 
     if (second_size.x > first_size.x)
         first_size = second_size;
@@ -49,6 +60,8 @@ auto plugin::gui::windows::notify::get_buttons_max_size(ImFont* font, float font
 
 auto plugin::gui::windows::notify::render_notification(notification& item) const -> void {
     ImVec2 cursor_pos = ImGui::GetCursorScreenPos();
+    ImVec2 notification_size = get_notification_size();
+
     ImU32 text_color = ImGui::GetColorU32(ImGuiCol_Text);
     ImDrawList* draw_list = ImGui::GetForegroundDrawList();
     
@@ -56,40 +69,42 @@ auto plugin::gui::windows::notify::render_notification(notification& item) const
     ImFont* bold = child->fonts->bold;
     ImFont* regular = child->fonts->regular;
 
-    draw_list->AddRectFilled(cursor_pos, { cursor_pos.x + notification_size[0], cursor_pos.y + notification_size[1] },
+    float scale = ImGui::GetStyle().FontScaleDpi;
+
+    draw_list->AddRectFilled(cursor_pos, { cursor_pos.x + notification_size.x, cursor_pos.y + notification_size.y },
                              ImGui::GetColorU32(ImGuiCol_WindowBg), ImGui::GetStyle().ChildRounding);
 
-    ImVec2 icon_size = icon->CalcTextSizeA(icon_font_size, FLT_MAX, 0, item.icon);
-    ImVec2 icon_pos = { cursor_pos.x + 12, cursor_pos.y + (notification_size[1] - icon_size.y) / 2 };
+    ImVec2 icon_size = icon->CalcTextSizeA(icon_font_size * scale, FLT_MAX, 0, item.icon);
+    ImVec2 icon_pos = { cursor_pos.x + 12, cursor_pos.y + (notification_size.y - icon_size.y) / 2 };
 
-    draw_list->AddText(icon, icon_font_size, icon_pos, text_color, item.icon);
+    draw_list->AddText(icon, icon_font_size * scale, icon_pos, text_color, item.icon);
 
     ImVec2 buttons_size = { 0, 0 };
     ImVec2 item_spacing = ImGui::GetStyle().ItemSpacing;
-    float wrap_width = notification_size[0] - icon_size.x - 22;
+    float wrap_width = notification_size.x - icon_size.x - 22;
 
     if (item.buttons.has_value()) {
         buttons_size = get_buttons_max_size(regular, regular_font_size, *item.buttons);
         wrap_width -= buttons_size.x + item_spacing.x * 2 + 10;
     }
 
-    ImVec2 title_size = bold->CalcTextSizeA(bold_font_size, FLT_MAX, 0, item.title.c_str());
-    ImVec2 description_size = regular->CalcTextSizeA(regular_font_size, FLT_MAX, wrap_width, item.description.c_str());
-    ImVec2 group_pos = { icon_pos.x + icon_size.x + 10, cursor_pos.y + (notification_size[1] - title_size.y - description_size.y - item_spacing.y) / 2 };
+    ImVec2 title_size = bold->CalcTextSizeA(bold_font_size * scale, FLT_MAX, 0, item.title.c_str());
+    ImVec2 description_size = regular->CalcTextSizeA(regular_font_size * scale, FLT_MAX, wrap_width, item.description.c_str());
+    ImVec2 group_pos = { icon_pos.x + icon_size.x + 10, cursor_pos.y + (notification_size.y - title_size.y - description_size.y - item_spacing.y) / 2 };
 
-    draw_list->AddText(bold, bold_font_size, group_pos, text_color, item.title.c_str());
-    draw_list->AddText(regular, regular_font_size, { group_pos.x, group_pos.y + title_size.y + item_spacing.y },
+    draw_list->AddText(bold, bold_font_size * scale, group_pos, text_color, item.title.c_str());
+    draw_list->AddText(regular, regular_font_size * scale, { group_pos.x, group_pos.y + title_size.y + item_spacing.y },
                        text_color, item.description.c_str(), nullptr, wrap_width);
 
     if (item.buttons.has_value()) {
-        ImVec2 start = { cursor_pos.x + notification_size[0] - item_spacing.x - buttons_size.x - 10, 
-                         cursor_pos.y + (notification_size[1] - buttons_size.y * 2) / 2 - item_spacing.y };
+        ImVec2 start = { cursor_pos.x + notification_size.x - item_spacing.x - buttons_size.x - 10, 
+                         cursor_pos.y + (notification_size.y - buttons_size.y * 2) / 2 - item_spacing.y };
         
         render_button(start, regular, regular_font_size, item, item.buttons->first);
         render_button({ start.x, start.y + buttons_size.y + item_spacing.y }, regular, regular_font_size, item, item.buttons->second);
     }
 
-    ImGui::Dummy({ notification_size[0], notification_size[1] });
+    ImGui::Dummy(notification_size);
 }
 
 auto plugin::gui::windows::notify::render_button(const ImVec2& pos, ImFont* font, float font_size, notification& notification,
@@ -101,12 +116,13 @@ auto plugin::gui::windows::notify::render_button(const ImVec2& pos, ImFont* font
         button.backend = backend;
     }
 
+    float scale = ImGui::GetStyle().FontScaleDpi;
     ImDrawList* draw_list = ImGui::GetForegroundDrawList();
-    ImVec2 text_size = font->CalcTextSizeA(font_size, FLT_MAX, 0, button.name.c_str());
+    ImVec2 text_size = font->CalcTextSizeA(font_size * scale, FLT_MAX, 0, button.name.c_str());
     bool hovering = ImGui::IsMouseHoveringRect(pos, { pos.x + text_size.x, pos.y + text_size.y });
     auto now = std::chrono::steady_clock::now();
 
-    draw_list->AddText(font, font_size, pos, ImGui::ColorConvertFloat4ToU32(button.backend->color), button.name.c_str());
+    draw_list->AddText(font, font_size * scale, pos, ImGui::ColorConvertFloat4ToU32(button.backend->color), button.name.c_str());
 
     if (hovering && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
         button.backend->time[0] = button.backend->clicked_time = now;
@@ -132,16 +148,19 @@ auto plugin::gui::windows::notify::render_button(const ImVec2& pos, ImFont* font
 }
 
 auto plugin::gui::windows::notify::render() -> void {
-    auto window_configuration = (*configuration)["windows"]["notify"];
+    auto& window_configuration = (*configuration)["windows"]["notify"];
 
     if (!gui::notify::has_notifications() || !window_configuration["use"])
         return;
 
-    auto [size_x, size_y] = game::get_screen_resolution();
+    auto [ size_x, size_y ] = game::get_screen_resolution();
+    
+    ImVec2 padding = ImGui::GetStyle().WindowPadding;
     std::string align = window_configuration["align"];
+    ImVec2 notification_size = get_notification_size();
 
-    ImGui::SetNextWindowPos({ ((align == "left") ? 0 : size_x - notification_size[0]) - padding, size_y - height - padding });
-    ImGui::SetNextWindowSize({ notification_size[0] + padding, height }, ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowPos({ ((align == "left") ? 0 : size_x - notification_size.x) - padding.x, size_y - height });
+    ImGui::SetNextWindowSize({ notification_size.x + padding.x, height }, ImGuiCond_FirstUseEver);
 
     ImGui::SetNextWindowBgAlpha(0);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
@@ -149,8 +168,8 @@ auto plugin::gui::windows::notify::render() -> void {
     {
         std::list<notification>& notifications = gui::notify::get_notifications();
         for (auto it = notifications.rbegin(); it != notifications.rend();) {
-            float start_pos_x = (align == "left") ? -notification_size[0] : notification_size[0];
-            float end_pos_x = (align == "left") ? padding * 2 : 0;
+            float start_pos_x = (align == "left") ? -notification_size.x : notification_size.x;
+            float end_pos_x = (align == "left") ? padding.x * 2 : 0;
             auto now = std::chrono::steady_clock::now();
             
             it->backend->cursor_pos_x = animation::bring_to(it->backend->cursor_pos_x, end_pos_x, it->time_sent, it->backend->open_close_duration);
@@ -164,9 +183,11 @@ auto plugin::gui::windows::notify::render() -> void {
                 it->backend->cursor_pos_x = animation::bring_to(it->backend->cursor_pos_x, start_pos_x, time, it->backend->open_close_duration);
                 
                 if (it->backend->cursor_pos_x == start_pos_x) {
-                    float new_height = (gui::notify::notifications_count() - 1) * (notification_size[1] + padding); 
-                    auto new_time = time + it->backend->open_close_duration;
+                    float item_spacing_y = ImGui::GetStyle().ItemSpacing.y;
+                    float new_height = (gui::notify::notifications_count() - 1)
+                        * (notification_size.y + item_spacing_y) - item_spacing_y + padding.y * 2; 
 
+                    auto new_time = time + it->backend->open_close_duration;
                     height = animation::bring_to(height, new_height, new_time, it->backend->drop_duration);
                     
                     if (height == new_height) {
@@ -176,7 +197,7 @@ auto plugin::gui::windows::notify::render() -> void {
                 }
             }
 
-            ImGui::SetCursorPos({ it->backend->cursor_pos_x, ImGui::GetCursorPosY() - ImGui::GetStyle().ItemSpacing.y + padding });
+            ImGui::SetCursorPosX(it->backend->cursor_pos_x);
             render_notification(*it);
         
             it++;

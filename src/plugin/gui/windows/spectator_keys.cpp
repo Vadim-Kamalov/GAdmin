@@ -28,6 +28,13 @@ auto plugin::gui::windows::spectator_keys::get_keycaps(const samp::synchronizati
     using namespace samp;
 
     float wide_keycap_offset = ImGui::GetStyle().ItemSpacing.x / 2;
+    float frame_height = ImGui::GetFrameHeight();
+
+    float keycap_height = frame_height * 1.3f;
+    float wide_buttons_width = frame_height * 2;
+    float arrow_buttons_width = frame_height * 1.8f;
+    float forward_backward_buttons_width = frame_height * 3.25f;
+    float signal_braking_buttons_height = frame_height * 2.35f;
 
     switch (spectator::platform) {
         case spectator::platform_t::desktop: {
@@ -37,13 +44,13 @@ auto plugin::gui::windows::spectator_keys::get_keycaps(const samp::synchronizati
                         make_keycap<synchronization_key::lmb>(),
                         make_keycap<synchronization_key::w>(),
                         make_keycap<synchronization_key::rmb>(),
-                        make_keycap<synchronization_key::shift>({ 55 - wide_keycap_offset, keycap_height }),
-                        make_keycap<synchronization_key::alt>({ 55 - wide_keycap_offset, keycap_height }),
+                        make_keycap<synchronization_key::shift>({ wide_buttons_width - wide_keycap_offset, keycap_height }),
+                        make_keycap<synchronization_key::alt>({ wide_buttons_width - wide_keycap_offset, keycap_height }),
                         make_keycap<synchronization_key::f>(),
                         make_keycap<synchronization_key::a>(),
                         make_keycap<synchronization_key::s>(),
                         make_keycap<synchronization_key::d>(),
-                        make_keycap<synchronization_key::space>({ 110, keycap_height }),
+                        make_keycap<synchronization_key::space>({ wide_buttons_width * 2, keycap_height }),
                         make_keycap<synchronization_key::c>()
                     };
                 case synchronization_type::vehicle:
@@ -52,15 +59,15 @@ auto plugin::gui::windows::spectator_keys::get_keycaps(const samp::synchronizati
                         make_keycap<synchronization_key::q>(),
                         make_keycap<synchronization_key::w>(),
                         make_keycap<synchronization_key::e>(),
-                        make_keycap<synchronization_key::up>({ 50, keycap_height }),
-                        make_keycap<synchronization_key::ctrl>({ 55 - wide_keycap_offset, keycap_height }),
-                        make_keycap<synchronization_key::alt>({ 55 - wide_keycap_offset, keycap_height }),
+                        make_keycap<synchronization_key::up>({ arrow_buttons_width, keycap_height }),
+                        make_keycap<synchronization_key::ctrl>({ wide_buttons_width - wide_keycap_offset, keycap_height }),
+                        make_keycap<synchronization_key::alt>({ wide_buttons_width - wide_keycap_offset, keycap_height }),
                         make_keycap<synchronization_key::f>(),
                         make_keycap<synchronization_key::a>(),
                         make_keycap<synchronization_key::s>(),
                         make_keycap<synchronization_key::d>(),
-                        make_keycap<synchronization_key::down>({ 50, keycap_height }),
-                        make_keycap<synchronization_key::space>({ 110, keycap_height }),
+                        make_keycap<synchronization_key::down>({ arrow_buttons_width, keycap_height }),
+                        make_keycap<synchronization_key::space>({ wide_buttons_width, keycap_height }),
                         make_keycap<synchronization_key::h>()
                     };
             }
@@ -71,20 +78,20 @@ auto plugin::gui::windows::spectator_keys::get_keycaps(const samp::synchronizati
             switch (type) {
                 case synchronization_type::player:
                     return {
-                        make_keycap<synchronization_key::hit>({ 55 - wide_keycap_offset, keycap_height }),
-                        make_keycap<synchronization_key::aim>({ 55 - wide_keycap_offset, keycap_height }),
+                        make_keycap<synchronization_key::hit>({ wide_buttons_width - wide_keycap_offset, keycap_height }),
+                        make_keycap<synchronization_key::aim>({ wide_buttons_width - wide_keycap_offset, keycap_height }),
                         make_keycap<synchronization_key::f>(),
-                        make_keycap<synchronization_key::jump_run>({ 110, keycap_height }),
+                        make_keycap<synchronization_key::jump_run>({ wide_buttons_width * 2, keycap_height }),
                         make_keycap<synchronization_key::alt>()
                     };
                 case synchronization_type::vehicle:
                 case synchronization_type::passenger:
                     return {
-                        make_keycap<synchronization_key::forward>({ 90, keycap_height }),
-                        make_keycap<synchronization_key::signal>({ 65, keycap_height }),
+                        make_keycap<synchronization_key::forward>({ forward_backward_buttons_width, keycap_height }),
+                        make_keycap<synchronization_key::signal>({ signal_braking_buttons_height, keycap_height }),
                         make_keycap<synchronization_key::two>(),
-                        make_keycap<synchronization_key::backward>({ 90, keycap_height }),
-                        make_keycap<synchronization_key::braking>({ 65, keycap_height }),
+                        make_keycap<synchronization_key::backward>({ forward_backward_buttons_width, keycap_height }),
+                        make_keycap<synchronization_key::braking>({ signal_braking_buttons_height, keycap_height }),
                         make_keycap<synchronization_key::f>()
                     };
             }    
@@ -111,7 +118,7 @@ auto plugin::gui::windows::spectator_keys::render() -> void {
     ImGui::SetNextWindowBgAlpha(0);
     ImGui::PushStyleColor(ImGuiCol_FrameBg, *types::color(ImGui::GetColorU32(ImGuiCol_FrameBg), 160));
     ImGui::PushStyleColor(ImGuiCol_Border, 0);
-    ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoTitleBar);
+    ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
     {
         if (server::spectator::platform == server::spectator::platform_t::mobile) {
             server::spectator::joystick.render();

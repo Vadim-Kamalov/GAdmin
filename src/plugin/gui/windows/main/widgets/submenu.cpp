@@ -110,12 +110,15 @@ auto plugin::gui::windows::main::widgets::submenu::set_frame_renderer(frame_rend
 }
 
 auto plugin::gui::windows::main::widgets::submenu::render_menu(types::not_null<initializer*> child) -> void {
-    float child_width = (child_width_percent * child->window_size.x) / 100.0f;
+    ImFont* bold_font = child->child->fonts->bold;
+    std::string title_text = string_utils::truncate_until_hashtag(label);
+
+    float title_width = bold_font->CalcTextSizeA(title_font_size * ImGui::GetStyle().FontScaleDpi, FLT_MAX, 0.0f, title_text.c_str()).x;
+    float child_width = std::max<float>(ImGui::GetFrameHeight() * 7, child->window_padding.x * 2 + title_width);
 
     ImGui::BeginChild(label.c_str(), { child_width, 0 }, ImGuiChildFlags_AlwaysUseWindowPadding, child->window_flags);
     {
-        gui::widgets::text(child->child->fonts->bold, title_font_size, 0, "{}",
-                           string_utils::truncate_until_hashtag(label));
+        gui::widgets::text(bold_font, title_font_size, 0, "{}", title_text);
 
         ImVec2 region_size = ImGui::GetContentRegionAvail();
         ImVec2 button_size = { region_size.x, (switch_button_percent * child->window_size.y) / 100.0f };

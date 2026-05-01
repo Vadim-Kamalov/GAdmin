@@ -45,7 +45,6 @@ class binder final : public basic_frame {
 private:
     static constexpr float title_font_size = 24;
     static constexpr float common_font_size = 18;
-    static constexpr float buttons_height = 30;
     static constexpr ImVec2 popup_scrollable_area_size = { 450, 600 };
 
     struct bind_t final {

@@ -179,6 +179,8 @@ auto plugin::gui::windows::main::frames::statistics::get_time_periods(const plot
 }
 
 auto plugin::gui::windows::main::frames::statistics::frame_renderer(std::string& label, std::any& payload) -> void {
+    float clear_button_height = ImGui::GetFrameHeight();
+
     plot_info_t plot_info = std::any_cast<plot_info_t>(payload);
     time_periods_t periods = get_time_periods(plot_info);
 

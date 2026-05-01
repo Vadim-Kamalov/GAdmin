@@ -47,7 +47,7 @@ auto plugin::gui::windows::report::get_action_buttons() -> std::array<action_but
     ImVec2 spacing = ImGui::GetStyle().ItemSpacing;
 
     float window_width = ImGui::GetWindowWidth();
-    float button_height = (ImGui::GetContentRegionAvail().y - answer_button_height) / max_action_buttons_lines - spacing.y;
+    float button_height = ImGui::GetFrameHeight();
 
     ImVec2 corner_button_size = { window_width / max_buttons_per_line - padding.x, button_height }; 
     ImVec2 middle_button_size = { window_width / max_buttons_per_line - spacing.x * 2, button_height };
@@ -478,11 +478,12 @@ auto plugin::gui::windows::report::render() -> void {
     }
 
     auto [ size_x, size_y ] = game::get_screen_resolution();
+    float frame_height = ImGui::GetFrameHeight();
 
     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, window_alpha / 255.0f);
     ImGui::SetNextWindowPos({ size_x / 2.0f, size_y / 2.0f }, ImGuiCond_FirstUseEver, { 0.5f, 0.5f });
-    ImGui::SetNextWindowSizeConstraints({ 600, 300 }, { FLT_MAX, FLT_MAX });
-    ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoTitleBar);
+    ImGui::SetNextWindowSize({ frame_height * 22, 0 });
+    ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
     {
         ImGui::BeginChild("context", { 0, ImGui::GetWindowHeight() / 3 }, ImGuiChildFlags_Borders);
         {
@@ -532,7 +533,7 @@ auto plugin::gui::windows::report::render() -> void {
                     ImGui::SameLine();
             }
 
-            if (widgets::button("Ответить##windows::report", { ImGui::GetContentRegionAvail().x, answer_button_height })
+            if (widgets::button("Ответить##windows::report", { ImGui::GetContentRegionAvail().x, frame_height })
                     .render() && can_send_response())
             {
                 send_input_response(dialog_option::answer);
@@ -547,7 +548,7 @@ auto plugin::gui::windows::report::render() -> void {
                 float full_width = ImGui::GetContentRegionAvail().x;
                
                 for (std::uint8_t index = 0; index < std::size(block_time_options); index++) {
-                    if (widgets::button(std::to_string(block_time_options[index]) + " минут##block_time_selection", { full_width, 25 })
+                    if (widgets::button(std::to_string(block_time_options[index]) + " минут##block_time_selection", { full_width, frame_height })
                                 .render())
                     {
                         current_response = { dialog_option::block, answer_input, index };
@@ -556,7 +557,7 @@ auto plugin::gui::windows::report::render() -> void {
                     }
                 }
             
-                if (widgets::button("Закрыть##block_time_selection", { full_width, 30 })
+                if (widgets::button("Закрыть##block_time_selection", { full_width, frame_height * 1.5f })
                         .render())
                 {
                     ImGui::CloseCurrentPopup();

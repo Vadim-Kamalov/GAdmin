@@ -60,7 +60,7 @@
                 { "use": true, "name": "WARN", "action": "^/warn ${{ SPECTATOR_ID }}" },
                 { "use": true, "name": "SLAP", "action": "/slap ${{ SPECTATOR_ID }}" },
                 { "use": true, "name": "SWITCH", "action": 1 },
-                { "use": true, "name": "GETBUYCAR", "action": "^/getbuycar " },
+                { "use": true, "name": "GBC", "action": "^/getbuycar " },
                 { "use": true, "name": "BAN", "action": "^/ban ${{ SPECTATOR_ID }}" },
                 { "use": true, "name": "KICK", "action": "^/kick ${{ SPECTATOR_ID }}" },
                 { "use": true, "name": "BMUTE", "action": "^/bmute ${{ SPECTATOR_ID }}" },
