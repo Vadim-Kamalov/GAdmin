@@ -65,6 +65,25 @@ private:
     static auto on_terminate() noexcept -> void;
     static auto __stdcall on_unhandled_exception(EXCEPTION_POINTERS* exception_info) noexcept -> long;
 public:
+    /// Check that the user is connected to a valid server. If this function is called
+    /// when `samp::net_game::instance_container->read()` is equal to `nullptr`, it will
+    /// compare the host address from the command line parameters. Otherwise, it will
+    /// use `samp::net_game::get_host_address()`.
+    ///
+    /// Note that this function uses hardcoded IP addresses to check the connection to
+    /// the valid server. The reason for this is that SA:MP does not provide the server's
+    /// domain name anywhere, only its IP address. However, we could resolve the original
+    /// server’s domain name to obtain the actual IP address instead of relying on hardcoded
+    /// values, but this would increase the loading time, depending on the user's internet
+    /// connection.
+    ///
+    /// Because the function implementation uses hardcoded IP addresses, we have to update
+    /// these values each time any of the IP addresses changes.
+    ///
+    /// @see    https://github.com/Vadim-Kamalov/GAdmin/issues/38
+    /// @return True if user is connected to the valid server.
+    static auto is_connected_to_valid_server() noexcept -> bool;
+
     /// Process SA:MP event.
     /// 
     /// @param event[in] SA-MP event information.

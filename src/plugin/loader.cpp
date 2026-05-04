@@ -139,8 +139,14 @@ plugin::loader::loader() {
     DisableThreadLibraryCalls(reinterpret_cast<HMODULE>(&__ImageBase));
 
     log_handler.load_file(std::filesystem::current_path() / "gadmin.log");
-    log::set_unload_callback([this] { core.reset(nullptr); });
     log::info("logging initialized");
+   
+    if (!plugin_initializer::is_connected_to_valid_server()) {
+        log::fatal("plugin works only on \"sa.gambit-rp.ru:7777\" server");
+        return;
+    }
+
+    log::set_unload_callback([this] { core.reset(nullptr); });
 
     game_loop_hook.set_dest(0x53BEE0);
     game_loop_hook.set_cb(std::bind(&loader::game_loop_hooked, this, _1));

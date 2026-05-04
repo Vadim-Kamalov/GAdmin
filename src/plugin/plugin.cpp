@@ -102,7 +102,7 @@ auto plugin::plugin_initializer::on_samp_initialize() -> void {
 
     log::info("samp::net_game::instance() != nullptr: SA:MP {} initialized", samp::get_version());
 
-    if (samp::net_game::get_host_address() != SERVER_HOST_ADDRESS) {
+    if (!is_connected_to_valid_server()) {
         log::fatal("plugin works only on \"sa.gambit-rp.ru:7777\" server");
         return;
     }
@@ -306,6 +306,21 @@ auto __stdcall plugin::plugin_initializer::on_unhandled_exception(EXCEPTION_POIN
     log::error("plugin and process are terminated (FATAL)");
 
     return EXCEPTION_EXECUTE_HANDLER;
+}
+
+auto plugin::plugin_initializer::is_connected_to_valid_server() noexcept -> bool {
+    static constexpr auto ip_addresses = std::to_array<std::string_view>({ "5.188.224.221",
+                                                                           "85.234.65.36" });
+
+    if (samp::net_game::instance_container->read() == 0) {
+        std::string command_line = GetCommandLineA();
+        return std::ranges::any_of(ip_addresses,
+            [&command_line](const std::string_view& ip_address) {
+                return command_line.contains(ip_address);
+            });
+    }
+
+    return std::ranges::contains(ip_addresses, samp::net_game::get_host_address());
 }
 
 plugin::plugin_initializer::plugin_initializer() {
