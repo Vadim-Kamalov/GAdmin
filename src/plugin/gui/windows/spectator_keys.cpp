@@ -67,7 +67,7 @@ auto plugin::gui::windows::spectator_keys::get_keycaps(const samp::synchronizati
                         make_keycap<synchronization_key::s>(),
                         make_keycap<synchronization_key::d>(),
                         make_keycap<synchronization_key::down>({ arrow_buttons_width, keycap_height }),
-                        make_keycap<synchronization_key::space>({ wide_buttons_width, keycap_height }),
+                        make_keycap<synchronization_key::space>({ wide_buttons_width * 2.0f, keycap_height }),
                         make_keycap<synchronization_key::h>()
                     };
             }
