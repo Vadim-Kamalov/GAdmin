@@ -40,41 +40,40 @@
 
 auto plugin::gui::windows::report::get_action_buttons() -> std::array<action_button, 12> {
     std::array<action_button, 12> output;
-    std::string id = std::format("##{}", get_id());
 
     auto& window_configuration = (*configuration)["windows"]["report"];
     ImVec2 padding = ImGui::GetStyle().WindowPadding;
     ImVec2 spacing = ImGui::GetStyle().ItemSpacing;
 
     float window_width = ImGui::GetWindowWidth();
-    float button_height = (ImGui::GetContentRegionAvail().y - answer_button_height) / max_action_buttons_lines - spacing.y;
+    float button_height = ImGui::GetFrameHeight();
 
     ImVec2 corner_button_size = { window_width / max_buttons_per_line - padding.x, button_height }; 
     ImVec2 middle_button_size = { window_width / max_buttons_per_line - spacing.x * 2, button_height };
 
-    output[0] = { widgets::button("Следить" + id, corner_button_size),
-                  std::bind(&report::send_response, this, dialog_option::spectate) };
+    output[0] = { widgets::button("Следить", "report:spectate", corner_button_size),
+                  std::bind(&report::send_response, this, dialog_option::spectate), true };
 
-    output[1] = { widgets::button("Удалить" + id, middle_button_size),
+    output[1] = { widgets::button("Удалить", "report:remove", middle_button_size),
                   std::bind(&report::send_input_response, this, dialog_option::remove) };
 
-    output[2] = { widgets::button("Поставить метку" + id, corner_button_size),
+    output[2] = { widgets::button("Поставить метку", "report:set_map_point", corner_button_size),
                   std::bind(&report::send_response, this, dialog_option::set_map_point) };
     
-    output[3] = { widgets::button("Отправить в /a чат" + id, corner_button_size),
+    output[3] = { widgets::button("Отправить в /a чат", "report:send_to_chat", corner_button_size),
                   std::bind(&report::send_chat_action_button, this) };
     
-    output[4] = { widgets::button("Заблокировать репорт" + id, middle_button_size),
-                  std::bind(&report::block_action_button, this) };
+    output[4] = { widgets::button("Заблокировать репорт", "report:block", middle_button_size),
+                  std::bind(&report::block_action_button, this), true };
 
-    output[5] = { widgets::button("Передать репорт" + id, corner_button_size),
+    output[5] = { widgets::button("Передать репорт", "report:return", corner_button_size),
                   std::bind(&report::send_response, this, dialog_option::return_to_administration) };
 
     for (std::size_t i = 6; i < output.size(); i++) {
         insert_button button = window_configuration["insert_buttons"][i - 6];
         ImVec2 button_size = (i == 7 || i == 10) ? middle_button_size : corner_button_size;
 
-        output[i] = { widgets::button("> " + button.name + id, button_size),
+        output[i] = { widgets::button(std::format("> {}##{}", button.name, get_id()), button_size),
                       [this, button] { answer_input = button.insert; }};
     }
 
@@ -82,7 +81,8 @@ auto plugin::gui::windows::report::get_action_buttons() -> std::array<action_but
 }
 
 auto plugin::gui::windows::report::send_chat_action_button() const -> void {
-    samp::input::send_command("/a {}[{}]: {}", current_report->nickname,
+    std::string command = (server::user::is_on_alogin()) ? "/a" : "/h";
+    samp::input::send_command("{} {}[{}]: {}", command, current_report->nickname,
                               current_report->id, current_report->text);
 }
 
@@ -101,7 +101,7 @@ auto plugin::gui::windows::report::on_dialog_response(const samp::out_event<samp
 }
 
 auto plugin::gui::windows::report::on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog) -> bool {
-    if (!dialog || !server::user::is_on_alogin())
+    if (!dialog)
         return true;
 
     if (current_report_type == report_type::waiting)
@@ -278,7 +278,7 @@ auto plugin::gui::windows::report::close_dialog() -> void {
 }
 
 auto plugin::gui::windows::report::switch_window() -> void {
-    if (!server::user::is_on_alogin() || !current_report.has_value())
+    if (!current_report.has_value())
         return;
 
     (active) ? close_window() : open_window_with_dialog();
@@ -286,7 +286,7 @@ auto plugin::gui::windows::report::switch_window() -> void {
 
 auto plugin::gui::windows::report::try_handle_report_searching(const std::string& text) -> bool {
     if ((!searching_reports && !current_report.has_value()) &&
-        (text.starts_with("[H] Репорт от ") || text.starts_with("[A] Репорт от ")))
+        (text.starts_with("[H] Репорт от ") || text.starts_with("[A] Репорт от ") || text.starts_with("[A] /ask")))
     {
         log::info("[windows::report] found a new report available to accept. details:");
         log::info("| text: {}", text);
@@ -363,8 +363,8 @@ auto plugin::gui::windows::report::get_time_active() const -> std::string {
 }
 
 auto plugin::gui::windows::report::try_accept_last_report() -> void {
-    if (searching_reports || !server::user::is_on_alogin()) {
-        log::info("[windows::report] failed to accept a report. reason: currently searching a report or user is not on the /alogin");
+    if (searching_reports) {
+        log::info("[windows::report] failed to accept a report. reason: currently searching a report");
         return;
     }
 
@@ -478,11 +478,12 @@ auto plugin::gui::windows::report::render() -> void {
     }
 
     auto [ size_x, size_y ] = game::get_screen_resolution();
+    float frame_height = ImGui::GetFrameHeight();
 
     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, window_alpha / 255.0f);
     ImGui::SetNextWindowPos({ size_x / 2.0f, size_y / 2.0f }, ImGuiCond_FirstUseEver, { 0.5f, 0.5f });
-    ImGui::SetNextWindowSizeConstraints({ 600, 300 }, { FLT_MAX, FLT_MAX });
-    ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoTitleBar);
+    ImGui::SetNextWindowSize({ frame_height * 22, 0 });
+    ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
     {
         ImGui::BeginChild("context", { 0, ImGui::GetWindowHeight() / 3 }, ImGuiChildFlags_Borders);
         {
@@ -525,14 +526,22 @@ auto plugin::gui::windows::report::render() -> void {
                 .render();
             
             for (const auto& [ index, action_button ] : get_action_buttons() | std::views::enumerate) {
-                if (action_button.widget.render() && !reset)
-                    action_button.callback();
+                ImGui::BeginGroup();
+                {
+                    if (action_button.widget.render() && !reset && (!action_button.requires_alogin || server::user::is_on_alogin()))
+                        action_button.callback();
+
+                    if (action_button.requires_alogin && !server::user::is_on_alogin())
+                        widgets::hint(std::format("Кнопка \"{}\" доступна только администраторам", action_button.widget.label),
+                                      style::get_current_accent_colors().red).render();
+                }
+                ImGui::EndGroup();
 
                 if ((index + 1) % max_buttons_per_line != 0)
                     ImGui::SameLine();
             }
 
-            if (widgets::button("Ответить##windows::report", { ImGui::GetContentRegionAvail().x, answer_button_height })
+            if (widgets::button("Ответить##windows::report", { ImGui::GetContentRegionAvail().x, frame_height })
                     .render() && can_send_response())
             {
                 send_input_response(dialog_option::answer);
@@ -547,7 +556,7 @@ auto plugin::gui::windows::report::render() -> void {
                 float full_width = ImGui::GetContentRegionAvail().x;
                
                 for (std::uint8_t index = 0; index < std::size(block_time_options); index++) {
-                    if (widgets::button(std::to_string(block_time_options[index]) + " минут##block_time_selection", { full_width, 25 })
+                    if (widgets::button(std::to_string(block_time_options[index]) + " минут##block_time_selection", { full_width, frame_height })
                                 .render())
                     {
                         current_response = { dialog_option::block, answer_input, index };
@@ -556,7 +565,7 @@ auto plugin::gui::windows::report::render() -> void {
                     }
                 }
             
-                if (widgets::button("Закрыть##block_time_selection", { full_width, 30 })
+                if (widgets::button("Закрыть##block_time_selection", { full_width, frame_height * 1.5f })
                         .render())
                 {
                     ImGui::CloseCurrentPopup();
@@ -606,10 +615,10 @@ plugin::gui::windows::report::report(types::not_null<gui_initializer*> child)
       bold_font(child->fonts->bold),
       regular_font(child->fonts->regular)
 {
-    switch_window_hotkey = hotkey("Открыть/закрыть окно репорта", key_bind({ 'K', 0 }, bind_condition::on_alogin))
+    switch_window_hotkey = hotkey("Открыть/закрыть окно репорта", key_bind({ 'K', 0 }))
         .with_callback(std::bind(&report::switch_window, this));
 
-    try_accept_last_report_hotkey = hotkey("Принять последний репорт", key_bind({ 'O', 0 }, bind_condition::on_alogin))
+    try_accept_last_report_hotkey = hotkey("Принять последний репорт", key_bind({ 'O', 0 }))
         .with_callback(std::bind(&report::try_accept_last_report, this));
 
     child->hotkey_handler->add(switch_window_hotkey);

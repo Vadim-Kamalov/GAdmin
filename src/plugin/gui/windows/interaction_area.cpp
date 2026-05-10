@@ -177,22 +177,24 @@ auto plugin::gui::windows::interaction_area::render_stroked_text(ImDrawList* dra
     -> void
 {
     ImU32 black_color = color.value.alpha << 24;
+    float scale = ImGui::GetStyle().FontScaleDpi;
 
-    draw_list->AddText(font, fonts_size, { pos.x + 1, pos.y + 1 }, black_color, text);
-    draw_list->AddText(font, fonts_size, { pos.x - 1, pos.y - 1 }, black_color, text);
-    draw_list->AddText(font, fonts_size, { pos.x + 1, pos.y - 1 }, black_color, text);
-    draw_list->AddText(font, fonts_size, { pos.x - 1, pos.y + 1 }, black_color, text);
-    draw_list->AddText(font, fonts_size, pos, *color, text);
+    draw_list->AddText(font, fonts_size * scale, { pos.x + 1, pos.y + 1 }, black_color, text);
+    draw_list->AddText(font, fonts_size * scale, { pos.x - 1, pos.y - 1 }, black_color, text);
+    draw_list->AddText(font, fonts_size * scale, { pos.x + 1, pos.y - 1 }, black_color, text);
+    draw_list->AddText(font, fonts_size * scale, { pos.x - 1, pos.y + 1 }, black_color, text);
+    draw_list->AddText(font, fonts_size * scale, pos, *color, text);
 }
 
 auto plugin::gui::windows::interaction_area::render_help_text(ImDrawList* draw_list, float radius, const types::color& active_color,
                                                               const types::color& disabled_color) const -> void
 {
     auto [ size_x, size_y ] = game::get_screen_resolution();
+    float scale = ImGui::GetStyle().FontScaleDpi;
 
     ImVec2 center = { size_x / 2.0f, size_y / 2.0f };
     ImVec2 spacing = ImGui::GetStyle().ItemSpacing;
-    ImVec2 longest_description_size = bold_font->CalcTextSizeA(fonts_size, FLT_MAX, 0.0f, get_longest_action_description());
+    ImVec2 longest_description_size = bold_font->CalcTextSizeA(fonts_size * scale, FLT_MAX, 0.0f, get_longest_action_description());
 
     float group_size = std::size(actions_description) / 2.0f + 1;
     float group_height = (fonts_size * (group_size + spacing.y)) - spacing.y;
@@ -202,7 +204,7 @@ auto plugin::gui::windows::interaction_area::render_help_text(ImDrawList* draw_l
             ? active_color : disabled_color;
         
         for (const auto& [ index, description ] : group | std::views::enumerate) {
-            ImVec2 size = bold_font->CalcTextSizeA(fonts_size, FLT_MAX, 0.0f, description);
+            ImVec2 size = bold_font->CalcTextSizeA(fonts_size * scale, FLT_MAX, 0.0f, description);
             float y = center.y - (group_height / 2) + ((index - 1) * 20);
             float x = center.x + ((group_index == 0) 
                     ? -radius - 20 - longest_description_size.x
@@ -220,11 +222,12 @@ auto plugin::gui::windows::interaction_area::render_search_description(ImDrawLis
                                          search_description };
 
     auto [ size_x, size_y ] = game::get_screen_resolution();
+    float scale = ImGui::GetStyle().FontScaleDpi;
     ImVec2 center = { size_x / 2.0f, size_y / 2.0f };
 
     for (const auto& [ index, line ] : lines | std::views::enumerate) {
         ImFont* font = (index == 0) ? regular_font : bold_font;
-        float x = center.x - font->CalcTextSizeA(fonts_size, FLT_MAX, 0.0f, line.c_str()).x / 2;
+        float x = center.x - font->CalcTextSizeA(fonts_size * scale, FLT_MAX, 0.0f, line.c_str()).x / 2;
         float y = center.y + ((index == 0) ? radius + 20 : -radius - 30);
 
         render_stroked_text(draw_list, font, { x, y }, active_color, line.c_str());
@@ -254,7 +257,7 @@ auto plugin::gui::windows::interaction_area::render() -> void {
         return;
 
     std::string search_description = "";
-    float radius = window_configuration["radius"];
+    float radius = window_configuration["radius"].get<float>() * ImGui::GetStyle().FontScaleDpi;
     ImDrawList* draw_list = ImGui::GetBackgroundDrawList();
 
     auto [ size_x, size_y ] = game::get_screen_resolution();

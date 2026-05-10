@@ -289,7 +289,7 @@ auto plugin::gui::windows::command_requester::render() -> void {
 
     ImVec2 padding = ImGui::GetStyle().WindowPadding;
     auto [ size_x, size_y ] = game::get_screen_resolution();
-    float window_height = fonts_size + padding.y * 2;
+    float window_height = fonts_size * ImGui::GetStyle().FontScaleDpi + padding.y * 2;
 
     auto time_to_hide_ms = std::chrono::duration_cast<std::chrono::milliseconds>(5s - (now - time_request_sent));
     std::string timer = std::format("Запрос истекает через {:.1f} секунд", time_to_hide_ms.count() / 1000.f);

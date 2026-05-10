@@ -236,7 +236,6 @@
         "auto_aa_command": { "_type": "bool", "_name": "Автоматический /aa" },
         "display_id_in_chat": { "_type": "bool", "_name": "Отображать ID в IC чате" },
         "auto_alogin": { "_type": "bool", "_name": "/alogin после спавна" },
-        "fix_chat_opening": { "_type": "bool", "_name": "Исправление открытия чата на Т" },
         "auto_login": {
             "_type": "subsection",
             "_name": "Автоматический ввод паролей",
@@ -254,11 +253,6 @@
             "_type": "subsection",
             "_name": "Упоминания в /a",
             "sound_notify": { "_type": "bool", "_name": "Звуковое оповещение" },
-            "color": { "_type": "color", "_name": "Цвет" }
-        },
-        "report_one_color": {
-            "_type": "subsection",
-            "_name": "Репорт одного цвета",
             "color": { "_type": "color", "_name": "Цвет" }
         },
         "death_notify_in_chat": {
@@ -287,6 +281,15 @@
             "_type": "subsection",
             "_name": "Изменение цветов сообщений в чате",
             "items": { "_type": "custom", "_name": "Сообщения" }
+        },
+        "message_hider": {
+            "_type": "subsection",
+            "_name": "Скрытие сообщений",
+            "hide_anticheat": { "_type": "bool", "_name": "Античит" },
+            "hide_punishments": { "_type": "bool", "_name": "Наказания" },
+            "hide_complaints": { "_type": "bool", "_name": "Вопросы/Жалобы" },
+            "hide_player_actions": { "_type": "bool", "_name": "Действия игроков" },
+            "hide_admin_actions": { "_type": "bool", "_name": "Действия администраторов" }
         },
         "gun_info": {
             "_type": "subsection",

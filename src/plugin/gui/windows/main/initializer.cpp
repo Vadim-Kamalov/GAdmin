@@ -144,9 +144,11 @@ auto plugin::gui::windows::main::initializer::render() -> void {
         closing = active = false;
 
     auto [ size_x, size_y ] = game::get_screen_resolution();
+    float frame_height = ImGui::GetFrameHeight();
 
     ImGui::SetNextWindowPos({ size_x / 2.0f, size_y / 2.0f }, ImGuiCond_FirstUseEver, { 0.5f, 0.5f });
-    ImGui::SetNextWindowSizeConstraints(default_window_size, { FLT_MAX, FLT_MAX });
+    ImGui::SetNextWindowSize({ 29 * frame_height, 18 * frame_height });
+
     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, window_alpha / 255.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, 0 });
     ImGui::Begin(get_id(), nullptr, window_flags);

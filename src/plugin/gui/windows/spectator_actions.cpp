@@ -53,6 +53,7 @@ auto plugin::gui::windows::spectator_actions::render() -> void {
 
     server::spectator_information information = server::spectator::get_information();
     auto [ size_x, size_y ] = game::get_screen_resolution();
+    float frame_height = ImGui::GetFrameHeight();
 
     std::string left_information = std::format("{}", server::spectator::platform);
     std::string center_information = std::format("Скорость: {} / {} · Оружие: {} · Здоровье: {} · Пинг: {}",
@@ -60,9 +61,9 @@ auto plugin::gui::windows::spectator_actions::render() -> void {
                                                  information.weapon, information.health, information.ping);
 
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 2, 2 });
-    ImGui::SetNextWindowSizeConstraints({ 700, 120 }, { FLT_MAX, FLT_MAX });
+    ImGui::SetNextWindowSize({ frame_height * 25, frame_height * 4.3f });
     ImGui::SetNextWindowPos({ size_x / 83.47826f, size_y / 1.15543f }, ImGuiCond_FirstUseEver);
-    ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoTitleBar);
+    ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
     {
         ImGui::BeginGroup();
         {

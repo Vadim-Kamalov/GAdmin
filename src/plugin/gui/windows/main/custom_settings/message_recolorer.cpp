@@ -27,7 +27,7 @@ auto plugin::gui::windows::main::custom_settings::message_recolorer::horizontal_
     float spacing_y = ImGui::GetStyle().ItemSpacing.y;
     float window_padding_y = ImGui::GetStyle().WindowPadding.y;
     float font_size = ImGui::GetFontSize();
-    float toggle_button_height = std::max<float>(widgets::toggle_button::size.y, font_size);
+    float toggle_button_height = std::max<float>(widgets::toggle_button::get_size().y, font_size);
 
     ImGui::SetCursorPosY(window_padding_y + ((color_edit_height_width - window_padding_y
                     - count_of_lines_in_group * spacing_y - font_size
@@ -140,7 +140,7 @@ auto plugin::gui::windows::main::custom_settings::message_recolorer::render(type
 
             render_color_input(gui, setter, start, width);
             ImGui::SetCursorPosX(start + (width - (ImGui::CalcTextSize("Изменять цвет сообщений").x
-                            + widgets::toggle_button::size.x + spacing_x)) / 2.0f);
+                            + widgets::toggle_button::get_size().x + spacing_x)) / 2.0f);
 
             widgets::toggle_button("Изменять цвет сообщений##message_recolorer", use).render();
         }

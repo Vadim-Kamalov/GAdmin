@@ -25,11 +25,12 @@
 
 auto plugin::gui::windows::notes::get_note_information(const note_t& note) const -> note_information_t {
     std::string processed_text = server::binder::process(note.text);
+    float scale = ImGui::GetStyle().FontScaleDpi;
 
-    float title_width = bold_font->CalcTextSizeA(note.title_size, FLT_MAX, 0.0f, note.title.c_str()).x
+    float title_width = bold_font->CalcTextSizeA(note.title_size * scale, FLT_MAX, 0.0f, note.title.c_str()).x
         + text_border_size * 2;
 
-    float text_width = regular_font->CalcTextSizeA(note.text_size, FLT_MAX, 0.0f, processed_text.c_str()).x
+    float text_width = regular_font->CalcTextSizeA(note.text_size * scale, FLT_MAX, 0.0f, processed_text.c_str()).x
         + text_border_size * 2;
 
     note_information_t information = {
@@ -65,7 +66,7 @@ auto plugin::gui::windows::notes::render_note(const note_t& note, const std::str
         std::stringstream stream(note_information.processed_text);
         
         for (std::string line; std::getline(stream, line);) {
-            float line_width = regular_font->CalcTextSizeA(note.text_size, FLT_MAX, 0.0f, line.c_str()).x
+            float line_width = regular_font->CalcTextSizeA(note.text_size * ImGui::GetStyle().FontScaleDpi, FLT_MAX, 0.0f, line.c_str()).x
                 + text_border_size * 2;
         
             widgets::aligner(note_information.align_mode, line_width).align_next_item();

@@ -32,7 +32,6 @@ namespace plugin::gui::widgets {
 /// Represents a toggle button in the GUI.
 class toggle_button final {
 private:
-    static constexpr float radius = 6;
     static constexpr std::chrono::milliseconds duration = 300ms;
     
     struct configuration_t {
@@ -46,13 +45,15 @@ private:
     std::string label;
     types::setter<bool> state;
 public:
-    /// Size of the switch.
-    static constexpr ImVec2 size = { 40, 20 };
-
     /// Render the toggle button.
     /// 
     /// @return True if the button was clicked by the user.
     auto render() -> bool;
+
+    /// Get size of the toggle button.
+    ///
+    /// @return Size of the toggle button.
+    static auto get_size() noexcept -> ImVec2;
 
     /// Construct toggle button with a directly passed state by reference.
     /// 

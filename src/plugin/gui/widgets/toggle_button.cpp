@@ -24,7 +24,10 @@ auto plugin::gui::widgets::toggle_button::render() -> bool {
     ImVec2 pos = ImGui::GetCursorScreenPos();
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
-    ImVec2 o = { 4, pos.y + (size.y / 2) };
+    ImVec2 size = get_size();
+    ImVec2 o = { ImGui::GetStyle().FramePadding.x, pos.y + (size.y / 2) };
+
+    float radius = (size.y - o.x) / 3.0f;
     float a = pos.x + radius + o.x;
     float b = pos.x + size.x - radius - o.x;
 
@@ -66,8 +69,13 @@ auto plugin::gui::widgets::toggle_button::render() -> bool {
         it.pos_x = (state) ? b : a;
     }
 
-    draw_list->AddRect(pos, { pos.x + size.x, pos.y + size.y }, *it.color, 10, ImDrawFlags_RoundCornersAll);
+    draw_list->AddRect(pos, { pos.x + size.x, pos.y + size.y }, *it.color, ImGui::GetStyle().GrabRounding * 2.0f, ImDrawFlags_RoundCornersAll);
     draw_list->AddCircleFilled({ it.pos_x, o.y }, radius, *it.color, 32);
 
     return result;
+}
+    
+auto plugin::gui::widgets::toggle_button::get_size() noexcept -> ImVec2 {
+    float frame_height = ImGui::GetFrameHeight();
+    return { frame_height * 1.35f, frame_height / 1.4f };
 }

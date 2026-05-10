@@ -53,7 +53,7 @@ auto plugin::gui::windows::kill_list::get_window_size(bool show_title) const -> 
         window_size.y += title_font_size + spacing_y;
 
     window_size.x += max_entry_width;
-    window_size.y += (common_font_size + spacing_y) * entries.size() - spacing_y;
+    window_size.y += (common_font_size * ImGui::GetStyle().FontScaleDpi + spacing_y) * entries.size() - spacing_y;
 
     return window_size;
 }
@@ -69,15 +69,16 @@ auto plugin::gui::windows::kill_list::update_max_entry_width() -> void {
 
 auto plugin::gui::windows::kill_list::write_entry_width(entry_t& entry) -> void {
     float spacing_x = ImGui::GetStyle().ItemSpacing.x;
-    float width = bold_font->CalcTextSizeA(common_font_size, FLT_MAX, 0.0f, entry.left.to_string().c_str()).x
-        + spacing_x + regular_font->CalcTextSizeA(common_font_size, FLT_MAX, 0.0f, entry.reason.c_str()).x
+    float scale = ImGui::GetStyle().FontScaleDpi;
+    float width = bold_font->CalcTextSizeA(common_font_size * scale, FLT_MAX, 0.0f, entry.left.to_string().c_str()).x
+        + spacing_x + regular_font->CalcTextSizeA(common_font_size * scale, FLT_MAX, 0.0f, entry.reason.c_str()).x
         + text_border_size * 2;
 
     if (!entry.time.empty())
-        width += bold_font->CalcTextSizeA(common_font_size, FLT_MAX, 0.0f, entry.time.c_str()).x + spacing_x;
+        width += bold_font->CalcTextSizeA(common_font_size * scale, FLT_MAX, 0.0f, entry.time.c_str()).x + spacing_x;
 
     if (entry.right.has_value())
-        width += bold_font->CalcTextSizeA(common_font_size, FLT_MAX, 0.0f, entry.right->to_string().c_str()).x + spacing_x;
+        width += bold_font->CalcTextSizeA(common_font_size * scale, FLT_MAX, 0.0f, entry.right->to_string().c_str()).x + spacing_x;
 
     if (max_entry_width < width)
         max_entry_width = width;
@@ -167,7 +168,7 @@ auto plugin::gui::windows::kill_list::render() -> void {
     ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoDecoration);
     {
         if (show_title) {
-            widgets::aligner(align_mode, bold_font->CalcTextSizeA(title_font_size, FLT_MAX, 0.0f, title_text).x)
+            widgets::aligner(align_mode, bold_font->CalcTextSizeA(title_font_size * ImGui::GetStyle().FontScaleDpi, FLT_MAX, 0.0f, title_text).x)
                 .align_next_item();
 
             widgets::text(bold_font, title_font_size, text_border_size, title_text);

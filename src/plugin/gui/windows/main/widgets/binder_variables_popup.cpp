@@ -38,10 +38,11 @@ auto plugin::gui::windows::main::widgets::binder_variables_popup::render_variabl
 
     bool has_parameters = !variable.parameters_info.empty();
     float height_offset = (has_parameters) ? common_font_size + spacing.y : 0;
+    float font_size = common_font_size * ImGui::GetStyle().FontScaleDpi;
 
     if (gui::widgets::button("", "binder-variable:" + variable.name, {
         ImGui::GetContentRegionAvail().x,
-        common_font_size + padding.y * 2 + height_offset
+        font_size + padding.y * 2 + height_offset
     }).render()) {
         if (inserter != nullptr) {
             std::format_to(std::back_inserter(*inserter), "${{{{ {}", variable.name);
@@ -62,9 +63,9 @@ auto plugin::gui::windows::main::widgets::binder_variables_popup::render_variabl
     ImU32 color = ImGui::GetColorU32(ImGuiCol_Text);
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
-    draw_list->AddText(bold_font, common_font_size, pos, color, variable.name.c_str());
-    pos.x += bold_font->CalcTextSizeA(common_font_size, FLT_MAX, 0.0f, variable.name.c_str()).x + spacing.x;
-    draw_list->AddText(regular_font, common_font_size, pos, color, variable.description.c_str());
+    draw_list->AddText(bold_font, font_size, pos, color, variable.name.c_str());
+    pos.x += bold_font->CalcTextSizeA(font_size, FLT_MAX, 0.0f, variable.name.c_str()).x + spacing.x;
+    draw_list->AddText(regular_font, font_size, pos, color, variable.description.c_str());
 
     if (!has_parameters)
         return;
@@ -72,9 +73,9 @@ auto plugin::gui::windows::main::widgets::binder_variables_popup::render_variabl
     pos = { rect_min.x + padding.x, rect_min.y + padding.y + spacing.y + common_font_size };
     color = ImGui::GetColorU32(ImGuiCol_TextDisabled);
 
-    draw_list->AddText(bold_font, common_font_size, pos, color, "Параметр:");
-    pos.x += bold_font->CalcTextSizeA(common_font_size, FLT_MAX, 0.0f, "Параметр:").x + spacing.x;
-    draw_list->AddText(regular_font, common_font_size, pos, color, variable.parameters_info.c_str());
+    draw_list->AddText(bold_font, font_size, pos, color, "Параметр:");
+    pos.x += bold_font->CalcTextSizeA(font_size, FLT_MAX, 0.0f, "Параметр:").x + spacing.x;
+    draw_list->AddText(regular_font, font_size, pos, color, variable.parameters_info.c_str());
 }
 
 auto plugin::gui::windows::main::widgets::binder_variables_popup::popup_renderer() -> void {

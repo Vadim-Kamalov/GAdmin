@@ -35,9 +35,7 @@ namespace plugin::gui::windows::main::widgets {
 /// Supports hover and click animations with customizable appearance and behavior.
 class frame_switcher final {
 private:
-    static constexpr float button_default_height = 30;
-    static constexpr float button_height_percent =
-        (button_default_height * 100.0f) / initializer::default_window_size.y; ///< ~6.6
+    static constexpr float button_height_percent = 6.6;
 
     static constexpr std::chrono::milliseconds click_animation_duration = 200ms;
     static constexpr std::chrono::milliseconds hover_animation_duration = 400ms;
@@ -45,9 +43,6 @@ private:
     static constexpr std::chrono::milliseconds fade_in_duration = 150ms;
     static constexpr std::chrono::milliseconds fade_out_duration = 300ms;
     static constexpr std::chrono::milliseconds fade_in_out_duration = fade_in_duration + fade_out_duration;
-
-    static constexpr float icon_font_size = 24;
-    static constexpr float text_font_size = 18;
 
     types::not_null<frame_selector*> child;
     types::color current_color;

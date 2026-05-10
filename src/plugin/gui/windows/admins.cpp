@@ -41,13 +41,15 @@ auto plugin::gui::windows::admins::get_window_information() const -> window_info
     bool show_level = window_configuration["show_level"];
     bool show_id = window_configuration["show_id"];
 
+    float scale = ImGui::GetStyle().FontScaleDpi;
+
     if (show_title) {
         information.title = "Список администраторов";
 
         if (window_configuration["show_count"])
             std::format_to(std::back_inserter(information.title), " (всего: {})", admins.size());
 
-        information.window_width = title_font->CalcTextSizeA(title_font_size, FLT_MAX, 0.0f, information.title.c_str()).x
+        information.window_width = title_font->CalcTextSizeA(title_font_size * scale, FLT_MAX, 0.0f, information.title.c_str()).x
             + border_size * 2;
     }
 
@@ -64,7 +66,7 @@ auto plugin::gui::windows::admins::get_window_information() const -> window_info
         if (show_id)
             std::format_to(std::back_inserter(entry.text), "[{}]", admin.id);
 
-        float width = entry_font->CalcTextSizeA(entry_font_size, FLT_MAX, 0.0f, entry.text.c_str()).x
+        float width = entry_font->CalcTextSizeA(entry_font_size * scale, FLT_MAX, 0.0f, entry.text.c_str()).x
             + border_size * 2;
         
         if (information.window_width < width)

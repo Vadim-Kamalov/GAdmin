@@ -6,7 +6,6 @@
 #include "plugin/misc/features/death_notify_in_chat.h"
 #include "plugin/misc/features/display_id_in_chat.h"
 #include "plugin/misc/features/fish_eye.h"
-#include "plugin/misc/features/fixes.h"
 #include "plugin/misc/features/hide_addresses.h"
 #include "plugin/misc/features/information_render.h"
 #include "plugin/misc/features/mentions.h"
@@ -63,7 +62,6 @@ plugin::misc::initializer::initializer() {
     features.push_back(std::make_unique<features::auto_aa_command>());
     features.push_back(std::make_unique<features::hide_addresses>());
     features.push_back(std::make_unique<features::display_id_in_chat>());
-    features.push_back(std::make_unique<features::fixes>());
     features.push_back(std::make_unique<features::death_notify_in_chat>());
     features.push_back(std::make_unique<features::short_commands>());
     features.push_back(std::make_unique<features::fish_eye>());

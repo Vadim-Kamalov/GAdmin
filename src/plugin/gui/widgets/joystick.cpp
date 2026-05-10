@@ -42,18 +42,19 @@ auto plugin::gui::widgets::joystick::render() const -> void {
 
     ImVec2 pos = ImGui::GetCursorScreenPos();
     ImVec2 center = { pos.x + radius, pos.y + radius };
-
-    draw_list->AddCircleFilled(center, radius, *background, 0x30);
-    draw_list->AddCircle(center, radius, *color, 0x30, ImGui::GetStyle().FrameBorderSize);
     
     float x = 0, y = 0;
+    float scale = ImGui::GetStyle().FontScaleDpi;
+
+    draw_list->AddCircleFilled(center, radius * scale, *background, 0x30);
+    draw_list->AddCircle(center, radius * scale, *color, 0x30, ImGui::GetStyle().FrameBorderSize);
 
     if (animation::is_time_available(time)) {
         x = animation::bring_to((old.x / 100) * 13.5f, (current.x / 100) * 13.5f, time, 100ms);
         y = animation::bring_to((old.y / 100) * 13.5f, (current.y / 100) * 13.5f, time, 100ms);
     }
 
-    draw_list->AddCircleFilled({ center.x + x, center.y + y }, dot_radius, *color, 0xF);
+    draw_list->AddCircleFilled({ center.x + x, center.y + y }, dot_radius * scale, *color, 0xF);
 
-    ImGui::Dummy({ radius * 2, radius * 2 });
+    ImGui::Dummy({ radius * scale * 2, radius * scale * 2 });
 }

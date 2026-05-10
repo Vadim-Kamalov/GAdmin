@@ -17,11 +17,9 @@
 /// SPDX-License-Identifier: GPL-3.0-only
 
 #include "plugin/gui/windows/main/frames/server_information.h"
-#include "plugin/gui/icon.h"
-#include "plugin/gui/notify.h"
 #include "plugin/gui/widgets/text.h"
 #include "plugin/gui/gui.h"
-#include <imgui_internal.h>
+#include "plugin/gui/utils.h"
 
 static constexpr std::uint8_t information_bytes[] = {
 
@@ -51,28 +49,6 @@ auto plugin::gui::windows::main::frames::server_information::get_filtered_map(co
     return output;
 }
 
-auto plugin::gui::windows::main::frames::server_information::handle_row_controls(const std::string& text_to_copy) const -> void {
-    ImGuiTable* table = ImGui::GetCurrentContext()->CurrentTable;
-
-    // If we don't jump to the last column it will fail to calculate the rect size
-    // Just in case we didn't render enough columns
-    ImGui::TableSetColumnIndex(table->Columns.size() - 1);
-
-    ImRect row_rect = { table->WorkRect.Min.x, table->RowPosY1, table->WorkRect.Max.x, table->RowPosY2 };
-    row_rect.ClipWith(table->BgClipRect);
-
-    if (!ImGui::IsMouseHoveringRect(row_rect.Min, row_rect.Max, false) || !ImGui::IsWindowHovered() || ImGui::IsAnyItemHovered())
-        return;
-
-    table->RowBgColor[1] = ImGui::GetColorU32(ImGuiCol_Border);
-
-    if (!ImGui::IsMouseReleased(ImGuiMouseButton_Left))
-        return;
-
-    ImGui::SetClipboardText(text_to_copy.c_str());
-    gui::notify::send(gui::notification("Текст скопирован", "Информация из строки таблицы успешно скопирована!", ICON_COPY));
-}
-
 auto plugin::gui::windows::main::frames::server_information::render_complex_table(const std::string& id, const nlohmann::json& config) const
     -> void
 {
@@ -96,7 +72,7 @@ auto plugin::gui::windows::main::frames::server_information::render_complex_tabl
                     gui::widgets::text(regular_font, common_font_size, 0, "{}", column);
                 }
 
-                handle_row_controls(row["copy"]);
+                utils::allow_copy_row(row["copy"]);
             }
             ImGui::EndTable();
         }

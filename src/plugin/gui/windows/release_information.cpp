@@ -43,11 +43,12 @@ auto plugin::gui::windows::release_information::render_title() const -> void {
                     parsed_information->download_count)
     };
 
-    ImVec2 center_text_size = bold_font->CalcTextSizeA(bold_font_size, FLT_MAX, 0.0f, entries_aligned[1].c_str());
+    float scale = ImGui::GetStyle().FontScaleDpi;
+    ImVec2 center_text_size = bold_font->CalcTextSizeA(bold_font_size * scale, FLT_MAX, 0.0f, entries_aligned[1].c_str());
     ImVec2 window_padding = ImGui::GetStyle().WindowPadding;
 
     for (const auto& [ index, entry ] : entries_aligned | std::views::enumerate) {
-        ImVec2 size = (index == 1) ? center_text_size : regular_font->CalcTextSizeA(regular_font_size, FLT_MAX, 0.0f, entry.c_str());
+        ImVec2 size = (index == 1) ? center_text_size : regular_font->CalcTextSizeA(regular_font_size * scale, FLT_MAX, 0.0f, entry.c_str());
         ImVec2 pos = { window_padding.x, (index == 1) ? window_padding.y : window_padding.y + (center_text_size.y - size.y) / 2.0f };
         ImVec4 color = ImGui::GetStyle().Colors[(index == 1) ? ImGuiCol_Text : ImGuiCol_TextDisabled];
 
@@ -95,10 +96,11 @@ auto plugin::gui::windows::release_information::render() -> void {
     
     auto window_flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration;
     auto [ size_x, size_y ] = game::get_screen_resolution();
-    
+    float frame_height = ImGui::GetFrameHeight();
+
     ImGui::GetBackgroundDrawList()->AddRectFilled({ 0, 0 }, { size_x, size_y }, background_alpha << 24);
 
-    ImGui::SetNextWindowSize({ 800, 0 });
+    ImGui::SetNextWindowSize({ frame_height * 28, 0 });
     ImGui::SetNextWindowPos({ size_x / 2, size_y / 2 }, ImGuiCond_Always, { 0.5, 0.5 });
     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, window_alpha / 255.f);
     ImGui::Begin(get_id(), nullptr, window_flags);
@@ -106,7 +108,7 @@ auto plugin::gui::windows::release_information::render() -> void {
         render_title();
         widgets::markdown(parsed_information->body, child->fonts->bold).render();
 
-        if (widgets::button("Закрыть##windows::release_information", { ImGui::GetContentRegionAvail().x, 30 })
+        if (widgets::button("Закрыть##windows::release_information", { ImGui::GetContentRegionAvail().x, frame_height })
                 .render() && !closing)
         {
             close_window();

@@ -74,6 +74,10 @@ auto plugin::gui::windows::main::widgets::frame_switcher::render_button() -> voi
     ImU32 text_color = ImGui::GetColorU32(ImGuiCol_Text);
     std::uint8_t frame_index = std::to_underlying(switch_frame);
 
+    float scale = ImGui::GetStyle().FontScaleDpi;
+    float icon_font_size = 24 * scale;
+    float text_font_size = 18 * scale;
+
     draw_list->AddRectFilled(start, end, *current_color);
 
     types::zstring_t text = frames::label_list[frame_index];

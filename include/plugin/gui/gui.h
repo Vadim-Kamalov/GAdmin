@@ -54,6 +54,10 @@ private:
     bool cursor_state_intercepted = false;
     bool cursor_active = false;
 
+#ifndef NDEBUG
+    auto show_debug_window() const -> void;
+#endif // !defined(NDEBUG)
+
     static auto input_handler_hooked(const decltype(input_handler_hook)& hook, unsigned int char_code) -> bool;
 
     auto set_cursor_mode_hooked(const decltype(set_cursor_mode_hook)& hook, std::uintptr_t game,

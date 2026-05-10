@@ -39,7 +39,6 @@ private:
     static constexpr types::zstring_t week_plot_title = "Статистика по дням недели";
     static constexpr types::zstring_t day_plot_title = "Статистика по часам";
 
-    static constexpr float clear_button_height = 30;
     static constexpr float title_font_size = 24;
     static constexpr float common_font_size = 18;
     static constexpr float week_plot_font_size = 18;

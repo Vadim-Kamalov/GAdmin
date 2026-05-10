@@ -33,6 +33,8 @@ auto plugin::misc::features::information_render::render_cars_information(ImDrawL
 
         bool vehicle_locked = vehicle.is_locked();
         bool engine_active = vehicle.is_engine_active();
+        float scale = ImGui::GetStyle().FontScaleDpi;
+
         types::color default_color = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_Text]);
         types::color state_color[2] = { gui::style::get_current_accent_colors().green, gui::style::get_current_accent_colors().red, };
 
@@ -49,9 +51,9 @@ auto plugin::misc::features::information_render::render_cars_information(ImDrawL
         float second_line_offset_y = 0;
 
         for (const auto& object : objects_on_first_line) {
-            ImVec2 text_size = object.font->CalcTextSizeA(font_size, FLT_MAX, 0.0f, object.text.c_str());
+            ImVec2 text_size = object.font->CalcTextSizeA(font_size * scale, FLT_MAX, 0.0f, object.text.c_str());
 
-            draw_list->AddText(object.font, font_size, first_line_pos, *object.color, object.text.c_str());
+            draw_list->AddText(object.font, font_size * scale, first_line_pos, *object.color, object.text.c_str());
         
             first_line_pos.x += text_size.x;
             second_line_offset_y = text_size.y;
@@ -82,6 +84,7 @@ auto plugin::misc::features::information_render::render(types::not_null<gui_init
         return;
 
     float item_spacing_y = ImGui::GetStyle().ItemSpacing.y;
+    float scale = ImGui::GetStyle().FontScaleDpi;
     ImDrawList* draw_list = ImGui::GetBackgroundDrawList();
     ImFont* font = child->fonts->regular;
 
@@ -105,10 +108,10 @@ auto plugin::misc::features::information_render::render(types::not_null<gui_init
         if (gun_configuration.use) {
             std::string text = game::weapon_names[std::to_underlying(ped.get_current_weapon())];
             ImU32 text_color = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_Text]);
-            ImVec2 text_size = font->CalcTextSizeA(gun_configuration.font_size, FLT_MAX, 0.0f, text.c_str());
+            ImVec2 text_size = font->CalcTextSizeA(gun_configuration.font_size * scale, FLT_MAX, 0.0f, text.c_str());
             ImVec2 pos = { pos_x - text_size.x / 2, pos_y };
 
-            draw_list->AddText(font, gun_configuration.font_size, pos, text_color, text.c_str());
+            draw_list->AddText(font, gun_configuration.font_size * scale, pos, text_color, text.c_str());
 
             y_offset += text_size.y + item_spacing_y;
         }
@@ -120,10 +123,10 @@ auto plugin::misc::features::information_render::render(types::not_null<gui_init
                 continue;
 
             types::color text_color = *gui::style::get_current_accent_colors().red;
-            ImVec2 text_size = font->CalcTextSizeA(admin_configuration.font_size, FLT_MAX, 0.0f, admin->nickname.c_str());
+            ImVec2 text_size = font->CalcTextSizeA(admin_configuration.font_size * scale, FLT_MAX, 0.0f, admin->nickname.c_str());
             ImVec2 pos = { pos_x - text_size.x / 2, pos_y + y_offset };
 
-            draw_list->AddText(font, admin_configuration.font_size, pos, *text_color, admin->nickname.c_str());
+            draw_list->AddText(font, admin_configuration.font_size * scale, pos, *text_color, admin->nickname.c_str());
         }
     }
 }

@@ -8,29 +8,30 @@
 ///
 /// This program is distributed in the hope that it will be useful,
 /// but WITHOUT ANY WARRANTY; without even the implied warranty of
-/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 /// GNU General Public License for more details.
 ///
 /// You should have received a copy of the GNU General Public License
-/// along with this program. If not, see <https://www.gnu.org/licenses/>.
+/// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
 
-#ifndef GADMIN_PLUGIN_MISC_FEATURES_FIXES_H
-#define GADMIN_PLUGIN_MISC_FEATURES_FIXES_H
+#ifndef GADMIN_PLUGIN_GUI_UTILS_H
+#define GADMIN_PLUGIN_GUI_UTILS_H
 
-#include "plugin/misc/base/feature.h"
+#include <string>
 
-namespace plugin::misc::features {
+namespace plugin::gui {
 
-/// Represents a feature that fixes known problems in the SA:MP client.
-///
-/// Only works if a feature is enabled.
-class fixes final : public feature {
+/// Utility class providing additional rendering functionality.
+class utils final {
 public:
-    auto on_event(unsigned int message, WPARAM wparam, LPARAM) -> bool override;
-}; // class fixes final : public feature
+    /// Allow user to select, click and copy text from the row in the ImGui Table.
+    ///
+    /// @param text[in] Text that will be copied by click.
+    static auto allow_copy_row(const std::string& text) noexcept -> void;
+}; // class utils final
 
-} // namespace plugin::misc::features
+} // namespace plugin::gui
 
-#endif // GADMIN_PLUGIN_MISC_FEATURES_FIXES_H
+#endif // GADMIN_PLUGIN_GUI_UTILS_H

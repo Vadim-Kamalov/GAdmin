@@ -146,7 +146,7 @@ auto plugin::gui::hotkey::hint_renderer() -> void {
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() - ImGui::GetStyle().ItemSpacing.y + ImGui::GetStyle().WindowPadding.y);
     ImGui::PushFont(regular_font, fonts_size);
     {
-        if (widgets::button("Сбросить##" + hash_safe_label, { item_full_width, 30 }).render()) {
+        if (widgets::button("Сбросить##" + hash_safe_label, { item_full_width, ImGui::GetFrameHeight() }).render()) {
             saved_hotkeys[label] = 0;
             bind = {};
         }
