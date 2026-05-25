@@ -50,7 +50,7 @@ auto plugin::gui::widgets::keycap::render() const -> void {
     ImGui::Dummy(size);
     
     draw_list->AddRectFilled(pos, { pos.x + size.x, pos.y + size.y }, *it.color, rounding);
-    draw_list->AddRect(pos, { pos.x + size.x, pos.y + size.y }, *it.color, rounding, 0, border_size);
+    draw_list->AddRect(pos, { pos.x + size.x, pos.y + size.y }, *it.color, rounding, border_size);
 
     if (it.color.value.alpha <= 128) {
         draw_list->AddText({ text_pos.x + 1, text_pos.y + 1 }, 0xFF000000, label.c_str());

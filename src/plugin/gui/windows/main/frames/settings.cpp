@@ -233,7 +233,7 @@ auto plugin::gui::windows::main::frames::settings::render_color(const std::strin
             float frame_rounding = ImGui::GetStyle().FrameRounding;
 
             color.value.alpha = ImGui::GetStyle().Alpha * 255.0f;
-            draw_list->AddRect(pos, ImGui::GetItemRectMax(), *color, frame_rounding, ImDrawFlags_None, color_border_size);
+            draw_list->AddRect(pos, ImGui::GetItemRectMax(), *color, frame_rounding, color_border_size, ImDrawFlags_None);
             draw_list->AddRectFilled(rect_min, { rect_min.x + frame_rounding, rect_min.y + frame_height }, *color);
         }
         ImGui::EndGroup();

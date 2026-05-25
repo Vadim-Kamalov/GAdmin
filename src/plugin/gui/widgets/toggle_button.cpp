@@ -69,7 +69,7 @@ auto plugin::gui::widgets::toggle_button::render() -> bool {
         it.pos_x = (state) ? b : a;
     }
 
-    draw_list->AddRect(pos, { pos.x + size.x, pos.y + size.y }, *it.color, ImGui::GetStyle().GrabRounding * 2.0f, ImDrawFlags_RoundCornersAll);
+    draw_list->AddRect(pos, { pos.x + size.x, pos.y + size.y }, *it.color, ImGui::GetStyle().GrabRounding * 2.0f, 1.0f, ImDrawFlags_RoundCornersAll);
     draw_list->AddCircleFilled({ it.pos_x, o.y }, radius, *it.color, 32);
 
     return result;
