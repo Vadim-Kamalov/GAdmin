@@ -31,6 +31,11 @@ public:
     ///
     /// @return Current timestamp in string format.
     static auto get_current_timestamp() noexcept -> std::string;
+    
+    /// Get current date as string in `DD-MM-YYYY HH:MM:SS` format.
+    ///
+    /// @return Current timestamp in string format.
+    static auto get_current_date() noexcept -> std::string;
 
     /// Select random element from range using custom random generator.
     ///

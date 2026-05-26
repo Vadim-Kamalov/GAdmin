@@ -37,7 +37,7 @@
 #include <utility>
 
 auto plugin::gui::windows::main::initializer::render_active_frame() -> void {
-    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, (active_frame_alpha / 255.0f) * ImGui::GetStyle().Alpha);
+    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, active_frame_alpha * ImGui::GetStyle().Alpha);
     {
         frames[std::to_underlying(active_frame)]->render();
     }
@@ -87,6 +87,7 @@ auto plugin::gui::windows::main::initializer::switch_window() -> void {
 
     time = now;
     active = true;
+    active_frame_alpha = 1.0f;
 }
 
 auto plugin::gui::windows::main::initializer::on_send_command(const samp::out_event<samp::event_id::send_command>& event)

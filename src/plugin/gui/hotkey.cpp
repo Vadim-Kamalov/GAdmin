@@ -17,7 +17,6 @@
 /// SPDX-License-Identifier: GPL-3.0-only
 
 #include "plugin/gui/hotkey.h"
-#include "imgui.h"
 #include "plugin/gui/key_names.h"
 #include "plugin/gui/style.h"
 #include "plugin/gui/widgets/button.h"
@@ -28,6 +27,7 @@
 #include "plugin/server/user.h"
 #include "plugin/plugin.h"
 #include "plugin/string_utils.h"
+#include <imgui.h>
 
 auto plugin::gui::key_bind::to_string() const -> std::string {
     std::deque<std::string> output;
@@ -62,28 +62,6 @@ auto plugin::gui::key_bind::to_string() const -> std::string {
     return result;
 }
 
-auto plugin::gui::hotkey::truncate_text_in_button(float button_width, const std::string_view& text) const -> std::string {
-    std::string output(text);
-    std::string ellipsis = " ...";
-
-    ImVec2 size = ImGui::CalcTextSize(output.c_str());
-    ImVec2 padding = ImGui::GetStyle().FramePadding;
-    float available_width = button_width - padding.x * 2;
-
-    if (available_width >= size.x)
-        return output;
-
-    while (available_width < size.x && !output.empty()) {
-        output.pop_back();
-        size = ImGui::CalcTextSize((output + ellipsis).c_str());
-    }
-
-    if (!output.empty())
-        output.append(ellipsis);
-
-    return output;
-}
-
 auto plugin::gui::hotkey::hint_condition() -> bool {
     if (ImGui::IsMouseReleased(ImGuiMouseButton_Right) && ImGui::IsItemHovered() &&
         !handler->changing_any_hotkey && !handler->changing_any_properties)
@@ -95,12 +73,8 @@ auto plugin::gui::hotkey::hint_condition() -> bool {
 }
 
 auto plugin::gui::hotkey::hint_renderer() -> void {
-    if (!ImGui::IsWindowHovered() && (ImGui::IsMouseClicked(ImGuiMouseButton_Left) ||
-        ImGui::IsMouseClicked(ImGuiMouseButton_Left) ||
-        ImGui::IsMouseClicked(ImGuiMouseButton_Left)))
-    {
+    if (!ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
         hint_active = handler->changing_any_properties = false;
-    }
     
     auto& saved_hotkeys = (*configuration)["internal"]["hotkeys"];
 
@@ -193,7 +167,7 @@ auto plugin::gui::hotkey::render(const ImVec2& size) -> void {
     if (!changing && already_registered)
         already_registered = false;
 
-    button.label = truncate_text_in_button(size.x, button.label);
+    button.label = string_utils::truncate_text(button.label, size.x);
 
     if (button.render() && !handler->changing_any_hotkey) {
         handler->changing_any_hotkey = changing = true;

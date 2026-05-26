@@ -16,7 +16,6 @@
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
 
-
 #ifndef GADMIN_PLUGIN_GUI_WINDOWS_MAIN_FRAMES_PLUGIN_INFORMATION_H
 #define GADMIN_PLUGIN_GUI_WINDOWS_MAIN_FRAMES_PLUGIN_INFORMATION_H
 
@@ -31,7 +30,7 @@ namespace plugin::gui::windows::main::frames {
 /// Represents the plugin information frame in the main window.
 class plugin_information final : public basic_frame {
 private:
-    static constexpr std::uint8_t nickname_count_per_group = 4;
+    static constexpr std::uint8_t nickname_count_per_group = 6;
     static constexpr float nickname_group_spacing_x = 12;
     
     static constexpr types::zstring_t header_text = "GAdmin v" PROJECT_VERSION;

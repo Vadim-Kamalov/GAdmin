@@ -35,7 +35,7 @@
 #include "plugin/gui/windows/spectator_keys.h"
 #include "plugin/gui/windows/vehicle_selection.h"
 #include "plugin/gui/windows/command_requester.h"
-#include "plugin/gui/windows/report.h"
+#include "plugin/gui/windows/report/initializer.h"
 #include "plugin/server/spectator.h"
 #include "plugin/samp/core/game.h"
 #include "plugin/plugin.h"

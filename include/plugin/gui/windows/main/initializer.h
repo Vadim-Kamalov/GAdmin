@@ -62,7 +62,7 @@ public:
     std::uint8_t window_items_alpha = 255;
 
     /// Alpha inside of the active frame.
-    std::uint8_t active_frame_alpha = 255;
+    float active_frame_alpha = 1.0f;
     
     /// Window alpha.
     std::uint8_t window_alpha = 0;

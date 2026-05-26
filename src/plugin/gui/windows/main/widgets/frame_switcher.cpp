@@ -21,25 +21,6 @@
 #include "plugin/plugin.h"
 #include <unordered_map>
 
-auto plugin::gui::windows::main::widgets::frame_switcher::handle_frame_switching() -> void {
-    auto now = std::chrono::steady_clock::now();
-
-    if (now - time_clicked >= fade_in_out_duration)
-        return;
-    
-    bool change_animation_duration = (now - time_clicked >= fade_in_duration);
-    std::chrono::milliseconds animation_duration = fade_in_duration;
-
-    if (change_animation_duration) {
-        child->child->active_frame = switch_frame;
-        (*configuration)["internal"]["main_window_frame"] = std::to_underlying(switch_frame);
-        animation_duration = fade_out_duration;
-    }
-
-    child->child->active_frame_alpha = animation::bring_to(child->child->active_frame_alpha,
-            change_animation_duration * 255, time_clicked, animation_duration);
-}
-
 auto plugin::gui::windows::main::widgets::frame_switcher::update_button_size() -> void {
     button_size = { child->width, (button_height_percent * child->child->window_size.y) / 100.0f };
 }
@@ -56,7 +37,7 @@ auto plugin::gui::windows::main::widgets::frame_switcher::update_current_color()
     types::color background_color = ImGui::GetColorU32(ImGuiCol_ChildBg);
     
     auto now = std::chrono::steady_clock::now();
-    bool hovered = ImGui::IsItemHovered() || now - (time_clicked + click_animation_duration) < 0ms;
+    bool hovered = ImGui::IsItemHovered() || now - (time_clicked + switch_info.fade_in_out_duration) < 0ms;
 
     if (hovered != hover_info.state) {
         hover_info.state = hovered;
@@ -96,13 +77,16 @@ auto plugin::gui::windows::main::widgets::frame_switcher::render_button() -> voi
 auto plugin::gui::windows::main::widgets::frame_switcher::render() -> void {
     std::string button_id = std::format("widgets::frame_switcher[{}]", std::to_underlying(switch_frame));
 
+    if (switch_info.handle_animation())
+        child->child->active_frame_alpha = switch_info.get_alpha();
+
     update_button_size();
-    handle_frame_switching();
 
     if (ImGui::InvisibleButton(button_id.c_str(), button_size)
         && child->child->active_frame != switch_frame
-        && child->child->active_frame_alpha == 255)
+        && child->child->active_frame_alpha == 1.0f)
     {
+        switch_info.handle_transition(switch_frame);
         time_clicked = std::chrono::steady_clock::now();
     }
 
@@ -119,4 +103,16 @@ auto plugin::gui::windows::main::widgets::frame_switcher::get_from_pool(types::n
         pool[switch_frame] = std::make_unique<frame_switcher>(child, switch_frame);
 
     return pool[switch_frame];
+}
+
+plugin::gui::windows::main::widgets::frame_switcher::frame_switcher(types::not_null<frame_selector*> frame_selector, const frame& switch_frame)
+    : child(frame_selector),
+      icon_font(frame_selector->child->child->fonts->icon),
+      bold_font(frame_selector->child->child->fonts->bold),
+      switch_frame(switch_frame),
+      switch_info(child->child->active_frame)
+{
+    switch_info.set_on_change_callback([](const frame& new_frame) {
+        (*configuration)["internal"]["main_window_frame"] = std::to_underlying(new_frame);
+    });
 }
