@@ -51,7 +51,7 @@ auto plugin::gui::windows::report::frames::current_report::hint_renderer() -> vo
     ImGui::PushFont(bold_font);
     {
         if (widgets::button("Отмена##current_report::hint_renderer", button_size).render())
-            hint_active = true;
+            hint_active = false;
     }
     ImGui::PopFont();
 }
