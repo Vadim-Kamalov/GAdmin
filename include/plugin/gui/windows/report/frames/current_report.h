@@ -21,6 +21,7 @@
 
 #include "plugin/gui/windows/report/frames/frame.h"
 #include "plugin/gui/windows/report/initializer.h"
+#include "plugin/gui/hotkey.h"
 #include "plugin/gui/gui.h"
 #include <chrono>
 #include <deque>
@@ -52,11 +53,13 @@ private:
     ImFont* regular_font = nullptr;
     ImFont* icon_font = nullptr;
 
+    hotkey spectate_hotkey;
     bool hint_active = false;
 
     std::chrono::steady_clock::time_point time_hint_active;
     float left_group_width = 0.0f;
 
+    auto spectate_hotkey_callback(hotkey&) -> void;
     auto hint_renderer() -> void;
     auto get_report_active_time() const -> std::string;
     auto verify_user_input() -> bool;
@@ -80,11 +83,7 @@ public:
     /// Construct the frame.
     ///
     /// @param child[in] Valid pointer to the report initializer class.
-    explicit current_report(types::not_null<initializer*> child)
-        : basic_frame(child),
-          bold_font(child->child->fonts->bold),
-          regular_font(child->child->fonts->regular),
-          icon_font(child->child->fonts->icon) {}
+    explicit current_report(types::not_null<initializer*> child);
 }; // class current_report final : public basic_frame
 
 } // namespace plugin::gui::windows::report::frames

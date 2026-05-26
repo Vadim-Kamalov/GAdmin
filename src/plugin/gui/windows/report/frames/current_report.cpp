@@ -26,6 +26,13 @@
 #include "plugin/plugin.h"
 #include <misc/cpp/imgui_stdlib.h>
 
+auto plugin::gui::windows::report::frames::current_report::spectate_hotkey_callback(hotkey&) -> void {
+    if (!server::user::is_on_alogin() || child->controls.initializer_details.window_alpha == 0)
+        return;
+
+    child->network.send_dialog_action(network::dialog_action::spectate);
+}
+
 auto plugin::gui::windows::report::frames::current_report::hint_renderer() -> void {
     static constexpr int block_time_options[4] = { 10, 30, 60, 90 };
 
@@ -98,10 +105,11 @@ auto plugin::gui::windows::report::frames::current_report::get_action_buttons() 
     std::deque<action_button> buttons;
 
     auto it = &child->network;
+    auto spectate_text = std::format("Следить ({})", spectate_hotkey.bind);
     auto send_to_a_chat_text = std::format("Отправить в /{} чат", ((server::user::is_on_alogin()) ? 'a' : 'h'));
 
 #define MAKE_BUTTON(LABEL, REQUIRES_ALOGIN, ...) buttons.push_back({ LABEL, std::bind(__VA_ARGS__), REQUIRES_ALOGIN })
-    MAKE_BUTTON("Следить", true, &network::send_dialog_action, it, network::dialog_action::spectate, "");
+    MAKE_BUTTON(spectate_text, true, &network::send_dialog_action, it, network::dialog_action::spectate, "");
     MAKE_BUTTON(send_to_a_chat_text, false, &network::send_custom_action, it, network::custom_action::send_to_a_chat);
     MAKE_BUTTON("Открыть /stats", true, &network::send_custom_action, it, network::custom_action::open_stats_dialog);
     MAKE_BUTTON("Открыть /pame", true, &network::send_custom_action, it, network::custom_action::open_pame_dialog);
@@ -273,4 +281,19 @@ auto plugin::gui::windows::report::frames::current_report::render() -> void {
     ImGui::SameLine(0.0f, window_padding.x);
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() - item_spacing.y + window_padding.y);
     render_action_buttons(item_spacing);
+}
+
+plugin::gui::windows::report::frames::current_report::current_report(types::not_null<initializer*> child)
+    : basic_frame(child),
+      bold_font(child->child->fonts->bold),
+      regular_font(child->child->fonts->regular),
+      icon_font(child->child->fonts->icon)
+{
+    using namespace std::placeholders;
+
+    spectate_hotkey = hotkey("Быстрый /sp с активным репортом", key_bind({ 'S', 0 },
+            { .alt = true }, bind_condition::on_alogin))
+        .with_callback(std::bind(&current_report::spectate_hotkey_callback, this, _1));
+
+    child->child->hotkey_handler->add(spectate_hotkey);
 }

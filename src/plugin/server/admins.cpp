@@ -95,7 +95,7 @@ auto plugin::server::admins::on_server_quit(const samp::event<samp::event_id::se
 }
 
 auto plugin::server::admins::on_set_player_name(const samp::event<samp::event_id::set_player_name>& player) -> bool {
-    if (player.id != server::user::get_id())
+    if (player.id != samp::user::get_id())
         remove_disconnected_admin(player.id);
 
     return true;
