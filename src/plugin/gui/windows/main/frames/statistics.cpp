@@ -24,6 +24,7 @@ const std::vector<plugin::gui::windows::main::frames::statistics::plot_info_t>
 plugin::gui::windows::main::frames::statistics::plots = {
     { "Время онлайн", plot_key_t::total_time, plot_type_t::time },
     { "Время на /alogin", plot_key_t::time_on_alogin, plot_type_t::time },
+    { "Время как в ACP", plot_key_t::time_as_in_acp, plot_type_t::time },
     { "Ответы", plot_key_t::answer },
     { "Сообщений /a", plot_key_t::a_chat_message },
     { "Блокировки", plot_key_t::ban },
