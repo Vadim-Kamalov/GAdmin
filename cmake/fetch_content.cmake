@@ -21,9 +21,8 @@ include(FetchContent)
 FetchContent_Declare(imgui
     GIT_REPOSITORY https://github.com/ocornut/imgui.git
 
-    # Backends: OpenGL3: call ImGui_ImplOpenGL3_InitLoader() in
-    # ImGui_ImplOpenGL3_CreateDeviceObjects() / ImGui_ImplOpenGL3_DestroyDeviceObjects(). (#9112)
-    GIT_TAG 69a501df6e6887a074b3c17a1c1bdd40a4c06dee
+    # ImFontAtlas: moved common TexData calls into a same helper functions, so adding new ones is easier.
+    GIT_TAG fbcf95193f40fc57a3f0a3e8f59798de06e69bc6
 )
 
 FetchContent_Declare(kthook

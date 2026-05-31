@@ -21,16 +21,7 @@
 #include "plugin/gui/hotkey.h"
 #include <ranges>
 
-auto plugin::gui::windows::main::frames::key_binds::get_buttons_size() -> ImVec2 {
-    return {
-        (buttons_size_percentage.x * child->window_size.x) / 100.0f, 
-        (buttons_size_percentage.y * child->window_size.y) / 100.0f
-    };
-}
-
 auto plugin::gui::windows::main::frames::key_binds::render() -> void {
-    buttons_size = get_buttons_size();
-
     widgets::text(bold_font, title_font_size, 0, "Горячие клавиши");
     ImGui::SameLine(0, 5);
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 4);
@@ -41,7 +32,10 @@ auto plugin::gui::windows::main::frames::key_binds::render() -> void {
         float longest_item_width = 0;
         float cursor_offset_x = 0;
         float start_cursor_pos_y = ImGui::GetCursorPosY();
+        float frame_height = ImGui::GetFrameHeight();
+
         ImVec2 item_spacing = ImGui::GetStyle().ItemSpacing;
+        ImVec2 buttons_size = { frame_height * 4, frame_height };
 
         std::size_t group_index = 0;
         std::size_t items_in_grop_count = (child->window_size.y - ImGui::GetCursorPosY()
@@ -53,7 +47,7 @@ auto plugin::gui::windows::main::frames::key_binds::render() -> void {
         {
             ImVec2 label_size = ImGui::CalcTextSize(hotkey.label.c_str());
             ImVec2 item_size = { buttons_size.x + item_spacing.x + label_size.x, buttons_size.y };
-            
+
             if (longest_item_width < item_size.x)
                 longest_item_width = item_size.x;
 

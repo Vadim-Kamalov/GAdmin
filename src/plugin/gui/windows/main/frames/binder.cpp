@@ -120,9 +120,11 @@ auto plugin::gui::windows::main::frames::binder::frame_renderer(std::string& lab
     ImGui::PushFont(regular_font, common_font_size);
     {
         ImVec2 item_spacing = ImGui::GetStyle().ItemSpacing;
+        std::string current_string_index = std::to_string(submenu.get_current_entry_index());
+
         float full_width = ImGui::GetContentRegionAvail().x;
         float half_width = (full_width - item_spacing.x) / 2.0f;
-        std::string current_string_index = std::to_string(submenu.get_current_entry_index());
+        float frame_height = ImGui::GetFrameHeight();
 
         gui::widgets::text(bold_font, common_font_size, 0, "Клавиши для активации");
         ImGui::SameLine(half_width + item_spacing.x);
@@ -133,7 +135,7 @@ auto plugin::gui::windows::main::frames::binder::frame_renderer(std::string& lab
         ImGui::SetNextItemWidth(half_width);
         ImGui::InputTextWithHint("##command", "Команда без /", &bind["command_name"].get_ref<std::string&>());
 
-        if (gui::widgets::button("Вставить переменную##frames::binder", { full_width, buttons_height }).render())
+        if (gui::widgets::button("Вставить переменную##frames::binder", { full_width, frame_height }).render())
             popup.open();
 
         gui::widgets::text(bold_font, common_font_size, 0, "Текст бинда");
@@ -145,13 +147,13 @@ auto plugin::gui::windows::main::frames::binder::frame_renderer(std::string& lab
         ImGui::PopStyleColor();
 
         std::string* bind_text = &bind["text"].get_ref<std::string&>();
-        float input_height = ImGui::GetContentRegionAvail().y - buttons_height - ImGui::GetStyle().ItemSpacing.y;
+        float input_height = ImGui::GetContentRegionAvail().y - frame_height - ImGui::GetStyle().ItemSpacing.y;
 
         popup.set_inserter(bind_text);
         ImGui::InputTextMultiline("##text", bind_text, { full_width, input_height });
 
         if (gui::widgets::button("Удалить##frames::binder:" + current_string_index,
-                    { full_width, buttons_height }).render())
+                    { full_width, frame_height }).render())
         {
             submenu.remove_current_entry_animated();
         }

@@ -42,7 +42,7 @@ plugin::gui::windows::main::frames::logs::log_groups = {
         .colors = {},
         .callback = [](const std::string& text, const types::color& color) -> bool {
             return text.starts_with("[A] Жалоба от ") || text.starts_with("[A] Вопрос от ")
-                || (text.starts_with("[A]" ) && color == 0xAA4599FF);
+                || text.starts_with("[A] /ask") || (text.starts_with("[A]" ) && color == 0xAA4599FF);
         }
     }) },
 
@@ -205,6 +205,7 @@ auto plugin::gui::windows::main::frames::logs::frame_renderer(std::string& label
 
     log_group& group = log_groups[std::any_cast<log_type_t>(payload)];
     float region_avail_x = ImGui::GetContentRegionAvail().x;
+    float clear_button_height = ImGui::GetFrameHeight();
 
     ImGui::PushFont(regular_font, common_font_size);
     {

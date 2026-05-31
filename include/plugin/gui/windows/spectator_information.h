@@ -69,6 +69,7 @@ private:
     
     ImFont* bold_font;
     ImFont* regular_font;
+    float column_height = 0;
 
     auto vehicles_custom_renderer(const std::string_view& value, types::color color) const -> void;
     auto vehicle_information_custom_renderer(const std::string_view&, types::color) const -> void;

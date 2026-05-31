@@ -37,10 +37,11 @@ namespace plugin::gui::windows {
 /// Provides visual representation of pressed keys with keycaps.
 class spectator_keys final : public window {
 private:
-    static constexpr float keycap_height = 35;
-
     template<samp::synchronization_key key>
-    static constexpr auto make_keycap(const ImVec2& size = { keycap_height, keycap_height }) noexcept -> widgets::keycap;
+    static constexpr auto make_keycap(const ImVec2& size = {
+        ImGui::GetFrameHeight() * 1.3f,
+        ImGui::GetFrameHeight() * 1.3f
+    }) noexcept -> widgets::keycap;
     
     static auto get_keycaps(const samp::synchronization_type& type) noexcept -> std::vector<widgets::keycap>;
 public:

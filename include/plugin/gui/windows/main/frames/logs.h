@@ -42,7 +42,6 @@ class logs final : public basic_frame {
 private:
     static constexpr float title_font_size = 24;
     static constexpr float common_font_size = 18;
-    static constexpr float clear_button_height = 30;
 
     enum log_type_t : std::uint8_t {
          administration_chat,

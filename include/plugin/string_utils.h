@@ -58,6 +58,13 @@ public:
     /// @param text[in] Input string in UTF-8 encoding.
     /// @return         String converted to CP1251 encoding.
     static auto to_cp1251(const std::string& text) -> std::string;
+
+    /// Truncate text to use it in the ImGui interface.
+    ///
+    /// @param text[in]      Text to truncate.
+    /// @param max_width[in] Maximum width of the text.
+    /// @return              Truncated text.
+    static auto truncate_text(const std::string& text, float max_width) noexcept -> std::string;
 }; // class string_utils
 
 } // namespace plugin

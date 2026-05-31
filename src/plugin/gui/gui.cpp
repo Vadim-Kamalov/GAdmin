@@ -35,12 +35,14 @@
 #include "plugin/gui/windows/spectator_keys.h"
 #include "plugin/gui/windows/vehicle_selection.h"
 #include "plugin/gui/windows/command_requester.h"
-#include "plugin/gui/windows/report.h"
+#include "plugin/gui/windows/report/initializer.h"
+#include "plugin/gui/windows/counters.h"
 #include "plugin/server/spectator.h"
 #include "plugin/samp/core/game.h"
 #include "plugin/plugin.h"
 #include <ranges>
 #include <windows.h>
+#include <imgui_internal.h>
 #include <imgui.h>
 
 plugin::types::versioned_address_container<std::uintptr_t>
@@ -48,6 +50,45 @@ plugin::gui_initializer::input_handler_address = { 0x5DA80, 0x60E20, 0x61590, 0x
 
 plugin::types::versioned_address_container<std::uintptr_t>
 plugin::gui_initializer::set_cursor_mode_address = { 0x9BD30, 0x9FFE0, 0xA06F0, 0xA0530 };
+
+#ifndef NDEBUG
+auto plugin::gui_initializer::show_debug_window() const -> void {
+    static std::string selected_window = "";
+    static int selected_window_size[2] = { 0, 0 };
+
+    ImGui::Begin("GAdmin Debug Window", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+    {
+        ImGui::BeginGroup();
+        {
+            for (const auto& window : ImGui::GetCurrentContext()->Windows) {
+                if (ImGui::Button(window->Name)) {
+                    selected_window = window->Name;
+                }
+            }
+        }
+        ImGui::EndGroup();
+        ImGui::SameLine();
+        ImGui::BeginGroup();
+        {
+            float frame_height = ImGui::GetFrameHeight();
+
+            ImGui::TextUnformatted(std::format("Selected window: {}", selected_window).c_str());
+            ImGui::TextUnformatted(std::format(
+                "Size: x = {} * ImGui::GetFrameHeight() = {}, y = {} * ImGui::GetFrameHeight() = {}",
+                selected_window_size[0], selected_window_size[0] * frame_height, selected_window_size[1],
+                selected_window_size[1] * frame_height, selected_window).c_str());
+
+            if (ImGui::SliderInt2("selected_window_size", selected_window_size, 0, 100) && !selected_window.empty())
+                ImGui::SetWindowSize(selected_window.c_str(), { selected_window_size[0] * frame_height,
+                                                                selected_window_size[1] * frame_height });
+
+            ImGui::DragFloat("font_scale_dpi", &ImGui::GetStyle().FontScaleDpi, 0.02f, 0.5f, 4.0f);
+        }
+        ImGui::EndGroup();
+    }
+    ImGui::End();
+}
+#endif // !defined(NDEBUG)
 
 auto plugin::gui_initializer::input_handler_hooked(const decltype(input_handler_hook)& hook, unsigned int char_code) -> bool {
     if (ImGui::GetCurrentContext() != nullptr && ImGui::GetIO().WantTextInput)
@@ -159,7 +200,7 @@ auto plugin::gui_initializer::can_initialize_render() const -> bool {
 
 auto plugin::gui_initializer::on_initialize() -> void {
     using namespace gui;
- 
+
     fonts->assign_fonts();
     style::apply();
 
@@ -182,6 +223,7 @@ auto plugin::gui_initializer::on_initialize() -> void {
     registered_windows.push_back(windows::release_information::create(this));
     registered_windows.push_back(windows::player_checker::create(this));
     registered_windows.push_back(windows::notes::create(this));
+    registered_windows.push_back(windows::counters::create(this));
 }
 
 auto plugin::gui_initializer::render() const -> void {
@@ -208,6 +250,7 @@ auto plugin::gui_initializer::render() const -> void {
 #ifndef NDEBUG
     ImGui::ShowDemoWindow();
     ImGui::ShowAboutWindow();
+    show_debug_window();
 #endif // !defined(NDEBUG)
 }
 

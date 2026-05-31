@@ -35,31 +35,22 @@ namespace plugin::gui::windows::main::widgets {
 /// Supports hover and click animations with customizable appearance and behavior.
 class frame_switcher final {
 private:
-    static constexpr float button_default_height = 30;
-    static constexpr float button_height_percent =
-        (button_default_height * 100.0f) / initializer::default_window_size.y; ///< ~6.6
-
+    static constexpr float button_height_percent = 6.6;
     static constexpr std::chrono::milliseconds click_animation_duration = 200ms;
     static constexpr std::chrono::milliseconds hover_animation_duration = 400ms;
     
-    static constexpr std::chrono::milliseconds fade_in_duration = 150ms;
-    static constexpr std::chrono::milliseconds fade_out_duration = 300ms;
-    static constexpr std::chrono::milliseconds fade_in_out_duration = fade_in_duration + fade_out_duration;
-
-    static constexpr float icon_font_size = 24;
-    static constexpr float text_font_size = 18;
-
     types::not_null<frame_selector*> child;
     types::color current_color;
-    std::chrono::steady_clock::time_point time_clicked;
-    animation::hover_info hover_info;
    
     ImFont* icon_font = nullptr;
     ImFont* bold_font = nullptr;
     ImVec2 button_size = { 0, 0 };
     frame switch_frame;
 
-    auto handle_frame_switching() -> void;
+    std::chrono::steady_clock::time_point time_clicked;
+    animation::switch_info<frame, 150, 300> switch_info;
+    animation::hover_info hover_info;
+
     auto update_button_size() -> void;
     auto update_current_color() -> void;
     auto render_button() -> void;
@@ -79,11 +70,7 @@ public:
     ///
     /// @param frame_selector[in] Parent frame selector.
     /// @param switch_frame[in]   Target frame to switch to.
-    explicit frame_switcher(types::not_null<frame_selector*> frame_selector, const frame& switch_frame)
-        : child(frame_selector),
-          icon_font(frame_selector->child->child->fonts->icon),
-          bold_font(frame_selector->child->child->fonts->bold),
-          switch_frame(switch_frame) {}
+    explicit frame_switcher(types::not_null<frame_selector*> frame_selector, const frame& switch_frame);
 }; // class frame_switcher final
 
 } // namespace plugin::gui::windows::main::widgets

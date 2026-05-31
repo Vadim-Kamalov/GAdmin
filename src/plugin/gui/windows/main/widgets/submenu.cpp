@@ -110,19 +110,21 @@ auto plugin::gui::windows::main::widgets::submenu::set_frame_renderer(frame_rend
 }
 
 auto plugin::gui::windows::main::widgets::submenu::render_menu(types::not_null<initializer*> child) -> void {
-    float child_width = (child_width_percent * child->window_size.x) / 100.0f;
+    ImFont* bold_font = child->child->fonts->bold;
+    std::string title_text = string_utils::truncate_until_hashtag(label);
+
+    float title_width = bold_font->CalcTextSizeA(title_font_size * ImGui::GetStyle().FontScaleDpi, FLT_MAX, 0.0f, title_text.c_str()).x;
+    float child_width = std::max<float>(ImGui::GetFrameHeight() * 7, child->window_padding.x * 2 + title_width);
 
     ImGui::BeginChild(label.c_str(), { child_width, 0 }, ImGuiChildFlags_AlwaysUseWindowPadding, child->window_flags);
     {
-        gui::widgets::text(child->child->fonts->bold, title_font_size, 0, "{}",
-                           string_utils::truncate_until_hashtag(label));
+        gui::widgets::text(bold_font, title_font_size, 0, "{}", title_text);
 
-        ImVec2 region_size = ImGui::GetContentRegionAvail();
-        ImVec2 button_size = { region_size.x, (switch_button_percent * child->window_size.y) / 100.0f };
-        float child_height = region_size.y;
+        float button_height = (switch_button_percent * child->window_size.y) / 100.0f;
+        float child_height = ImGui::GetContentRegionAvail().y;
 
         if (add_callback.has_value())
-            child_height -= button_size.y + ImGui::GetStyle().ItemSpacing.y;
+            child_height -= button_height + ImGui::GetStyle().ItemSpacing.y;
 
         ImGui::SetCursorPosX(0);
         ImGui::BeginChild("scrollable_area", { child_width, child_height },
@@ -131,12 +133,15 @@ auto plugin::gui::windows::main::widgets::submenu::render_menu(types::not_null<i
             ImGui::SetScrollX(0);
 
             for (const auto& [ index, entry ] : entries | std::views::enumerate)
-                render_entry(index, entry, button_size);
+                render_entry(index, entry, { ImGui::GetContentRegionAvail().x, button_height });
         }
         ImGui::EndChild();
 
-        if (add_callback.has_value() && gui::widgets::button("Добавить##add:" + label, button_size).render())
+        if (add_callback.has_value() && gui::widgets::button("Добавить##add:" + label, { ImGui::GetContentRegionAvail().x, button_height })
+                .render())
+        {
             (*add_callback)();
+        }
     }
     ImGui::EndChild();
 }

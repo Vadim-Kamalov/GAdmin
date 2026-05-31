@@ -21,12 +21,13 @@
 #include "plugin/game/vehicle.h"
 #include "plugin/gui/style.h"
 #include "plugin/gui/widgets/hint.h"
-#include "plugin/plugin.h"
+#include "plugin/gui/utils.h"
 #include "plugin/samp/core/vehicle.h"
 #include "plugin/samp/core/vehicle_pool.h"
 #include "plugin/server/admins.h"
 #include "plugin/server/spectator.h"
 #include "plugin/samp/core/input.h"
+#include "plugin/plugin.h"
 #include <algorithm>
 #include <spanstream>
 #include <ctre.hpp>
@@ -105,9 +106,7 @@ auto plugin::gui::windows::spectator_information::vehicle_information_custom_ren
     ImGui::PopFont();
 }
 
-auto plugin::gui::windows::spectator_information::render_centered_text(const std::string_view& value, ImFont* font, const ImVec4& color) const
-    -> void
-{
+auto plugin::gui::windows::spectator_information::render_centered_text(const std::string_view& value, ImFont* font, const ImVec4& color) const -> void {
     static constexpr ctll::fixed_string next_text_pattern = "(.*?)\\S+\\s*$"; 
 
     std::string text(value);
@@ -115,7 +114,8 @@ auto plugin::gui::windows::spectator_information::render_centered_text(const std
     text.erase(0, text.find_first_not_of(' '));
     text.erase(text.find_last_not_of(' ') + 1);
 
-    ImVec2 size = font->CalcTextSizeA(fonts_size, FLT_MAX, 0, text.c_str());
+    ImVec2 size = font->CalcTextSizeA(fonts_size * ImGui::GetStyle().FontScaleDpi, FLT_MAX, 0, text.c_str());
+    ImVec2 cursor_pos = ImGui::GetCursorPos();
     float column_width = ImGui::GetContentRegionAvail().x;
 
     if (size.x >= column_width && column_width >= min_wrap_width && text.contains(' ')) {
@@ -141,7 +141,8 @@ auto plugin::gui::windows::spectator_information::render_centered_text(const std
         return;
     }
 
-    ImGui::SetCursorPosX((ImGui::GetCursorPosX() + (column_width / 2)) - size.x / 2);
+    ImGui::SetCursorPos({ (cursor_pos.x + (column_width / 2)) - size.x / 2,
+                          (cursor_pos.y + (column_height / 2)) - size.y / 2 });
     ImGui::PushFont(font, fonts_size);
     {
         ImGui::TextColored(color, "%s", text.c_str());
@@ -263,14 +264,27 @@ auto plugin::gui::windows::spectator_information::render() -> void {
     }
 
     ImGui::SetNextWindowPos({ size_x / 83.47826f, size_y / 2.17888f }, ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSizeConstraints({ 320, 0 }, { FLT_MAX, FLT_MAX });
+    ImGui::SetNextWindowSize({ ImGui::GetStyle().FontScaleDpi * 320, 0 });
     ImGui::PushStyleVarX(ImGuiStyleVar_WindowPadding, 0);
-    ImGui::PushStyleVarY(ImGuiStyleVar_ItemSpacing, ImGui::GetStyle().ItemSpacing.y * 2);
-    ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoTitleBar);
+    ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
     {
+        ImGui::SetCursorPos({ 0, 0 });
+        {
+            // `hint::render_as_guide` will not render in the proper position
+            // if we call it with ImGui::BeginTable / ImGui::EndTable.
+            ImGui::Dummy({ ImGui::GetWindowWidth(), 0 });
+            widgets::hint::render_as_guide("Нажмите на строку в таблице, чтобы скопировать ее содержимое");
+        }
+        ImGui::SetCursorPos({ 0, ImGui::GetStyle().WindowPadding.y });
+
         if (ImGui::BeginTable("windows::spectator_information::table", 2)) {
+            column_height = ImGui::GetFrameHeight() / 1.3f;
+
+            ImGui::TableSetupColumn("left", ImGuiTableColumnFlags_WidthFixed, ImGui::GetContentRegionAvail().x / 2.0f);
+            ImGui::TableSetupColumn("right", ImGuiTableColumnFlags_WidthStretch);
+
             for (auto& row : rows) {
-                ImGui::TableNextRow();
+                ImGui::TableNextRow(ImGuiTableRowFlags_None, column_height);
                 ImGui::TableSetColumnIndex(0);
                 render_centered_text(row.label, bold_font);
                 ImGui::TableSetColumnIndex(1);
@@ -286,12 +300,18 @@ auto plugin::gui::windows::spectator_information::render() -> void {
 
                     render_centered_text(row.value, regular_font, ImGui::ColorConvertU32ToFloat4(*row.color));
                 }
+
+                if (row.label == "Машина(-ы)")
+                    continue;
+
+                utils::allow_copy_row(std::format("{}[{}] | {}: {}", server::spectator::nickname,
+                                                  server::spectator::id, row.label, row.value));
             }
             ImGui::EndTable();
         }
     }
     ImGui::End();
-    ImGui::PopStyleVar(2);
+    ImGui::PopStyleVar();
 }
 
 auto plugin::gui::windows::spectator_information::create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t {

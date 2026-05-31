@@ -56,7 +56,7 @@ auto plugin::gui::windows::main::widgets::popup::render(types::not_null<initiali
             renderer();
             ImGui::PushFont(child->child->fonts->bold);
             {
-                if (gui::widgets::button("Закрыть##widgets::popup::" + id, { ImGui::GetContentRegionAvail().x, close_button_height })
+                if (gui::widgets::button("Закрыть##widgets::popup::" + id, { ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeight() })
                         .render())
                 {
                     close();

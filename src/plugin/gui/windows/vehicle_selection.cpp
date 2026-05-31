@@ -90,6 +90,7 @@ auto plugin::gui::windows::vehicle_selection::render() -> void {
         return;
 
     auto [size_x, size_y] = game::get_screen_resolution();
+    float frame_height = ImGui::GetFrameHeight();
 
     background_alpha = animation::bring_to(background_alpha, (closing) ? 0 : 128, time, animation_duration);
     window_alpha = animation::bring_to(window_alpha, (closing) ? 0 : 255, time, animation_duration);
@@ -105,10 +106,10 @@ auto plugin::gui::windows::vehicle_selection::render() -> void {
 
     ImGui::GetBackgroundDrawList()->AddRectFilled({ 0, 0 }, { size_x, size_y }, background_alpha << 24);
 
-    ImGui::SetNextWindowSizeConstraints({ 400, 600 }, { FLT_MAX, FLT_MAX });
+    ImGui::SetNextWindowSize({ frame_height * 14, frame_height * 21 });
     ImGui::SetNextWindowPos({ size_x / 2, size_y / 2 }, ImGuiCond_FirstUseEver, { 0.5, 0.5 });
     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, window_alpha / 255.f);
-    ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoTitleBar);
+    ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
     {
         widgets::text(child->fonts->bold, 24, 0, "Выберите машину для спавна");
         ImGui::BeginGroup();
@@ -116,8 +117,7 @@ auto plugin::gui::windows::vehicle_selection::render() -> void {
             ImVec2 spacing = ImGui::GetStyle().ItemSpacing;
             ImVec2 padding = ImGui::GetStyle().WindowPadding;
 
-            float input_height = 18 /* input font size */ + ImGui::GetStyle().FramePadding.y * 2;
-            float buttons_end_x = spacing.x * 3 + input_height * 2;
+            float buttons_end_x = spacing.x * 3 + ImGui::GetFrameHeight() * 2;
             float input_width = ImGui::GetWindowWidth() / 2 - padding.x - buttons_end_x;
             float secondary_group_x = input_width + buttons_end_x;
 
@@ -132,11 +132,12 @@ auto plugin::gui::windows::vehicle_selection::render() -> void {
                     ImGui::BeginGroup();
                     {
                         std::string id = std::format("windows::vehicle_selection::color_input[{}]", i);
+                        float button_weight = ImGui::GetFrameHeight();
 
-                        widgets::button left = widgets::button("+##" + id, { input_height, input_height })
+                        widgets::button left = widgets::button("+##" + id, { button_weight, button_weight })
                             .with_draw_flags(ImDrawFlags_RoundCornersTopLeft | ImDrawFlags_RoundCornersBottomLeft); 
 
-                        widgets::button right = widgets::button("-##" + id, { input_height, input_height })
+                        widgets::button right = widgets::button("-##" + id, { button_weight, button_weight })
                             .with_draw_flags(ImDrawFlags_RoundCornersTopRight | ImDrawFlags_RoundCornersBottomRight);
 
                         ImVec2 pos = ImGui::GetCursorPos();
@@ -180,7 +181,7 @@ auto plugin::gui::windows::vehicle_selection::render() -> void {
         search_bar.render(widgets_width, "Поиск");
         
         float body_height = ImGui::GetWindowHeight() - ImGui::GetCursorPosY() - ImGui::GetStyle().WindowPadding.y
-            - ImGui::GetStyle().ItemSpacing.y - create_button_height;
+            - ImGui::GetStyle().ItemSpacing.y - ImGui::GetFrameHeight();
         
         ImGui::PushFont(child->fonts->bold, 16);
         {
@@ -203,7 +204,7 @@ auto plugin::gui::windows::vehicle_selection::render() -> void {
                                 : entries[i];
 
                             float width = ImGui::GetContentRegionAvail().x - ImGui::GetStyle().FrameBorderSize - window_padding.x;
-                            auto create_button = widgets::button(std::format("{}[ID: {}]", item.name, item.id), { width, create_button_height });
+                            auto create_button = widgets::button(std::format("{}[ID: {}]", item.name, item.id), { width, ImGui::GetFrameHeight() });
 
                             if (create_button.render()) {
                                 samp::input::send_command("/veh {} {} {}", item.id, colors[0], colors[1]);
@@ -218,8 +219,8 @@ auto plugin::gui::windows::vehicle_selection::render() -> void {
             }
             ImGui::EndChild();
         
-            ImVec2 create_button_size = { ImGui::GetWindowWidth() - window_padding.x * 2, create_button_height };
-            auto create_button = widgets::button("Отмена##windows::vehicle_selection", create_button_size);
+            ImVec2 cancel_button_size = { ImGui::GetWindowWidth() - window_padding.x * 2, ImGui::GetFrameHeight() };
+            auto create_button = widgets::button("Отмена##windows::vehicle_selection", cancel_button_size);
 
             if (create_button.render())
                 close_window();

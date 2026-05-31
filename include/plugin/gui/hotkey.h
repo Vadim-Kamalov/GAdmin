@@ -204,7 +204,6 @@ private:
     hotkey_handler* handler;
     key_bind new_bind;
 
-    auto truncate_text_in_button(float button_width, const std::string_view& text) const -> std::string;
     auto hint_renderer() -> void;
     auto hint_condition() -> bool;
 public:

@@ -20,8 +20,10 @@
 #define GADMIN_PLUGIN_GUI_ANIMATION_H
 
 #include <imgui.h>
+#include <type_traits>
 #include <chrono>
 #include "plugin/types/color.h"
+#include "plugin/types/simple.h"
 
 namespace plugin::gui::animation {
 
@@ -36,6 +38,70 @@ struct hover_info final {
     /// Update hover information.
     auto update() -> void;
 }; // struct hover_info final
+
+/// Switch animation information.
+///
+/// @tparam T                     Type of the value that will be updated to another during animation.
+/// @tparam fade_in_duration_raw  Duration of the fade-in animation in milliseconds.
+/// @tparam fade_out_duration_raw Duration of the fade-out animation in milliseconds.
+template<typename T,
+         types::milliseconds_raw_t fade_in_duration_raw,
+         types::milliseconds_raw_t fade_out_duration_raw>
+class switch_info final {
+public:
+    /// Duration of the fade-in animation as `std::chrono::milliseconds`.
+    static constexpr std::chrono::milliseconds fade_in_duration
+        = std::chrono::milliseconds(fade_in_duration_raw);
+
+    /// Duration of the fade-out animation as `std::chrono::milliseconds`.
+    static constexpr std::chrono::milliseconds fade_out_duration
+        = std::chrono::milliseconds(fade_out_duration_raw);
+
+    /// Full animation duration as `std::chrono::milliseconds`.
+    static constexpr std::chrono::milliseconds fade_in_out_duration
+        = fade_in_duration + fade_out_duration;
+
+    /// Callback function type that will be executed after `handle_transition`
+    /// call and only after the `fade_in_duration` time.
+    using on_change_callback_t = std::function<void(const T& current)>;
+private:
+    on_change_callback_t on_change_callback = [](const T&) {};
+    std::chrono::steady_clock::time_point time;
+    std::uint8_t alpha = 255;
+
+    T& current_value;
+    T future_value;
+public:
+    /// Get value of the alpha channel for the elements that uses this animation.
+    ///
+    /// @note   Requires the call of `handle_animation` method for each frame.
+    /// @return Current value of the alpha channel.
+    auto get_alpha() const -> float;
+
+    /// Set callback function that will be executed after `handle_transition`
+    /// call and only after the `fade_in_duration` time.
+    ///
+    /// @param new_on_change_callback[in] New callback function.
+    auto set_on_change_callback(on_change_callback_t new_on_change_callback) -> void;
+
+    /// Start transition animation from `current_value` to `new_future_value`.
+    ///
+    /// @note                       Requires the call of `handle_animation` method for each frame.
+    /// @param new_future_value[in] New future value (i.e. frame index).
+    auto handle_transition(const T& new_future_value) -> void;
+    
+    /// Handle animation for `fade_in_out_duration` time after `handle_transition`
+    /// call: updates alpha channel and current/future values.
+    ///
+    /// @return True if currently handling the animation.
+    auto handle_animation() -> bool;
+
+    /// Construct the class.
+    ///
+    /// @param current_value[out] Reference to the current value (i.e. frame index).
+    explicit switch_info(T& current_value) requires std::is_default_constructible_v<T>
+        : current_value(current_value) {}
+}; // class switch_info final
 
 /// Check if `time` is available (not equal to zero).
 ///
@@ -83,6 +149,47 @@ constexpr auto plugin::gui::animation::is_time_available(std::chrono::steady_clo
     noexcept -> bool
 {
     return time != std::chrono::steady_clock::time_point {};
+}
+
+template<typename T, plugin::types::milliseconds_raw_t _1, plugin::types::milliseconds_raw_t _2>
+auto plugin::gui::animation::switch_info<T, _1, _2>::get_alpha() const -> float {
+    return alpha / 255.0f;
+}
+
+template<typename T, plugin::types::milliseconds_raw_t _1, plugin::types::milliseconds_raw_t _2>
+auto plugin::gui::animation::switch_info<T, _1, _2>::set_on_change_callback(on_change_callback_t new_on_change_callback)
+    -> void
+{
+    on_change_callback = new_on_change_callback;
+}
+
+template<typename T, plugin::types::milliseconds_raw_t _1, plugin::types::milliseconds_raw_t _2>
+auto plugin::gui::animation::switch_info<T, _1, _2>::handle_transition(const T& new_future_value) -> void {
+    future_value = new_future_value;
+    time = std::chrono::steady_clock::now();
+}
+
+template<typename T, plugin::types::milliseconds_raw_t _1, plugin::types::milliseconds_raw_t _2>
+auto plugin::gui::animation::switch_info<T, _1, _2>::handle_animation()
+    -> bool
+{
+    auto now = std::chrono::steady_clock::now();
+
+    if (now - time >= fade_in_out_duration)
+        return false;
+    
+    bool change_animation_duration = (now - time >= fade_in_duration);
+    std::chrono::milliseconds animation_duration = fade_in_duration;
+
+    if (change_animation_duration) {
+        current_value = future_value;
+        animation_duration = fade_out_duration;
+        on_change_callback(current_value);
+    }
+
+    alpha = bring_to(alpha, change_animation_duration * 255.0f, time, animation_duration);
+
+    return true;
 }
 
 #endif // GADMIN_PLUGIN_GUI_ANIMATION_H

@@ -28,12 +28,12 @@ namespace plugin::misc::features {
 /// name of som existing server's command.
 ///
 /// Only works if a feature is enabled.
-class short_commands : public feature {
+class short_commands final : public feature {
 private:
     auto on_send_command(const samp::out_event<samp::event_id::send_command>& event) const -> bool;
 public:
     auto on_event(const samp::event_info& event) -> bool override;
-}; // class short_commands : public feature
+}; // class short_commands final : public feature
 
 } // namespace plugin::misc::features
 
