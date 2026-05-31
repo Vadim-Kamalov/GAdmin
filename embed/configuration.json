@@ -134,6 +134,12 @@
             "players": []
         },
 
+        "counters": {
+            "use": false,
+            "show_fps": true,
+            "show_ping": true
+        },
+
         "spectator_keys": true,
         "vehicle_selection": true
     },

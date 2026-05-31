@@ -36,6 +36,7 @@
 #include "plugin/gui/windows/vehicle_selection.h"
 #include "plugin/gui/windows/command_requester.h"
 #include "plugin/gui/windows/report/initializer.h"
+#include "plugin/gui/windows/counters.h"
 #include "plugin/server/spectator.h"
 #include "plugin/samp/core/game.h"
 #include "plugin/plugin.h"
@@ -222,6 +223,7 @@ auto plugin::gui_initializer::on_initialize() -> void {
     registered_windows.push_back(windows::release_information::create(this));
     registered_windows.push_back(windows::player_checker::create(this));
     registered_windows.push_back(windows::notes::create(this));
+    registered_windows.push_back(windows::counters::create(this));
 }
 
 auto plugin::gui_initializer::render() const -> void {

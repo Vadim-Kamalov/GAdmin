@@ -181,6 +181,30 @@
                 ]
             }
         },
+        "player_checker": {
+            "_type": "subsection",
+            "_name": "Чекер игроков",
+            "show_offline": { "_type": "bool", "_name": "Отображать игроков в оффлайн" },
+            "show_title": { "_type": "bool", "_name": "Отображать заголовок" },
+            "clist_color": { "_type": "bool", "_name": "Цвет никнейма по клисту" },
+            "notify": { "_type": "bool", "_name": "Показывать оповещения" },
+            "sound_notify": { "_type": "bool", "_name": "Звуковое оповещение" },
+            "align": {
+                "_type": "variant",
+                "_name": "Выравнивание по",
+                "_config": [
+                    [ "left", "Левому краю" ],
+                    [ "center", "Центру" ],
+                    [ "right", "Правому краю" ]
+                ]
+            }
+        },
+        "counters": {
+            "_type": "subsection",
+            "_name": "Счетчики",
+            "show_fps": { "_type": "bool", "_name": "Отображать FPS" },
+            "show_ping": { "_type": "bool", "_name": "Отображать PING" }
+        },
         "spectator_keys": { "_type": "bool", "_name": "Клавиши игрока в /sp" },
         "vehicle_selection": { "_type": "bool", "_name": "Панель спавна машин при вводе /veh" }
     },
