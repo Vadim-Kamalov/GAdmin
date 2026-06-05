@@ -44,7 +44,7 @@ FetchContent_Declare(ctre
     GIT_REPOSITORY https://github.com/hanickadot/compile-time-regular-expressions.git
 
     # fix for overly sensitive gcc
-    GIT_TAG 6225211806c48230e5d17a1e555ef69e7325051c
+    GIT_TAG dab09336d6a221299159a5ddc76cdcf6967ba9dd
 )
 
 FetchContent_Declare(imgui_markdown
