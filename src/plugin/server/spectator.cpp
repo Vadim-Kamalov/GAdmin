@@ -30,6 +30,41 @@
 #include "plugin/game/weapon.h"
 #include "plugin/plugin.h"
 #include "plugin/types/u8regex.h"
+#include "plugin/types/string_iterator.h"
+
+auto plugin::server::spectator::parse_player_statistics(const std::string& text) -> std::optional<std::array<std::string, 7>> {
+    static constexpr std::array<std::string_view, 7> keys = { "Банк:", "Фракция:", "Должность:", "Транспорт:",
+                                                              "Дом:", "Премиум аккаунт:", "Дата регистрации:" };
+
+    std::array<std::string, keys.size()> result;
+    types::string_iterator iterator(text);
+
+    while (iterator.current().has_value()) {
+        iterator.skip(::isspace);
+
+        std::string word = iterator.collect([](std::uint8_t c) { return !std::isspace(c); });
+
+        if (!iterator.current().has_value() || word.empty())
+            return {}; // this usually cannot occur, but if it does, we have a problem (SIGSEGV)
+
+        for (const auto& [ key_index, key ] : keys | std::views::enumerate) {
+            if (word != key)
+                continue;
+
+            assert(std::isspace(*iterator.current()));
+            iterator.consume();
+
+            result[key_index] = iterator.collect([](std::uint8_t c) { return c != '\n'; });
+
+            break;
+        }
+    }
+
+    if (result[0].empty())
+        return {};
+
+    return result;
+}
 
 auto plugin::server::spectator::on_show_text_draw(const samp::event<samp::event_id::show_text_draw>& text_draw) -> bool {
     static constexpr types::zstring_t title_placeholder = "admin_player_name";
@@ -105,9 +140,6 @@ auto plugin::server::spectator::on_remove_3d_text(const samp::event<samp::event_
 auto plugin::server::spectator::on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog) -> bool {
     static constexpr ctll::fixed_string warnings_pattern = "Предупреждения: (\\d+)";
     static constexpr ctll::fixed_string start_pattern = "Информация о игроке (.+)\\[(\\d+)]";
-    static constexpr ctll::fixed_string information_pattern =
-        "Банк: \\$([^\\n]+).*Фракция: ([^\\n]+).*Должность: ([^\\n]+).*Транспорт: ([^\\n]+).*"
-        "Дом: ([^\\n]+).*Премиум аккаунт: ([^\\n]+).*Дата регистрации: ([^\\n]+)";
 
     std::string text = string_utils::remove_samp_colors(dialog.text);
     auto dialog_start = types::u8regex::search<start_pattern>(text);
@@ -126,14 +158,16 @@ auto plugin::server::spectator::on_show_dialog(const samp::event<samp::event_id:
     auto matches = types::u8regex::search<warnings_pattern>(text);
     information.warnings = (matches) ? std::stoul(matches.get_string<1>()) : 0;
 
-    if (auto matches = types::u8regex::search<information_pattern>(text)) {
-        information.money_bank = matches.get_string<1>();
-        information.fraction = convert_possible_absence_text(matches.get_string<2>());
-        information.rank = convert_possible_absence_text(matches.get_string<3>());
-        information.vehicle = convert_possible_absence_text(matches.get_string<4>());
-        information.house = convert_possible_absence_text(matches.get_string<5>());
-        information.vip = convert_possible_absence_text(matches.get_string<6>());
-        information.registration_date = matches.get_string<7>();
+    if (auto result = parse_player_statistics(text)) {
+        auto matches = *result;
+
+        information.money_bank = matches[0];
+        information.fraction = convert_possible_absence_text(matches[1]);
+        information.rank = convert_possible_absence_text(matches[2]);
+        information.vehicle = convert_possible_absence_text(matches[3]);
+        information.house = convert_possible_absence_text(matches[4]);
+        information.vip = convert_possible_absence_text(matches[5]);
+        information.registration_date = matches[6];
     
         std::replace(information.vehicle.begin(), information.vehicle.end(), ',', ' ');
     }

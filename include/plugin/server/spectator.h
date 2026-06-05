@@ -31,6 +31,8 @@
 #include "plugin/samp/events/3d_text.h"
 #include "plugin/samp/events/text_draw.h"
 #include "plugin/samp/events/event.h"
+#include <optional>
+#include <array>
 #include <format>
 
 namespace plugin::server {
@@ -74,6 +76,8 @@ private:
     static inline bool keys_down[std::to_underlying(samp::synchronization_key::count)];
     static inline bool can_render_interface = true;
     static inline bool checking_statistics = false;
+
+    static auto parse_player_statistics(const std::string& text) -> std::optional<std::array<std::string, 7>>;
 
     static auto on_show_text_draw(const samp::event<samp::event_id::show_text_draw>& text_draw) -> bool;
     static auto on_text_draw_set_string(const samp::event<samp::event_id::set_text_draw_string>& text_draw) -> bool;
