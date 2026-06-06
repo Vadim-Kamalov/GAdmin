@@ -26,6 +26,7 @@
 #include "plugin/server/binder.h"
 #include "plugin/server/spectator.h"
 #include "plugin/server/user.h"
+#include <common/common.h>
 #include <errhandlingapi.h>
 #include <dbghelp.h>
 #include <exception>
@@ -146,12 +147,12 @@ auto plugin::plugin_initializer::initialize_event_handler() -> void {
 
 auto plugin::plugin_initializer::create_and_initialize_files() -> void {
     try {
-        std::filesystem::path current_path = std::filesystem::current_path();
+        std::filesystem::path game_path = common::get_game_path();
         
-        std::filesystem::create_directories(current_path / "gadmin" / "resources");
-        std::filesystem::create_directory(current_path / "gadmin" / "configuration");
+        std::filesystem::create_directories(game_path / "gadmin" / "resources");
+        std::filesystem::create_directory(game_path / "gadmin" / "configuration");
         
-        configuration = std::make_unique<configuration_initializer>(current_path / "gadmin" / "configuration" / "main.mpk");
+        configuration = std::make_unique<configuration_initializer>(game_path / "gadmin" / "configuration" / "main.mpk");
     } catch (const std::exception& e) {
         log::fatal("failed to create and initialize files: {}", e.what());
     }

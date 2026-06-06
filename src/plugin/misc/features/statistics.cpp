@@ -24,11 +24,12 @@
 #include "plugin/game/game.h"
 #include "plugin/plugin.h"
 #include "plugin/log.h"
+#include <common/common.h>
 #include <fstream>
 
 std::filesystem::path
 plugin::misc::features::statistics_updater::file_path =
-    std::filesystem::current_path() / "gadmin" / "configuration" / "statistics.dat";
+    common::get_game_path() / "gadmin" / "configuration" / "statistics.dat";
 
 auto plugin::misc::statistics_t::date_t::operator==(const date_t& other) const -> bool {
     return year == other.year && month == other.month && day == other.day;

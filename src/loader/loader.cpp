@@ -22,6 +22,7 @@
 #include <libloaderapi.h>
 #include <nlohmann/json.hpp>
 #include <common/network.h>
+#include <common/common.h>
 #include <filesystem>
 #include <minwindef.h>
 #include <processthreadsapi.h>
@@ -118,15 +119,15 @@ auto loader_t::update_plugin(const file_information_t& plugin, const std::string
 }
 
 auto loader_t::save_release_information(const release_information_t& information) const -> void {
-    std::filesystem::path current_path = std::filesystem::current_path();
+    std::filesystem::path game_path = common::get_game_path();
 
     try {
-        std::filesystem::create_directory(current_path / "gadmin");
+        std::filesystem::create_directory(game_path / "gadmin");
     } catch (...) {
         return;
     }
     
-    std::filesystem::path path = std::filesystem::current_path() / "gadmin" / "release_information.mpk";
+    std::filesystem::path path = game_path / "gadmin" / "release_information.mpk";
     std::ofstream file = std::ofstream(path, std::ios::out | std::ios::binary);
 
     if (!file)
@@ -171,7 +172,7 @@ auto loader_t::try_get_file_information(const std::filesystem::path& path) const
 
 loader_t::loader_t() {
     DisableThreadLibraryCalls(reinterpret_cast<HMODULE>(&__ImageBase));
-    for (const auto& entry : std::filesystem::directory_iterator(std::filesystem::current_path())) {
+    for (const auto& entry : std::filesystem::directory_iterator(common::get_game_path())) {
         if (!entry.is_regular_file())
             continue;
 

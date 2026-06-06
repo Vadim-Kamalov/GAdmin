@@ -22,12 +22,13 @@
 #include "plugin/game/game.h"
 #include "plugin/gui/widgets/markdown.h"
 #include "plugin/log.h"
+#include <common/common.h>
 #include <fstream>
 #include <ranges>
 #include <windows.h>
 
 std::filesystem::path
-plugin::gui::windows::release_information::file_path = std::filesystem::current_path() / "gadmin" / "release_information.mpk";
+plugin::gui::windows::release_information::file_path = common::get_game_path() / "gadmin" / "release_information.mpk";
 
 auto plugin::gui::windows::release_information::render_title() const -> void {
     std::array<std::string, 3> entries_aligned = {

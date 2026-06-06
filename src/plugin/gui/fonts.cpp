@@ -18,12 +18,13 @@
 
 #include "plugin/gui/fonts.h"
 #include "plugin/gui/icon.h"
-#include "common/network.h"
+#include <common/network.h>
+#include <common/common.h>
 #include <functional>
 #include <ranges>
 
 auto plugin::gui::fonts_initializer::get_missing_fonts() const -> std::queue<missing_font> {
-    std::filesystem::path resources = std::filesystem::current_path() / "gadmin" / "resources";
+    std::filesystem::path resources = common::get_game_path() / "gadmin" / "resources";
     std::queue<missing_font> missing_fonts;
 
     for (const auto& filename : filenames) {
@@ -53,7 +54,7 @@ auto plugin::gui::fonts_initializer::assign_fonts() -> void {
     ImFontAtlas* font_atlas = ImGui::GetIO().Fonts;
     ImFont** fonts[] = { &regular, &bold, &light, &icon };
     
-    std::filesystem::path resources = std::filesystem::current_path() / "gadmin" / "resources";
+    std::filesystem::path resources = common::get_game_path() / "gadmin" / "resources";
 
     for (const auto& [ index, filename ] : filenames | std::views::enumerate) {
         std::filesystem::path path = resources / filename;

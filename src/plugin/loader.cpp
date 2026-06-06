@@ -18,6 +18,7 @@
 
 #include "plugin/loader.h"
 #include "plugin/game/game.h"
+#include <common/common.h>
 #include <backends/imgui_impl_dx9.h>
 #include <backends/imgui_impl_win32.h>
 #include <imgui.h>
@@ -138,7 +139,7 @@ plugin::loader::loader() {
 
     DisableThreadLibraryCalls(reinterpret_cast<HMODULE>(&__ImageBase));
 
-    log_handler.load_file(std::filesystem::current_path() / "gadmin.log");
+    log_handler.load_file(common::get_game_path() / "gadmin.log");
     log::info("logging initialized");
    
     if (!plugin_initializer::is_connected_to_valid_server()) {
