@@ -34,7 +34,7 @@
 
 auto plugin::server::spectator::parse_player_statistics(const std::string& text) -> std::optional<std::array<std::string, 7>> {
     static constexpr std::array<std::string_view, 7> keys = { "Банк:", "Фракция:", "Должность:", "Транспорт:",
-                                                              "Дом:", "Премиум аккаунт:", "Дата регистрации:" };
+                                                              "Дом:", "аккаунт:", "регистрации:" };
 
     std::array<std::string, keys.size()> result;
     types::string_iterator iterator(text);
@@ -45,7 +45,7 @@ auto plugin::server::spectator::parse_player_statistics(const std::string& text)
         std::string word = iterator.collect([](std::uint8_t c) { return !std::isspace(c); });
 
         if (!iterator.current().has_value() || word.empty())
-            return {}; // this usually cannot occur, but if it does, we have a problem (SIGSEGV)
+            break;
 
         for (const auto& [ key_index, key ] : keys | std::views::enumerate) {
             if (word != key)
