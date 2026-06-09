@@ -23,6 +23,8 @@
 #include <stop_token>
 #include <string_view>
 #include <filesystem>
+#include <mutex>
+#include <optional>
 #include <windows.h>
 #include <wininet.h>
 
@@ -36,9 +38,23 @@ class internet_t final {
 private:
     static constexpr DWORD internet_flags =
         INTERNET_FLAG_RELOAD | INTERNET_FLAG_NO_CACHE_WRITE | INTERNET_FLAG_SECURE;
-    
+
+    /// Timeout (ms) for each request phase (connect/send/receive); otherwise a block without VPN
+    /// would hang on WinINet's defaults for tens of seconds.
+    static constexpr DWORD timeout_ms = 5000;
+
     bool valid = true;
     std::stop_token stop_token;
+
+    // close_handles() may be called concurrently by the destructor and the stop-callback from
+    // different threads — the mutex + flag close the handles exactly once.
+    std::mutex handles_mutex;
+    bool handles_closed = false;
+    std::optional<std::stop_callback<std::function<void()>>> stop_cb;
+
+    /// Close the WinINet handles exactly once (thread-safe). From the stop-callback it closes the
+    /// session, interrupting a blocking InternetOpenUrl/InternetReadFile on another thread.
+    auto close_handles() noexcept -> void;
 public:
     /// Callback function type for reading file data.
     ///
@@ -46,8 +62,8 @@ public:
     /// @param bytes_read[in] Number of bytes read into buffer.
     using read_file_callback_t = std::function<void(char buffer[4096], std::size_t bytes_read)>;
 
-    HINTERNET handle; ///< WinINet Internet Handle.
-    HINTERNET url;    ///< WinINet URL Handle.
+    HINTERNET handle;       ///< WinINet Internet Handle.
+    HINTERNET url = nullptr; ///< WinINet URL Handle.
     
     /// Check if internet connection is available.
     ///
