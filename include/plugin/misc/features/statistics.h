@@ -161,8 +161,14 @@ private:
 
     static auto read_date(std::ifstream& file, date_t& output) -> bool;
     static auto read_value(std::ifstream& file, value_t& output) -> bool;
+    static auto read_opcode_entry(std::ifstream& file, date_entry_t& entry, std::uint8_t opcode) -> bool;
     static auto write_date(std::ofstream& file, const date_t& date) -> bool;
     static auto write_value(std::ofstream& file, const value_t& value) -> bool;
+
+    template<typename T> requires requires (T t) { t.close(); } // double requires lol
+    static auto send_read_write_error(T& file, const std::filesystem::path& path) -> void;
+
+    static auto send_read_write_error(const std::filesystem::path& path) -> void;
 public:
     /// Represents statistics' data as a vector of date entries.
     std::vector<date_entry_t> date_entries;
@@ -223,6 +229,12 @@ auto plugin::misc::statistics_t::read_value(std::ifstream& file, T& output) -> b
 template<typename T>
 auto plugin::misc::statistics_t::write_value(std::ofstream& file, const T& value) -> bool {
     return !!file.write(reinterpret_cast<const char*>(&value), sizeof(T));
+}
+
+template<typename T> requires requires (T t) { t.close(); }
+auto plugin::misc::statistics_t::send_read_write_error(T& file, const std::filesystem::path& path) -> void {
+    file.close();
+    send_read_write_error(path);
 }
 
 #endif // GADMIN_PLUGIN_MISC_FEATURES_STATISTICS_H

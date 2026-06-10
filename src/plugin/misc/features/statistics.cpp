@@ -83,6 +83,36 @@ auto plugin::misc::statistics_t::read_value(std::ifstream& file, value_t& output
         && read_value(file, output.value);
 }
 
+auto plugin::misc::statistics_t::read_opcode_entry(std::ifstream& file, date_entry_t& entry, std::uint8_t opcode) -> bool {
+    std::uint8_t value_count = 0;
+
+    if (!read_value(file, value_count)) {
+        log::error("statistics_t::read: failed to read OPCODE_ENTRY (value_count)");
+        return false;
+    }
+
+    for (int i = 0; i < value_count; i++) {
+        value_t value;
+
+        if (!read_value(file, value)) {
+            log::error("statistics_t::read: failed to read value_t");
+            return false;
+        }
+
+        std::uint8_t entry_index = opcode >> 1;
+
+        if (entry_index >= std::to_underlying(entry_type::count)) {
+            log::error("statistics_t::read: invalid entry index {} (max {})",
+                       entry_index, std::to_underlying(entry_type::count) - 1);
+            return false;
+        }
+
+        entry.entries[entry_index].push_back(value);
+    }
+
+    return true;
+}
+
 auto plugin::misc::statistics_t::write_date(std::ofstream& file, const date_t& date) -> bool {
     return write_value(file, date.year)
         && write_value(file, date.month)
@@ -93,6 +123,17 @@ auto plugin::misc::statistics_t::write_value(std::ofstream& file, const value_t&
     return write_value(file, value.range.first)
         && write_value(file, value.range.second)
         && write_value(file, value.value);
+}
+
+auto plugin::misc::statistics_t::send_read_write_error(const std::filesystem::path& path) -> void {
+    try {
+        std::filesystem::remove(path);
+        log::warn("statistics_t::send_read_write_error [with path = \"{}\"]: deleted corrupted file",
+                  path.string());
+    } catch (const std::exception& e) {
+        log::error("statistics_t::send_read_write_error [with path = \"{}\", e = \"{}\"]: failed to delete corrupted file",
+                   path.string(), e.what());
+    }
 }
 
 auto plugin::misc::statistics_t::read(const std::filesystem::path& path) -> void {
@@ -108,34 +149,36 @@ auto plugin::misc::statistics_t::read(const std::filesystem::path& path) -> void
     while (file.peek() != EOF) {
         std::uint8_t opcode = 0xFF;
 
-        if (!read_value(file, opcode) || opcode != OPCODE_DATE) {
-            log::error("statistics_t::read: failed to read OPCODE_DATE");
-            break;
+        if (!read_value(file, opcode)) {
+            log::error("statistics_t::read: failed to read opcode at position {}",
+                       static_cast<std::streamoff>(file.tellg()));
+
+            send_read_write_error(file, path);
+
+            return;
+        }
+
+        if (opcode != OPCODE_DATE) {
+            log::error("statistics_t::read: expected OPCODE_DATE (0x00), got 0x{:02X} at position {}",
+                       opcode, static_cast<std::streamoff>(file.tellg()) - 1);
+
+            send_read_write_error(file, path);
+
+            return;
         }
 
         date_entry_t date_entry;
-        std::uint8_t value_count = 0;
 
         if (!read_date(file, date_entry.date)) {
             log::error("statistics_t::read: failed to read date_t");
+            send_read_write_error(file, path);
             return;
         }
 
         while (file.peek() & OPCODE_ENTRY && read_value(file, opcode)) {
-            if (!read_value(file, value_count)) {
-                log::error("statistics_t::read: failed to read OPCODE_ENTRY (value_count)");
+            if (!read_opcode_entry(file, date_entry, opcode)) {
+                send_read_write_error(file, path);
                 return;
-            }
-
-            for (int i = 0; i < value_count; i++) {
-                value_t value;
-
-                if (!read_value(file, value)) {
-                    log::error("statistics_t::read: failed to read value_t");
-                    return;
-                }
-
-                date_entry.entries[(opcode >> 1)].push_back(value);
             }
         }
 
@@ -153,7 +196,8 @@ auto plugin::misc::statistics_t::write(const std::filesystem::path& path) -> voi
 
     for (const auto& entry : date_entries) {
         if (!write_value(file, OPCODE_DATE) || !write_date(file, entry.date)) {
-            log::error("statistics_t::write: failed to write OPCODE_DATE");
+            log::error("statistics_t::write: failed to write OPCODE_DATE or date_t");
+            send_read_write_error(file, path);
             return;
         }
 
@@ -161,22 +205,39 @@ auto plugin::misc::statistics_t::write(const std::filesystem::path& path) -> voi
             if (entry.entries[type].empty())
                 continue;
 
+            std::size_t size = entry.entries[type].size();
+
+            if (size > 255) {
+                log::error("statistics_t::write: entry_type {} has {} values (max 0xFF)", type, size);
+                send_read_write_error(file, path);
+                return;
+            }
+
             std::uint8_t opcode = (static_cast<std::uint8_t>(type) << 1) | OPCODE_ENTRY;
-            std::uint8_t size = entry.entries[type].size();
 
             if (!write_value(file, opcode) || !write_value(file, size)) {
-                log::error("statistics_t::write: failed to write OPCODE_ENTRY");
+                log::error("statistics_t::write: failed to write OPCODE_ENTRY or size for entry type {}", type);
+                send_read_write_error(file, path);
                 return;
             }
 
             for (const auto& value : entry.entries[type]) {
                 if (!write_value(file, value)) {
-                    log::error("statistics_t::write: failed to write value_t");
+                    log::error("statistics_t::write: failed to write value_t for entry_type {}", type);
+                    send_read_write_error(file, path);
                     return;
                 }
             }
         }
     }
+
+    file.flush();
+
+    if (file)
+        return;
+
+    log::error("statistics_t::write: failed to flush file");
+    send_read_write_error(file, path);
 }
 
 auto plugin::misc::statistics_t::get_today_entry() -> date_entry_t& {
