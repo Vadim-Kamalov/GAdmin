@@ -309,7 +309,7 @@ auto __stdcall plugin::plugin_initializer::on_unhandled_exception(EXCEPTION_POIN
 }
 
 plugin::plugin_initializer::plugin_initializer() {
-    log::info("GAdmin v" PROJECT_VERSION " loaded. Copyright (C) 2023-2026 The Contributors");
+    log::info("GAdmin v" PROJECT_VERSION " (" COMPILE_INFO ") loaded. Copyright (C) 2023-2026 The Contributors");
     log::info("samp.dll base address: 0x{:X}", samp::get_base());
 
     std::setlocale(LC_ALL, "Russian_Russia.UTF8");
