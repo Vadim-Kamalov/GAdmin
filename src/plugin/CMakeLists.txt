@@ -41,6 +41,7 @@ include(${CMAKE_SOURCE_DIR}/cmake/options/use_upx.cmake)
 
 include(${CMAKE_SOURCE_DIR}/cmake/libraries.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/compile_flags.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/compile_info.cmake)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include)
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "gadmin" SUFFIX ".dll")
