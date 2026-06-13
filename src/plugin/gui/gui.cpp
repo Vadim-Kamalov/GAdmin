@@ -21,6 +21,7 @@
 #include "plugin/game/cursor.h"
 #include "plugin/game/game.h"
 #include "plugin/gui/windows/admins.h"
+// #include "plugin/gui/windows/autocompletion.h"
 #include "plugin/gui/windows/far_chat.h"
 #include "plugin/gui/windows/interaction_area.h"
 #include "plugin/gui/windows/kill_list.h"
@@ -83,6 +84,8 @@ auto plugin::gui_initializer::show_debug_window() const -> void {
                                                                 selected_window_size[1] * frame_height });
 
             ImGui::DragFloat("font_scale_dpi", &ImGui::GetStyle().FontScaleDpi, 0.02f, 0.5f, 4.0f);
+
+            ImGui::TextUnformatted(std::format("is_cursor_active(): {}", is_cursor_active()).c_str());
         }
         ImGui::EndGroup();
     }
@@ -103,16 +106,13 @@ auto plugin::gui_initializer::set_cursor_mode_hooked(const decltype(set_cursor_m
     int current_cursor_mode = samp::game::cursor_mode_offsets->read(game);
     int result = hook.call_trampoline(game, mode, immediately_hide);
 
-    if ((mode == 2 || mode == 3) && cursor_active && !cursor_state_intercepted) {
-        cursor_active = false;
+    if ((mode == 2 || mode == 3) && is_cursor_active() && !cursor_state_intercepted) {
         cursor_state_intercepted = true;
-
         game::cursor::set_state(false);
-
         return result;
     }
 
-    if (!cursor_active && mode == 0 && current_cursor_mode != 0 && cursor_state_intercepted) {
+    if (!is_cursor_active() && mode == 0 && current_cursor_mode != 0 && cursor_state_intercepted) {
         POINT cursor_pos;    
         GetCursorPos(&cursor_pos);
 
@@ -158,10 +158,10 @@ auto plugin::gui_initializer::on_event(unsigned int message, WPARAM wparam, LPAR
     if (ImGui::GetCurrentContext() == nullptr)
         return true;
 
-    // Events to the game or SA:MP will not be sent when the user is typing something in ImGui's inputs.
-    // Here, we only check `WantTextInput` and not `WantCaptureMouse || WantCaptureKeyboard`, because there
-    // are some cases when the game will not receive some event (e.g. release of key or mouse button) event.
-    if (ImGui::GetIO().WantTextInput && message != WM_KEYUP && message != WM_SYSKEYUP)
+    if (ImGui::GetIO().WantTextInput)
+        return false;
+
+    if (message >= WM_MOUSEFIRST && message <= WM_MOUSELAST && ImGui::GetIO().WantCaptureMouse && is_cursor_active())
         return false;
 
     if (!hotkey_handler->on_event(message, wparam, lparam))
@@ -209,6 +209,7 @@ auto plugin::gui_initializer::on_initialize() -> void {
 
     registered_windows.push_back(windows::main::create(this));
     registered_windows.push_back(windows::admins::create(this));
+    // registered_windows.push_back(windows::autocompletion::create(this));
     registered_windows.push_back(windows::notify::create(this));
     registered_windows.push_back(windows::spectator_information::create(this));
     registered_windows.push_back(windows::spectator_actions::create(this));
@@ -255,14 +256,14 @@ auto plugin::gui_initializer::render() const -> void {
 }
 
 auto plugin::gui_initializer::main_loop() -> void {
-    if (cursor_active)
+    if (is_cursor_active())
         game::cursor::set_state(true);
 
     hotkey_handler->main_loop();
 }
 
 auto plugin::gui_initializer::is_cursor_active() const -> bool {
-    return cursor_active;
+    return GetCursor() != nullptr;
 }
 
 auto plugin::gui_initializer::center_cursor() -> void {
@@ -271,17 +272,17 @@ auto plugin::gui_initializer::center_cursor() -> void {
     cursor_last_x = size_x / 2;
     cursor_last_y = size_y / 2;
 
-    if (cursor_active)
+    if (is_cursor_active())
         SetCursorPos(cursor_last_x, cursor_last_y);
 }
 
 auto plugin::gui_initializer::enable_cursor() -> void {
-    cursor_active = true;
-
     game::cursor::set_state(true);
     
-    if (cursor_last_x != -1 && cursor_last_y != -1)
-        SetCursorPos(cursor_last_x, cursor_last_y);
+    if (cursor_last_x == -1 || cursor_last_y == -1)
+        return;
+
+    SetCursorPos(cursor_last_x, cursor_last_y);
 }
 
 auto plugin::gui_initializer::disable_cursor() -> void {
@@ -290,7 +291,6 @@ auto plugin::gui_initializer::disable_cursor() -> void {
     game::cursor::set_state(false);
     GetCursorPos(&cursor_pos);
 
-    cursor_active = false;
     cursor_last_x = cursor_pos.x;
     cursor_last_y = cursor_pos.y;
 }

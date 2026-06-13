@@ -18,12 +18,17 @@
 
 #include "plugin/loader.h"
 #include "plugin/game/game.h"
+#include "plugin/samp/samp.h"
+#include "plugin/samp/core/net_game.h"
 #include <backends/imgui_impl_dx9.h>
 #include <backends/imgui_impl_win32.h>
 #include <imgui.h>
 
 // This will run `plugin::loader::loader()` and so the rest of the plugin.
 static plugin::loader _;
+
+plugin::types::versioned_address_container<std::uintptr_t>
+plugin::loader::wndproc_address = { 0x5DB40, 0x60EE0, 0x61650, 0x610C9 };
 
 extern IMGUI_IMPL_API auto ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wparam,
                                                           LPARAM lparam) -> LRESULT;
@@ -57,6 +62,19 @@ auto plugin::loader::install_d3d9_hooks() -> void {
     ensure_hook_installed("loader::d3d9_reset_hook", d3d9_reset_hook.install());
 }
 
+auto plugin::loader::try_install_wndproc_hook() -> void {
+    using namespace std::placeholders;
+
+    if (installed_wndproc_hook || samp::get_base() == 0 || samp::net_game::instance_container->read() == 0)
+        return;
+
+    wndproc_hook.set_dest(**wndproc_address);
+    wndproc_hook.set_cb(std::bind(&loader::wndproc_hooked, this, _1, _2, _3, _4, _5));
+    ensure_hook_installed("loader::wndproc_hook", wndproc_hook.install());
+
+    installed_wndproc_hook = true;
+}
+
 auto plugin::loader::initialize_imgui_render(IDirect3DDevice9* device) -> void {
     ImGui_ImplWin32_EnableDpiAwareness();
     ImGui::CreateContext();
@@ -66,6 +84,8 @@ auto plugin::loader::initialize_imgui_render(IDirect3DDevice9* device) -> void {
 
     style.ScaleAllSizes(main_scale);
     style.FontScaleDpi = main_scale;
+
+    ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
 
     ImGui_ImplWin32_Init(plugin::game::get_window());
     ImGui_ImplDX9_Init(device);
@@ -82,6 +102,7 @@ auto plugin::loader::game_loop_hooked(const decltype(game_loop_hook)& hook) -> v
     }
 
     core->main_loop();
+    try_install_wndproc_hook();
 
     if (first_game_loop_call) {
         install_d3d9_hooks();
@@ -92,7 +113,7 @@ auto plugin::loader::game_loop_hooked(const decltype(game_loop_hook)& hook) -> v
 }
 
 auto plugin::loader::wndproc_hooked(const decltype(wndproc_hook)& hook, HWND hwnd,
-                                    UINT message, WPARAM wparam, LPARAM lparam) -> LRESULT
+                                    UINT message, WPARAM wparam, LPARAM lparam) -> int
 {
     if (core == nullptr)
         return hook.call_trampoline(hwnd, message, wparam, lparam);
@@ -151,10 +172,6 @@ plugin::loader::loader() {
     game_loop_hook.set_dest(0x53BEE0);
     game_loop_hook.set_cb(std::bind(&loader::game_loop_hooked, this, _1));
     ensure_hook_installed("loader::game_loop_hook", game_loop_hook.install());
-
-    wndproc_hook.set_dest(0x747EB0);
-    wndproc_hook.set_cb(std::bind(&loader::wndproc_hooked, this, _1, _2, _3, _4, _5));
-    ensure_hook_installed("loader::wndproc_hook", wndproc_hook.install());
 
     core = std::make_unique<plugin_initializer>();
 }

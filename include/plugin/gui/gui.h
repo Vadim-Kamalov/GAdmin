@@ -50,9 +50,7 @@ private:
 
     int cursor_last_x = -1;
     int cursor_last_y = -1;
-
     bool cursor_state_intercepted = false;
-    bool cursor_active = false;
 
 #ifndef NDEBUG
     auto show_debug_window() const -> void;

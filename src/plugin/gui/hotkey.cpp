@@ -25,6 +25,7 @@
 #include "plugin/gui/widgets/toggle_button.h"
 #include "plugin/server/spectator.h"
 #include "plugin/server/user.h"
+#include "plugin/samp/utils.h"
 #include "plugin/plugin.h"
 #include "plugin/string_utils.h"
 #include <imgui.h>
@@ -304,7 +305,7 @@ auto plugin::gui::hotkey_handler::main_loop() -> void {
 }
 
 auto plugin::gui::hotkey_handler::on_event(unsigned int message, WPARAM wparam, LPARAM) -> bool {
-    if (wparam == 0)
+    if (wparam == 0 || samp::utils::is_inputs_active())
         return true;
 
     if (message == WM_KEYDOWN && wparam == VK_ESCAPE && changing_any_hotkey) {
