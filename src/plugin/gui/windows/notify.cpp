@@ -74,6 +74,9 @@ auto plugin::gui::windows::notify::render_notification(notification& item) const
     draw_list->AddRectFilled(cursor_pos, { cursor_pos.x + notification_size.x, cursor_pos.y + notification_size.y },
                              ImGui::GetColorU32(ImGuiCol_WindowBg), ImGui::GetStyle().ChildRounding);
 
+    draw_list->AddRect(cursor_pos, { cursor_pos.x + notification_size.x, cursor_pos.y + notification_size.y },
+                       ImGui::GetColorU32(ImGuiCol_Border), ImGui::GetStyle().ChildRounding, ImGui::GetStyle().ChildBorderSize);
+
     ImVec2 icon_size = icon->CalcTextSizeA(icon_font_size * scale, FLT_MAX, 0, item.icon);
     ImVec2 icon_pos = { cursor_pos.x + 12, cursor_pos.y + (notification_size.y - icon_size.y) / 2 };
 
