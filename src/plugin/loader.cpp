@@ -115,9 +115,6 @@ auto plugin::loader::game_loop_hooked(const decltype(game_loop_hook)& hook) -> v
 auto plugin::loader::wndproc_hooked(const decltype(wndproc_hook)& hook, HWND hwnd,
                                     UINT message, WPARAM wparam, LPARAM lparam) -> int
 {
-    if (core == nullptr)
-        return hook.call_trampoline(hwnd, message, wparam, lparam);
-
     if (ImGui_ImplWin32_WndProcHandler(hwnd, message, wparam, lparam)
         || !core->on_message(message, wparam, lparam))
     {
