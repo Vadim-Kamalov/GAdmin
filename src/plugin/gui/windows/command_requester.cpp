@@ -77,7 +77,7 @@ auto plugin::gui::windows::command_requester::try_parse_request(const std::strin
             if (!iterator.current().has_value() && param != command_t::param_t::number_optional)
                 return {};
 
-            std::string argument = iterator.collect([](unsigned char c) { return !std::isspace(c); });
+            std::string argument = iterator.collect_word();
             
             iterator.skip(::isspace);
 

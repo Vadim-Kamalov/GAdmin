@@ -140,6 +140,12 @@
             "show_ping": true
         },
 
+        "autocompletion": {
+            "use": true,
+            "show_hint": true,
+            "max_items": 10
+        },
+
         "spectator_keys": true,
         "vehicle_selection": true
     },

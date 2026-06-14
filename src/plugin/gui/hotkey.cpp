@@ -214,7 +214,7 @@ auto plugin::gui::hotkey_handler::check_modifiers(const key_bind::modifiers_t& m
 }
 
 auto plugin::gui::hotkey_handler::check_conditions(const types::options<bind_condition>& conditions) const -> bool {
-    if (conditions.has_value(bind_condition::never))
+    if (samp::utils::is_inputs_active() || conditions.has_value(bind_condition::never))
         return false;
     
     if (conditions.has_value(bind_condition::always))
@@ -305,7 +305,7 @@ auto plugin::gui::hotkey_handler::main_loop() -> void {
 }
 
 auto plugin::gui::hotkey_handler::on_event(unsigned int message, WPARAM wparam, LPARAM) -> bool {
-    if (wparam == 0 || samp::utils::is_inputs_active())
+    if (wparam == 0)
         return true;
 
     if (message == WM_KEYDOWN && wparam == VK_ESCAPE && changing_any_hotkey) {

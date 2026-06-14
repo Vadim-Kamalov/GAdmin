@@ -21,7 +21,7 @@
 #include "plugin/game/cursor.h"
 #include "plugin/game/game.h"
 #include "plugin/gui/windows/admins.h"
-// #include "plugin/gui/windows/autocompletion.h"
+#include "plugin/gui/windows/autocompletion.h"
 #include "plugin/gui/windows/far_chat.h"
 #include "plugin/gui/windows/interaction_area.h"
 #include "plugin/gui/windows/kill_list.h"
@@ -209,7 +209,7 @@ auto plugin::gui_initializer::on_initialize() -> void {
 
     registered_windows.push_back(windows::main::create(this));
     registered_windows.push_back(windows::admins::create(this));
-    // registered_windows.push_back(windows::autocompletion::create(this));
+    registered_windows.push_back(windows::autocompletion::create(this));
     registered_windows.push_back(windows::notify::create(this));
     registered_windows.push_back(windows::spectator_information::create(this));
     registered_windows.push_back(windows::spectator_actions::create(this));

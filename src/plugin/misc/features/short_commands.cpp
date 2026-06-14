@@ -12,8 +12,8 @@ auto plugin::misc::features::short_commands::on_send_command(const samp::out_eve
 
     types::string_iterator iterator(event.command, 1);
     
-    std::string command_name = iterator.collect([](unsigned char c) { return !std::isspace(c); });
-    std::string command_parameters = iterator.collect([](auto) { return true; });
+    std::string command_name = iterator.collect_word();
+    std::string command_parameters = iterator.remaining();
 
     for (const auto& object : feature_configuration["commands"]) {
         std::string command = object["command"];

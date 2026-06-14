@@ -202,7 +202,7 @@ auto plugin::misc::features::statistics_updater::try_increment_punishment(const 
     types::string_iterator iterator(punisment_text);
     std::string user_ooc_nickname = (*configuration)["user"]["nickname"];
     std::string possible_request_nickname = "// " + user_ooc_nickname;
-    std::string sender_nickname = iterator.collect([](unsigned char c) { return !std::isspace(c); });
+    std::string sender_nickname = iterator.collect_word();
 
     if (sender_nickname != user_ooc_nickname && !punisment_text.ends_with(possible_request_nickname))
         return;

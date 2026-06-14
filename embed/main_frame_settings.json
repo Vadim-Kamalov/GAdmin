@@ -205,6 +205,16 @@
             "show_fps": { "_type": "bool", "_name": "Отображать FPS" },
             "show_ping": { "_type": "bool", "_name": "Отображать PING" }
         },
+        "autocompletion": {
+            "_type": "subsection",
+            "_name": "Автозаполнение",
+            "show_hint": { "_type": "bool", "_name": "Отображать подсказку справа окна" },
+            "max_items": {
+                "_type": "intrange",
+                "_name": "Максимальное количество строк",
+                "_config": [ 1, 100 ]
+            }
+        },
         "spectator_keys": { "_type": "bool", "_name": "Клавиши игрока в /sp" },
         "vehicle_selection": { "_type": "bool", "_name": "Панель спавна машин при вводе /veh" }
     },

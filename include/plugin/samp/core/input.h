@@ -47,6 +47,8 @@ private:
     static inline types::offset<int> active_offset = 0x14E0;
     static inline types::offset<char(*)[max_command_length + 1]> commands_offset = 0x24C;
     static inline types::offset<std::uintptr_t> dxut_input_offset = 0x8;
+    static inline types::offset<std::pair<int, int>> dxut_input_pos_offset = 0x8;
+    static inline types::offset<std::pair<int, int>> dxut_input_size_offset = 0x10;
 
     static types::versioned_address_container<std::uintptr_t> instance_container;
     static types::versioned_address_container<signatures::send_command_t> send_command_container;
@@ -84,6 +86,16 @@ public:
     ///
     /// @return Current text in the input window.
     static auto get_text() noexcept -> std::string;
+
+    /// Get position (X, Y) of the window on the screen.
+    ///
+    /// @return Position (X, Y) of the window on the screen.
+    static auto get_position() noexcept -> std::pair<int, int>;
+    
+    /// Get size (width, height) of the window on the screen.
+    ///
+    /// @return Size (width, height) of the window on the screen.
+    static auto get_size() noexcept -> std::pair<int, int>;
 
     /// Send command to the SA:MP chat.
     /// 

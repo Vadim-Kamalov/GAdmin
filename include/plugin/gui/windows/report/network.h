@@ -126,7 +126,7 @@ public:
     }; // struct active_report_t final
 
     /// Current report.
-    std::optional<active_report_t> active_report;
+    static inline std::optional<active_report_t> active_report;
 
     /// Send the dialog action.
     ///

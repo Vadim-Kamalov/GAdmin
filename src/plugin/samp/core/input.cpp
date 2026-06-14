@@ -68,3 +68,11 @@ auto plugin::samp::input::set_text(const std::string_view& text) noexcept -> voi
 auto plugin::samp::input::get_text() noexcept -> std::string {
     return string_utils::to_utf8(get_text_container->invoke(dxut_input_offset.read(instance_container->read())));
 }
+
+auto plugin::samp::input::get_position() noexcept -> std::pair<int, int> {
+    return dxut_input_pos_offset.read(dxut_input_offset.read(instance_container->read()));
+}
+
+auto plugin::samp::input::get_size() noexcept -> std::pair<int, int> {
+    return dxut_input_size_offset.read(dxut_input_offset.read(instance_container->read()));
+}

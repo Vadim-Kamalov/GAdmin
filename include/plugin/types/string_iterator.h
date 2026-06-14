@@ -63,6 +63,12 @@ public:
     template<typename callback_until>
     auto collect(callback_until until) -> std::string;
 
+    /// Collect a word from the current position. Same as
+    /// `collect([](std::uint8_t c) { return !std::isspace(c); });`
+    ///
+    /// @return Collected word from the current position.
+    auto collect_word() -> std::string;
+
     /// Construct string iterator.
     ///
     /// @param input[in] String view to iterate over.
