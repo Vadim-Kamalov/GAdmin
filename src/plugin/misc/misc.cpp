@@ -9,6 +9,7 @@
 #include "plugin/misc/features/fixes.h"
 #include "plugin/misc/features/hide_addresses.h"
 #include "plugin/misc/features/information_render.h"
+#include "plugin/misc/features/me_to_id.h"
 #include "plugin/misc/features/mentions.h"
 #include "plugin/misc/features/message_recolorer.h"
 #include "plugin/misc/features/nickname_colors.h"
@@ -66,6 +67,7 @@ plugin::misc::initializer::initializer() {
     features.push_back(std::make_unique<features::fixes>());
     features.push_back(std::make_unique<features::death_notify_in_chat>());
     features.push_back(std::make_unique<features::short_commands>());
+    features.push_back(std::make_unique<features::me_to_id>());
     features.push_back(std::make_unique<features::fish_eye>());
     features.push_back(std::make_unique<features::statistics_updater>());
     features.push_back(std::make_unique<features::information_render>());

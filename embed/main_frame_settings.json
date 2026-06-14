@@ -235,6 +235,7 @@
         "nickname_colors": { "_type": "bool", "_name": "Цветные никнеймы в /a" },
         "auto_aa_command": { "_type": "bool", "_name": "Автоматический /aa" },
         "display_id_in_chat": { "_type": "bool", "_name": "Отображать ID в IC чате" },
+        "me_to_id": { "_type": "bool", "_name": "Заменять 'me' на свой ID в командах" },
         "auto_alogin": { "_type": "bool", "_name": "/alogin после спавна" },
         "fix_chat_opening": { "_type": "bool", "_name": "Исправление открытия чата на Т" },
         "auto_login": {
