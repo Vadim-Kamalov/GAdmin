@@ -1,4 +1,5 @@
 #include "plugin/misc/misc.h"
+#include "plugin/misc/features/swap_layout.h"
 #include "plugin/misc/features/auto_aa_command.h"
 #include "plugin/misc/features/auto_alogin.h"
 #include "plugin/misc/features/auto_alogout.h"
@@ -56,6 +57,7 @@ auto plugin::misc::initializer::on_samp_initialize() -> void {
 }
 
 plugin::misc::initializer::initializer() {
+    features.push_back(std::make_unique<features::swap_layout>());
     features.push_back(std::make_unique<features::auto_login>());
     features.push_back(std::make_unique<features::auto_alogin>());
     features.push_back(std::make_unique<features::auto_alogout>());

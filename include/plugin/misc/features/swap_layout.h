@@ -16,25 +16,29 @@
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
 
-#ifndef GADMIN_PLUGIN_MISC_FEATURES_AUTO_AA_COMMAND_H
-#define GADMIN_PLUGIN_MISC_FEATURES_AUTO_AA_COMMAND_H
+#ifndef GADMIN_PLUGIN_MISC_FEATURES_SWAP_LAYOUT_H
+#define GADMIN_PLUGIN_MISC_FEATURES_SWAP_LAYOUT_H
 
 #include "plugin/misc/base/feature.h"
 #include "plugin/samp/events/send_chat.h" // IWYU pragma: keep
+#include <unordered_map>
 
 namespace plugin::misc::features {
 
-/// Represents a feature that allows to redirect messages from the
-/// chat to the `/aa` command.
+/// Represents a feature that allows to fix possible incorrect usage of the
+/// command sent by user, which is done by layout swap of a command name.
 /// 
-/// Only works if a feature is enabled and user is on the alogin.
-class auto_aa_command final : public feature {
+/// Only works if a feature is enabled.
+class swap_layout final : public feature {
 private:
+    static std::unordered_map<std::string, char> russian_to_english_keymap;
+
+    static auto swap_characters(std::string input) -> std::string;
     auto on_send_chat(const samp::out_event<samp::event_id::send_chat>& chat) const -> bool;
 public:
     auto on_event(const samp::event_info& event) -> bool override;
-}; // class auto_aa_command final : public feature
+}; // class swap_layout final : public feature
 
 } // namespace plugin::misc::features
 
-#endif // GADMIN_PLUGIN_MISC_FEATURES_AUTO_AA_COMMAND_H
+#endif // GADMIN_PLUGIN_MISC_FEATURES_SWAP_LAYOUT_H

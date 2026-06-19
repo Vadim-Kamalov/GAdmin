@@ -180,6 +180,7 @@
         "auto_aa_command": false,
         "display_id_in_chat": false,
         "auto_alogin": false,
+        "swap_layout": true,
 
         "auto_login": {
             "use": false,

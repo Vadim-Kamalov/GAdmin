@@ -196,6 +196,7 @@ auto plugin::gui::style::apply() -> void {
     style.ItemInnerSpacing = { 0.0f, 0.0f };
     style.TouchExtraPadding = { 0.0f, 0.0f };
     style.ButtonTextAlign = { 0.5f, 0.5f };
+    style.SelectableTextAlign = { 0.5f, 0.5f };
 
     apply_theme(style, get_saved_theme());
 }
