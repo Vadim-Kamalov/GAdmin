@@ -42,8 +42,11 @@ auto plugin::gui::windows::interaction_area::find_player_nearby_to_screen_center
     auto [ size_x, size_y ] = game::get_screen_resolution();
     std::optional<search_result> result;
 
+    bool ignore_spectated = (*configuration)["windows"]["interaction_area"]["ignore_spectated_target"];
+
     for (const auto& [ player, ped ] : samp::player::get_stream_players()) {
-        if (player.id == samp::user::get_id() || (server::spectator::is_active() && player.id == server::spectator::id))
+        if (player.id == samp::user::get_id()
+            || (ignore_spectated && server::spectator::is_active() && player.id == server::spectator::id))
             continue;
 
         game::ped game_ped = ped.get_game_ped();
@@ -85,15 +88,34 @@ auto plugin::gui::windows::interaction_area::find_vehicle_nearby_to_screen_cente
 
     game::vehicle player_vehicle = game::ped::get_player().get_vehicle();
 
+    std::optional<game::vehicle> spectated_vehicle;
+    if ((*configuration)["windows"]["interaction_area"]["ignore_spectated_target"]
+        && server::spectator::is_active())
+    {
+        for (const auto& [ player, ped ] : samp::player::get_stream_players()) {
+            if (player.id != server::spectator::id)
+                continue;
+
+            if (game::ped spectated_ped = ped.get_game_ped()) {
+                if (game::vehicle occupied = spectated_ped.get_vehicle())
+                    spectated_vehicle = occupied;
+            }
+
+            break;
+        }
+    }
+
     for (std::uint16_t id = 0; id < samp::vehicle_pool::max_vehicles; id++) {
         auto vehicle = samp::vehicle_pool::get_vehicle(id);
-        
+
         if (!vehicle)
             continue;
 
         game::vehicle game_vehicle = vehicle->get_game_vehicle();
-        
-        if (!game_vehicle || !game_vehicle.is_on_screen() || (player_vehicle && game_vehicle == player_vehicle))
+
+        if (!game_vehicle || !game_vehicle.is_on_screen()
+            || (player_vehicle && game_vehicle == player_vehicle)
+            || (spectated_vehicle && game_vehicle == *spectated_vehicle))
             continue;
 
         types::vector_3d screen_point = game::convert_3d_coords_to_screen(game_vehicle.get_position());
@@ -136,6 +158,12 @@ auto plugin::gui::windows::interaction_area::handle_controls() -> void {
     if (ImGui::IsKeyReleased(ImGuiKey_1))
         current_search_type = (current_search_type == search_type::vehicles)
             ? search_type::players : search_type::vehicles;
+
+    if (ImGui::IsKeyReleased(ImGuiKey_0)) {
+        bool& ignore_spectated = (*configuration)["windows"]["interaction_area"]["ignore_spectated_target"].get_ref<bool&>();
+        ignore_spectated = !ignore_spectated;
+        configuration->save();
+    }
 
     for (int action_id = 0; action_id < action_count_per_type; action_id++) {
         if (ImGui::IsKeyReleased(static_cast<ImGuiKey>(ImGuiKey_2 + action_id))) {
@@ -216,6 +244,9 @@ auto plugin::gui::windows::interaction_area::render_help_text(ImDrawList* draw_l
 auto plugin::gui::windows::interaction_area::render_search_description(ImDrawList* draw_list, float radius, const types::color& active_color,
                                                                        const std::string& search_description) const -> void
 {
+    bool ignore_spectated = (*configuration)["windows"]["interaction_area"]["ignore_spectated_target"];
+    std::string ignore_line = std::format("0 - не наводиться на объект слежки: {}", ignore_spectated ? "Вкл" : "Выкл");
+
     std::array<std::string, 2> lines = { "1 - переключение между режимами (поиск игроков или машин)",
                                          search_description };
 
@@ -229,6 +260,11 @@ auto plugin::gui::windows::interaction_area::render_search_description(ImDrawLis
 
         render_stroked_text(draw_list, font, { x, y }, active_color, line.c_str());
     }
+
+    float ignore_x = center.x - regular_font->CalcTextSizeA(fonts_size, FLT_MAX, 0.0f, ignore_line.c_str()).x / 2;
+    float ignore_y = center.y + radius + 20 + fonts_size;
+
+    render_stroked_text(draw_list, regular_font, { ignore_x, ignore_y }, active_color, ignore_line.c_str());
 }
 
 auto plugin::gui::windows::interaction_area::render() -> void {

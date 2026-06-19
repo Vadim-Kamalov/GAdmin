@@ -154,6 +154,10 @@
         "interaction_area": {
             "_type": "subsection",
             "_name": "Круговая панель",
+            "ignore_spectated_target": {
+                "_type": "bool",
+                "_name": "Не наводиться на объект слежки"
+            },
             "radius": {
                 "_type": "intrange",
                 "_name": "Радиус",

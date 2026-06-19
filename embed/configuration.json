@@ -117,7 +117,8 @@
 
         "interaction_area": {
             "use": false,
-            "radius": 300
+            "radius": 300,
+            "ignore_spectated_target": true
         },
 
         "player_checker": {
