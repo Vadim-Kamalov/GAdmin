@@ -66,7 +66,7 @@ public:
     ///
     /// @param command[in] Command to check.
     /// @return            True if the command is defined in the SA:MP pool.
-    static auto is_command_defined(const std::string_view& command) noexcept -> bool;
+    static auto is_command_defined(const std::string& command) noexcept -> bool;
 
     /// Open the window.
     static auto open() noexcept -> void;

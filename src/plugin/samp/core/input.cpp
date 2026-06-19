@@ -41,11 +41,11 @@ auto plugin::samp::input::is_active() noexcept -> bool {
     return active_offset.read(instance_container->read()) != 0;
 }
 
-auto plugin::samp::input::is_command_defined(const std::string_view& command) noexcept -> bool {
+auto plugin::samp::input::is_command_defined(const std::string& command) noexcept -> bool {
     auto commands = commands_offset.read(instance_container->read());
 
     for (std::uint8_t i = 0; i < max_commands_count; i++)
-        if (command == std::string_view(commands[i], max_command_length + 1))
+        if (command == std::string(commands[i]))
             return true;
 
     return false;
