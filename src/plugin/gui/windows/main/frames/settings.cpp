@@ -27,6 +27,7 @@
 #include "plugin/gui/windows/main/custom_settings/short_commands.h"
 #include "plugin/gui/windows/main/custom_settings/spectator_actions.h"
 #include "plugin/gui/windows/main/custom_settings/spectator_information.h"
+#include "plugin/gui/windows/main/frames/presets.h"
 #include "plugin/server/user.h"
 #include "plugin/plugin.h"
 #include <misc/cpp/imgui_stdlib.h>
@@ -291,13 +292,21 @@ plugin::gui::windows::main::frames::settings::settings(types::not_null<initializ
                           std::make_any<nlohmann::ordered_json&>(section));
     }
 
+    presets_component = std::make_unique<presets>(child);
+    submenu.add_entry(std::string("Пресеты##") + presets_section_key, std::make_any<int>(0));
+
     submenu.set_frame_renderer([this](std::string& label, std::any& payload) {
         std::size_t pos = label.find("##");
 
         [[assume(pos != std::string_view::npos)]];
-        
+
         std::string name = label.substr(0, pos);
         std::string key = label.substr(pos + 2);
+
+        if (key == presets_section_key) {
+            presets_component->render();
+            return;
+        }
 
         gui::widgets::text(bold_font, section_title_font_size, 0, "{}", name);
         ImGui::PushFont(regular_font, common_text_size);
@@ -309,3 +318,5 @@ plugin::gui::windows::main::frames::settings::settings(types::not_null<initializ
         ImGui::PopFont();
     });
 }
+
+plugin::gui::windows::main::frames::settings::~settings() = default;

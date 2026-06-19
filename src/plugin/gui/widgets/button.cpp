@@ -90,8 +90,12 @@ auto plugin::gui::widgets::button::render() -> bool {
     if (!text.empty()) {
         ImVec2 text_size = ImGui::CalcTextSize(text.c_str());
         ImVec2 text_align = ImGui::GetStyle().ButtonTextAlign;
-        ImVec2 text_pos = { start.x + ((size.x - text_size.x) * text_align.x),
-                            start.y + ((size.y - text_size.y) * text_align.y) };
+        ImVec2 frame_padding = ImGui::GetStyle().FramePadding;
+
+        // Инсет текста на FramePadding: для центрированных кнопок результат не меняется,
+        // а при выравнивании влево/вправо текст не прилипает к краю кнопки.
+        ImVec2 text_pos = { start.x + frame_padding.x + ((size.x - text_size.x - frame_padding.x * 2) * text_align.x),
+                            start.y + frame_padding.y + ((size.y - text_size.y - frame_padding.y * 2) * text_align.y) };
 
         draw_list->AddText(text_pos, ImGui::GetColorU32(ImGuiCol_Text), text.c_str());
     }

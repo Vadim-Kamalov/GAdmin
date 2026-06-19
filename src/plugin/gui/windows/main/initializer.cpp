@@ -185,6 +185,10 @@ plugin::gui::windows::main::initializer::initializer(types::not_null<gui_initial
 
     child->hotkey_handler->add(switch_hotkey);
 
+    // Защита от сохранённого индекса больше не существующей вкладки (напр. удалённой «Пресеты»).
+    if (std::to_underlying(active_frame) >= frames_count)
+        active_frame = frame::home;
+
     frames = {
         std::make_unique<frames::home>(this),
         std::make_unique<frames::settings>(this),

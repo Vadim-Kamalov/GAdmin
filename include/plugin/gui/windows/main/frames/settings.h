@@ -26,8 +26,12 @@
 #include "plugin/types/not_null.h"
 #include "plugin/types/simple.h"
 #include <nlohmann/json.hpp>
+#include <memory>
 
 namespace plugin::gui::windows::main::frames {
+
+/// Presets manager, embedded as a section of the settings frame.
+class presets;
 
 /// Represents the settings frame in the main window.
 class settings final : public basic_frame {
@@ -45,6 +49,12 @@ private:
     nlohmann::ordered_json options;
     types::not_null<initializer*> child;
     std::string guide_hint_id = "";
+
+    /// Sentinel key used for the embedded presets section entry.
+    static constexpr types::zstring_t presets_section_key = "__presets__";
+
+    /// Embedded presets manager rendered when the presets section is selected.
+    std::unique_ptr<presets> presets_component;
 
     ImFont* bold_font = nullptr;
     ImFont* regular_font = nullptr;
@@ -80,6 +90,9 @@ public:
     ///
     /// @param child[in] Valid pointer to the main window.
     explicit settings(types::not_null<initializer*> child);
+
+    /// Destructor (out-of-line so the incomplete `presets` member can be destroyed).
+    ~settings() override;
 }; // class settings final
 
 NLOHMANN_JSON_SERIALIZE_ENUM(settings::item_type, {

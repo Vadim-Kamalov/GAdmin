@@ -26,7 +26,35 @@
 #include <ranges>
 
 auto plugin::gui::windows::main::widgets::submenu::get_next_available_entry_index() const -> std::size_t {
-    return std::max<std::size_t>(0, std::min(current_entry_index - 1, entries.size() - 2));
+    // После удаления текущей записи останется entries.size() - 1 элементов. Выбираем
+    // соседа слева (или 0). Аккуратно с беззнаковым переполнением при size <= 1.
+    if (entries.size() <= 1)
+        return 0;
+
+    if (current_entry_index == 0)
+        return 0;
+
+    return std::min(current_entry_index - 1, entries.size() - 2);
+}
+
+// Обрезает строку по ширине (с «...»), не разрывая UTF-8-символы (важно для кириллицы).
+static auto truncate_to_width(std::string text, float max_width) -> std::string {
+    if (max_width <= 0.0f || ImGui::CalcTextSize(text.c_str()).x <= max_width)
+        return text;
+
+    static constexpr std::string_view ellipsis = "...";
+
+    while (!text.empty() && ImGui::CalcTextSize((text + std::string(ellipsis)).c_str()).x > max_width) {
+        std::size_t pos = text.size();
+
+        do {
+            --pos;
+        } while (pos > 0 && (static_cast<unsigned char>(text[pos]) & 0xC0) == 0x80);
+
+        text.erase(pos);
+    }
+
+    return text + std::string(ellipsis);
 }
 
 auto plugin::gui::windows::main::widgets::submenu::render_entry(std::size_t index, entry_t& entry, const ImVec2& size) -> void {
@@ -35,23 +63,48 @@ auto plugin::gui::windows::main::widgets::submenu::render_entry(std::size_t inde
                                           entry.animation_time, entry_animation_duration);
     
         if (entry.hiding && entry.alpha == 0) {
-            if (on_entry_destroy_callback.has_value())
-                (*on_entry_destroy_callback)(current_entry_index);
-
-            entries.erase(entries.begin() + current_entry_index);
-            
+            // Удаляем именно эту запись (по её индексу), но не во время итерации —
+            // откладываем до конца цикла отрисовки в render_menu.
+            entry_to_destroy = index;
             return;
         }
     }
 
     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, entry.alpha * ImGui::GetStyle().Alpha);
     {
-        if (gui::widgets::button(entry.label + "##submenu::" + std::to_string(index), size).render()
+        std::optional<std::uint32_t> highlight = entry_highlight ? (*entry_highlight)(index) : std::nullopt;
+
+        if (highlight)
+            ImGui::PushStyleColor(ImGuiCol_Button, *highlight);
+
+        std::string visible = label_decorator ? (*label_decorator)(index, entry.label) : entry.label;
+
+        // Если задано резервирование (под бейдж-оверлей), выравниваем подписи влево и
+        // обрезаем длинное название, чтобы текст не залезал под оверлей справа.
+        bool reserve_enabled = entry_text_reserve.has_value();
+
+        if (reserve_enabled) {
+            float reserve = (*entry_text_reserve)(index);
+
+            ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, { 0.0f, 0.5f });
+            visible = truncate_to_width(visible, size.x - reserve - ImGui::GetStyle().FramePadding.x * 2.0f);
+        }
+
+        if (gui::widgets::button(visible + "##submenu::" + std::to_string(index), size).render()
             && index != future_entry_index)
         {
             future_entry_index = index;
             time_clicked = std::chrono::steady_clock::now();
         }
+
+        if (reserve_enabled)
+            ImGui::PopStyleVar();
+
+        if (highlight)
+            ImGui::PopStyleColor();
+
+        if (entry_overlay)
+            (*entry_overlay)(index, ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
     }
     ImGui::PopStyleVar();
 }
@@ -97,6 +150,11 @@ auto plugin::gui::windows::main::widgets::submenu::remove_current_entry_animated
     entry.hiding = true;
 }
 
+auto plugin::gui::windows::main::widgets::submenu::remove_current_entry() -> void {
+    if (current_entry_index < entries.size())
+        entry_to_destroy = current_entry_index;
+}
+
 auto plugin::gui::windows::main::widgets::submenu::set_on_entry_destroyed_callback(on_entry_destroy_callback_t new_callback) -> void {
     on_entry_destroy_callback = std::move(new_callback);
 }
@@ -109,8 +167,28 @@ auto plugin::gui::windows::main::widgets::submenu::set_frame_renderer(frame_rend
     frame_renderer = std::move(new_frame_renderer);
 }
 
+auto plugin::gui::windows::main::widgets::submenu::set_label_decorator(label_decorator_t new_decorator) -> void {
+    label_decorator = std::move(new_decorator);
+}
+
+auto plugin::gui::windows::main::widgets::submenu::set_entry_highlight(entry_highlight_t new_highlight) -> void {
+    entry_highlight = std::move(new_highlight);
+}
+
+auto plugin::gui::windows::main::widgets::submenu::set_entry_overlay(entry_overlay_t new_overlay) -> void {
+    entry_overlay = std::move(new_overlay);
+}
+
+auto plugin::gui::windows::main::widgets::submenu::set_entry_text_reserve(entry_text_reserve_t new_reserve) -> void {
+    entry_text_reserve = std::move(new_reserve);
+}
+
+auto plugin::gui::windows::main::widgets::submenu::get_menu_width(types::not_null<initializer*> child) const -> float {
+    return (child_width_percent * child->window_size.x) / 100.0f;
+}
+
 auto plugin::gui::windows::main::widgets::submenu::render_menu(types::not_null<initializer*> child) -> void {
-    float child_width = (child_width_percent * child->window_size.x) / 100.0f;
+    float child_width = get_menu_width(child);
 
     ImGui::BeginChild(label.c_str(), { child_width, 0 }, ImGuiChildFlags_AlwaysUseWindowPadding, child->window_flags);
     {
@@ -132,6 +210,30 @@ auto plugin::gui::windows::main::widgets::submenu::render_menu(types::not_null<i
 
             for (const auto& [ index, entry ] : entries | std::views::enumerate)
                 render_entry(index, entry, button_size);
+
+            // Отложенное удаление записи, чья анимация исчезновения завершилась.
+            if (entry_to_destroy && *entry_to_destroy < entries.size()) {
+                std::size_t dead = *entry_to_destroy;
+                entry_to_destroy.reset();
+
+                if (on_entry_destroy_callback.has_value())
+                    (*on_entry_destroy_callback)(dead);
+
+                entries.erase(entries.begin() + dead);
+
+                auto clamp_index = [this, dead](std::size_t& value) {
+                    if (value > dead)
+                        --value;
+
+                    if (value >= entries.size())
+                        value = entries.empty() ? 0 : entries.size() - 1;
+                };
+
+                clamp_index(current_entry_index);
+                clamp_index(future_entry_index);
+            } else {
+                entry_to_destroy.reset();
+            }
         }
         ImGui::EndChild();
 
@@ -141,7 +243,8 @@ auto plugin::gui::windows::main::widgets::submenu::render_menu(types::not_null<i
     ImGui::EndChild();
 }
 
-auto plugin::gui::windows::main::widgets::submenu::render_current_frame(types::not_null<initializer*> child) -> void {
+auto plugin::gui::windows::main::widgets::submenu::render_current_frame(types::not_null<initializer*> child,
+                                                                        float frame_width) -> void {
     auto now = std::chrono::steady_clock::now();
     ImGuiWindowFlags flags = child->window_flags | ImGuiWindowFlags_NoBackground;
 
@@ -160,7 +263,7 @@ auto plugin::gui::windows::main::widgets::submenu::render_current_frame(types::n
     }
 
     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, frame_alpha * ImGui::GetStyle().Alpha);
-    ImGui::BeginChild((label + "::current_frame").c_str(), { 0, 0 }, ImGuiChildFlags_None, flags);
+    ImGui::BeginChild((label + "::current_frame").c_str(), { frame_width, 0 }, ImGuiChildFlags_None, flags);
     {
         if (current_entry_index >= entries.size()) {
             ImGui::PushFont(child->child->fonts->bold, empty_placeholder_font_size);
