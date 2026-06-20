@@ -27,6 +27,7 @@
 #include "plugin/gui/windows/main/custom_settings/short_commands.h"
 #include "plugin/gui/windows/main/custom_settings/spectator_actions.h"
 #include "plugin/gui/windows/main/custom_settings/spectator_information.h"
+#include "plugin/gui/windows/main/frames/presets.h"
 #include "plugin/server/user.h"
 #include "plugin/plugin.h"
 #include <misc/cpp/imgui_stdlib.h>
@@ -112,56 +113,14 @@ auto plugin::gui::windows::main::frames::settings::render_subsection(const std::
         return;
 
     popup.set_renderer([=, this, &item_configuration, &item] {
-        float region_avail_x = ImGui::GetContentRegionAvail().x;
-        
         gui::widgets::text(bold_font, section_title_font_size, 0, "{}", subsection_name);
 
         for (auto& [ key, option ] : item.items()) {
             if (key.starts_with('_'))
                 continue;
 
-            item_type option_type = option["_type"];
-            std::string option_name = option["_name"];
-            std::string option_label = option_name + "##" + subsection_key;
-            nlohmann::ordered_json config = option["_config"];
-
-            if (option_type != item_type::boolean) {
-                gui::widgets::text(bold_font, common_text_size, 0, "{}", option_name);
-                option_label.insert(0, "##");
-            }
-
-            ImGui::PushFont(regular_font, common_text_size);
-            {
-                switch (option_type) {
-                    case item_type::int_range:
-                        render_range<std::uint64_t>(option_label.c_str(), item_configuration[key].get_ptr<std::uint64_t*>(),
-                                                    std::make_pair(config[0], config[1]));
-                        break;
-                    case item_type::float_range:
-                        render_range<double>(option_label.c_str(), item_configuration[key].get_ptr<double*>(),
-                                             std::make_pair(config[0], config[1]));
-                        break;
-                    case item_type::boolean:
-                        render_boolean(option_label, config, item_configuration[key].get_ref<bool&>());
-                        break;
-                    case item_type::input:
-                        ImGui::SetNextItemWidth(region_avail_x);
-                        ImGui::InputText(option_label.c_str(), item_configuration[key].get_ptr<std::string*>());
-                        break;
-                    case item_type::variant:
-                        render_variant(option_label, config, item_configuration[key].get_ref<std::string&>());
-                        break;
-                    case item_type::color:
-                        render_color(option_label, item_configuration[key]);
-                        break;
-                    case item_type::custom:
-                        render_custom(std::format("{}.{}", subsection_key, key), item_configuration[key]);
-                        break;
-                    default:
-                        break;
-                }
-            }
-            ImGui::PopFont();
+            render_option_widget("##" + std::string(subsection_key), std::format("{}.{}", subsection_key, key),
+                                 option, item_configuration[key], true);
         }
     });
 
@@ -268,6 +227,60 @@ auto plugin::gui::windows::main::frames::settings::render_boolean(const std::str
     toggle_events[config](setter);
 }
 
+auto plugin::gui::windows::main::frames::settings::render_option_widget(const std::string& widget_id,
+                                                                        const std::string& custom_id,
+                                                                        nlohmann::ordered_json& meta_option,
+                                                                        nlohmann::json& value, bool live) const -> void
+{
+    item_type type = meta_option["_type"];
+    std::string name = meta_option["_name"];
+    nlohmann::ordered_json config = meta_option["_config"];
+    std::string label = name + widget_id;
+
+    if (type != item_type::boolean) {
+        gui::widgets::text(bold_font, common_text_size, 0, "{}", name);
+        label.insert(0, "##");
+    }
+
+    ImGui::PushFont(regular_font, common_text_size);
+    {
+        switch (type) {
+            case item_type::int_range:
+                render_range<std::uint64_t>(label.c_str(), value.get_ptr<std::uint64_t*>(),
+                                            std::make_pair(config[0], config[1]));
+                break;
+            case item_type::float_range:
+                render_range<double>(label.c_str(), value.get_ptr<double*>(),
+                                     std::make_pair(config[0], config[1]));
+                break;
+            case item_type::boolean:
+                // A preset snapshot is not the live state, so its toggles must not fire the
+                // side-effecting toggle events (e.g. enabling wallhack) — only flip the value.
+                if (live)
+                    render_boolean(label, config, value.get_ref<bool&>());
+                else
+                    gui::widgets::toggle_button(label, value.get_ref<bool&>()).render();
+                break;
+            case item_type::input:
+                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+                ImGui::InputText(label.c_str(), value.get_ptr<std::string*>());
+                break;
+            case item_type::variant:
+                render_variant(label, config, value.get_ref<std::string&>());
+                break;
+            case item_type::color:
+                render_color(label, value);
+                break;
+            case item_type::custom:
+                render_custom(custom_id, value);
+                break;
+            default:
+                break;
+        }
+    }
+    ImGui::PopFont();
+}
+
 auto plugin::gui::windows::main::frames::settings::render() -> void {
     submenu.render_menu(child);
     ImGui::SameLine();
@@ -291,13 +304,21 @@ plugin::gui::windows::main::frames::settings::settings(types::not_null<initializ
                           std::make_any<nlohmann::ordered_json&>(section));
     }
 
+    presets_component = std::make_unique<presets>(child, this);
+    submenu.add_entry(std::string("Пресеты##") + presets_section_key, std::make_any<int>(0));
+
     submenu.set_frame_renderer([this](std::string& label, std::any& payload) {
         std::size_t pos = label.find("##");
 
         [[assume(pos != std::string_view::npos)]];
-        
+
         std::string name = label.substr(0, pos);
         std::string key = label.substr(pos + 2);
+
+        if (key == presets_section_key) {
+            presets_component->render();
+            return;
+        }
 
         gui::widgets::text(bold_font, section_title_font_size, 0, "{}", name);
         ImGui::PushFont(regular_font, common_text_size);
@@ -309,3 +330,5 @@ plugin::gui::windows::main::frames::settings::settings(types::not_null<initializ
         ImGui::PopFont();
     });
 }
+
+plugin::gui::windows::main::frames::settings::~settings() = default;

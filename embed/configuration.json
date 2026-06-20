@@ -120,7 +120,8 @@
 
         "interaction_area": {
             "use": false,
-            "radius": 300
+            "radius": 300,
+            "ignore_spectated_target": true
         },
 
         "player_checker": {
@@ -179,6 +180,7 @@
         "nickname_colors": true,
         "auto_aa_command": false,
         "display_id_in_chat": false,
+        "me_to_id": true,
         "auto_alogin": false,
         "swap_layout": true,
         "fix_input_open": true,

@@ -63,6 +63,30 @@ auto plugin::gui::key_bind::to_string() const -> std::string {
     return result;
 }
 
+auto plugin::gui::hotkey::saved_binds() -> nlohmann::json& {
+    return external_storage ? *external_storage : (*configuration)["internal"]["hotkeys"];
+}
+
+auto plugin::gui::hotkey::bind_to_external(nlohmann::json* storage) -> hotkey& {
+    external_storage = storage;
+
+    if (storage && storage->contains(label))
+        bind = key_bind(storage->at(label).get<std::uint32_t>());
+    else
+        bind = {};
+
+    return *this;
+}
+
+auto plugin::gui::hotkey::set_external_storage(nlohmann::json* storage) -> void {
+    external_storage = storage;
+}
+
+auto plugin::gui::hotkey::open_conditions_popup() -> void {
+    if (!handler->changing_any_hotkey && !handler->changing_any_properties)
+        hint_active = handler->changing_any_properties = true;
+}
+
 auto plugin::gui::hotkey::hint_condition() -> bool {
     if (ImGui::IsMouseReleased(ImGuiMouseButton_Right) && ImGui::IsItemHovered() &&
         !handler->changing_any_hotkey && !handler->changing_any_properties)
@@ -77,7 +101,7 @@ auto plugin::gui::hotkey::hint_renderer() -> void {
     if (!ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
         hint_active = handler->changing_any_properties = false;
     
-    auto& saved_hotkeys = (*configuration)["internal"]["hotkeys"];
+    auto& saved_hotkeys = saved_binds();
 
     ImFont* bold_font = handler->child->fonts->bold;
     ImFont* regular_font = handler->child->fonts->regular;
@@ -131,7 +155,7 @@ auto plugin::gui::hotkey::hint_renderer() -> void {
 
 auto plugin::gui::hotkey::render(const ImVec2& size) -> void {
     auto now = std::chrono::steady_clock::now();
-    auto& saved_hotkeys = (*configuration)["internal"]["hotkeys"];
+    auto& saved_hotkeys = saved_binds();
 
     widgets::button button(bind.to_string(), label, size);
 

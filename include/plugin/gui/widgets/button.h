@@ -47,6 +47,7 @@ private:
 
     ImVec2 size;
     ImDrawFlags draw_flags = ImDrawFlags_RoundCornersAll;
+    bool draw_click_animation = true;
 
     static inline std::unordered_map<std::string, configuration_t> pool;
    
@@ -61,10 +62,15 @@ public:
     inline auto with_draw_flags(ImDrawFlags new_draw_flags) noexcept -> button&;
 
     /// Set the animation durations for the button.
-    /// 
+    ///
     /// @param new_durations[in] New durations to set.
     /// @return                  Reference to the button object to allow construction be chain-called.
     inline auto with_durations(const std::array<std::chrono::milliseconds, 3>& durations) noexcept -> button&;
+
+    /// Disable the click ripple animation (the hover border is kept).
+    ///
+    /// @return Reference to the button object to allow construction be chain-called.
+    inline auto without_click_animation() noexcept -> button&;
 
     /// Render the button.
     /// 
@@ -108,6 +114,11 @@ inline auto plugin::gui::widgets::button::with_durations(const std::array<std::c
     noexcept -> button&
 {
     durations = std::move(new_durations);
+    return *this;
+}
+
+inline auto plugin::gui::widgets::button::without_click_animation() noexcept -> button& {
+    draw_click_animation = false;
     return *this;
 }
 
