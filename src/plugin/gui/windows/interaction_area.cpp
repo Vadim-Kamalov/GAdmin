@@ -160,9 +160,8 @@ auto plugin::gui::windows::interaction_area::handle_controls() -> void {
             ? search_type::players : search_type::vehicles;
 
     if (ImGui::IsKeyReleased(ImGuiKey_0)) {
-        bool& ignore_spectated = (*configuration)["windows"]["interaction_area"]["ignore_spectated_target"].get_ref<bool&>();
-        ignore_spectated = !ignore_spectated;
-        configuration->save();
+        auto& window_configuration = (*configuration)["windows"]["interaction_area"];
+        window_configuration["ignore_spectated_target"].get_ref<bool&>() ^= true;
     }
 
     for (int action_id = 0; action_id < action_count_per_type; action_id++) {

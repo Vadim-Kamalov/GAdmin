@@ -72,6 +72,14 @@ private:
     auto render_custom(const std::string_view& id, nlohmann::json& setter) const -> void;
     auto render_boolean(const std::string_view& label, nlohmann::ordered_json& config, bool& setter) const -> void;
 public:
+    /// Render the editing widget for one option of the given meta type into `value`. Shared
+    /// with the presets editor so the per-type rendering is not duplicated. `widget_id` must
+    /// start with "##" and be unique; `custom_id` identifies the custom editor for custom
+    /// options. When `live` is false, side effects (toggle events) are suppressed, so editing
+    /// a preset snapshot never touches the running state.
+    auto render_option_widget(const std::string& widget_id, const std::string& custom_id,
+                              nlohmann::ordered_json& meta_option, nlohmann::json& value, bool live) const -> void;
+
     /// Item types to parse from the JSON and later to render them.
     enum class item_type : std::uint8_t {
         subsection,     ///< Represents the group of settings.

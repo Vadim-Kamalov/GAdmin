@@ -49,7 +49,7 @@ auto plugin::gui::widgets::button::render() -> bool {
 
     it.border_alpha = animation::bring_to(it.border_alpha, (it.hovered.state) ? 255 : 0, it.hovered.time, durations[0]);
 
-    if (it.click_position.has_value()) {
+    if (draw_click_animation && it.click_position.has_value()) {
         ImVec2 clip_rect_min = { start.x + border_size, start.y + border_size };
         ImVec2 clip_rect_max = { end.x - border_size, end.y - border_size };
 
@@ -92,8 +92,8 @@ auto plugin::gui::widgets::button::render() -> bool {
         ImVec2 text_align = ImGui::GetStyle().ButtonTextAlign;
         ImVec2 frame_padding = ImGui::GetStyle().FramePadding;
 
-        // Инсет текста на FramePadding: для центрированных кнопок результат не меняется,
-        // а при выравнивании влево/вправо текст не прилипает к краю кнопки.
+        // Inset the text by FramePadding: for centered buttons the result is unchanged,
+        // while for left/right alignment the text no longer sticks to the button edge.
         ImVec2 text_pos = { start.x + frame_padding.x + ((size.x - text_size.x - frame_padding.x * 2) * text_align.x),
                             start.y + frame_padding.y + ((size.y - text_size.y - frame_padding.y * 2) * text_align.y) };
 
@@ -103,9 +103,12 @@ auto plugin::gui::widgets::button::render() -> bool {
     bool result = false;
 
     if (ImGui::InvisibleButton((text + "##" + id).c_str(), size)) {
-        it.radius = 0;
-        it.click_time = std::chrono::steady_clock::now();
-        it.click_position = ImGui::GetMousePos();
+        if (draw_click_animation) {
+            it.radius = 0;
+            it.click_time = std::chrono::steady_clock::now();
+            it.click_position = ImGui::GetMousePos();
+        }
+
         result = true;
     }
 

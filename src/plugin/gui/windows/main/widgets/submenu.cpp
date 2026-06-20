@@ -26,8 +26,8 @@
 #include <ranges>
 
 auto plugin::gui::windows::main::widgets::submenu::get_next_available_entry_index() const -> std::size_t {
-    // После удаления текущей записи останется entries.size() - 1 элементов. Выбираем
-    // соседа слева (или 0). Аккуратно с беззнаковым переполнением при size <= 1.
+    // After removing the current entry, entries.size() - 1 will remain. Pick the left
+    // neighbour (or 0). Mind the unsigned underflow when size <= 1.
     if (entries.size() <= 1)
         return 0;
 
@@ -37,7 +37,7 @@ auto plugin::gui::windows::main::widgets::submenu::get_next_available_entry_inde
     return std::min(current_entry_index - 1, entries.size() - 2);
 }
 
-// Обрезает строку по ширине (с «...»), не разрывая UTF-8-символы (важно для кириллицы).
+// Truncate a string to a width (with "..."), without splitting UTF-8 characters (matters for Cyrillic).
 static auto truncate_to_width(std::string text, float max_width) -> std::string {
     if (max_width <= 0.0f || ImGui::CalcTextSize(text.c_str()).x <= max_width)
         return text;
@@ -63,8 +63,8 @@ auto plugin::gui::windows::main::widgets::submenu::render_entry(std::size_t inde
                                           entry.animation_time, entry_animation_duration);
     
         if (entry.hiding && entry.alpha == 0) {
-            // Удаляем именно эту запись (по её индексу), но не во время итерации —
-            // откладываем до конца цикла отрисовки в render_menu.
+            // Remove this exact entry (by its index), but not during iteration —
+            // defer it until the end of the render loop in render_menu.
             entry_to_destroy = index;
             return;
         }
@@ -72,15 +72,15 @@ auto plugin::gui::windows::main::widgets::submenu::render_entry(std::size_t inde
 
     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, entry.alpha * ImGui::GetStyle().Alpha);
     {
-        std::optional<std::uint32_t> highlight = entry_highlight ? (*entry_highlight)(index) : std::nullopt;
+        types::color highlight = entry_highlight ? (*entry_highlight)(index) : types::color();
 
-        if (highlight)
+        if (*highlight != 0)
             ImGui::PushStyleColor(ImGuiCol_Button, *highlight);
 
         std::string visible = label_decorator ? (*label_decorator)(index, entry.label) : entry.label;
 
-        // Если задано резервирование (под бейдж-оверлей), выравниваем подписи влево и
-        // обрезаем длинное название, чтобы текст не залезал под оверлей справа.
+        // When reserving is set (for a badge overlay), left-align labels and truncate
+        // long names so the text does not run under the overlay on the right.
         bool reserve_enabled = entry_text_reserve.has_value();
 
         if (reserve_enabled) {
@@ -100,7 +100,7 @@ auto plugin::gui::windows::main::widgets::submenu::render_entry(std::size_t inde
         if (reserve_enabled)
             ImGui::PopStyleVar();
 
-        if (highlight)
+        if (*highlight != 0)
             ImGui::PopStyleColor();
 
         if (entry_overlay)
@@ -211,7 +211,7 @@ auto plugin::gui::windows::main::widgets::submenu::render_menu(types::not_null<i
             for (const auto& [ index, entry ] : entries | std::views::enumerate)
                 render_entry(index, entry, button_size);
 
-            // Отложенное удаление записи, чья анимация исчезновения завершилась.
+            // Deferred removal of the entry whose fade-out animation has finished.
             if (entry_to_destroy && *entry_to_destroy < entries.size()) {
                 std::size_t dead = *entry_to_destroy;
                 entry_to_destroy.reset();

@@ -20,6 +20,7 @@
 #define GADMIN_PLUGIN_GUI_WINDOWS_MAIN_WIDGETS_SUBMENU_H
 
 #include "plugin/types/not_null.h"
+#include "plugin/types/color.h"
 #include "plugin/gui/windows/main/initializer.h"
 #include <string>
 #include <any>
@@ -54,9 +55,10 @@ public:
     using label_decorator_t = std::function<std::string(std::size_t index, const std::string& label)>;
 
     /// Callback type for highlighting an entry by overriding its button background color
-    /// (e.g. to mark the active entry). Receives the entry index, returns a packed ImU32
-    /// color, or std::nullopt to keep the default button color.
-    using entry_highlight_t = std::function<std::optional<std::uint32_t>(std::size_t index)>;
+    /// (e.g. to mark the active entry). Receives the entry index, returns the button
+    /// background color, or a default-constructed (transparent, value 0) color to keep
+    /// the default button color.
+    using entry_highlight_t = std::function<types::color(std::size_t index)>;
 
     /// Callback type for drawing extra content over an entry after its button is rendered
     /// (e.g. a small hotkey badge). Receives the entry index and the button's screen-space

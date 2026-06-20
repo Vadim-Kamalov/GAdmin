@@ -23,12 +23,6 @@
 #include "plugin/gui/widgets/text.h"
 #include "plugin/gui/widgets/text_button.h"
 #include "plugin/gui/widgets/toggle_button.h"
-#include "plugin/gui/windows/main/base/custom_setting.h"
-#include "plugin/gui/windows/main/custom_settings/message_recolorer.h"
-#include "plugin/gui/windows/main/custom_settings/report.h"
-#include "plugin/gui/windows/main/custom_settings/short_commands.h"
-#include "plugin/gui/windows/main/custom_settings/spectator_actions.h"
-#include "plugin/gui/windows/main/custom_settings/spectator_information.h"
 #include "plugin/gui/style.h"
 #include "plugin/gui/icon.h"
 #include "plugin/gui/notify.h"
@@ -38,8 +32,8 @@
 #include "common/common.h"
 #include <misc/cpp/imgui_stdlib.h>
 #include <algorithm>
-#include <array>
 #include <fstream>
+#include <system_error>
 #include <utility>
 
 static constexpr std::uint8_t options_bytes[] = {
@@ -55,7 +49,9 @@ static constexpr std::uint8_t options_bytes[] = {
 auto plugin::gui::windows::main::frames::presets::load_presets() -> void {
     preset_list = nlohmann::json::array();
 
-    if (!std::filesystem::exists(presets_file))
+    std::error_code error_code;
+
+    if (!std::filesystem::exists(presets_file, error_code))
         return;
 
     std::ifstream file(presets_file);
@@ -135,42 +131,19 @@ auto plugin::gui::windows::main::frames::presets::capture_player_checker() const
     return nlohmann::json::array();
 }
 
-auto plugin::gui::windows::main::frames::presets::refresh_values(nlohmann::json& preset) const -> void {
-    if (!preset.contains("settings"))
-        return;
-
-    for (auto& [ section, items ] : preset["settings"].items()) {
-        // Спец-блоки (хоткеи, чекер) живут не как одноимённые секции конфига — обновляем их отдельно.
-        if (section == "hotkeys" || section == "player_checker")
-            continue;
-
-        nlohmann::json& live_section = (*configuration)[section];
-
-        for (auto& [ item, value ] : items.items())
-            if (live_section.contains(item))
-                value = live_section[item];
-    }
-
-    if (preset["settings"].contains("hotkeys"))
-        preset["settings"]["hotkeys"] = capture_hotkeys();
-
-    if (preset["settings"].contains("player_checker"))
-        preset["settings"]["player_checker"] = capture_player_checker();
-}
-
 auto plugin::gui::windows::main::frames::presets::apply_preset(const nlohmann::json& preset) const -> void {
     if (!preset.contains("settings"))
         return;
 
     const nlohmann::json& settings = preset["settings"];
 
-    // merge_patch посекционно: ключи, которых в пресете нет (исключённые элементы, пароли,
-    // более новые настройки), остаются в живом конфиге нетронутыми.
+    // merge_patch per section: keys absent from the preset (excluded items, passwords,
+    // newer settings) stay untouched in the live config.
     for (types::zstring_t section : captured_sections)
         if (settings.contains(section))
             (*configuration)[section].merge_patch(settings.at(section));
 
-    // Спец-блоки: список чекера и хоткеи лежат по своим путям, применяем их явно.
+    // Special blocks: the checker list and hotkeys live at their own paths, apply explicitly.
     if (settings.contains("player_checker"))
         (*configuration)["windows"]["player_checker"]["players"] = settings.at("player_checker");
 
@@ -180,7 +153,7 @@ auto plugin::gui::windows::main::frames::presets::apply_preset(const nlohmann::j
         for (const auto& [ label, packed ] : settings.at("hotkeys").items()) {
             live_hotkeys[label] = packed;
 
-            // Обновляем живой объект хоткея, чтобы бинд применился сразу, без перезапуска.
+            // Update the live hotkey object so the bind applies at once, without a restart.
             if (gui::hotkey* pooled = find_pool_hotkey(label))
                 pooled->bind = gui::key_bind(packed.get<std::uint32_t>());
         }
@@ -203,8 +176,8 @@ auto plugin::gui::windows::main::frames::presets::preset_matches_live(const nloh
         return false;
 
     for (const auto& [ section, items ] : preset["settings"].items()) {
-        // Хоткеи и список чекера не участвуют в сравнении (их сопоставление сложнее
-        // и не влияет на маркер «применён/изменён»).
+        // Hotkeys and the checker list are excluded from the comparison (matching them is
+        // harder and does not affect the applied/modified marker).
         if (section == "hotkeys" || section == "player_checker")
             continue;
 
@@ -244,7 +217,7 @@ auto plugin::gui::windows::main::frames::presets::render_status_banner(const nlo
         text  = "Не применён";
     }
 
-    // Иконку рисуем шрифтом `icon` (в regular её глифов нет — иначе «?»), текст — обычным.
+    // Draw the icon with the `icon` font (regular lacks its glyphs — would show "?"), text with regular.
     ImVec2 pos = ImGui::GetCursorScreenPos();
     float line_height = ImGui::GetTextLineHeight();
     ImVec2 glyph_size = icon_font->CalcTextSizeA(common_font_size, FLT_MAX, 0.0f, glyph);
@@ -350,173 +323,21 @@ auto plugin::gui::windows::main::frames::presets::render_editable_name(std::stri
     gui::widgets::hint::render_as_guide("Нажмите на имя, чтобы переименовать пресет");
 }
 
-auto plugin::gui::windows::main::frames::presets::render_variant(const std::string& id, nlohmann::ordered_json& config,
-                                                                 nlohmann::json& value) -> void
-{
-    if (!value.is_string())
-        return;
-
-    std::string& setter = value.get_ref<std::string&>();
-    int current = 0;
-
-    for (std::size_t index = 0; index < config.size(); index++)
-        if (config[index][0] == setter) {
-            current = static_cast<int>(index);
-            break;
-        }
-
-    std::string format = config[current][1];
-
-    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-
-    if (ImGui::SliderInt(id.c_str(), &current, 0, static_cast<int>(config.size()) - 1, format.c_str())) {
-        setter = config[current][0].get<std::string>();
-        pending_save = true;
-    }
-}
-
-auto plugin::gui::windows::main::frames::presets::render_color(const std::string& id, nlohmann::json& value) -> void {
-    types::color color = value.get<types::color>();
-    ImVec4 vector_color = ImGui::ColorConvertU32ToFloat4(*color);
-
-    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-
-    if (ImGui::ColorEdit3(id.c_str(), reinterpret_cast<float*>(&vector_color), ImGuiColorEditFlags_NoInputs)) {
-        value = types::color(ImGui::ColorConvertFloat4ToU32(vector_color));
-        pending_save = true;
-    }
-}
-
-auto plugin::gui::windows::main::frames::presets::render_custom(const std::string& custom_id, nlohmann::json& value)
-    -> void
-{
-    static auto custom_settings = std::to_array<custom_setting_ptr_t>({
-        std::make_unique<custom_settings::report>(),
-        std::make_unique<custom_settings::short_commands>(),
-        std::make_unique<custom_settings::spectator_information>(),
-        std::make_unique<custom_settings::spectator_actions>(),
-        std::make_unique<custom_settings::message_recolorer>()
-    }); // static auto custom_settings = std::to_array<custom_setting_ptr_t>({ ... })
-
-    auto setting = std::find_if(custom_settings.begin(), custom_settings.end(),
-        [&custom_id](const custom_setting_ptr_t& setting) { return setting->get_id() == custom_id; });
-
-    if (setting == custom_settings.end()) {
-        log::error("presets::render_custom: custom setting \"{}\" not found", custom_id);
-        return;
-    }
-
-    // У custom-редакторов нет сигнала об изменении — сравниваем дамп до/после (значение небольшое).
-    std::string before = value.dump();
-    (*setting)->render(child->child, value);
-
-    if (value.dump() != before)
-        pending_save = true;
-}
-
-auto plugin::gui::windows::main::frames::presets::render_option(const std::string& id, const std::string& key,
-                                                                const std::string& subsection_key,
-                                                                nlohmann::ordered_json& meta_option, nlohmann::json& parent)
-    -> void
-{
-    if (!parent.contains(key))
-        return;
-
-    item_type type = meta_option["_type"];
-    std::string name = meta_option["_name"];
-    std::string widget_id = "##opt:" + id;
-    nlohmann::json& value = parent[key];
-    float available = ImGui::GetContentRegionAvail().x;
-
-    switch (type) {
-        case item_type::boolean:
-            if (value.is_boolean() && gui::widgets::toggle_button(widget_id, value.get_ref<bool&>()).render())
-                pending_save = true;
-
-            ImGui::SameLine();
-            gui::widgets::text(regular_font, common_font_size, 0, "{}", name);
-            break;
-
-        case item_type::int_range: {
-            gui::widgets::text(regular_font, common_font_size, 0, "{}", name);
-
-            nlohmann::ordered_json& config = meta_option["_config"];
-            int minimum = config[0].get<int>(), maximum = config[1].get<int>();
-            int current = static_cast<int>(value.get<long long>());
-
-            ImGui::SetNextItemWidth(available);
-
-            if (ImGui::SliderInt(widget_id.c_str(), &current, minimum, maximum)) {
-                value = static_cast<std::uint64_t>(current);
-                pending_save = true;
-            }
-
-            break;
-        }
-
-        case item_type::float_range: {
-            gui::widgets::text(regular_font, common_font_size, 0, "{}", name);
-
-            nlohmann::ordered_json& config = meta_option["_config"];
-            double minimum = config[0].get<double>(), maximum = config[1].get<double>();
-            double current = value.get<double>();
-
-            ImGui::SetNextItemWidth(available);
-
-            if (ImGui::SliderScalar(widget_id.c_str(), ImGuiDataType_Double, &current, &minimum, &maximum, "%.3f")) {
-                value = current;
-                pending_save = true;
-            }
-
-            break;
-        }
-
-        case item_type::variant:
-            gui::widgets::text(regular_font, common_font_size, 0, "{}", name);
-            render_variant(widget_id, meta_option["_config"], value);
-            break;
-
-        case item_type::color:
-            gui::widgets::text(regular_font, common_font_size, 0, "{}", name);
-            render_color(widget_id, value);
-            break;
-
-        case item_type::input:
-            if (auto* setter = value.get_ptr<std::string*>()) {
-                gui::widgets::text(regular_font, common_font_size, 0, "{}", name);
-                ImGui::SetNextItemWidth(available);
-
-                if (ImGui::InputText(widget_id.c_str(), setter))
-                    pending_save = true;
-            }
-
-            break;
-
-        case item_type::custom:
-            gui::widgets::text(regular_font, common_font_size, 0, "{}", name);
-            render_custom(subsection_key + "." + key, value);
-            break;
-
-        default:
-            break;
-    }
-}
-
 auto plugin::gui::windows::main::frames::presets::open_subsection_popup(const std::string& section,
                                                                         const std::string& item,
                                                                         const std::string& name,
                                                                         nlohmann::ordered_json& meta_item,
                                                                         nlohmann::json& settings) -> void
 {
-    // Захватываем указатели на стабильные узлы: meta_item живёт в `options` (член класса),
-    // а ветка значения — в текущем пресете (не перевыделяется, пока попап открыт).
+    // Capture pointers to stable nodes: meta_item lives in `options` (a class member) and the
+    // value branch lives in the current preset (not reallocated while the popup is open).
     nlohmann::json* value = &settings[section][item];
     nlohmann::ordered_json* meta = &meta_item;
     std::string subsection_key = item;
     std::string title = name;
 
     popup.set_renderer([this, value, meta, subsection_key, title] {
-        // Имя пресета читаем «вживую» по текущей записи — переименование подхватится сразу.
+        // Read the preset name live from the current entry, so a rename is reflected at once.
         std::size_t current = submenu.get_current_entry_index();
         std::string preset_name = current < preset_list.size()
             ? preset_list[current].value("name", std::string("пресет")) : std::string("пресет");
@@ -530,12 +351,20 @@ auto plugin::gui::windows::main::frames::presets::open_subsection_popup(const st
 
         ImGui::PushFont(regular_font, common_font_size);
         {
-            // `use` редактируется тумблером в строке списка, поэтому в попапе только опции.
+            // `use` is toggled from the list row, so the popup shows only the options. Reuse the
+            // settings frame's widget renderer (live = false: a preset edit has no side effects).
             for (auto& [ key, meta_option ] : meta->items()) {
-                if (key.starts_with('_'))
+                if (key.starts_with('_') || !value->contains(key))
                     continue;
 
-                render_option(subsection_key + ":" + key, key, subsection_key, meta_option, *value);
+                nlohmann::json& option_value = (*value)[key];
+                std::string before = option_value.dump();
+
+                owner->render_option_widget("##opt:" + subsection_key + ":" + key,
+                                            subsection_key + "." + key, meta_option, option_value, false);
+
+                if (option_value.dump() != before)
+                    pending_save = true;
             }
         }
         ImGui::PopFont();
@@ -550,7 +379,7 @@ auto plugin::gui::windows::main::frames::presets::render_section_editor(const st
 {
     std::string section_name = meta_section["_name"];
 
-    // При активном поиске пропускаем разделы без совпадений и форсируем раскрытие остальных.
+    // While searching, skip sections with no match and force-expand the rest.
     if (!editor_search.empty()) {
         bool any_match = false;
 
@@ -583,8 +412,8 @@ auto plugin::gui::windows::main::frames::presets::render_section_editor(const st
 
         std::string id = section + ":" + item;
 
-        // Пресет — полный снимок настроек. Если значения ещё нет (старый пресет или
-        // настройка, добавленная позже), берём актуальное из живого конфига.
+        // A preset is a full settings snapshot. If a value is missing (old preset or a
+        // setting added later), take the current one from the live config.
         if (!settings.contains(section) || !settings[section].contains(item)) {
             include_item(section, item, settings);
             pending_save = true;
@@ -592,7 +421,7 @@ auto plugin::gui::windows::main::frames::presets::render_section_editor(const st
 
         nlohmann::json& value = settings[section][item];
 
-        // Подсекция: тумблер `use` + кликабельное имя, открывающее детальный попап — ровно как в «Настройках».
+        // Subsection: a `use` toggle + a clickable name opening the detail popup — just like in Settings.
         if (type == item_type::subsection) {
             if (value.contains("use") && value["use"].is_boolean()) {
                 if (gui::widgets::toggle_button("##use:" + id, value["use"].get_ref<bool&>()).render())
@@ -609,7 +438,7 @@ auto plugin::gui::windows::main::frames::presets::render_section_editor(const st
             continue;
         }
 
-        // Bool-функция: тумблер значения + имя.
+        // Boolean option: a value toggle + the name.
         if (type == item_type::boolean && value.is_boolean()) {
             if (gui::widgets::toggle_button("##val:" + id, value.get_ref<bool&>()).render())
                 pending_save = true;
@@ -619,7 +448,7 @@ auto plugin::gui::windows::main::frames::presets::render_section_editor(const st
             continue;
         }
 
-        // На верхнем уровне секции иных типов нет, но на всякий случай покажем имя.
+        // No other types exist at the section top level, but show the name just in case.
         ImGui::AlignTextToFramePadding();
         gui::widgets::text(regular_font, common_font_size, 0, "{}", name);
     }
@@ -631,7 +460,7 @@ auto plugin::gui::windows::main::frames::presets::include_item(const std::string
     settings[section][item] = snapshot_item(section, item);
 }
 
-auto plugin::gui::windows::main::frames::presets::render_editor(nlohmann::json& preset) -> void {
+auto plugin::gui::windows::main::frames::presets::render_editor(nlohmann::json& preset, float bottom_reserve) -> void {
     if (!preset.contains("settings") || !preset["settings"].is_object())
         preset["settings"] = nlohmann::json::object();
 
@@ -644,7 +473,8 @@ auto plugin::gui::windows::main::frames::presets::render_editor(nlohmann::json& 
 
     editor_search.render(full_width, "Поиск функции по названию...");
 
-    ImGui::BeginChild("presets::editor", { 0, 0 }, ImGuiChildFlags_Borders);
+    // Negative height: fill the remaining space minus the action-button footer below.
+    ImGui::BeginChild("presets::editor", { 0, -bottom_reserve }, ImGuiChildFlags_Borders);
     {
         ImGui::PushFont(regular_font, common_font_size);
         {
@@ -690,13 +520,13 @@ auto plugin::gui::windows::main::frames::presets::render_hotkeys_section(nlohman
     nlohmann::json& hotkeys = settings["hotkeys"];
     ensure_hotkey_editors(hotkeys, preset_id);
 
-    // Каждый кадр освежаем указатель на хранилище: preset_list (json-массив) может
-    // перевыделиться при добавлении пресета, и закэшированный в редакторах указатель
-    // на settings["hotkeys"] стал бы висячим (use-after-free).
+    // Refresh the storage pointer every frame: preset_list (a json array) may be reallocated
+    // when a preset is added, which would leave the editors' cached pointer to
+    // settings["hotkeys"] dangling (use-after-free).
     for (gui::hotkey& editor : hotkey_editors)
         editor.set_external_storage(&hotkeys);
 
-    // При активном поиске показываем секцию только если есть совпадения по меткам хоткеев.
+    // While searching, show the section only if some hotkey label matches.
     if (!editor_search.empty()) {
         bool any_match = false;
 
@@ -717,8 +547,8 @@ auto plugin::gui::windows::main::frames::presets::render_hotkeys_section(nlohman
 
     gui::widgets::hint::render_as_guide("ЛКМ — задать клавишу, ПКМ — условия активации (в слежке, на /alogin и т.д.).");
 
-    // Хоткей-виджет пишет бинд прямо в JSON пресета через внешнее хранилище. Сравниваем
-    // дамп до/после, чтобы отметить пресет на сохранение при любом изменении.
+    // The hotkey widget writes the bind straight into the preset JSON via external storage.
+    // Compare the dump before/after to mark the preset for saving on any change.
     std::string before = hotkeys.dump();
 
     for (gui::hotkey& editor : hotkey_editors) {
@@ -729,8 +559,8 @@ auto plugin::gui::windows::main::frames::presets::render_hotkeys_section(nlohman
         ImGui::SameLine();
         ImGui::AlignTextToFramePadding();
 
-        // Подпись — кликабельный текст (с подсветкой при наведении, как в других вкладках):
-        // ЛКМ открывает тот же попап условий активации, что и ПКМ по кнопке клавиши.
+        // The label is clickable text (hover-highlighted, as on other tabs): a left click
+        // opens the same activation-conditions popup as a right click on the key button.
         if (gui::widgets::text_button(editor.label).render())
             editor.open_conditions_popup();
     }
@@ -745,7 +575,7 @@ auto plugin::gui::windows::main::frames::presets::render_player_checker_section(
         pending_save = true;
     }
 
-    // Список игроков — отдельная сущность, под фильтр функций не подводим.
+    // The player list is a separate entity, not subject to the option filter.
     if (!editor_search.empty())
         return;
 
@@ -814,39 +644,47 @@ auto plugin::gui::windows::main::frames::presets::frame_renderer(std::string& la
     {
         render_editable_name(label, preset["name"].get_ref<std::string&>());
         render_status_banner(preset, current);
-        ImGui::Separator();
 
-        bool active_and_applied = static_cast<int>(current) == get_active_index() && preset_matches_live(preset);
-        std::string apply_label = active_and_applied ? "Применить заново" : "Применить";
-
-        if (gui::widgets::button(apply_label + "##frames::presets-" + index, { full_width, buttons_height }).render()) {
-            apply_preset(preset);
-            set_active_index(static_cast<int>(current));
-        }
-
-        if (gui::widgets::button("Обновить значения из текущих##frames::presets-" + index,
-                                 { full_width, buttons_height }).render())
-        {
-            refresh_values(preset);
-            save_presets();
-
-            // Редакторы хоткеев кэшируют бинды — форсируем их перестройку, чтобы они
-            // подхватили обновлённые из текущих значения.
-            hotkey_editors_preset_id = -1;
-        }
-
-        if (gui::widgets::button("Удалить##frames::presets-" + index, { full_width, buttons_height }).render())
-            submenu.remove_current_entry();
-
+        // The single key that applies this whole preset.
         if (gui::hotkey* preset_hotkey = find_pool_hotkey(preset_hotkey_label(preset.value("id", -1)))) {
             gui::widgets::text(regular_font, common_font_size, 0, "Горячая клавиша применения:");
             preset_hotkey->render({ full_width, buttons_height });
             gui::widgets::hint::render_as_guide("ЛКМ — задать клавишу, ПКМ — условия активации");
         }
 
-        ImGui::Dummy({ 0, ImGui::GetStyle().ItemSpacing.y });
+        ImGui::Separator();
 
-        render_editor(preset);
+        // The bordered settings editor fills the middle, leaving room for the stacked action
+        // footer below (three full-width buttons + the spacing between them).
+        float spacing = ImGui::GetStyle().ItemSpacing.y;
+        float footer_reserve = buttons_height * 3.0f + spacing * 3.0f;
+        render_editor(preset, footer_reserve);
+
+        // Action buttons stacked full-width: apply / write the current settings into the preset / delete.
+        bool active_and_applied = static_cast<int>(current) == get_active_index() && preset_matches_live(preset);
+        std::string apply_label = active_and_applied ? "Применить заново" : "Применить";
+        ImVec2 button_size = { full_width, buttons_height };
+
+        if (gui::widgets::button(apply_label + "##frames::presets-apply-" + index, button_size)
+                .without_click_animation().render())
+        {
+            apply_preset(preset);
+            set_active_index(static_cast<int>(current));
+        }
+
+        if (gui::widgets::button("Записать текущие настройки##frames::presets-write-" + index, button_size)
+                .without_click_animation().render())
+        {
+            preset["settings"] = capture_all();
+            save_presets();
+
+            // The hotkey editors cache binds — force a rebuild so they pick up the new values.
+            hotkey_editors_preset_id = -1;
+        }
+
+        if (gui::widgets::button("Удалить##frames::presets-delete-" + index, button_size)
+                .without_click_animation().render())
+            submenu.remove_current_entry();
     }
     ImGui::PopFont();
 }
@@ -876,7 +714,7 @@ auto plugin::gui::windows::main::frames::presets::on_entry_destroyed(std::size_t
     else if (active > static_cast<int>(index))
         set_active_index(active - 1);
 
-    // Освобождаем горячую клавишу удаляемого пресета: обнуляем бинд в пуле и в конфиге.
+    // Free the deleted preset's hotkey: clear its bind in the pool and in the config.
     int id = preset_list[index].value("id", -1);
 
     if (id >= 0) {
@@ -893,27 +731,23 @@ auto plugin::gui::windows::main::frames::presets::on_entry_destroyed(std::size_t
 }
 
 auto plugin::gui::windows::main::frames::presets::render() -> void {
-    // Раскладка: настройки слева, сайдбар со списком пресетов справа. Поскольку фрейм
-    // по умолчанию занимает всё доступное место, при отрисовке слева задаём ему явную
-    // ширину (всё минус ширина сайдбара и отступ).
-    float frame_width = ImGui::GetContentRegionAvail().x
-                        - submenu.get_menu_width(child) - ImGui::GetStyle().ItemSpacing.x;
-
-    submenu.render_current_frame(child, frame_width);
-    ImGui::SameLine();
+    // Layout: the preset-list sidebar on the left, the selected preset's detail on the right.
     submenu.render_menu(child);
+    ImGui::SameLine();
+    submenu.render_current_frame(child);
     popup.render(child);
 
-    // Отложенная запись: пишем файл, только когда пользователь отпустил слайдер/поле,
-    // иначе при перетаскивании ползунка файл писался бы каждый кадр.
+    // Deferred write: save the file only once the user releases the slider/field, otherwise
+    // dragging a slider would write the file every frame.
     if (pending_save && !ImGui::IsAnyItemActive()) {
         save_presets();
         pending_save = false;
     }
 }
 
-plugin::gui::windows::main::frames::presets::presets(types::not_null<initializer*> child)
+plugin::gui::windows::main::frames::presets::presets(types::not_null<initializer*> child, types::not_null<settings*> owner)
     : child(child),
+      owner(owner),
       bold_font(child->child->fonts->bold),
       regular_font(child->child->fonts->regular),
       icon_font(child->child->fonts->icon)
@@ -937,20 +771,20 @@ plugin::gui::windows::main::frames::presets::presets(types::not_null<initializer
     submenu.set_on_entry_destroyed_callback(std::bind(&presets::on_entry_destroyed, this, _1));
     submenu.set_add_callback(std::bind(&presets::add_callback, this));
 
-    // Активный пресет подсвечиваем заливкой его кнопки в списке: зелёная — применён и
-    // совпадает с текущими настройками, жёлтая — применён, но настройки изменены вручную.
-    submenu.set_entry_highlight([this](std::size_t index) -> std::optional<std::uint32_t> {
+    // Highlight the active preset by filling its list button: green — applied and matching
+    // the current settings, yellow — applied but the settings were changed manually.
+    submenu.set_entry_highlight([this](std::size_t index) -> types::color {
         if (static_cast<int>(index) != get_active_index() || index >= preset_list.size())
-            return std::nullopt;
+            return types::color();
 
         style::accent_colors_t& accents = style::get_current_accent_colors();
         std::uint32_t base = preset_matches_live(preset_list[index]) ? *accents.green : *accents.yellow;
 
-        // Полупрозрачная заливка — но достаточно яркая, чтобы активный пресет выделялся.
-        return (base & 0x00FFFFFFu) | (0xAAu << 24);
+        // Semi-transparent fill, but bright enough for the active preset to stand out.
+        return types::color(types::color::abgr((base & 0x00FFFFFFu) | (0xAAu << 24)));
     });
 
-    // На кнопке пресета справа рисуем бейдж с назначенной горячей клавишей применения.
+    // Draw a badge with the assigned apply hotkey on the right of the preset button.
     submenu.set_entry_overlay([this](std::size_t index, const ImVec2& min, const ImVec2& max) {
         std::optional<std::string> text = entry_hotkey_text(index);
 
@@ -978,7 +812,7 @@ plugin::gui::windows::main::frames::presets::presets(types::not_null<initializer
         ImGui::PopFont();
     });
 
-    // Резервируем под бейдж место справа, чтобы название пресета не залезало под него.
+    // Reserve space on the right for the badge so the preset name does not run under it.
     submenu.set_entry_text_reserve([this](std::size_t index) -> float {
         std::optional<std::string> text = entry_hotkey_text(index);
 

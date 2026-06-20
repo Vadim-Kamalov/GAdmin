@@ -20,7 +20,6 @@
 #include "plugin/samp/core/user.h"
 #include "plugin/types/string_iterator.h"
 #include "plugin/plugin.h"
-
 #include <cctype>
 #include <string>
 

@@ -65,6 +65,11 @@ private:
     }; // static constexpr types::zstring_t captured_sections[]
 
     types::not_null<initializer*> child;
+
+    /// Owning settings frame, reused to render the per-option editing widgets so the
+    /// rendering logic is not duplicated.
+    types::not_null<settings*> owner;
+
     widgets::submenu submenu = widgets::submenu("Пресеты##frames::presets");
     gui::widgets::search editor_search = gui::widgets::search("presets::editor_search");
 
@@ -90,7 +95,7 @@ private:
     /// is being actively edited, to avoid writing the file on every dragged frame).
     bool pending_save = false;
 
-    /// State of the "Чекер игроков" editor section (the player list lives in the preset).
+    /// State of the player-checker editor section (the player list lives in the preset).
     std::string pc_nickname_input;
     std::string pc_description_input;
     std::size_t pc_selected_index = 0;
@@ -113,14 +118,10 @@ private:
     /// Capture every editable (non-secret) item of all captured sections.
     auto capture_all() const -> nlohmann::json;
 
-    /// Snapshot the live hotkeys (those shown in the "Горячие клавиши" frame) as a
+    /// Snapshot the live hotkeys (those shown in the hotkeys frame) as a
     /// `{ label: packed_bind }` object, and the live player-checker list, respectively.
     auto capture_hotkeys() const -> nlohmann::json;
     auto capture_player_checker() const -> nlohmann::json;
-
-    /// Refresh the values of the items already included in the preset from the live
-    /// configuration, without changing which items are included.
-    auto refresh_values(nlohmann::json& preset) const -> void;
 
     /// Apply the preset to the live configuration (only the included items).
     auto apply_preset(const nlohmann::json& preset) const -> void;
@@ -160,11 +161,11 @@ private:
     /// preset does not have yet, e.g. an older preset or a setting added in a later version).
     auto include_item(const std::string& section, const std::string& item, nlohmann::json& settings) const -> void;
 
-    auto render_editor(nlohmann::json& preset) -> void;
+    auto render_editor(nlohmann::json& preset, float bottom_reserve) -> void;
     auto render_section_editor(const std::string& section, nlohmann::ordered_json& meta_section,
                                nlohmann::json& settings) -> void;
 
-    /// Render the "Горячие клавиши" / "Чекер игроков" editor sections inline (editing the
+    /// Render the hotkeys / player-checker editor sections inline (editing the
     /// data stored in the preset, independently of the live configuration).
     auto render_hotkeys_section(nlohmann::json& settings, int preset_id) -> void;
     auto render_player_checker_section(nlohmann::json& settings) -> void;
@@ -178,12 +179,6 @@ private:
     /// regular settings frame does (but editing the preset's snapshot instead of the live config).
     auto open_subsection_popup(const std::string& section, const std::string& item, const std::string& name,
                                nlohmann::ordered_json& meta_item, nlohmann::json& settings) -> void;
-    auto render_option(const std::string& id, const std::string& key, const std::string& subsection_key,
-                       nlohmann::ordered_json& meta_option, nlohmann::json& parent) -> void;
-    auto render_variant(const std::string& id, nlohmann::ordered_json& config, nlohmann::json& value) -> void;
-    auto render_color(const std::string& id, nlohmann::json& value) -> void;
-    auto render_custom(const std::string& custom_id, nlohmann::json& value) -> void;
-
     auto frame_renderer(std::string& label, std::any& payload) -> void;
     auto add_callback() -> void;
     auto on_entry_destroyed(std::size_t index) -> void;
@@ -193,7 +188,8 @@ public:
     /// Construct the frame.
     ///
     /// @param child[in] Valid pointer to the main window.
-    explicit presets(types::not_null<initializer*> child);
+    /// @param owner[in] Owning settings frame, reused for the option-editing widgets.
+    presets(types::not_null<initializer*> child, types::not_null<settings*> owner);
 }; // class presets final
 
 } // namespace plugin::gui::windows::main::frames

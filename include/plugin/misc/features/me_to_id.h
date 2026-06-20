@@ -30,12 +30,12 @@ namespace plugin::misc::features {
 /// Only the first argument after the command name is checked, so the
 /// `/me` roleplay command and `me` words inside messages are left intact.
 /// Only works if a feature is enabled.
-class me_to_id : public feature {
+class me_to_id final : public feature {
 private:
     auto on_send_command(const samp::out_event<samp::event_id::send_command>& event) const -> bool;
 public:
     auto on_event(const samp::event_info& event) -> bool override;
-}; // class me_to_id : public feature
+}; // class me_to_id final : public feature
 
 } // namespace plugin::misc::features
 
