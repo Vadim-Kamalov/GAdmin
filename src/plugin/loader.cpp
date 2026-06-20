@@ -138,6 +138,14 @@ auto plugin::loader::d3d9_present_hooked(const decltype(d3d9_present_hook)&, IDi
 
     ImGui_ImplDX9_NewFrame();
     ImGui_ImplWin32_NewFrame();
+
+    // `ImGui::GetIO().DisplaySize` is updated every call to `ImGui_ImplWin32_NewFrame`. This sets the value
+    // to the current display size, which we do not want, because issues may arise when a user, for example,
+    // Alt+Tabs, causing all windows to later move to the top-left corner as the window size becomes much
+    // smaller than before. This is primarily a GTA: SA issue, not an ImGui, SA:MP, or plugin problem.
+    static auto [ size_x, size_y ] = game::get_screen_resolution();
+    ImGui::GetIO().DisplaySize = { size_x, size_y };
+
     ImGui::NewFrame();
     {
         core->on_frame();
