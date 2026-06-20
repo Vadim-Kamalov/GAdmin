@@ -252,7 +252,7 @@ auto plugin::gui::windows::main::frames::presets::ensure_preset_ids() -> void {
 }
 
 auto plugin::gui::windows::main::frames::presets::preset_hotkey_label(int id) -> std::string {
-    return "preset:" + std::to_string(id);
+    return "##preset:" + std::to_string(id);
 }
 
 auto plugin::gui::windows::main::frames::presets::register_preset_hotkey(int id) -> void {
@@ -430,8 +430,6 @@ auto plugin::gui::windows::main::frames::presets::render_section_editor(const st
                 ImGui::SameLine();
             }
 
-            ImGui::AlignTextToFramePadding();
-
             if (gui::widgets::text_button(name + "##presets_sub:" + id).render())
                 open_subsection_popup(section, item, name, meta_item, settings);
 
@@ -449,7 +447,6 @@ auto plugin::gui::windows::main::frames::presets::render_section_editor(const st
         }
 
         // No other types exist at the section top level, but show the name just in case.
-        ImGui::AlignTextToFramePadding();
         gui::widgets::text(regular_font, common_font_size, 0, "{}", name);
     }
 }
@@ -606,7 +603,7 @@ auto plugin::gui::windows::main::frames::presets::render_player_checker_body(nlo
     ImGui::InputTextWithHint("##presets_pc_nick", "Никнейм игрока", &pc_nickname_input);
     ImGui::SameLine();
 
-    if (gui::widgets::button("Добавить##presets_pc_add", { add_button_width, buttons_height }).render()
+    if (gui::widgets::button("Добавить##presets_pc_add", { add_button_width, ImGui::GetFrameHeight() }).render()
         && !pc_nickname_input.empty())
     {
         players.push_back({ { "nickname", pc_nickname_input }, { "description", "" } });
@@ -652,8 +649,6 @@ auto plugin::gui::windows::main::frames::presets::frame_renderer(std::string& la
             gui::widgets::hint::render_as_guide("ЛКМ — задать клавишу, ПКМ — условия активации");
         }
 
-        ImGui::Separator();
-
         // The bordered settings editor fills the middle, leaving room for the stacked action
         // footer below (three full-width buttons + the spacing between them).
         float spacing = ImGui::GetStyle().ItemSpacing.y;
@@ -684,7 +679,7 @@ auto plugin::gui::windows::main::frames::presets::frame_renderer(std::string& la
 
         if (gui::widgets::button("Удалить##frames::presets-delete-" + index, button_size)
                 .without_click_animation().render())
-            submenu.remove_current_entry();
+            submenu.remove_current_entry_animated();
     }
     ImGui::PopFont();
 }
