@@ -26,8 +26,12 @@
 #include "plugin/types/not_null.h"
 #include "plugin/types/simple.h"
 #include <nlohmann/json.hpp>
+#include <memory>
 
 namespace plugin::gui::windows::main::frames {
+
+/// Presets manager, embedded as a section of the settings frame.
+class presets;
 
 /// Represents the settings frame in the main window.
 class settings final : public basic_frame {
@@ -46,6 +50,12 @@ private:
     types::not_null<initializer*> child;
     std::string guide_hint_id = "";
 
+    /// Sentinel key used for the embedded presets section entry.
+    static constexpr types::zstring_t presets_section_key = "__presets__";
+
+    /// Embedded presets manager rendered when the presets section is selected.
+    std::unique_ptr<presets> presets_component;
+
     ImFont* bold_font = nullptr;
     ImFont* regular_font = nullptr;
 
@@ -62,6 +72,14 @@ private:
     auto render_custom(const std::string_view& id, nlohmann::json& setter) const -> void;
     auto render_boolean(const std::string_view& label, nlohmann::ordered_json& config, bool& setter) const -> void;
 public:
+    /// Render the editing widget for one option of the given meta type into `value`. Shared
+    /// with the presets editor so the per-type rendering is not duplicated. `widget_id` must
+    /// start with "##" and be unique; `custom_id` identifies the custom editor for custom
+    /// options. When `live` is false, side effects (toggle events) are suppressed, so editing
+    /// a preset snapshot never touches the running state.
+    auto render_option_widget(const std::string& widget_id, const std::string& custom_id,
+                              nlohmann::ordered_json& meta_option, nlohmann::json& value, bool live) const -> void;
+
     /// Item types to parse from the JSON and later to render them.
     enum class item_type : std::uint8_t {
         subsection,     ///< Represents the group of settings.
@@ -80,6 +98,9 @@ public:
     ///
     /// @param child[in] Valid pointer to the main window.
     explicit settings(types::not_null<initializer*> child);
+
+    /// Destructor (out-of-line so the incomplete `presets` member can be destroyed).
+    ~settings() override;
 }; // class settings final
 
 NLOHMANN_JSON_SERIALIZE_ENUM(settings::item_type, {

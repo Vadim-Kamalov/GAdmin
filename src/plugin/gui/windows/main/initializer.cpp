@@ -185,6 +185,10 @@ plugin::gui::windows::main::initializer::initializer(types::not_null<gui_initial
 
     child->hotkey_handler->add(switch_hotkey);
 
+    // Guard against a saved index of a tab that no longer exists (e.g. a removed preset tab).
+    if (std::to_underlying(active_frame) >= frames_count)
+        active_frame = frame::home;
+
     frames = {
         std::make_unique<frames::home>(this),
         std::make_unique<frames::settings>(this),

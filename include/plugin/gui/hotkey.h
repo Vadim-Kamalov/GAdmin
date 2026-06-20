@@ -31,6 +31,7 @@
 #include <vector>
 #include <functional>
 #include <imgui.h>
+#include <nlohmann/json_fwd.hpp>
 
 namespace plugin {
 
@@ -204,6 +205,14 @@ private:
     hotkey_handler* handler;
     key_bind new_bind;
 
+    /// Optional external storage for this hotkey's bind (a `{ label: packed }` JSON object).
+    /// When set, the bind is read from / written to it instead of the live configuration —
+    /// used to edit a preset's stored hotkeys without touching the live binds.
+    nlohmann::json* external_storage = nullptr;
+
+    /// The bind storage to use (external if set, otherwise the live configuration's hotkeys).
+    auto saved_binds() -> nlohmann::json&;
+
     auto truncate_text_in_button(float button_width, const std::string_view& text) const -> std::string;
     auto hint_renderer() -> void;
     auto hint_condition() -> bool;
@@ -228,6 +237,10 @@ public:
     /// @param size[in] Button size (default: `default_button_size`).
     auto render(const ImVec2& size = default_button_size) -> void;
 
+    /// Programmatically open this hotkey's activation-conditions popup (the same popup as
+    /// the right-click on the bind button), e.g. from a click on the hotkey's label.
+    auto open_conditions_popup() -> void;
+
     /// Construct hotkey with the specific callback passed.
     ///
     /// @param new_callback[in] New callback to set.
@@ -244,6 +257,19 @@ public:
     ///
     /// @return Reference to this hotkey to allow chain-calls.
     inline auto without_rendering_in_settings() -> hotkey&;
+
+    /// Bind this hotkey's storage to an external `{ label: packed }` JSON object and reload
+    /// its bind from it (used to edit a preset's hotkeys independently of the live binds).
+    ///
+    /// @param storage[in] Pointer to the external storage object.
+    /// @return            Reference to this hotkey to allow chain-calls.
+    auto bind_to_external(nlohmann::json* storage) -> hotkey&;
+
+    /// Update only the external storage pointer (without reloading the bind). Call every
+    /// frame to keep the pointer valid if the container holding the storage reallocates.
+    ///
+    /// @param storage[in] Pointer to the external storage object.
+    auto set_external_storage(nlohmann::json* storage) -> void;
 
     /// Construct hotkey with label and bind.
     ///
