@@ -27,6 +27,8 @@
 #include "plugin/gui/icon.h"
 #include "plugin/gui/notify.h"
 #include "plugin/types/color.h"
+#include "plugin/cheats/wallhack.h"
+#include "plugin/server/user.h"
 #include "plugin/plugin.h"
 #include "plugin/log.h"
 #include "common/common.h"
@@ -157,6 +159,20 @@ auto plugin::gui::windows::main::frames::presets::apply_preset(const nlohmann::j
             if (gui::hotkey* pooled = find_pool_hotkey(label))
                 pooled->bind = gui::key_bind(packed.get<std::uint32_t>());
         }
+    }
+
+    // merge_patch only rewrites the JSON; it does not run the side-effect handlers the
+    // settings UI fires on toggle. Wallhack is the only setting whose live runtime state
+    // (the `cheat_active` flag + server name-tag render) is more than its config value, so
+    // reconcile it explicitly — otherwise the cheat keeps its pre-apply state against the
+    // preset and its hotkey desyncs (a disabled-by-preset wallhack stays rendered and its
+    // toggle gets blocked by the `use` gate). Mirror the settings toggle: switch the active
+    // state only on /alogin, but always refresh the renderers for `custom_render` changes.
+    if (settings.contains("cheats") && settings.at("cheats").contains("wallhack")) {
+        if (server::user::is_on_alogin())
+            cheats::wallhack::toggle((*configuration)["cheats"]["wallhack"]["use"].get<bool>());
+        else
+            cheats::wallhack::update();
     }
 
     configuration->save();
@@ -737,6 +753,13 @@ auto plugin::gui::windows::main::frames::presets::render() -> void {
     if (pending_save && !ImGui::IsAnyItemActive()) {
         save_presets();
         pending_save = false;
+
+        // Editing the active preset mirrors the live settings screen: push the change to the
+        // live configuration at once, so there is no need to press "Apply" again.
+        std::size_t current = submenu.get_current_entry_index();
+
+        if (current < preset_list.size() && static_cast<int>(current) == get_active_index())
+            apply_preset(preset_list[current]);
     }
 }
 

@@ -130,26 +130,22 @@ auto plugin::gui::windows::main::frames::settings::render_subsection(const std::
 auto plugin::gui::windows::main::frames::settings::render_variant(const std::string& label, nlohmann::ordered_json& config, std::string& setter) const
     -> void
 {
-    static std::unordered_map<std::string, int> pool;
+    // Resolve the index from the live value every frame, so a change made outside this widget
+    // (e.g. applying a preset) is reflected at once, with no stale per-label cache.
+    auto it = std::find_if(config.begin(), config.end(), [&setter](nlohmann::ordered_json& array) {
+        return array[0] == setter;
+    });
 
-    if (!pool.contains(label)) {
-        auto it = std::find_if(config.begin(), config.end(), [&setter](nlohmann::ordered_json& array) {
-            return array[0] == setter;
-        });
-
-        if (it == config.end()) {
-            log::fatal("settings::render_variant: `{}` is not found in `config`", setter);
-            return;
-        }
-
-        pool[label] = std::distance(config.begin(), it);
+    if (it == config.end()) {
+        log::fatal("settings::render_variant: `{}` is not found in `config`", setter);
+        return;
     }
 
-    int& index = pool[label];
+    int index = std::distance(config.begin(), it);
     std::string format = config[index][1];
 
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-    
+
     if (ImGui::SliderInt(label.c_str(), &index, 0, config.size() - 1, format.c_str()))
         setter = config[index][0];
 }
@@ -157,12 +153,10 @@ auto plugin::gui::windows::main::frames::settings::render_variant(const std::str
 auto plugin::gui::windows::main::frames::settings::render_color(const std::string& label, nlohmann::json& setter) const
     -> void
 {
-    static std::unordered_map<std::string, ImVec4> pool;
-
-    if (!pool.contains(label))
-        pool[label] = ImGui::ColorConvertU32ToFloat4(*setter.get<types::color>());
-
-    ImVec4& vector_color = pool[label];
+    // Edit buffer derived from the live value every frame, so a change made outside this widget
+    // (e.g. applying a preset) is reflected at once, with no stale per-label cache. ImGui keeps
+    // the in-progress HSV state by widget id, so a transient buffer does not affect editing.
+    ImVec4 vector_color = ImGui::ColorConvertU32ToFloat4(*setter.get<types::color>());
 
     ImGui::PushFont(bold_font, common_text_size);
     {
