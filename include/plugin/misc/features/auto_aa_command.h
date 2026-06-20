@@ -16,8 +16,8 @@
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
 
-#ifndef GADMIN_PLUGIN_MISC_FEATURES_AUTO_AA_COMMAND
-#define GADMIN_PLUGIN_MISC_FEATURES_AUTO_AA_COMMAND
+#ifndef GADMIN_PLUGIN_MISC_FEATURES_AUTO_AA_COMMAND_H
+#define GADMIN_PLUGIN_MISC_FEATURES_AUTO_AA_COMMAND_H
 
 #include "plugin/misc/base/feature.h"
 #include "plugin/samp/events/send_chat.h" // IWYU pragma: keep
@@ -37,4 +37,4 @@ public:
 
 } // namespace plugin::misc::features
 
-#endif // GADMIN_PLUGIN_MISC_FEATURES_AUTO_AA_COMMAND
+#endif // GADMIN_PLUGIN_MISC_FEATURES_AUTO_AA_COMMAND_H

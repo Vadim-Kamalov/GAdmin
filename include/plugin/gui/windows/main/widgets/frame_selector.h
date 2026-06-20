@@ -33,12 +33,7 @@ namespace plugin::gui::windows::main::widgets {
 /// renders frame switcher buttons.
 class frame_selector final : public types::singleton<frame_selector> {
 private:
-    static constexpr float default_width_on_state[2] = { 44, 200 };
-    static constexpr float default_percentage_on_state[2] = {
-        (default_width_on_state[0] * 100) / initializer::default_window_size.x, ///< ~6.29
-        (default_width_on_state[1] * 100) / initializer::default_window_size.x, ///< ~28.58
-    }; // static constexpr float default_percentage_on_state[2]
-
+    static constexpr float default_percentage_on_state[2] = { 6.29, 28.59 };
     static constexpr float title_font_size = 24;
     static constexpr float version_font_size = 18;
 

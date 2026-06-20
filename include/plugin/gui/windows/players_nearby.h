@@ -61,6 +61,7 @@ private:
 public:
     inline auto get_id() const -> types::zstring_t override;
     inline auto get_name() const -> types::zstring_t override;
+    inline auto without_background() const -> bool override;
 
     auto render() -> void override;
 
@@ -97,6 +98,10 @@ inline auto plugin::gui::windows::players_nearby::get_id() const -> types::zstri
 
 inline auto plugin::gui::windows::players_nearby::get_name() const -> types::zstring_t {
     return "Игроки рядом";
+}
+
+inline auto plugin::gui::windows::players_nearby::without_background() const -> bool {
+    return true;
 }
 
 #endif // GADMIN_PLUGIN_GUI_WINDOWS_PLAYERS_NEARBY_H

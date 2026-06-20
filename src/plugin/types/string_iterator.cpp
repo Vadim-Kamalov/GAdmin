@@ -17,6 +17,7 @@
 /// SPDX-License-Identifier: GPL-3.0-only
 
 #include "plugin/types/string_iterator.h"
+#include <cstdint>
 
 auto plugin::types::string_iterator::current() const
     -> std::optional<unsigned char>
@@ -37,4 +38,12 @@ auto plugin::types::string_iterator::remaining()
     -> std::string
 {
     return input.substr(index);
+}
+
+auto plugin::types::string_iterator::collect_word()
+    -> std::string
+{
+    return collect([](std::uint8_t c) {
+        return !std::isspace(c);
+    });
 }

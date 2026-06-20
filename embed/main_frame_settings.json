@@ -141,6 +141,9 @@
             "_name": "Улучшенный /greport",
             "notify": { "_type": "bool", "_name": "Показывать оповещение" },
             "sound_notify": { "_type": "bool", "_name": "Звуковое оповещение" },
+            "enable_previous_answers_frame": { "_type": "bool", "_name": "Отображать вкладу прошлых ответов" },
+            "enable_user_all_answers_frame": { "_type": "bool", "_name": "Отображать вкладку Ваших ответов" },
+            "enable_gps_frame": { "_type": "bool", "_name": "Отображать вкладку с GPS" },
             "remind_active_report_after_seconds": {
                 "_type": "intrange",
                 "_name": "Оповещение об активном репорте после N секунд (0 - отключено)",
@@ -176,6 +179,40 @@
                     [ "center", "Центру" ],
                     [ "right", "Правому краю" ]
                 ]
+            }
+        },
+        "player_checker": {
+            "_type": "subsection",
+            "_name": "Чекер игроков",
+            "show_offline": { "_type": "bool", "_name": "Отображать игроков в оффлайн" },
+            "show_title": { "_type": "bool", "_name": "Отображать заголовок" },
+            "clist_color": { "_type": "bool", "_name": "Цвет никнейма по клисту" },
+            "notify": { "_type": "bool", "_name": "Показывать оповещения" },
+            "sound_notify": { "_type": "bool", "_name": "Звуковое оповещение" },
+            "align": {
+                "_type": "variant",
+                "_name": "Выравнивание по",
+                "_config": [
+                    [ "left", "Левому краю" ],
+                    [ "center", "Центру" ],
+                    [ "right", "Правому краю" ]
+                ]
+            }
+        },
+        "counters": {
+            "_type": "subsection",
+            "_name": "Счетчики",
+            "show_fps": { "_type": "bool", "_name": "Отображать FPS" },
+            "show_ping": { "_type": "bool", "_name": "Отображать PING" }
+        },
+        "autocompletion": {
+            "_type": "subsection",
+            "_name": "Автозаполнение",
+            "show_hint": { "_type": "bool", "_name": "Отображать подсказку справа окна" },
+            "max_items": {
+                "_type": "intrange",
+                "_name": "Максимальное количество строк",
+                "_config": [ 1, 100 ]
             }
         },
         "spectator_keys": { "_type": "bool", "_name": "Клавиши игрока в /sp" },
@@ -236,7 +273,8 @@
         "auto_aa_command": { "_type": "bool", "_name": "Автоматический /aa" },
         "display_id_in_chat": { "_type": "bool", "_name": "Отображать ID в IC чате" },
         "auto_alogin": { "_type": "bool", "_name": "/alogin после спавна" },
-        "fix_chat_opening": { "_type": "bool", "_name": "Исправление открытия чата на Т" },
+        "swap_layout": { "_type": "bool", "_name": "Исправление раскладки при вводе команды" },
+        "fix_input_open": { "_type": "bool", "_name": "Исправление открытия чата на T" },
         "auto_login": {
             "_type": "subsection",
             "_name": "Автоматический ввод паролей",
@@ -254,11 +292,6 @@
             "_type": "subsection",
             "_name": "Упоминания в /a",
             "sound_notify": { "_type": "bool", "_name": "Звуковое оповещение" },
-            "color": { "_type": "color", "_name": "Цвет" }
-        },
-        "report_one_color": {
-            "_type": "subsection",
-            "_name": "Репорт одного цвета",
             "color": { "_type": "color", "_name": "Цвет" }
         },
         "death_notify_in_chat": {
@@ -287,6 +320,15 @@
             "_type": "subsection",
             "_name": "Изменение цветов сообщений в чате",
             "items": { "_type": "custom", "_name": "Сообщения" }
+        },
+        "message_hider": {
+            "_type": "subsection",
+            "_name": "Скрытие сообщений",
+            "hide_anticheat": { "_type": "bool", "_name": "Античит" },
+            "hide_punishments": { "_type": "bool", "_name": "Наказания" },
+            "hide_complaints": { "_type": "bool", "_name": "Вопросы/Жалобы" },
+            "hide_player_actions": { "_type": "bool", "_name": "Действия игроков" },
+            "hide_admin_actions": { "_type": "bool", "_name": "Действия администраторов" }
         },
         "gun_info": {
             "_type": "subsection",

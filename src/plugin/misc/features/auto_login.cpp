@@ -33,7 +33,6 @@ auto plugin::misc::features::auto_login::on_show_dialog(const samp::event<samp::
         return false;
     }
 
-
     std::string user_ooc_nickname = (*configuration)["user"]["nickname"];
 
     if (dialog.text.contains("Авторизация") && dialog.text.contains("Введите логин:") &&

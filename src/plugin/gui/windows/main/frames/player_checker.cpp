@@ -57,7 +57,7 @@ auto plugin::gui::windows::main::frames::player_checker::render_description_hint
     ImVec2 center = { start.x + (input_size.x - text_size.x) / 2.0f, start.y + (input_size.y - text_size.y) / 2.0f };
     ImU32 color = ImGui::GetColorU32(ImGuiCol_TextDisabled);
 
-    ImGui::GetWindowDrawList()->AddText(regular_font, common_font_size, center, color, description_hint);
+    ImGui::GetWindowDrawList()->AddText(regular_font, common_font_size * ImGui::GetStyle().FontScaleDpi, center, color, description_hint);
 }
 
 auto plugin::gui::windows::main::frames::player_checker::render_left_group(float width) -> void {
@@ -66,7 +66,7 @@ auto plugin::gui::windows::main::frames::player_checker::render_left_group(float
     ImGui::BeginChild("players_online", { width, child_height }, ImGuiChildFlags_AlwaysUseWindowPadding, child->window_flags);
     {
         static constexpr types::zstring_t title_text = "Игроки онлайн";
-        ImVec2 title_text_size = bold_font->CalcTextSizeA(title_font_size, FLT_MAX, 0.0f, title_text);
+        ImVec2 title_text_size = bold_font->CalcTextSizeA(title_font_size * ImGui::GetStyle().FontScaleDpi, FLT_MAX, 0.0f, title_text);
 
         ImGui::SetCursorPosX((ImGui::GetContentRegionAvail().x - title_text_size.x) / 2.0f);
         gui::widgets::text(bold_font, title_font_size, 0, title_text);
@@ -122,7 +122,7 @@ auto plugin::gui::windows::main::frames::player_checker::render_right_group(floa
     ImGui::BeginChild("players_added", { width, child_height }, ImGuiChildFlags_AlwaysUseWindowPadding, child->window_flags);
     {
         static constexpr types::zstring_t title_text = "Чекер игроков";
-        ImVec2 title_text_size = bold_font->CalcTextSizeA(title_font_size, FLT_MAX, 0.0f, title_text);
+        ImVec2 title_text_size = bold_font->CalcTextSizeA(title_font_size * ImGui::GetStyle().FontScaleDpi, FLT_MAX, 0.0f, title_text);
 
         ImGui::SetCursorPosX((ImGui::GetContentRegionAvail().x - title_text_size.x) / 2.0f);
         gui::widgets::text(bold_font, title_font_size, 0, title_text);

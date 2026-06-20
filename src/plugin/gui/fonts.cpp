@@ -18,6 +18,7 @@
 
 #include "plugin/gui/fonts.h"
 #include "plugin/gui/icon.h"
+#include "plugin/log.h"
 #include <common/network.h>
 #include <common/common.h>
 #include <functional>
@@ -43,8 +44,12 @@ auto plugin::gui::fonts_initializer::download_missing_fonts() -> void {
     while (!missing_fonts.empty()) {
         missing_font& font = missing_fonts.front();
         
-        common::network::download_file(std::format(PROJECT_DATABASE "/resources/{}", font.filename),
-                                       font.path, network_thread.get_stop_token());
+        if (!common::network::download_file(std::format(PROJECT_DATABASE "/resources/{}", font.filename),
+                                       font.path, network_thread.get_stop_token()))
+        {
+            log::fatal("failed to download the font from [ PROJECT_DATABASE / resources / {} ]", font.filename);
+            return;
+        }
 
         missing_fonts.pop();
     }
@@ -58,16 +63,19 @@ auto plugin::gui::fonts_initializer::assign_fonts() -> void {
 
     for (const auto& [ index, filename ] : filenames | std::views::enumerate) {
         std::filesystem::path path = resources / filename;
+        std::string path_str = path.string();
 
         if (index == icon_font_index) {
             const ImWchar icon_ranges[] = { ICON_MIN, ICON_MAX, 0 };
             
-            *fonts[index] = font_atlas->AddFontFromFileTTF(path.string().c_str(), default_font_size, nullptr, icon_ranges);
+            *fonts[index] = font_atlas->AddFontFromFileTTF(path_str.c_str(), default_font_size, nullptr, icon_ranges);
+            log::info("loaded \"{}\" font", path_str);
             
             break;
         }
 
-        *fonts[index] = font_atlas->AddFontFromFileTTF(path.string().c_str(), default_font_size);
+        *fonts[index] = font_atlas->AddFontFromFileTTF(path_str.c_str(), default_font_size);
+        log::info("loaded \"{}\" font", path_str);
     }
 }
 

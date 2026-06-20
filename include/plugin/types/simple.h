@@ -23,8 +23,9 @@
 
 namespace plugin::types {
 
-using meter_per_second_t = float; ///< Represents speed in meters per second.
-using zstring_t = const char*;    ///< Represents null-terminated (C-style) string. 
+using meter_per_second_t = float;         ///< Represents speed in meters per second.
+using zstring_t = const char*;            ///< Represents null-terminated (C-style) string. 
+using milliseconds_raw_t = std::uint16_t; ///< Represents milliseconds directly as a number.
 
 /// Represents 3D vector with `x`, `y`, `z` components.
 struct vector_3d final {

@@ -19,6 +19,7 @@
 #include "plugin/misc/features/statistics.h"
 #include "plugin/types/u8regex.h"
 #include "plugin/types/string_iterator.h"
+#include "plugin/server/spectator.h"
 #include "plugin/server/user.h"
 #include "plugin/samp/core/user.h"
 #include "plugin/game/game.h"
@@ -263,7 +264,7 @@ auto plugin::misc::features::statistics_updater::try_increment_punishment(const 
     types::string_iterator iterator(punisment_text);
     std::string user_ooc_nickname = (*configuration)["user"]["nickname"];
     std::string possible_request_nickname = "// " + user_ooc_nickname;
-    std::string sender_nickname = iterator.collect([](unsigned char c) { return !std::isspace(c); });
+    std::string sender_nickname = iterator.collect_word();
 
     if (sender_nickname != user_ooc_nickname && !punisment_text.ends_with(possible_request_nickname))
         return;
@@ -331,8 +332,20 @@ auto plugin::misc::features::statistics_updater::main_loop() -> void {
     statistics_t::range_t current_hours = statistics_t::range_t::current_hours();
     time_updated = now;
     
-    if (server::user::is_on_alogin())
+    if (server::user::is_on_alogin()) {
+        if (server::spectator::is_active()) {
+            today_entry.increment_value_at(statistics_t::entry_type::time_as_in_acp, current_hours);
+        } else {
+            static std::uint8_t counter = 0;
+
+            if (counter++ == 1) { // just to check if 2 seconds have passed
+                today_entry.increment_value_at(statistics_t::entry_type::time_as_in_acp, current_hours);
+                counter = 0;
+            }
+        }
+
         today_entry.increment_value_at(statistics_t::entry_type::time_on_alogin, current_hours);
+    }
    
     today_entry.increment_value_at(statistics_t::entry_type::total_time, current_hours);
 }

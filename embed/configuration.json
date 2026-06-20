@@ -60,7 +60,7 @@
                 { "use": true, "name": "WARN", "action": "^/warn ${{ SPECTATOR_ID }}" },
                 { "use": true, "name": "SLAP", "action": "/slap ${{ SPECTATOR_ID }}" },
                 { "use": true, "name": "SWITCH", "action": 1 },
-                { "use": true, "name": "GETBUYCAR", "action": "^/getbuycar " },
+                { "use": true, "name": "GBC", "action": "^/getbuycar " },
                 { "use": true, "name": "BAN", "action": "^/ban ${{ SPECTATOR_ID }}" },
                 { "use": true, "name": "KICK", "action": "^/kick ${{ SPECTATOR_ID }}" },
                 { "use": true, "name": "BMUTE", "action": "^/bmute ${{ SPECTATOR_ID }}" },
@@ -104,6 +104,9 @@
             "use": true,
             "notify": true,
             "sound_notify": true,
+            "enable_previous_answers_frame": true,
+            "enable_user_all_answers_frame": true,
+            "enable_gps_frame": true,
             "remind_active_report_after_seconds": 120,
             "insert_buttons": [
                 { "name": "Приятной игры!", "insert": "Приятной игры!" },
@@ -129,6 +132,18 @@
             "sound_notify": true,
             "align": "left",
             "players": []
+        },
+
+        "counters": {
+            "use": false,
+            "show_fps": true,
+            "show_ping": true
+        },
+
+        "autocompletion": {
+            "use": true,
+            "show_hint": true,
+            "max_items": 10
         },
 
         "spectator_keys": true,
@@ -165,7 +180,8 @@
         "auto_aa_command": false,
         "display_id_in_chat": false,
         "auto_alogin": false,
-        "fix_chat_opening": true,
+        "swap_layout": true,
+        "fix_input_open": true,
 
         "auto_login": {
             "use": false,
@@ -184,11 +200,6 @@
             "use": true,
             "sound_notify": true,
             "color": "FFB6864A"
-        },
-
-        "report_one_color": {
-            "use": false,
-            "color": "FF00FFFF"
         },
 
         "death_notify_in_chat": {
@@ -280,6 +291,8 @@
     "internal": {
         "last_time_join": 0,
         "main_window_frame": 0,
+        "alogins_until_sponshorship_notification": 0,
+
         "windows_customization": {},
         "hotkeys": {},
         "theme": {
@@ -296,6 +309,7 @@
         },
 
         "guide_hints": [],
+        "user_answers": [],
         "notes": [],
         "binds": [
             {

@@ -21,6 +21,7 @@
 #include "plugin/game/cursor.h"
 #include "plugin/game/game.h"
 #include "plugin/gui/windows/admins.h"
+#include "plugin/gui/windows/autocompletion.h"
 #include "plugin/gui/windows/far_chat.h"
 #include "plugin/gui/windows/interaction_area.h"
 #include "plugin/gui/windows/kill_list.h"
@@ -35,12 +36,14 @@
 #include "plugin/gui/windows/spectator_keys.h"
 #include "plugin/gui/windows/vehicle_selection.h"
 #include "plugin/gui/windows/command_requester.h"
-#include "plugin/gui/windows/report.h"
+#include "plugin/gui/windows/report/initializer.h"
+#include "plugin/gui/windows/counters.h"
 #include "plugin/server/spectator.h"
 #include "plugin/samp/core/game.h"
 #include "plugin/plugin.h"
 #include <ranges>
 #include <windows.h>
+#include <imgui_internal.h>
 #include <imgui.h>
 
 plugin::types::versioned_address_container<std::uintptr_t>
@@ -48,6 +51,47 @@ plugin::gui_initializer::input_handler_address = { 0x5DA80, 0x60E20, 0x61590, 0x
 
 plugin::types::versioned_address_container<std::uintptr_t>
 plugin::gui_initializer::set_cursor_mode_address = { 0x9BD30, 0x9FFE0, 0xA06F0, 0xA0530 };
+
+#ifndef NDEBUG
+auto plugin::gui_initializer::show_debug_window() const -> void {
+    static std::string selected_window = "";
+    static int selected_window_size[2] = { 0, 0 };
+
+    ImGui::Begin("GAdmin Debug Window", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+    {
+        ImGui::BeginGroup();
+        {
+            for (const auto& window : ImGui::GetCurrentContext()->Windows) {
+                if (ImGui::Button(window->Name)) {
+                    selected_window = window->Name;
+                }
+            }
+        }
+        ImGui::EndGroup();
+        ImGui::SameLine();
+        ImGui::BeginGroup();
+        {
+            float frame_height = ImGui::GetFrameHeight();
+
+            ImGui::TextUnformatted(std::format("Selected window: {}", selected_window).c_str());
+            ImGui::TextUnformatted(std::format(
+                "Size: x = {} * ImGui::GetFrameHeight() = {}, y = {} * ImGui::GetFrameHeight() = {}",
+                selected_window_size[0], selected_window_size[0] * frame_height, selected_window_size[1],
+                selected_window_size[1] * frame_height, selected_window).c_str());
+
+            if (ImGui::SliderInt2("selected_window_size", selected_window_size, 0, 100) && !selected_window.empty())
+                ImGui::SetWindowSize(selected_window.c_str(), { selected_window_size[0] * frame_height,
+                                                                selected_window_size[1] * frame_height });
+
+            ImGui::DragFloat("font_scale_dpi", &ImGui::GetStyle().FontScaleDpi, 0.02f, 0.5f, 4.0f);
+
+            ImGui::TextUnformatted(std::format("is_cursor_active(): {}", is_cursor_active()).c_str());
+        }
+        ImGui::EndGroup();
+    }
+    ImGui::End();
+}
+#endif // !defined(NDEBUG)
 
 auto plugin::gui_initializer::input_handler_hooked(const decltype(input_handler_hook)& hook, unsigned int char_code) -> bool {
     if (ImGui::GetCurrentContext() != nullptr && ImGui::GetIO().WantTextInput)
@@ -62,16 +106,13 @@ auto plugin::gui_initializer::set_cursor_mode_hooked(const decltype(set_cursor_m
     int current_cursor_mode = samp::game::cursor_mode_offsets->read(game);
     int result = hook.call_trampoline(game, mode, immediately_hide);
 
-    if ((mode == 2 || mode == 3) && cursor_active && !cursor_state_intercepted) {
-        cursor_active = false;
+    if ((mode == 2 || mode == 3) && is_cursor_active() && !cursor_state_intercepted) {
         cursor_state_intercepted = true;
-
         game::cursor::set_state(false);
-
         return result;
     }
 
-    if (!cursor_active && mode == 0 && current_cursor_mode != 0 && cursor_state_intercepted) {
+    if (!is_cursor_active() && mode == 0 && current_cursor_mode != 0 && cursor_state_intercepted) {
         POINT cursor_pos;    
         GetCursorPos(&cursor_pos);
 
@@ -117,10 +158,10 @@ auto plugin::gui_initializer::on_event(unsigned int message, WPARAM wparam, LPAR
     if (ImGui::GetCurrentContext() == nullptr)
         return true;
 
-    // Events to the game or SA:MP will not be sent when the user is typing something in ImGui's inputs.
-    // Here, we only check `WantTextInput` and not `WantCaptureMouse || WantCaptureKeyboard`, because there
-    // are some cases when the game will not receive some event (e.g. release of key or mouse button) event.
-    if (ImGui::GetIO().WantTextInput && message != WM_KEYUP && message != WM_SYSKEYUP)
+    if (ImGui::GetIO().WantTextInput)
+        return false;
+
+    if (message >= WM_MOUSEFIRST && message <= WM_MOUSELAST && ImGui::GetIO().WantCaptureMouse && is_cursor_active())
         return false;
 
     if (!hotkey_handler->on_event(message, wparam, lparam))
@@ -159,7 +200,7 @@ auto plugin::gui_initializer::can_initialize_render() const -> bool {
 
 auto plugin::gui_initializer::on_initialize() -> void {
     using namespace gui;
- 
+
     fonts->assign_fonts();
     style::apply();
 
@@ -168,6 +209,7 @@ auto plugin::gui_initializer::on_initialize() -> void {
 
     registered_windows.push_back(windows::main::create(this));
     registered_windows.push_back(windows::admins::create(this));
+    registered_windows.push_back(windows::autocompletion::create(this));
     registered_windows.push_back(windows::notify::create(this));
     registered_windows.push_back(windows::spectator_information::create(this));
     registered_windows.push_back(windows::spectator_actions::create(this));
@@ -182,6 +224,7 @@ auto plugin::gui_initializer::on_initialize() -> void {
     registered_windows.push_back(windows::release_information::create(this));
     registered_windows.push_back(windows::player_checker::create(this));
     registered_windows.push_back(windows::notes::create(this));
+    registered_windows.push_back(windows::counters::create(this));
 }
 
 auto plugin::gui_initializer::render() const -> void {
@@ -208,18 +251,19 @@ auto plugin::gui_initializer::render() const -> void {
 #ifndef NDEBUG
     ImGui::ShowDemoWindow();
     ImGui::ShowAboutWindow();
+    show_debug_window();
 #endif // !defined(NDEBUG)
 }
 
 auto plugin::gui_initializer::main_loop() -> void {
-    if (cursor_active)
+    if (is_cursor_active())
         game::cursor::set_state(true);
 
     hotkey_handler->main_loop();
 }
 
 auto plugin::gui_initializer::is_cursor_active() const -> bool {
-    return cursor_active;
+    return GetCursor() != nullptr;
 }
 
 auto plugin::gui_initializer::center_cursor() -> void {
@@ -228,17 +272,17 @@ auto plugin::gui_initializer::center_cursor() -> void {
     cursor_last_x = size_x / 2;
     cursor_last_y = size_y / 2;
 
-    if (cursor_active)
+    if (is_cursor_active())
         SetCursorPos(cursor_last_x, cursor_last_y);
 }
 
 auto plugin::gui_initializer::enable_cursor() -> void {
-    cursor_active = true;
-
     game::cursor::set_state(true);
     
-    if (cursor_last_x != -1 && cursor_last_y != -1)
-        SetCursorPos(cursor_last_x, cursor_last_y);
+    if (cursor_last_x == -1 || cursor_last_y == -1)
+        return;
+
+    SetCursorPos(cursor_last_x, cursor_last_y);
 }
 
 auto plugin::gui_initializer::disable_cursor() -> void {
@@ -247,7 +291,6 @@ auto plugin::gui_initializer::disable_cursor() -> void {
     game::cursor::set_state(false);
     GetCursorPos(&cursor_pos);
 
-    cursor_active = false;
     cursor_last_x = cursor_pos.x;
     cursor_last_y = cursor_pos.y;
 }

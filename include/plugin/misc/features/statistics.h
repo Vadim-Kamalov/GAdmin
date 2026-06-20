@@ -113,6 +113,7 @@ public:
         warn,           ///< User's issued warns (`/warn`).
         kick,           ///< User's issued disconnections (`/kick`).
         mute,           ///< User's issued mutes (`/mute`).
+        time_as_in_acp, ///< User's time on /alogin that will be similar to Admin Control Panel (ACP).
         count,          ///< Total count of the entries in this enumeration. Must always be the last entry.
         none = count    ///< None entry type: same as `entry_type::count` and must not be used in statistics.
     }; // enum class entry_type : std::uint8_t

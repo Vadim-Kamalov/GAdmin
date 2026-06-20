@@ -1,5 +1,6 @@
 #include "plugin/misc/features/fish_eye.h"
 #include "plugin/server/spectator.h"
+#include "plugin/server/user.h"
 #include "plugin/game/camera.h"
 #include "plugin/game/ped.h"
 #include "plugin/samp/core/game.h"
@@ -33,6 +34,9 @@ auto plugin::misc::features::fish_eye::on_event(unsigned int message, WPARAM wpa
 }
 
 auto plugin::misc::features::fish_eye::main_loop() -> void {
+    if (!server::user::is_on_alogin())
+        return;
+
     auto global_fov_configuration = (*configuration)["misc"]["fish_eye"];
     auto spectator_camera_zoom_configuration = (*configuration)["spectator_mode"]["zoom_camera"];
     

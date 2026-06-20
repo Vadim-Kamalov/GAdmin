@@ -39,6 +39,8 @@ private:
 
     float height = 0;
 
+    static auto get_notification_size() noexcept -> ImVec2;
+
     auto on_send_notification(notification& notification) -> bool;
     auto get_buttons_max_size(ImFont* font, float font_size, const notification::buttons_t& buttons) const -> ImVec2;
     
@@ -62,9 +64,6 @@ public:
     ///
     /// @param child[in] Valid pointer to the GUI initializer.
     explicit notify(types::not_null<gui_initializer*> child);
-private:
-    static constexpr float notification_size[2] = { 400, 70 };
-    static constexpr float padding = 10;
 }; // class notify final : public window
 
 } // namespace plugin::gui::windows

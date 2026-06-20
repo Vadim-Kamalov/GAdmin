@@ -35,7 +35,6 @@ private:
     static constexpr float section_title_font_size = 24;
     static constexpr float common_text_size = 18;
     static constexpr float color_border_size = 3;
-    static constexpr float close_button_height = 30;
 
     static std::unordered_map<std::string, std::function<void(bool&)>> toggle_events;
 

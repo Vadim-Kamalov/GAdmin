@@ -24,7 +24,8 @@ static plugin::types::address<plugin::signatures::calc_screen_coords> calc_scree
 auto plugin::game::get_screen_resolution() noexcept -> std::pair<float, float> {
     static types::address<int> resolution_x = 0xC9C040;
     static types::address<int> resolution_y = 0xC9C044;
-    return { resolution_x.read(), resolution_y.read() };
+    static std::pair<float, float> resolution = { resolution_x.read(), resolution_y.read() };
+    return resolution;
 }
 
 auto plugin::game::convert_3d_coords_to_screen(const types::vector_3d& coords)

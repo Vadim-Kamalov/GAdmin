@@ -39,17 +39,18 @@ auto plugin::gui::windows::player_checker::get_render_safe_color(const types::co
 }
 
 auto plugin::gui::windows::player_checker::get_entry_width(const entry_t& entry, bool show_offline) const -> float {
-    float width = bold_font->CalcTextSizeA(common_font_size, FLT_MAX, 0.0f, entry.to_string().c_str()).x
+    float scale = ImGui::GetStyle().FontScaleDpi;
+    float width = bold_font->CalcTextSizeA(common_font_size * scale, FLT_MAX, 0.0f, entry.to_string().c_str()).x
         + text_border_size * 2;
 
     if (show_offline) {
         std::string text = (entry.id == id_none) ? "[OFFLINE]" : "[ONLINE]";
-        width += bold_font->CalcTextSizeA(common_font_size, FLT_MAX, 0.0f, text.c_str()).x + ImGui::GetStyle().ItemSpacing.x;
+        width += bold_font->CalcTextSizeA(common_font_size * scale, FLT_MAX, 0.0f, text.c_str()).x + ImGui::GetStyle().ItemSpacing.x;
     }
 
     if (!entry.description.empty()) {
         std::string text = " - " + entry.description;
-        width += regular_font->CalcTextSizeA(common_font_size, FLT_MAX, 0.0f, text.c_str()).x;
+        width += regular_font->CalcTextSizeA(common_font_size * scale, FLT_MAX, 0.0f, text.c_str()).x;
     }
 
     return width;
@@ -100,7 +101,7 @@ auto plugin::gui::windows::player_checker::get_window_information() const -> win
     }
 
     if (window_information.render_configuration.show_title) {
-        float title_width = bold_font->CalcTextSizeA(title_font_size, FLT_MAX, 0.0f, title_text).x
+        float title_width = bold_font->CalcTextSizeA(title_font_size * ImGui::GetStyle().FontScaleDpi, FLT_MAX, 0.0f, title_text).x
             + text_border_size * 2;
 
         if (window_information.width < title_width)

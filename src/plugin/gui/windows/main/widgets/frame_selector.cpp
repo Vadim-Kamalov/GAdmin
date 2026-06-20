@@ -31,17 +31,20 @@ auto plugin::gui::windows::main::widgets::frame_selector::update_state_width() -
 }
 
 auto plugin::gui::windows::main::widgets::frame_selector::render_title() const -> void {
-    ImVec2 title_size = bold_font->CalcTextSizeA(title_font_size, FLT_MAX, 0, "GAdmin");
-    ImVec2 version_size = regular_font->CalcTextSizeA(version_font_size, FLT_MAX, 0, "v" PROJECT_VERSION);
+    float scale = ImGui::GetStyle().FontScaleDpi;
+    float spacing = ImGui::GetStyle().ItemSpacing.x;
 
-    ImGui::SetCursorPos({ (state_width.second - title_size.x - version_size.x - 5) / 2 + ImGui::GetStyle().WindowPadding.x,
+    ImVec2 title_size = bold_font->CalcTextSizeA(title_font_size * scale, FLT_MAX, 0, "GAdmin");
+    ImVec2 version_size = regular_font->CalcTextSizeA(version_font_size * scale, FLT_MAX, 0, "v" PROJECT_VERSION);
+
+    ImGui::SetCursorPos({ (state_width.second - title_size.x - version_size.x - spacing) / 2 + ImGui::GetStyle().WindowPadding.x,
                           (state_width.first - std::max(title_size.y, version_size.y)) / 2 });
 
     ImGui::BeginGroup();
     {
         gui::widgets::text(bold_font, title_font_size, 0, "GAdmin");
-        ImGui::SameLine(0, 5);
-        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 4);
+        ImGui::SameLine();
+        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + std::max(title_size.y, version_size.y) / 7.0f);
         gui::widgets::text(regular_font, version_font_size, 0, "v" PROJECT_VERSION);
     }
     ImGui::EndGroup();

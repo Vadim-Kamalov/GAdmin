@@ -7,7 +7,8 @@ plugin::misc::features::message_hider::messages = {
     { "hide_anticheat", {
         text_to_find { "Античит" },
         text_to_find { "[BOT DETECTOR]" },
-        text_to_find { "ADS <" }
+        text_to_find { "ADS <" },
+        text_to_find { "FLOOD <" }
     }},
 
     { "hide_punishments", {
@@ -27,8 +28,7 @@ plugin::misc::features::message_hider::messages = {
         text_to_find { "[A] ", "передал деньги ", true }
     }},
 
-    { "hide_complaints", { text_to_find { "[A] Жалоба от " } }},
-    { "hide_questions", { text_to_find { "[A] Репорт от " } }},
+    { "hide_complaints", { text_to_find { "[A] Жалоба от ", } }},
     { "hide_admin_actions", { 0xAAAFAFAF }}
 }; // plugin::misc::features::message_hider::messages
 

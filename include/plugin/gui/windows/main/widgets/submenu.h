@@ -54,14 +54,8 @@ private:
     
     static constexpr float title_font_size = 24;
     static constexpr float empty_placeholder_font_size = 18;
-    static constexpr float child_default_width = 190;
-    static constexpr float switch_button_default_height = 30;
-
-    static constexpr float child_width_percent =
-        (child_default_width * 100.0f) / initializer::default_window_size.x; ///< 23.75%
-
-    static constexpr float switch_button_percent =
-        (switch_button_default_height * 100.0f) / initializer::default_window_size.y; ///< 6%
+    static constexpr float child_width_percent = 23.75;
+    static constexpr float switch_button_percent = 6;
     
     struct entry_t final {
         std::string label;

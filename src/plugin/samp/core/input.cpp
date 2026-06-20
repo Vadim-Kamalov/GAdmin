@@ -41,11 +41,11 @@ auto plugin::samp::input::is_active() noexcept -> bool {
     return active_offset.read(instance_container->read()) != 0;
 }
 
-auto plugin::samp::input::is_command_defined(const std::string_view& command) noexcept -> bool {
+auto plugin::samp::input::is_command_defined(const std::string& command) noexcept -> bool {
     auto commands = commands_offset.read(instance_container->read());
 
     for (std::uint8_t i = 0; i < max_commands_count; i++)
-        if (command == std::string_view(commands[i], max_command_length + 1))
+        if (command == std::string(commands[i]))
             return true;
 
     return false;
@@ -67,4 +67,12 @@ auto plugin::samp::input::set_text(const std::string_view& text) noexcept -> voi
 
 auto plugin::samp::input::get_text() noexcept -> std::string {
     return string_utils::to_utf8(get_text_container->invoke(dxut_input_offset.read(instance_container->read())));
+}
+
+auto plugin::samp::input::get_position() noexcept -> std::pair<int, int> {
+    return dxut_input_pos_offset.read(dxut_input_offset.read(instance_container->read()));
+}
+
+auto plugin::samp::input::get_size() noexcept -> std::pair<int, int> {
+    return dxut_input_size_offset.read(dxut_input_offset.read(instance_container->read()));
 }

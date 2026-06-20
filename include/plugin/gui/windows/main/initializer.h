@@ -52,20 +52,17 @@ private:
 
     auto on_send_command(const samp::out_event<samp::event_id::send_command>& event) -> bool;
 public:
-    /// Default window size.
-    static constexpr ImVec2 default_window_size = { 800, 500 };
-
     /// Currently active frame.
     frame active_frame = frame::home;
 
     /// Window flags.
-    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar;
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize;
 
     /// Alpha inside of the window.
     std::uint8_t window_items_alpha = 255;
 
     /// Alpha inside of the active frame.
-    std::uint8_t active_frame_alpha = 255;
+    float active_frame_alpha = 1.0f;
     
     /// Window alpha.
     std::uint8_t window_alpha = 0;
@@ -77,7 +74,7 @@ public:
     ImVec2 window_pos = { 0, 0 };
 
     /// Window size.
-    ImVec2 window_size = default_window_size;
+    ImVec2 window_size = { 0, 0 };
 
     inline auto get_id() const -> types::zstring_t override;
     inline auto get_name() const -> types::zstring_t override;

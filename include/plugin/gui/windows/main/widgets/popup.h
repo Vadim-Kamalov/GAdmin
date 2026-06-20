@@ -39,7 +39,6 @@ public:
     using renderer_t = std::function<void()>;
 private:
     static constexpr std::chrono::milliseconds animation_duration = 500ms;
-    static constexpr float close_button_height = 30;
 
     std::string id;
     renderer_t renderer = [] {};

@@ -47,8 +47,9 @@ auto plugin::gui::windows::main::frames::home::get_greeting_text() const -> std:
 }
 
 auto plugin::gui::windows::main::frames::home::render_line(const line_t& line) const -> void {
-    float left_width = line.left.font->CalcTextSizeA(lines_font_size, FLT_MAX, 0.0f, line.left.text.c_str()).x;
-    float right_width = line.right.font->CalcTextSizeA(lines_font_size, FLT_MAX, 0.0f, line.right.text.c_str()).x;
+    float scale = ImGui::GetStyle().FontScaleDpi;
+    float left_width = line.left.font->CalcTextSizeA(lines_font_size * scale, FLT_MAX, 0.0f, line.left.text.c_str()).x;
+    float right_width = line.right.font->CalcTextSizeA(lines_font_size * scale, FLT_MAX, 0.0f, line.right.text.c_str()).x;
 
     ImGui::SetCursorPosX((ImGui::GetContentRegionAvail().x - left_width - right_width) / 2.0f);
     ImGui::BeginGroup();
@@ -75,21 +76,21 @@ auto plugin::gui::windows::main::frames::home::render_title() const -> void {
 }
 
 auto plugin::gui::windows::main::frames::home::render_legal_notice() const -> void {
-    ImGui::SetCursorPosY(ImGui::GetWindowHeight() - legal_notice_font_size * 2
+    ImGui::PushFont(light_font, legal_notice_font_size);
+    {
+        ImGui::SetCursorPosY(ImGui::GetWindowHeight() - ImGui::GetFontSize() * 2
             - ImGui::GetStyle().ItemSpacing.y - ImGui::GetStyle().WindowPadding.y);
 
-    ImGui::BeginGroup();
-    {
-        ImGui::PushFont(light_font, legal_notice_font_size);
+        ImGui::BeginGroup();
         {
             for (const auto& text : legal_notice_text) {
                 ImGui::SetCursorPosX((ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(text).x) / 2.0f);
                 ImGui::TextUnformatted(text);
             }
         }
-        ImGui::PopFont();
+        ImGui::EndGroup();
     }
-    ImGui::EndGroup();
+    ImGui::PopFont();
 }
 
 auto plugin::gui::windows::main::frames::home::render() -> void {

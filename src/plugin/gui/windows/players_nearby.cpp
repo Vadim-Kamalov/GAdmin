@@ -32,7 +32,9 @@ auto plugin::gui::windows::players_nearby::get_window_information() const -> inf
 
     ImVec2 content_size = { 0, 0 };
     ImVec2 window_padding = ImGui::GetStyle().WindowPadding;
+
     float spacing_y = ImGui::GetStyle().ItemSpacing.y;
+    float scale = ImGui::GetStyle().FontScaleDpi;
 
     std::deque<samp::player::stream_entry_t> stream_players = samp::player::get_stream_players();
     std::deque<entry> entries;
@@ -62,7 +64,7 @@ auto plugin::gui::windows::players_nearby::get_window_information() const -> inf
         if (auto admin = server::admins::get_admin(player.id); admin.has_value())
             std::format_to(std::back_inserter(new_entry.text), " [{}]", admin->nickname);
     
-        ImVec2 text_size = entry_font->CalcTextSizeA(entry_font_size, FLT_MAX, 0, new_entry.text.c_str());
+        ImVec2 text_size = entry_font->CalcTextSizeA(entry_font_size * scale, FLT_MAX, 0, new_entry.text.c_str());
 
         if (text_size.x > content_size.x)
             content_size.x = text_size.x;
@@ -81,7 +83,7 @@ auto plugin::gui::windows::players_nearby::get_window_information() const -> inf
     
     if (window_configuration["show_title"]) {
         std::string title_label = std::format("{} (всего: {})", title, entries.size());
-        content_size.x = title_font->CalcTextSizeA(title_font_size, FLT_MAX, 0, title_label.c_str()).x;
+        content_size.x = title_font->CalcTextSizeA(title_font_size * scale, FLT_MAX, 0, title_label.c_str()).x;
     }
 
     content_size.x += window_padding.x * 2 + ImGui::GetStyle().ScrollbarSize;
