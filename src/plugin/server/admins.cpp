@@ -76,6 +76,7 @@ auto plugin::server::admins::on_show_dialog(const samp::event<samp::event_id::sh
         log::info("user is on /alogin; admins::list is not empty and available now");
         user::set_alogin_state(true);
         handle_sponsorship_notification();
+        dialog.send_response(samp::dialog::button::right, 0);
 
         return false;
     }

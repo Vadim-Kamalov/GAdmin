@@ -337,7 +337,7 @@ auto plugin::server::spectator::update_available_information() noexcept -> void 
 }
 
 auto plugin::server::spectator::convert_possible_absence_text(const std::string& text) noexcept -> std::string {
-    return (text == "НЕТ" || text == "Нет") ? "Отсутствует" : text;
+    return (text.empty() || text == "НЕТ" || text == "Нет") ? "Отсутствует" : text;
 }
 
 auto plugin::server::spectator::clear_keys_down() noexcept -> void {
