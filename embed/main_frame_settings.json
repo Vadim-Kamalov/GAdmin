@@ -274,6 +274,7 @@
         "display_id_in_chat": { "_type": "bool", "_name": "Отображать ID в IC чате" },
         "auto_alogin": { "_type": "bool", "_name": "/alogin после спавна" },
         "swap_layout": { "_type": "bool", "_name": "Исправление раскладки при вводе команды" },
+        "fix_input_open": { "_type": "bool", "_name": "Исправление открытия чата на T" },
         "auto_login": {
             "_type": "subsection",
             "_name": "Автоматический ввод паролей",

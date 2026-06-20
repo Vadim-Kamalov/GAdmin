@@ -1,3 +1,21 @@
+/// GAdmin - Plugin simplifying the work of administrators on the Gambit-RP
+/// Copyright (C) 2023-2026 The Contributors.
+///
+/// This program is free software: you can redistribute it and/or modify
+/// it under the terms of the GNU General Public License as published by
+/// the Free Software Foundation, either version 3 of the License, or
+/// (at your option) any later version.
+///
+/// This program is distributed in the hope that it will be useful,
+/// but WITHOUT ANY WARRANTY; without even the implied warranty of
+/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+/// GNU General Public License for more details.
+///
+/// You should have received a copy of the GNU General Public License
+/// along with this program. If not, see <https://www.gnu.org/licenses/>.
+///
+/// SPDX-License-Identifier: GPL-3.0-only
+
 #include "plugin/misc/misc.h"
 #include "plugin/misc/features/swap_layout.h"
 #include "plugin/misc/features/auto_aa_command.h"
@@ -7,6 +25,7 @@
 #include "plugin/misc/features/death_notify_in_chat.h"
 #include "plugin/misc/features/display_id_in_chat.h"
 #include "plugin/misc/features/fish_eye.h"
+#include "plugin/misc/features/fix_input_open.h"
 #include "plugin/misc/features/hide_addresses.h"
 #include "plugin/misc/features/information_render.h"
 #include "plugin/misc/features/mentions.h"
@@ -58,6 +77,7 @@ auto plugin::misc::initializer::on_samp_initialize() -> void {
 
 plugin::misc::initializer::initializer() {
     features.push_back(std::make_unique<features::swap_layout>());
+    features.push_back(std::make_unique<features::fix_input_open>());
     features.push_back(std::make_unique<features::auto_login>());
     features.push_back(std::make_unique<features::auto_alogin>());
     features.push_back(std::make_unique<features::auto_alogout>());
