@@ -236,9 +236,10 @@ auto plugin::gui::windows::main::frames::presets::render_status_banner(const nlo
     // Draw the icon with the `icon` font (regular lacks its glyphs — would show "?"), text with regular.
     ImVec2 pos = ImGui::GetCursorScreenPos();
     float line_height = ImGui::GetTextLineHeight();
-    ImVec2 glyph_size = icon_font->CalcTextSizeA(common_font_size, FLT_MAX, 0.0f, glyph);
+    float scale = ImGui::GetStyle().FontScaleDpi;
+    ImVec2 glyph_size = icon_font->CalcTextSizeA(common_font_size * scale, FLT_MAX, 0.0f, glyph);
 
-    ImGui::GetWindowDrawList()->AddText(icon_font, common_font_size,
+    ImGui::GetWindowDrawList()->AddText(icon_font, common_font_size * scale,
                                         { pos.x, pos.y + (line_height - glyph_size.y) / 2.0f }, color, glyph);
 
     ImGui::Dummy({ glyph_size.x + ImGui::GetStyle().ItemSpacing.x, line_height });
@@ -568,7 +569,7 @@ auto plugin::gui::windows::main::frames::presets::render_hotkeys_section(nlohman
         if (!editor_search.contains(editor.label))
             continue;
 
-        editor.render({ 160.0f, buttons_height });
+        editor.render({ 160.0f, ImGui::GetFrameHeight() });
         ImGui::SameLine();
         ImGui::AlignTextToFramePadding();
 
@@ -613,13 +614,14 @@ auto plugin::gui::windows::main::frames::presets::render_player_checker_body(nlo
     ImGui::EndChild();
 
     float full_width = ImGui::GetContentRegionAvail().x;
+    float frame_height = ImGui::GetFrameHeight();
     float add_button_width = 140.0f;
 
     ImGui::SetNextItemWidth(full_width - add_button_width - ImGui::GetStyle().ItemSpacing.x);
     ImGui::InputTextWithHint("##presets_pc_nick", "Никнейм игрока", &pc_nickname_input);
     ImGui::SameLine();
 
-    if (gui::widgets::button("Добавить##presets_pc_add", { add_button_width, ImGui::GetFrameHeight() }).render()
+    if (gui::widgets::button("Добавить##presets_pc_add", { add_button_width, frame_height }).render()
         && !pc_nickname_input.empty())
     {
         players.push_back({ { "nickname", pc_nickname_input }, { "description", "" } });
@@ -638,7 +640,7 @@ auto plugin::gui::windows::main::frames::presets::render_player_checker_body(nlo
             pending_save = true;
         }
 
-        if (gui::widgets::button("Удалить выбранного##presets_pc_del", { full_width, buttons_height }).render()) {
+        if (gui::widgets::button("Удалить выбранного##presets_pc_del", { full_width, frame_height }).render()) {
             players.erase(pc_selected_index);
             pc_selected_index = 0;
             pc_description_input.clear();
@@ -655,26 +657,28 @@ auto plugin::gui::windows::main::frames::presets::frame_renderer(std::string& la
 
     ImGui::PushFont(regular_font, common_font_size);
     {
+        float frame_height = ImGui::GetFrameHeight();
+
         render_editable_name(label, preset["name"].get_ref<std::string&>());
         render_status_banner(preset, current);
 
         // The single key that applies this whole preset.
         if (gui::hotkey* preset_hotkey = find_pool_hotkey(preset_hotkey_label(preset.value("id", -1)))) {
             gui::widgets::text(regular_font, common_font_size, 0, "Горячая клавиша применения:");
-            preset_hotkey->render({ full_width, buttons_height });
+            preset_hotkey->render({ full_width, frame_height });
             gui::widgets::hint::render_as_guide("ЛКМ — задать клавишу, ПКМ — условия активации");
         }
 
         // The bordered settings editor fills the middle, leaving room for the stacked action
         // footer below (three full-width buttons + the spacing between them).
         float spacing = ImGui::GetStyle().ItemSpacing.y;
-        float footer_reserve = buttons_height * 3.0f + spacing * 3.0f;
+        float footer_reserve = frame_height * 3.0f + spacing * 3.0f;
         render_editor(preset, footer_reserve);
 
         // Action buttons stacked full-width: apply / write the current settings into the preset / delete.
         bool active_and_applied = static_cast<int>(current) == get_active_index() && preset_matches_live(preset);
         std::string apply_label = active_and_applied ? "Применить заново" : "Применить";
-        ImVec2 button_size = { full_width, buttons_height };
+        ImVec2 button_size = { full_width, frame_height };
 
         if (gui::widgets::button(apply_label + "##frames::presets-apply-" + index, button_size)
                 .without_click_animation().render())

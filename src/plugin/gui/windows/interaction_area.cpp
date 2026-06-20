@@ -263,7 +263,7 @@ auto plugin::gui::windows::interaction_area::render_search_description(ImDrawLis
         render_stroked_text(draw_list, font, { x, y }, active_color, line.c_str());
     }
 
-    float ignore_x = center.x - regular_font->CalcTextSizeA(fonts_size, FLT_MAX, 0.0f, ignore_line.c_str()).x / 2;
+    float ignore_x = center.x - regular_font->CalcTextSizeA(fonts_size * scale, FLT_MAX, 0.0f, ignore_line.c_str()).x / 2;
     float ignore_y = center.y + radius + 20 + fonts_size;
 
     render_stroked_text(draw_list, regular_font, { ignore_x, ignore_y }, active_color, ignore_line.c_str());
