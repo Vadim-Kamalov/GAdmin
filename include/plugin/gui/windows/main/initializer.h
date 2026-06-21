@@ -52,6 +52,12 @@ private:
 
     auto on_send_command(const samp::out_event<samp::event_id::send_command>& event) -> bool;
 public:
+    /// Window size in frame heights. The presets tab widens the window for its editor; the
+    /// selector is pinned to the default width (see frame_selector), so only the editor grows.
+    static constexpr float default_width_frame_heights = 29.0f;
+    static constexpr float presets_width_frame_heights = 32.0f;
+    static constexpr float window_height_frame_heights = 18.0f;
+
     /// Currently active frame.
     frame active_frame = frame::home;
 

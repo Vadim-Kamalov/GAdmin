@@ -55,6 +55,9 @@ private:
     /// Embedded presets manager rendered when the presets section is selected.
     std::unique_ptr<presets> presets_component;
 
+    /// Submenu index of the presets entry, used to widen the window on that sub-tab.
+    std::size_t presets_entry_index = 0;
+
     ImFont* bold_font = nullptr;
     ImFont* regular_font = nullptr;
 
@@ -92,6 +95,9 @@ public:
     }; // enum class item_type : std::uint8_t
 
     auto render() -> void override;
+
+    /// The presets editor needs the wider window layout; other settings sections do not.
+    auto wants_wide_window() const -> bool override;
 
     /// Construct the frame.
     ///

@@ -32,6 +32,9 @@ public:
     /// Render the frame.
     virtual auto render() -> void = 0;
 
+    /// Whether this frame needs the wider window layout (see initializer). Defaults to no.
+    virtual auto wants_wide_window() const -> bool { return false; }
+
     /// Process SA:MP event.
     /// 
     /// @param event[in] SA-MP event information.

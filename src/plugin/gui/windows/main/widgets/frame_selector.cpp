@@ -23,7 +23,10 @@
 #include "plugin/gui/widgets/text.h"
 
 auto plugin::gui::windows::main::widgets::frame_selector::compute_width_on_state(bool state) const -> float {
-    return (default_percentage_on_state[state] * child->window_size.x) / 100.0f;
+    // Anchor the selector to the default window width, not the live one: the presets tab widens
+    // the window, and we want the side selector (and its icons) to stay put — only the editor grows.
+    float base_width = initializer::default_width_frame_heights * ImGui::GetFrameHeight();
+    return (default_percentage_on_state[state] * base_width) / 100.0f;
 }
 
 auto plugin::gui::windows::main::widgets::frame_selector::update_state_width() -> void {

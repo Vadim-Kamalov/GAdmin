@@ -148,7 +148,12 @@ auto plugin::gui::windows::main::initializer::render() -> void {
     float frame_height = ImGui::GetFrameHeight();
 
     ImGui::SetNextWindowPos({ size_x / 2.0f, size_y / 2.0f }, ImGuiCond_FirstUseEver, { 0.5f, 0.5f });
-    ImGui::SetNextWindowSize({ 29 * frame_height, 18 * frame_height });
+    // Let the active frame ask for the wider layout (only the presets editor does); other tabs
+    // keep the default width.
+    bool wide = frames[std::to_underlying(active_frame)]->wants_wide_window();
+    float width_frame_heights = wide ? presets_width_frame_heights : default_width_frame_heights;
+
+    ImGui::SetNextWindowSize({ width_frame_heights * frame_height, window_height_frame_heights * frame_height });
 
     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, window_alpha / 255.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, 0 });

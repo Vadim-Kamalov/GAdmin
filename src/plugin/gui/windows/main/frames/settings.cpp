@@ -299,6 +299,7 @@ plugin::gui::windows::main::frames::settings::settings(types::not_null<initializ
     }
 
     presets_component = std::make_unique<presets>(child, this);
+    presets_entry_index = submenu.get_total_entries();
     submenu.add_entry(std::string("Пресеты##") + presets_section_key, std::make_any<int>(0));
 
     submenu.set_frame_renderer([this](std::string& label, std::any& payload) {
@@ -323,6 +324,10 @@ plugin::gui::windows::main::frames::settings::settings(types::not_null<initializ
         ImGui::EndGroup();
         ImGui::PopFont();
     });
+}
+
+auto plugin::gui::windows::main::frames::settings::wants_wide_window() const -> bool {
+    return submenu.get_current_entry_index() == presets_entry_index;
 }
 
 plugin::gui::windows::main::frames::settings::~settings() = default;
