@@ -106,20 +106,18 @@ auto plugin::gui_initializer::set_cursor_mode_hooked(const decltype(set_cursor_m
     int current_cursor_mode = samp::game::cursor_mode_offsets->read(game);
     int result = hook.call_trampoline(game, mode, immediately_hide);
 
+    // Yield our cursor while our own menu holds it and a foreign SA-MP cursor (dialog, chat,
+    // scoreboard) appears, so the two don't stack. Gated on cursor_active (our own intent), not
+    // GetCursor(): the latter reads active for any foreign cursor and made us react to all of them.
     if ((mode == 2 || mode == 3) && is_cursor_active() && !cursor_state_intercepted) {
         cursor_state_intercepted = true;
         game::cursor::set_state(false);
         return result;
     }
 
-    if (!is_cursor_active() && mode == 0 && current_cursor_mode != 0 && cursor_state_intercepted) {
-        POINT cursor_pos;    
-        GetCursorPos(&cursor_pos);
-
-        cursor_last_x = cursor_pos.x;
-        cursor_last_y = cursor_pos.y;
+    // Restore our cursor once that foreign cursor is gone and our menu still holds it.
+    if (is_cursor_active() && mode == 0 && current_cursor_mode != 0 && cursor_state_intercepted) {
         cursor_state_intercepted = false;
-        
         enable_cursor();
     }
 
@@ -256,14 +254,16 @@ auto plugin::gui_initializer::render() const -> void {
 }
 
 auto plugin::gui_initializer::main_loop() -> void {
-    if (is_cursor_active())
+    // Re-assert our cursor while our own menu holds it. Skip while we yielded to a foreign SA-MP
+    // cursor (cursor_state_intercepted); re-asserting then would fight the intercept hook.
+    if (is_cursor_active() && !cursor_state_intercepted)
         game::cursor::set_state(true);
 
     hotkey_handler->main_loop();
 }
 
 auto plugin::gui_initializer::is_cursor_active() const -> bool {
-    return GetCursor() != nullptr;
+    return cursor_active;
 }
 
 auto plugin::gui_initializer::center_cursor() -> void {
@@ -277,8 +277,9 @@ auto plugin::gui_initializer::center_cursor() -> void {
 }
 
 auto plugin::gui_initializer::enable_cursor() -> void {
+    cursor_active = true;
     game::cursor::set_state(true);
-    
+
     if (cursor_last_x == -1 || cursor_last_y == -1)
         return;
 
@@ -291,6 +292,11 @@ auto plugin::gui_initializer::disable_cursor() -> void {
     game::cursor::set_state(false);
     GetCursorPos(&cursor_pos);
 
+    // Also clear the intercept latch: our cursor is fully off now, so a later foreign SA-MP cursor
+    // must be able to trigger the intercept hook again (otherwise it would stay stuck and we would
+    // stop yielding to dialogs/chat).
+    cursor_active = false;
+    cursor_state_intercepted = false;
     cursor_last_x = cursor_pos.x;
     cursor_last_y = cursor_pos.y;
 }
