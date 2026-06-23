@@ -216,7 +216,7 @@ auto plugin::misc::statistics_t::write(const std::filesystem::path& path) -> voi
 
             std::uint8_t opcode = (static_cast<std::uint8_t>(type) << 1) | OPCODE_ENTRY;
 
-            if (!write_value(file, opcode) || !write_value(file, size)) {
+            if (!write_value(file, opcode) || !write_value(file, static_cast<std::uint8_t>(size))) {
                 log::error("statistics_t::write: failed to write OPCODE_ENTRY or size for entry type {}", type);
                 send_read_write_error(file, path);
                 return;
