@@ -52,6 +52,10 @@ private:
     int cursor_last_y = -1;
     bool cursor_state_intercepted = false;
 
+    // Source of truth for our own cursor visibility. Not GetCursor(): that reads active for any
+    // foreign cursor (SA-MP dialog/chat, other scripts), causing double cursor and camera desync.
+    bool cursor_active = false;
+
 #ifndef NDEBUG
     auto show_debug_window() const -> void;
 #endif // !defined(NDEBUG)
