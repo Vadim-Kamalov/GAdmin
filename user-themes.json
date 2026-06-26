@@ -78,5 +78,21 @@
         "yellow": "FF2199D7"
       }
     }
+  },
+  {
+    "name": "Серая тема",
+    "author": "DEV_defaultzone",
+    "theme": {
+      "interface_colors": {
+        "surface": [ "FF292929", "FF1E1E1E" ],
+        "text": [ "FFD9D9D9", "FF636363" ],
+        "overlay": [ "FF3D3D3D", "FF4D4D4D", "FF676767" ]
+      },
+      "accent_colors": {
+        "red": "FF6A61BF",
+        "green": "FF8CBEA3",
+        "yellow": "FF8BCBEB"
+      }
+    }
   }
 ]
