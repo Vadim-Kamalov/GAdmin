@@ -26,6 +26,15 @@
 #include "plugin/plugin.h"
 #include <misc/cpp/imgui_stdlib.h>
 
+auto plugin::gui::windows::report::frames::current_report::get_answer_input_flags() -> ImGuiInputTextFlags {
+    ImGuiInputTextFlags flags = ImGuiInputTextFlags_WordWrap | ImGuiInputTextFlags_EnterReturnsTrue;
+
+    if ((*configuration)["windows"]["report"]["ctrl_enter_for_new_line"])
+        flags |= ImGuiInputTextFlags_CtrlEnterForNewLine;
+
+    return flags;
+}
+
 auto plugin::gui::windows::report::frames::current_report::spectate_hotkey_callback(hotkey&) -> void {
     if (!server::user::is_on_alogin() || child->controls.initializer_details.window_alpha == 0)
         return;
@@ -235,8 +244,8 @@ auto plugin::gui::windows::report::frames::current_report::render_inputs(const I
     float answer_input_height = ImGui::GetContentRegionAvail().y - (frame_height + item_spacing.y) * 2;
     ImVec2 answer_input_size = { left_group_width - frame_height * 1.5f - item_spacing.x, answer_input_height };
 
-    if (ImGui::InputTextMultiline("##answer", &controls_details.answer_input, answer_input_size,
-                                  ImGuiInputTextFlags_WordWrap | ImGuiInputTextFlags_EnterReturnsTrue) && verify_user_input())
+    if (ImGui::InputTextMultiline("##answer", &controls_details.answer_input, answer_input_size, get_answer_input_flags())
+        && verify_user_input())
     {    
         child->network.send_answer(controls_details.answer_input);
     }

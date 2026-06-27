@@ -59,6 +59,8 @@ private:
     std::chrono::steady_clock::time_point time_hint_active;
     float left_group_width = 0.0f;
 
+    static auto get_answer_input_flags() -> ImGuiInputTextFlags;
+
     auto spectate_hotkey_callback(hotkey&) -> void;
     auto hint_renderer() -> void;
     auto get_report_active_time() const -> std::string;

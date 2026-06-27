@@ -103,6 +103,7 @@
         "report": {
             "use": true,
             "notify": true,
+            "ctrl_enter_for_new_line": false,
             "sound_notify": true,
             "enable_previous_answers_frame": true,
             "enable_user_all_answers_frame": true,

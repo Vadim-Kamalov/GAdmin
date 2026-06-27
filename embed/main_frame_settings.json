@@ -141,6 +141,7 @@
             "_name": "Улучшенный /greport",
             "notify": { "_type": "bool", "_name": "Показывать оповещение" },
             "sound_notify": { "_type": "bool", "_name": "Звуковое оповещение" },
+            "ctrl_enter_for_new_line": { "_type": "bool", "_name": "Отправлять ответ на Enter" },
             "enable_previous_answers_frame": { "_type": "bool", "_name": "Отображать вкладу прошлых ответов" },
             "enable_user_all_answers_frame": { "_type": "bool", "_name": "Отображать вкладку Ваших ответов" },
             "enable_gps_frame": { "_type": "bool", "_name": "Отображать вкладку с GPS" },
