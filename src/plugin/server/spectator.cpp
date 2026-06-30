@@ -139,7 +139,7 @@ auto plugin::server::spectator::on_remove_3d_text(const samp::event<samp::event_
 
 auto plugin::server::spectator::on_show_dialog(const samp::event<samp::event_id::show_dialog>& dialog) -> bool {
     static constexpr ctll::fixed_string warnings_pattern = "Предупреждения: (\\d+)";
-    static constexpr ctll::fixed_string start_pattern = "Информация о игроке (.+)\\[(\\d+)]";
+    static constexpr ctll::fixed_string start_pattern = "Информация о игроке (\\S+)\\[(\\d+)]";
 
     std::string text = string_utils::remove_samp_colors(dialog.text);
     auto dialog_start = types::u8regex::search<start_pattern>(text);
