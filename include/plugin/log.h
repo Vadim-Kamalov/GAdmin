@@ -103,6 +103,14 @@ public:
     template<typename... Args>
     static auto error(std::format_string<Args...> fmt, Args&&... args) noexcept -> void;
 
+    /// Log fatal error message without unloading the plugin.
+    ///
+    /// @tparam Args    Types of format arguments.
+    /// @param fmt[in]  Format string.
+    /// @param args[in] Format arguments.
+    template<typename... Args>
+    static auto fatal_without_unload(std::format_string<Args...> fmt, Args&&... args) noexcept -> void;
+
     /// Log fatal error message and unload (free) the plugin.
     ///
     /// @tparam Args    Types of format arguments.
@@ -149,6 +157,11 @@ inline auto plugin::log::warn(std::format_string<Args...> fmt, Args&&... args) n
 template<typename... Args>
 inline auto plugin::log::error(std::format_string<Args...> fmt, Args&&... args) noexcept -> void {
     write_callback(std::format(fmt, std::forward<Args>(args)...), message_severity::error);
+}
+
+template<typename... Args>
+inline auto plugin::log::fatal_without_unload(std::format_string<Args...> fmt, Args&&... args) noexcept -> void {
+    write_callback(std::format(fmt, std::forward<Args>(args)...), message_severity::fatal_error);
 }
 
 template<typename... Args>

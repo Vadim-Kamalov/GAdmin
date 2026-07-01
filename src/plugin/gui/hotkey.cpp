@@ -407,6 +407,6 @@ auto plugin::gui::hotkey_handler::on_event(unsigned int message, WPARAM wparam, 
 }
 
 auto plugin::gui::hotkey_handler::add(hotkey& hotkey) -> void {
-    log::info("hotkey \"{}\" initialized: key_bind = 0x{:08X}", hotkey.label, hotkey.bind.join());
+    log::info("hotkey \"{}\" [with bind = 0x{:08X}] initialized", hotkey.label, hotkey.bind.join());
     pool.push_back(hotkey.with_handler(this));
 }

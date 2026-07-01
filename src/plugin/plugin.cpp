@@ -17,6 +17,7 @@
 /// SPDX-License-Identifier: GPL-3.0-only
 
 #include "plugin/plugin.h"
+#include "plugin/exception_handler.h"
 #include "plugin/gui/icon.h"
 #include "plugin/gui/notify.h"
 #include "plugin/samp/core/net_game.h"
@@ -27,15 +28,9 @@
 #include "plugin/server/spectator.h"
 #include "plugin/server/user.h"
 #include <common/common.h>
-#include <errhandlingapi.h>
-#include <dbghelp.h>
-#include <exception>
 #include <imgui.h>
 #include <format>
-#include <minwindef.h>
-#include <psdk_inc/_dbg_common.h>
 #include <windows.h>
-#include <psapi.h>
 
 using namespace std::chrono_literals;
 
@@ -86,14 +81,12 @@ auto plugin::plugin_initializer::on_frame() -> void {
 }
 
 auto plugin::plugin_initializer::on_message(unsigned int message, WPARAM wparam, LPARAM lparam) -> bool {
-    if (!gui->on_event(message, wparam, lparam))
+    if (!gui->on_event(message, wparam, lparam) ||
+        !cheats_initializer->on_event(message, wparam, lparam) ||
+        !misc_initializer->on_event(message, wparam, lparam))
+    {
         return false;
-    
-    if (!cheats_initializer->on_event(message, wparam, lparam))
-        return false;
-
-    if (!misc_initializer->on_event(message, wparam, lparam))
-        return false;
+    }
 
     return true;
 }
@@ -101,10 +94,16 @@ auto plugin::plugin_initializer::on_message(unsigned int message, WPARAM wparam,
 auto plugin::plugin_initializer::on_samp_initialize() -> void {
     using namespace plugin::gui;
 
-    log::info("samp::net_game::instance() != nullptr: SA:MP {} initialized", samp::get_version());
+    log::info("SA:MP {} initialized", samp::get_version());
 
     if (!is_connected_to_valid_server()) {
-        log::fatal("plugin works only on \"sa.gambit-rp.ru:7777\" server");
+        log::fatal_without_unload("GAdmin does not support the server to which you are connected. Supported servers are listed below:");
+
+        for (const auto& address : allowed_ip_addresses)
+            log::fatal_without_unload("| {}", address);
+
+        log::fatal("unloading the plugin");
+
         return;
     }
 
@@ -130,10 +129,11 @@ auto plugin::plugin_initializer::main_loop() -> void {
     cheats_initializer->main_loop();
     misc_initializer->main_loop();
 
-    if (!samp_initialized && samp::get_base() != 0 && samp::net_game::instance_container->read() != 0) {
-        on_samp_initialize();
-        samp_initialized = true;
-    }
+    if (samp_initialized || samp::get_base() == 0 || samp::net_game::instance_container->read() == 0)
+        return;
+
+    on_samp_initialize();
+    samp_initialized = true;
 }
 
 auto plugin::plugin_initializer::initialize_event_handler() -> void {
@@ -151,6 +151,7 @@ auto plugin::plugin_initializer::create_and_initialize_files() -> void {
         
         std::filesystem::create_directories(game_path / "gadmin" / "resources");
         std::filesystem::create_directory(game_path / "gadmin" / "configuration");
+        log::info("created (if not existed) \"gadmin / {{resources,configuration}}\" directories");
         
         configuration = std::make_unique<configuration_initializer>(game_path / "gadmin" / "configuration" / "main.mpk");
     } catch (const std::exception& e) {
@@ -158,182 +159,27 @@ auto plugin::plugin_initializer::create_and_initialize_files() -> void {
     }
 }
 
-auto plugin::plugin_initializer::on_terminate() noexcept -> void {
-    try {
-        if (std::exception_ptr eptr = std::current_exception()) {
-            std::rethrow_exception(eptr);
-        }
-    } catch (const std::exception& e) {
-        log::error("plugin terminated via std::terminate_handler (FATAL)");
-        log::error("details (std::exception::what): {}", e.what());
-    } catch (...) {
-        log::error("plugin terminated via std::terminate_handler: unknown exception caught (FATAL)");
-    }
-}
-
-auto __stdcall plugin::plugin_initializer::on_unhandled_exception(EXCEPTION_POINTERS* exception_info)
-    noexcept -> long
-{
-    auto process = GetCurrentProcess();
-    auto thread = GetCurrentThread();
-    
-    DWORD code_exception = exception_info->ExceptionRecord->ExceptionCode;
-    PVOID address_exception = exception_info->ExceptionRecord->ExceptionAddress;
-
-    std::string module_name = "unknown module";
-    std::uintptr_t module_offset = 0;
-    {
-        MEMORY_BASIC_INFORMATION mbi;
-        if (VirtualQuery(address_exception, &mbi, sizeof(mbi))) {
-            char name[MAX_PATH];
-            if (GetModuleFileNameA(reinterpret_cast<HMODULE>(mbi.AllocationBase), name, sizeof(name))) {
-                module_name = name;
-                module_offset = reinterpret_cast<std::uintptr_t>(mbi.AllocationBase);
-            }
-        }
-    }
-
-    MODULEINFO module_info;
-    HMODULE modules[1024];
-    DWORD needed;
-    
-    if (EnumProcessModules(process, modules, sizeof(modules), &needed)) {
-        for (unsigned int i = 0; i < (needed / sizeof(HMODULE)); i++) {
-            char module_path[MAX_PATH];
-            if (GetModuleFileNameExA(process, modules[i], module_path, sizeof(module_path)) &&
-                GetModuleInformation(process, modules[i], &module_info, sizeof(MODULEINFO)))
-            {
-                SymLoadModuleEx(process, nullptr, module_path, nullptr, reinterpret_cast<DWORD64>(module_info.lpBaseOfDll), module_info.SizeOfImage, nullptr, 0);
-            }
-        }
-    }
-
-    log::error("unhandled exception (code: 0x{:08X}) occured at 0x{:08X} (in {} + 0x{:X})",
-               code_exception,
-               reinterpret_cast<std::uintptr_t>(address_exception),
-               module_name,
-               reinterpret_cast<std::uintptr_t>(address_exception) - module_offset);
-
-    log::error("registers:");
-    {
-        CONTEXT* context = exception_info->ContextRecord;
-        log::error("| eax: 0x{:08X} ebx: 0x{:08X} ecx: 0x{:08X}", context->Eax, context->Ebx, context->Ecx);
-        log::error("| edx: 0x{:08X} esi: 0x{:08X} edi: 0x{:08X}", context->Edx, context->Esi, context->Edi);
-        log::error("| esp: 0x{:08X} ebp: 0x{:08X} eip: 0x{:08X}", context->Esp, context->Ebp, context->Eip);
-        log::error("| eflags: 0x{:08X}", context->EFlags);
-    }
-
-    log::error("call stack:");
-    {
-        STACKFRAME64 stack;
-        
-        auto symbol = std::make_unique<SYMBOL_INFO>();
-        symbol->MaxNameLen = 255;
-        symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
-
-        auto line = std::make_unique<IMAGEHLP_LINE64>();
-        line->SizeOfStruct = sizeof(IMAGEHLP_LINE64);
-
-        DWORD displacement;
-        DWORD64 address;
-
-        stack.AddrPC.Offset = exception_info->ContextRecord->Eip;
-        stack.AddrPC.Mode = AddrModeFlat;
-        stack.AddrFrame.Offset = exception_info->ContextRecord->Ebp;
-        stack.AddrFrame.Mode = AddrModeFlat;
-        stack.AddrStack.Offset = exception_info->ContextRecord->Esp;
-        stack.AddrStack.Mode = AddrModeFlat;
-
-        for (unsigned int frame = 0; ; frame++) {
-            if (!StackWalk64(IMAGE_FILE_MACHINE_I386, process, thread, &stack, exception_info->ContextRecord,
-                             nullptr, SymFunctionTableAccess64, SymGetModuleBase64, nullptr))
-                break;
-
-            if (stack.AddrPC.Offset == 0)
-                break;
-
-            address = stack.AddrPC.Offset;
-
-            std::string output = "| ";
-            {
-                if (SymFromAddr(process, address, 0, symbol.get())) {
-                    std::format_to(std::back_inserter(output), "0x{:08X} [name: {}", static_cast<std::uintptr_t>(address), symbol->Name);
-
-                    if (SymGetLineFromAddr64(process, address, &displacement, line.get()))
-                        std::format_to(std::back_inserter(output), " file: {} line: {}", line->FileName, line->LineNumber);
-
-                    output.push_back(']');
-                } else {
-                    std::format_to(std::back_inserter(output), "0x{:08X} [no symbol found]", static_cast<std::uintptr_t>(address));
-                }
-
-                MODULEINFO module_info;
-                HMODULE module_handle = nullptr;
-            
-                if (GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-                                       reinterpret_cast<LPCSTR>(address), &module_handle))
-                {
-                    char module_name[MAX_PATH];
-                    
-                    GetModuleInformation(process, module_handle, &module_info, sizeof(module_info));
-                    GetModuleFileNameA(module_handle, module_name, sizeof(module_name));
-                    
-                    std::format_to(std::back_inserter(output), " (in {} + 0x{:X})", module_name,
-                                   address - reinterpret_cast<std::uintptr_t>(module_info.lpBaseOfDll));
-                }
-            }
-            log::error("{}", output);
-        }
-
-        SymCleanup(process);
-    }
-
-    log::error("loaded modules:");
-
-    if (EnumProcessModules(GetCurrentProcess(), modules, sizeof(modules), &needed)) {
-        for (unsigned int i = 0; i < (needed / sizeof(HMODULE)); i++) {
-            char name[MAX_PATH];
-            if (GetModuleInformation(process, modules[i], &module_info, sizeof(MODULEINFO))) {
-                GetModuleFileNameEx(process, modules[i], name, sizeof(name));
-                log::error("| base: 0x{:08X} size: 0x{:08X} entrypoint: 0x{:08X} name: {}",
-                           reinterpret_cast<std::uintptr_t>(module_info.lpBaseOfDll),
-                           module_info.SizeOfImage,
-                           reinterpret_cast<unsigned long>(module_info.EntryPoint),
-                           name);
-            }
-        }
-    }
-
-    log::error("plugin and process are terminated (FATAL)");
-
-    return EXCEPTION_EXECUTE_HANDLER;
-}
-
 auto plugin::plugin_initializer::is_connected_to_valid_server() noexcept -> bool {
-    static constexpr auto ip_addresses = std::to_array<std::string_view>({ "5.188.224.221",
-                                                                           "85.234.65.36" });
-
     if (samp::net_game::instance_container->read() == 0) {
         std::string command_line = GetCommandLineA();
-        return std::ranges::any_of(ip_addresses,
+        return std::ranges::any_of(allowed_ip_addresses,
             [&command_line](const std::string_view& ip_address) {
                 return command_line.contains(ip_address);
             });
     }
 
-    return std::ranges::contains(ip_addresses, samp::net_game::get_host_address());
+    return std::ranges::contains(allowed_ip_addresses, samp::net_game::get_host_address());
 }
 
 plugin::plugin_initializer::plugin_initializer() {
-    log::info("GAdmin v" PROJECT_VERSION " (" COMPILE_INFO ") loaded. Copyright (C) 2023-2026 The Contributors");
-    log::info("samp.dll base address: 0x{:X}", samp::get_base());
+    log::info("plugin::plugin_initializer initialized");
+    log::info("| GAdmin v" PROJECT_VERSION " (" COMPILE_INFO ") loaded");
+    log::info("| Copyright (C) 2023-2026 The Contributors");
 
     std::setlocale(LC_ALL, "Russian_Russia.UTF8");
     create_and_initialize_files();
     initialize_event_handler();
-
-    std::set_terminate(on_terminate);
-    SetUnhandledExceptionFilter(on_unhandled_exception);
+    exception_handler::initialize();
 
     gui = std::make_unique<gui_initializer>();
     cheats_initializer = std::make_unique<cheats::initializer>(gui.get());

@@ -48,22 +48,24 @@ auto plugin::samp::event_handler::rak_client_interface_constructor_hooked(const 
         incoming_rpc_handler_hook.set_dest(**incoming_rpc_handler_container);
         incoming_rpc_handler_hook.set_cb(std::bind(&event_handler::incoming_rpc_handler_hooked, this, _1, _2, _3, _4, _5));
         incoming_rpc_handler_hook.install();
+        log::info("hook \"event_handler::incoming_rpc_handler_hooked\" installed");
 
         v_table = *reinterpret_cast<void***>(rak_client_interface);
 
         outgoing_packet_handler_hook.set_dest(v_table[6]);
         outgoing_packet_handler_hook.set_cb(std::bind(&event_handler::outgoing_packet_handler_hooked, this, _1, _2, _3, _4, _5, _6));
         outgoing_packet_handler_hook.install();
+        log::info("hook \"event_handler::outgoing_packet_handler_hooked\" installed");
 
         incoming_packet_handler_hook.set_dest(v_table[8]);
         incoming_packet_handler_hook.set_cb(std::bind(&event_handler::incoming_packet_handler_hooked, this, _1, _2));
         incoming_packet_handler_hook.install();
+        log::info("hook \"event_handler::incoming_packet_handler_hooked\" installed");
 
         outgoing_rpc_handler_hook.set_dest(v_table[25]);
         outgoing_rpc_handler_hook.set_cb(std::bind(&event_handler::outgoing_rpc_handler_hooked, this, _1, _2, _3, _4, _5, _6, _7, _8));
         outgoing_rpc_handler_hook.install();
-
-        log::info("installed hooks on the next handlers: incoming_rpc, outgoing_rpc, incoming_packet, outgoing_packet");
+        log::info("hook \"event_handler::outgoing_rpc_handler_hooked\" installed");
     }
 
     return rak_client_interface;
@@ -229,7 +231,7 @@ auto plugin::samp::event_handler::main_loop() -> void {
     rak_client_interface_constructor_hook.set_cb(std::bind(&event_handler::rak_client_interface_constructor_hooked, this, std::placeholders::_1));
     rak_client_interface_constructor_hook.install();
 
-    log::info("hook \"RakClientInterface::RakClientInterface()\" installed");
+    log::info("hook \"event_handler::rak_client_interface_constructor_hooked\" installed");
 
     initialized = true;
 }

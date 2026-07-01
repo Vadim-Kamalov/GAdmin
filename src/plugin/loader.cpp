@@ -172,7 +172,7 @@ plugin::loader::loader() {
     DisableThreadLibraryCalls(reinterpret_cast<HMODULE>(&__ImageBase));
 
     log_handler.load_file(common::get_game_path() / "gadmin.log");
-    log::info("logging initialized");
+    log::info("plugin::log_handler initialized");
    
     if (!plugin_initializer::is_connected_to_valid_server()) {
         log::fatal("plugin works only on \"sa.gambit-rp.ru:7777\" server");

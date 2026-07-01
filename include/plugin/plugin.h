@@ -47,23 +47,20 @@ inline std::unique_ptr<misc::initializer> misc_initializer;
 /// This is the main entry point of the plugin, which handles:
 ///
 ///     - Initialization;
-///     - Logging;
 ///     - Components and subsystems initialization;
 ///     - Lifecycle;
 ///
 /// Plugin can be unloaded manually when reached no-return point.
 class plugin_initializer final {
 private:
-    std::mutex log_mutex;
-    std::ofstream log_file_stream;
+    static constexpr auto allowed_ip_addresses = std::to_array<std::string_view>({ "5.188.224.221",
+                                                                                   "85.234.65.36" });
+
     std::unique_ptr<gui_initializer> gui;
 
     auto on_samp_initialize() -> void;
     auto initialize_event_handler() -> void;
     auto create_and_initialize_files() -> void;
-    
-    static auto on_terminate() noexcept -> void;
-    static auto __stdcall on_unhandled_exception(EXCEPTION_POINTERS* exception_info) noexcept -> long;
 public:
     /// Check that the user is connected to a valid server. If this function is called
     /// when `samp::net_game::instance_container->read()` is equal to `nullptr`, it will
