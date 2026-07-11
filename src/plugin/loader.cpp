@@ -181,7 +181,7 @@ plugin::loader::loader() {
 
     log::set_unload_callback([this] { core.reset(nullptr); });
 
-    game_loop_hook.set_dest(0x53BEE0);
+    game_loop_hook.set_dest(0x53D030);
     game_loop_hook.set_cb(std::bind(&loader::game_loop_hooked, this, _1));
     ensure_hook_installed("loader::game_loop_hook", game_loop_hook.install());
 
