@@ -71,8 +71,10 @@ auto plugin::gui::windows::main::custom_settings::spectator_actions::render_line
                     
                     ImGui::SameLine(0, button_border_size);
 
-                    if (configure_button.render())
+                    if (configure_button.render()) {
+                        ImGui::SetScrollY(0);
                         selected_index = i;
+                    }
                 }
                 ImGui::EndGroup();
             }
