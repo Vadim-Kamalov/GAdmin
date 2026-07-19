@@ -138,7 +138,7 @@
         },
         "report": {
             "_type": "subsection",
-            "_name": "Улучшенный /greport",
+            "_name": "Улучшенный /reports",
             "notify": { "_type": "bool", "_name": "Показывать оповещение" },
             "sound_notify": { "_type": "bool", "_name": "Звуковое оповещение" },
             "ctrl_enter_for_new_line": { "_type": "bool", "_name": "Отправлять ответ на Enter" },
