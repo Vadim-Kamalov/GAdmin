@@ -28,8 +28,8 @@ FetchContent_Declare(imgui
 FetchContent_Declare(kthook
     GIT_REPOSITORY https://github.com/defaultzone/kthook.git
 
-    # fix(warning): 'thiscall' attribute is used for non-class method in kthook_x86_64_detail.hpp:42:42
-    GIT_TAG 4bac72d0ab429a46449b5827bc2342cebb4a590c
+    # fix(warning): unused-but-set-variable 'trampoline_size'
+    GIT_TAG 8e868172c5f5175d7e4c8563402f8a7312a61d39
 )
 
 FetchContent_Declare(json
