@@ -153,6 +153,12 @@ public:
     /// @param new_callback[in] Callback function.
     auto set_add_callback(add_callback_t new_callback) -> void;
 
+    /// Set the entry to render by its index after animation.
+    ///
+    /// @note            Always verify that new index is correct.
+    /// @param index[in] Index of the entry needed to set.
+    auto set_current_entry_animated(std::size_t index) -> void;
+
     /// Set custom renderer for frame entries.
     ///
     /// @param new_frame_renderer[in] Renderer function.

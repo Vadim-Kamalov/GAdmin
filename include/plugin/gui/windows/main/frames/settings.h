@@ -23,6 +23,7 @@
 #include "plugin/gui/windows/main/base/frame.h"
 #include "plugin/gui/windows/main/widgets/submenu.h"
 #include "plugin/gui/windows/main/widgets/popup.h"
+#include "plugin/gui/widgets/search.h"
 #include "plugin/types/not_null.h"
 #include "plugin/types/simple.h"
 #include <nlohmann/json.hpp>
@@ -40,14 +41,23 @@ private:
     static constexpr float common_text_size = 18;
     static constexpr float color_border_size = 3;
 
+    struct search_entry_t final {
+        std::size_t submenu_index;
+        std::string item_key;
+        std::string label;
+    }; // struct search_entry_t final
+
     static std::unordered_map<std::string, std::function<void(bool&)>> toggle_events;
 
     widgets::submenu submenu = widgets::submenu("Настройки##frames::settings");
     widgets::popup popup = widgets::popup("frames::settings::popup");
+    gui::widgets::search search = gui::widgets::search("frames::settings::search");
 
     nlohmann::ordered_json options;
     types::not_null<initializer*> child;
+
     std::string guide_hint_id = "";
+    std::string item_key_to_focus = "";
 
     /// Sentinel key used for the embedded presets section entry.
     static constexpr types::zstring_t presets_section_key = "__presets__";
@@ -61,6 +71,7 @@ private:
     ImFont* bold_font = nullptr;
     ImFont* regular_font = nullptr;
 
+    auto render_section_title(const std::string_view& name) const -> void;
     auto render_section_items(const std::string& key, nlohmann::ordered_json& items) -> void;
     
     auto render_subsection(const std::string_view& subsection_key, const std::string& subsection_name,
@@ -73,6 +84,9 @@ private:
     auto render_color(const std::string& label, nlohmann::json& setter) const -> void;
     auto render_custom(const std::string_view& id, nlohmann::json& setter) const -> void;
     auto render_boolean(const std::string_view& label, nlohmann::ordered_json& config, bool& setter) const -> void;
+
+    auto get_search_entries() const -> std::vector<search_entry_t>;
+    auto handle_controls() -> void;
 public:
     /// Render the editing widget for one option of the given meta type into `value`. Shared
     /// with the presets editor so the per-type rendering is not duplicated. `widget_id` must
