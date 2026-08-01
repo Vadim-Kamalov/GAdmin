@@ -22,6 +22,7 @@
 #include "plugin/types/string_iterator.h"
 #include "plugin/samp/core/input.h"
 #include "plugin/samp/core/user.h"
+#include "plugin/server/admins.h"
 #include "plugin/server/user.h"
 #include "plugin/gui/icon.h"
 #include "plugin/gui/notify.h"
@@ -95,8 +96,11 @@ auto plugin::gui::windows::command_requester::try_parse_request(const std::strin
                 try {
                     std::uint16_t new_receiver_id = std::stoul(argument);
 
-                    if (!samp::player_pool::is_connected(new_receiver_id))
+                    if (!samp::player_pool::is_connected(new_receiver_id)
+                        || server::admins::get_admin(new_receiver_id))
+                    {
                         return {};
+                    }
 
                     receiver_id = new_receiver_id;
                 } catch (const std::exception& e) {
