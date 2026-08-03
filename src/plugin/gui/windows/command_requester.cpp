@@ -21,7 +21,6 @@
 #include "plugin/samp/core/player_pool.h"
 #include "plugin/types/string_iterator.h"
 #include "plugin/samp/core/input.h"
-#include "plugin/samp/core/user.h"
 #include "plugin/server/admins.h"
 #include "plugin/server/user.h"
 #include "plugin/gui/icon.h"
@@ -146,7 +145,7 @@ auto plugin::gui::windows::command_requester::on_server_message(const samp::even
             return;
         }
 
-        if (color == 0xFF00C281 && try_handle_new_request(text))
+        if (color == 0xFF00C281 && (try_handle_new_request(text) || try_handle_request_reject(text)))
             return;
 
         try_handle_approved_request(text, color);
@@ -157,13 +156,13 @@ auto plugin::gui::windows::command_requester::on_server_message(const samp::even
 
 auto plugin::gui::windows::command_requester::try_handle_new_request(const std::string& text) -> bool {
     static constexpr ctll::fixed_string command_request_pattern = R"(\[A\d\] (.+)\[(\d+)\]: (/.*))";
-            
+
     if (auto matches = ctre::match<command_request_pattern>(text)) {
         std::string sender_nickname = matches.get<1>().str();
         std::uint16_t sender_id = std::stoi(matches.get<2>().str());
         std::string command = matches.get<3>().str();
 
-        if (sender_id == samp::user::get_id())
+        if (std::ranges::contains(rejected_requests, command, &rejected_request_t::full_command))
             return false;
 
         if (auto request_command = try_parse_request(command); request_command.has_value()) {
@@ -179,6 +178,9 @@ auto plugin::gui::windows::command_requester::try_handle_new_request(const std::
             current_request = { request_command->receiver_id, sender_nickname,
                                 sender_id, command, request_command->command };
 
+            if (sender_id == samp::user::get_id())
+                return true;
+
             if (command_requester_configuration["sound_notify"])
                 samp::audio::play_sound(samp::audio::sound_id::bell);
 
@@ -186,12 +188,12 @@ auto plugin::gui::windows::command_requester::try_handle_new_request(const std::
                 std::string description = std::format("Команда: {}. Принять можно в течении 5 секунд биндом на {}",
                                                       command, approve_request_hotkey.bind);
 
-                notification::button first_button("Принять", [&](auto) { approve_request(); });
-                notification::button second_button("Закрыть", [&](notification& it) { it.remove(); });
+                notification::button first_button("Принять", [&](auto& it) { approve_request(); it.remove(); });
+                notification::button second_button("Отклонить", [&](auto& it) { reject_request(); it.remove(); });
 
-                gui::notify::send(notification("Запрос команды от " + sender_nickname, description, ICON_CHAT_CIRCLE_CHECK)
+                notify::send(notification("Запрос команды от " + sender_nickname, description, ICON_CHAT_CIRCLE_CHECK)
                         .with_buttons(first_button, second_button)
-                        .with_condition([this]{ return current_request.has_value(); }));
+                        .with_condition([this]{ return has_request_and_sender_not_user(); }));
             }
             
             return true;
@@ -201,8 +203,32 @@ auto plugin::gui::windows::command_requester::try_handle_new_request(const std::
     return false;
 }
 
+auto plugin::gui::windows::command_requester::try_handle_request_reject(const std::string& text) -> bool {
+    using namespace std::chrono_literals;
+
+    static constexpr ctll::fixed_string pattern = R"(\[A\d\] (.+)\[\d+\]: (\d+), запрос отклонен\.)";
+
+    auto matches = types::u8regex::match<pattern>(text);
+
+    if (!matches || !current_request.has_value() || current_request->sender_id != std::stoul(matches.get_string<2>()))
+        return false;
+    
+    rejected_requests.push_back(rejected_request_t(*current_request));
+
+    if (current_request->sender_id == samp::user::get_id()) {
+        std::string description = std::format("Администратор {} отклонил ваш запрос. Повторить можно через 30 секунд.",
+                                              matches.get_string<1>());
+
+        notify::send(notification("Ваш запрос отклонен", description, ICON_CIRCLE_WARNING));
+    }
+
+    current_request = {};
+
+    return true;
+}
+
 auto plugin::gui::windows::command_requester::try_handle_approved_request(const std::string& text, const types::color& color) -> void {
-    if (!current_request.has_value())
+    if (!has_request_and_sender_not_user())
         return;
 
     static constexpr ctll::fixed_string answer_request_pattern = R"(\[A\] .+\[\d+\] ответил .+\[\d+\]: \S+ by (.+))";
@@ -236,7 +262,7 @@ auto plugin::gui::windows::command_requester::try_handle_approved_request(const 
 }
 
 auto plugin::gui::windows::command_requester::approve_request() -> void {
-    if (!current_request.has_value())
+    if (!has_request_and_sender_not_user())
         return;
 
     switch (current_request->command.type) {
@@ -268,10 +294,22 @@ auto plugin::gui::windows::command_requester::approve_request() -> void {
     current_request = {};
 }
 
-auto plugin::gui::windows::command_requester::render() -> void {
-    using namespace std::chrono_literals;
+auto plugin::gui::windows::command_requester::reject_request() -> void {
+    if (!has_request_and_sender_not_user())
+        return;
 
-    auto now = std::chrono::steady_clock::now();
+    samp::input::send_command("/a {}, запрос отклонен.", current_request->sender_id);
+    rejected_requests.push_back(rejected_request_t(*current_request));
+
+    current_request = {};
+}
+
+auto plugin::gui::windows::command_requester::has_request_and_sender_not_user() -> bool {
+    return current_request.has_value() && current_request->sender_id != samp::user::get_id();
+}
+
+auto plugin::gui::windows::command_requester::update_request_information(const std::chrono::steady_clock::time_point& now) -> void {
+    using namespace std::chrono_literals;
 
     if (!command_to_send.empty() && now >= time_to_send_command) {
         samp::input::send_command("{}", command_to_send);
@@ -280,12 +318,32 @@ auto plugin::gui::windows::command_requester::render() -> void {
 
     if (current_request.has_value() && now - time_request_sent >= 5s)
         current_request = {};
-    
-    auto command_requester_configuration = (*configuration)["misc"]["command_requester"];
+
+    for (auto it = rejected_requests.begin(); it != rejected_requests.end();) {
+        if (now >= it->time + 30s) {
+            if (it->sent_by_user)
+                notify::send(notification("Разрешено отправить запрос", "Предыдущий запрос: " + it->full_command, ICON_CIRCLE_HELP));
+
+            it = rejected_requests.erase(it);
+
+            continue;
+        }
+
+        it++;
+    }
+}
+
+auto plugin::gui::windows::command_requester::render() -> void {
+    using namespace std::chrono_literals;
+
+    auto now = std::chrono::steady_clock::now();
+    auto& command_requester_configuration = (*configuration)["misc"]["command_requester"];
+
+    update_request_information(now);
 
     if (!command_requester_configuration["use"] ||
         !command_requester_configuration["notify_by_window"] ||
-        !current_request.has_value() ||
+        !has_request_and_sender_not_user() ||
         !server::user::is_on_alogin())
     {
         return;
@@ -307,9 +365,10 @@ auto plugin::gui::windows::command_requester::render() -> void {
     {
         ImGui::PushFont(regular_font, fonts_size);
         {
-            ImGui::TextUnformatted(std::format("Запрос команды от {} · Принять - {}",
+            ImGui::TextUnformatted(std::format("Запрос от {} · Принять - {} · Отклонить - {}",
                                                current_request->sender_nickname,
-                                               approve_request_hotkey.bind).c_str());
+                                               approve_request_hotkey.bind,
+                                               reject_request_hotkey.bind).c_str());
 
             ImGui::PushFont(bold_font, fonts_size);
             {
@@ -341,6 +400,7 @@ auto plugin::gui::windows::command_requester::on_event(const samp::event_info& e
 
     return true;
 }
+
 auto plugin::gui::windows::command_requester::create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t {
     return std::make_unique<command_requester>(child);
 }
@@ -350,8 +410,12 @@ plugin::gui::windows::command_requester::command_requester(types::not_null<gui_i
       regular_font(child->fonts->regular),
       bold_font(child->fonts->bold)
 {
-    approve_request_hotkey = hotkey("Принятие формы", key_bind({ 'L', 0 }, bind_condition::on_alogin))
+    approve_request_hotkey = hotkey("Принять форму", key_bind({ 'L', 0 }, bind_condition::on_alogin))
         .with_callback([this](auto) { approve_request(); });
+    
+    reject_request_hotkey = hotkey("Отклонить форму", key_bind({ 'P', 0 }, bind_condition::on_alogin))
+        .with_callback([this](auto) { reject_request(); });
 
     child->hotkey_handler->add(approve_request_hotkey);
+    child->hotkey_handler->add(reject_request_hotkey);
 }
