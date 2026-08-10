@@ -129,7 +129,7 @@ auto plugin::loader::d3d9_present_hooked(const decltype(d3d9_present_hook)&, IDi
                                          const RECT*, const RECT*, HWND, const RGNDATA*)
     -> std::optional<HRESULT>
 {
-    if (core == nullptr || !core->can_initialize_render())
+    if (core == nullptr)
         return {};
 
     if (!initialized_imgui_render) {

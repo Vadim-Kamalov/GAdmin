@@ -87,12 +87,6 @@ public:
     /// @return          Whether the event should continue processing.
     auto on_event(const samp::event_info& event) -> bool;
 
-    /// Check if `gui_initializer` can initialize interface
-    /// without further problems, e.g. fonts availability.
-    ///
-    /// @return True if can initialize interface.
-    auto can_initialize_render() const -> bool;
-
     /// Process SA:MP initializing. Can be called only once since the plugin initialization.
     auto on_render_initialize() -> void;
     

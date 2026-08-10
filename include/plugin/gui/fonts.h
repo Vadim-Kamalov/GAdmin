@@ -31,42 +31,14 @@ namespace plugin::gui {
 class fonts_initializer final {
 private:
     static constexpr float default_font_size = 18.0f;
-    static constexpr std::uint8_t icon_font_index = 3;
-    static constexpr types::zstring_t filenames[4] = {
-        "notosans-regular.ttf", ///< ImFont* regular;
-        "notosans-bold.ttf",    ///< ImFont* bold;
-        "notosans-light.ttf",   ///< ImFont* light;
-        "coolicons.ttf"         ///< ImFont* icon;
-    }; // static constexpr std::string_view filenames[4]
-    
-    struct missing_font final {
-        std::filesystem::path path;
-        types::zstring_t filename;
-    }; // struct missing_font final
-    
-    std::queue<missing_font> missing_fonts;
-    std::jthread network_thread;
-
-    auto get_missing_fonts() const -> std::queue<missing_font>;
-    auto download_missing_fonts() -> void;
 public:
     ImFont* regular = nullptr; ///< Regular font.
     ImFont* bold = nullptr;    ///< Bold font.
     ImFont* light = nullptr;   ///< Light font.
     ImFont* icon = nullptr;    ///< Icon font.
 
-    /// Check if can assign fonts (`regular`, `bold`, `light` and `icon`)
-    /// to their actual values from their existing/downloaded font files.
-    ///
-    /// @return True if can assign fonts.
-    auto can_assign_fonts() const -> bool;
-
-    /// Assign values to the fonts (`regular`, `bold`, `light` and `icon`)
-    /// from their existing/downloaded font files.
+    /// Assign values to the fonts (`regular`, `bold`, `light` and `icon`).
     auto assign_fonts() -> void;
-
-    /// Construct font initializer and download missing fonts.
-    explicit fonts_initializer();
 }; // class fonts_initializer final
 
 } // namespace plugin::gui

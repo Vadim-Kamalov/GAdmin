@@ -19,75 +19,42 @@
 #include "plugin/gui/fonts.h"
 #include "plugin/gui/icon.h"
 #include <common/log.h>
-#include <common/network.h>
-#include <common/common.h>
-#include <functional>
-#include <ranges>
-
-auto plugin::gui::fonts_initializer::get_missing_fonts() const -> std::queue<missing_font> {
-    std::filesystem::path resources = common::get_game_path() / "gadmin" / "resources";
-    std::queue<missing_font> missing_fonts;
-
-    for (const auto& filename : filenames) {
-        std::filesystem::path font_path = resources / filename;
-
-        if (std::filesystem::exists(font_path))
-            continue;
-
-        missing_fonts.push({ font_path, filename });
-    }
-
-    return missing_fonts;
-}
-
-auto plugin::gui::fonts_initializer::download_missing_fonts() -> void {
-    while (!missing_fonts.empty()) {
-        missing_font& font = missing_fonts.front();
-        
-        if (!common::network::download_file(std::format(PROJECT_DATABASE "/resources/{}", font.filename),
-                                       font.path, network_thread.get_stop_token()))
-        {
-            log::fatal("failed to download the font from [ PROJECT_DATABASE / resources / {} ]", font.filename);
-            return;
-        }
-
-        missing_fonts.pop();
-    }
-}
 
 auto plugin::gui::fonts_initializer::assign_fonts() -> void {
+    static constexpr std::size_t icon_font_index = 3;
+    static constexpr std::initializer_list<std::initializer_list<std::uint8_t>> fonts_bytes = {
+        {
+#embed "../../../resources/notosans-regular.ttf"
+        },
+        {
+#embed "../../../resources/notosans-bold.ttf"
+        },
+        {
+#embed "../../../resources/notosans-light.ttf"
+        },
+        {
+#embed "../../../resources/coolicons.ttf"
+        }
+    }; // static constexpr std::initializer_list<std::initializer_list<std::uint8_t>> fonts_bytes
+
     ImFontAtlas* font_atlas = ImGui::GetIO().Fonts;
-    ImFont** fonts[] = { &regular, &bold, &light, &icon };
-    
-    std::filesystem::path resources = common::get_game_path() / "gadmin" / "resources";
+    ImFont** font_ptrs[] = { &regular, &bold, &light, &icon };
 
-    for (const auto& [ index, filename ] : filenames | std::views::enumerate) {
-        std::filesystem::path path = resources / filename;
-        std::string path_str = path.string();
+    ImFontConfig font_config;
+    font_config.FontDataOwnedByAtlas = false;
 
+    for (const auto& [ index, font ] : fonts_bytes | std::views::enumerate) {
         if (index == icon_font_index) {
-            const ImWchar icon_ranges[] = { ICON_MIN, ICON_MAX, 0 };
-            
-            *fonts[index] = font_atlas->AddFontFromFileTTF(path_str.c_str(), default_font_size, nullptr, icon_ranges);
-            log::info("loaded \"{}\" font", path_str);
-            
-            break;
+            ImWchar icon_ranges[] = { ICON_MIN, ICON_MAX, 0 };
+
+            *font_ptrs[index] = font_atlas->AddFontFromMemoryTTF(const_cast<std::uint8_t*>(font.begin()),
+                                                                 font.size(), default_font_size, &font_config,
+                                                                 icon_ranges);
+        
+            continue;
         }
 
-        *fonts[index] = font_atlas->AddFontFromFileTTF(path_str.c_str(), default_font_size);
-        log::info("loaded \"{}\" font", path_str);
+        *font_ptrs[index] = font_atlas->AddFontFromMemoryTTF(const_cast<std::uint8_t*>(font.begin()),
+                                                             font.size(), default_font_size, &font_config);
     }
-}
-
-auto plugin::gui::fonts_initializer::can_assign_fonts() const -> bool {
-    return missing_fonts.empty();
-}
-
-plugin::gui::fonts_initializer::fonts_initializer()
-    : missing_fonts(get_missing_fonts())
-{
-    if (missing_fonts.empty())
-        return;
-
-    network_thread = std::jthread(std::bind_front(&fonts_initializer::download_missing_fonts, this));
 }

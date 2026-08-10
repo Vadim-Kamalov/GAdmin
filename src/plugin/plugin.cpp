@@ -66,10 +66,6 @@ auto plugin::plugin_initializer::on_event(const samp::event_info& event) -> bool
     return true;
 }
 
-auto plugin::plugin_initializer::can_initialize_render() const -> bool {
-    return gui->can_initialize_render();
-}
-
 auto plugin::plugin_initializer::on_render_initialize() -> void {
     gui->on_initialize();
 }
