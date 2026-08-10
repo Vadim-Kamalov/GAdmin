@@ -143,6 +143,11 @@ auto plugin::gui::windows::main::widgets::submenu::set_add_callback(add_callback
     add_callback = std::move(new_callback);
 }
 
+auto plugin::gui::windows::main::widgets::submenu::set_current_entry_animated(std::size_t index) -> void {
+    future_entry_index = index;
+    time_clicked = std::chrono::steady_clock::now();
+}
+
 auto plugin::gui::windows::main::widgets::submenu::set_frame_renderer(frame_renderer_t new_frame_renderer) -> void {
     frame_renderer = std::move(new_frame_renderer);
 }

@@ -21,6 +21,7 @@
 #include "plugin/gui/widgets/hint.h"
 #include "plugin/gui/widgets/text_button.h"
 #include "plugin/gui/widgets/toggle_button.h"
+#include "plugin/gui/widgets/button.h"
 #include "plugin/gui/widgets/text.h"
 #include "plugin/gui/windows/main/custom_settings/message_recolorer.h"
 #include "plugin/gui/windows/main/custom_settings/report.h"
@@ -57,6 +58,17 @@ std::unordered_map<std::string, std::function<void(bool&)>> plugin::gui::windows
     }}
 }; // std::unordered_map<std::string, std::function<void(bool&)>> plugin::gui::windows::main::frames::settings::toggle_events
 
+auto plugin::gui::windows::main::frames::settings::render_section_title(const std::string_view& name) const -> void {
+    gui::widgets::text(bold_font, section_title_font_size, 0, "{}", name);
+    ImGui::PushFont(regular_font, common_text_size);
+    {
+        ImGui::SameLine(0, 5);
+        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 4);
+        ImGui::TextDisabled("подсказка: поиск - Ctrl + F");
+    }
+    ImGui::PopFont();
+}
+
 auto plugin::gui::windows::main::frames::settings::render_section_items(const std::string& key, nlohmann::ordered_json& items) -> void {
     for (const auto& [ item_key, item ] : items.items()) {
         if (item_key.starts_with('_'))
@@ -90,11 +102,21 @@ auto plugin::gui::windows::main::frames::settings::render_section_items(const st
         if (gui::widgets::toggle_button(label, *configuration_value).render() && !config.is_null())
             toggle_events[config](*configuration_value);
 
-        if (type != item_type::subsection)
+        if (type == item_type::subsection) {
+            ImGui::SameLine();
+            render_subsection(item_key, name, item_configuration, item);
+        }
+
+        if (item_key_to_focus != item_key)
             continue;
 
-        ImGui::SameLine();
-        render_subsection(item_key, name, item_configuration, item);
+        ImGui::SetScrollHereY(1.0f);
+
+        ImVec2 rect_min = ImGui::GetItemRectMin();
+        ImVec2 rect_size = ImGui::GetItemRectSize();
+
+        SetCursorPos(rect_min.x + rect_size.x / 2, rect_min.y + rect_size.y * 2);
+        item_key_to_focus.clear();
     }
 }
 
@@ -221,6 +243,74 @@ auto plugin::gui::windows::main::frames::settings::render_boolean(const std::str
     toggle_events[config](setter);
 }
 
+auto plugin::gui::windows::main::frames::settings::get_search_entries() const -> std::vector<search_entry_t> {
+    std::vector<search_entry_t> entries;
+
+    for (const auto& [ index, section ] : options | std::views::enumerate) {
+        for (const auto& [ item_key, item ] : section.items()) {
+            std::string item_key_str = item_key;
+
+            if (item_key_str.starts_with("_"))
+                continue;
+
+            std::string name = item["_name"];
+
+            if (!search.contains(name))
+                continue;
+
+            entries.emplace_back(index, item_key_str, name);
+        }
+    }
+
+    return entries;
+}
+
+auto plugin::gui::windows::main::frames::settings::handle_controls() -> void {
+    if (!ImGui::IsKeyChordPressed(ImGuiMod_Ctrl | ImGuiKey_F))
+        return;
+
+    popup.set_renderer([this] {
+        float region_avail_x = ImGui::GetContentRegionAvail().x;
+        float frame_height = ImGui::GetFrameHeight();
+
+        if (ImGui::GetStyle().Alpha != 1)
+            ImGui::SetKeyboardFocusHere();
+
+        search.render(region_avail_x, "Поиск");
+
+        ImGui::BeginChild("##search_area", { std::max<float>(region_avail_x, frame_height * 15.0f),
+                                             frame_height * 10.0f }, ImGuiChildFlags_AlwaysUseWindowPadding);
+        {
+            region_avail_x = ImGui::GetContentRegionAvail().x;
+
+            std::vector<search_entry_t> entries = get_search_entries();
+            std::size_t entries_size = entries.size();
+            ImGuiListClipper clipper;
+
+            clipper.Begin(entries_size);
+
+            while (clipper.Step()) {
+                for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++) {
+                    auto& entry = entries[i];
+
+                    std::string button_id = std::format("search_entry-{}", i);
+
+                    if (gui::widgets::button(entry.label, button_id, { region_avail_x, frame_height }).render()
+                        || (entries_size == 1 && ImGui::IsKeyPressed(ImGuiKey_Enter)))
+                    {
+                        popup.close();
+                        submenu.set_current_entry_animated(entry.submenu_index);
+                        item_key_to_focus = entry.item_key;
+                    }
+                }
+            }
+        }
+        ImGui::EndChild();
+    });
+
+    popup.open();
+}
+
 auto plugin::gui::windows::main::frames::settings::render_option_widget(const std::string& widget_id,
                                                                         const std::string& custom_id,
                                                                         nlohmann::ordered_json& meta_option,
@@ -280,6 +370,7 @@ auto plugin::gui::windows::main::frames::settings::render() -> void {
     ImGui::SameLine();
     submenu.render_current_frame(child);
     popup.render(child);
+    handle_controls();
 }
 
 plugin::gui::windows::main::frames::settings::settings(types::not_null<initializer*> child)
@@ -315,7 +406,7 @@ plugin::gui::windows::main::frames::settings::settings(types::not_null<initializ
             return;
         }
 
-        gui::widgets::text(bold_font, section_title_font_size, 0, "{}", name);
+        render_section_title(name);
         ImGui::PushFont(regular_font, common_text_size);
         ImGui::BeginGroup();
         {

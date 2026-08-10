@@ -29,7 +29,7 @@ static auto render_border(const ImVec2& pos, const ImVec4& border_color, std::ui
 
     // imgui.h does not provide any way to get the current text wrap position without using imgui_internal.h
     float wrap_width = ImGui::CalcWrapWidthForPos(window->DC.CursorPos, window->DC.TextWrapPos);
-    ImU32 text_color = ImGui::ColorConvertFloat4ToU32(border_color);
+    ImU32 text_color = ImGui::GetColorU32(border_color);
 
     for (std::uint8_t i = 1; i <= border_size; i++) {
         draw_list->AddText(font, font_size, { pos.x + i, pos.y }, text_color, text, nullptr, wrap_width);

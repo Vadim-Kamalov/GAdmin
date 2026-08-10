@@ -22,6 +22,7 @@
 #include "plugin/gui/base/window.h"
 #include "plugin/gui/hotkey.h"
 #include "plugin/samp/events/event.h"
+#include "plugin/samp/core/user.h"
 #include "plugin/types/not_null.h"
 #include "plugin/types/simple.h"
 #include "plugin/samp/events/send_command.h" // IWYU pragma: keep
@@ -72,11 +73,23 @@ private:
         command_t command;
     }; // struct request_t final
 
+    struct rejected_request_t final {
+        std::chrono::steady_clock::time_point time;
+        std::string full_command;
+        bool sent_by_user;
+
+        explicit rejected_request_t(const request_t& request)
+            : time(std::chrono::steady_clock::now()),
+              full_command(request.full_command),
+              sent_by_user(request.sender_id == samp::user::get_id()) {}
+    }; // struct rejected_request_t final
+
     static constexpr float fonts_size = 18;
     static const std::vector<command_t> commands;
 
     std::chrono::steady_clock::time_point time_request_sent;
     std::optional<request_t> current_request;
+    std::list<rejected_request_t> rejected_requests;
 
     std::string wrap_storage = "";
     std::string last_command = "";
@@ -87,12 +100,17 @@ private:
 
     std::chrono::steady_clock::time_point time_to_send_command;
     hotkey approve_request_hotkey;
+    hotkey reject_request_hotkey;
 
     auto try_parse_request(const std::string_view& usage) const -> std::optional<parsed_request_t>;
     auto try_handle_new_request(const std::string& text) -> bool;
+    auto try_handle_request_reject(const std::string& text) -> bool;
     auto try_handle_approved_request(const std::string& text, const types::color& color) -> void;
 
     auto approve_request() -> void;
+    auto reject_request() -> void;
+    auto has_request_and_sender_not_user() -> bool;
+    auto update_request_information(const std::chrono::steady_clock::time_point& now) -> void;
     
     auto on_send_command(const samp::out_event<samp::event_id::send_command>& event) -> bool;
     auto on_server_message(const samp::event<samp::event_id::server_message>& event) -> bool;

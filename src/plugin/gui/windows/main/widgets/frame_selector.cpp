@@ -47,7 +47,7 @@ auto plugin::gui::windows::main::widgets::frame_selector::render_title() const -
     {
         gui::widgets::text(bold_font, title_font_size, 0, "GAdmin");
         ImGui::SameLine();
-        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + std::max(title_size.y, version_size.y) / 7.0f);
+        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + std::max(title_size.y, version_size.y) / 7.0f); // why 7.0f?
         gui::widgets::text(regular_font, version_font_size, 0, "v" PROJECT_VERSION);
     }
     ImGui::EndGroup();
