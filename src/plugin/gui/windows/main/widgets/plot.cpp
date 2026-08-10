@@ -17,7 +17,7 @@
 /// SPDX-License-Identifier: GPL-3.0-only
 
 #include "plugin/gui/windows/main/widgets/plot.h"
-#include "plugin/log.h"
+#include <common/log.h>
 #include <algorithm>
 #include <ranges>
 

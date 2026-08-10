@@ -18,7 +18,7 @@
 
 #include "plugin/configuration.h"
 #include "plugin/types/simple.h"
-#include "plugin/log.h"
+#include <common/log.h>
 #include <fstream>
 
 static constexpr std::uint8_t configuration_bytes[] = {

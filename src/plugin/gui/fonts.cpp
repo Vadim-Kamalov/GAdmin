@@ -18,7 +18,7 @@
 
 #include "plugin/gui/fonts.h"
 #include "plugin/gui/icon.h"
-#include "plugin/log.h"
+#include <common/log.h>
 #include <common/network.h>
 #include <common/common.h>
 #include <functional>

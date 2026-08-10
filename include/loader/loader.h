@@ -24,6 +24,7 @@
 #include <optional>
 #include <nlohmann/json.hpp>
 #include <thread>
+#include <common/log.h>
 
 /// File information extracted from version resources.
 struct file_information_t final {
@@ -62,6 +63,7 @@ struct release_information_t final {
 /// If no updates are found, then it just loads the plugin.
 class loader_t final {
 private:
+    common::log_handler log_handler;
     std::jthread thread;
     HMODULE plugin_handle = nullptr;
 

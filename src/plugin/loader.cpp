@@ -170,8 +170,25 @@ plugin::loader::loader() {
     using namespace std::placeholders;
 
     DisableThreadLibraryCalls(reinterpret_cast<HMODULE>(&__ImageBase));
+    log_handler.set_prefix("plugin");
 
-    log_handler.load_file(common::get_game_path() / "gadmin.log");
+    try {
+        std::filesystem::path game_path = common::get_game_path();
+        std::filesystem::path common_log_file_path = game_path / "gadmin.c.log";
+
+        if (std::filesystem::exists(common_log_file_path)) {
+            // `.c.` means the log file is common for both loader
+            // and plugin. No truncate as it was done previously.
+            log_handler.load_file(game_path / "gadmin.c.log", false);
+        } else {
+            // if we here, then user have decided to remove gadmin-loader.asi
+            // and rename gadmin.dll to gadmin.asi.
+            log_handler.load_file(game_path / "gadmin.log", true);
+        }
+    } catch (const std::exception&) {
+        // no return. just let the game to crash
+    }
+
     log::info("plugin::log_handler initialized");
    
     if (!plugin_initializer::is_connected_to_valid_server()) {

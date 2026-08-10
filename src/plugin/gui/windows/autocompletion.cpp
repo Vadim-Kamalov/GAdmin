@@ -29,7 +29,7 @@
 #include "plugin/server/spectator.h"
 #include "plugin/string_utils.h"
 #include "plugin/plugin.h"
-#include "plugin/log.h"
+#include <common/log.h>
 
 static constexpr std::uint8_t settings_bytes[] = {
 

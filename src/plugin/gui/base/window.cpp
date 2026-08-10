@@ -17,7 +17,7 @@
 /// SPDX-License-Identifier: GPL-3.0-only
 
 #include "plugin/gui/base/window.h"
-#include "plugin/log.h"
+#include <common/log.h>
 
 auto plugin::gui::window::on_event(unsigned int, WPARAM, LPARAM) -> bool {
     return true;

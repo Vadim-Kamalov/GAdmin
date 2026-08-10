@@ -27,7 +27,7 @@
 #include "plugin/gui/notify.h"
 #include "plugin/game/game.h"
 #include "plugin/plugin.h"
-#include "plugin/log.h"
+#include <common/log.h>
 #include "plugin/types/u8regex.h"
 #include <algorithm>
 #include <ctre.hpp>

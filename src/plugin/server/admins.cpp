@@ -19,7 +19,7 @@
 #include "plugin/server/admins.h"
 #include "plugin/server/user.h"
 #include "plugin/samp/core/user.h"
-#include "plugin/log.h"
+#include <common/log.h>
 #include "plugin/plugin.h"
 #include "plugin/string_utils.h"
 #include "plugin/types/u8regex.h"

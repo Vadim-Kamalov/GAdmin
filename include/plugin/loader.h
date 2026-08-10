@@ -22,7 +22,7 @@
 #include "plugin/types/signatures.h"
 #include "plugin/types/address.h"
 #include "plugin/plugin.h"
-#include "plugin/log.h"
+#include <common/log.h>
 #include <d3d9.h>
 
 #pragma GCC diagnostic push
@@ -51,7 +51,7 @@ private:
     static types::versioned_address_container<std::uintptr_t> wndproc_address;
 
     std::unique_ptr<plugin_initializer> core;
-    plugin::log_handler log_handler;
+    common::log_handler log_handler;
 
     bool first_game_loop_call : 1 = true;
     bool initialized_imgui_render : 1 = false;

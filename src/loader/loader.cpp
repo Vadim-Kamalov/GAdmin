@@ -29,11 +29,16 @@
 #include <shellapi.h>
 #include <windows.h>
 #include <winver.h>
+#include <errno.h>
 #include <ranges>
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 auto loader_t::load_plugin(const file_information_t& plugin) -> void {
+    log::info("loading the plugin {}", plugin.path);
+    log::info("passing the log stream to the plugin");
+    log_handler.close_file();
+
     std::wstring path = plugin.path.wstring();
     plugin_handle = LoadLibraryW(path.c_str());
 }
@@ -42,6 +47,7 @@ auto loader_t::check_updates(const file_information_t& plugin) -> void {
     std::string raw_release_information = common::network::send_get_request(release_information_url);
 
     if (raw_release_information.empty()) {
+        log::warn("failed to get release information");
         load_plugin(plugin);
         return;
     }
@@ -50,9 +56,12 @@ auto loader_t::check_updates(const file_information_t& plugin) -> void {
     std::string tag_name = release_information["tag_name"];
     
     if (tag_name.substr(1) == plugin.file_version) {
+        log::info("no updates found");
         load_plugin(plugin);
         return;
     }
+
+    log::info("found an update: v{} => {}", plugin.file_version, tag_name);
 
     for (const auto& asset : release_information["assets"]) {
         if (asset["name"] != plugin.original_filename)
@@ -60,6 +69,8 @@ auto loader_t::check_updates(const file_information_t& plugin) -> void {
 
         std::wstring wide_tag_name = std::wstring(tag_name.begin(), tag_name.end());
         std::wstring message_text = L"Доступна новая версия GAdmin: " + wide_tag_name + L". Желаете установить сейчас?";
+
+        log::info("waiting for user action (MessageBoxW)...");
 
         if (MessageBoxW(nullptr, message_text.c_str(), L"Доступно обновление", MB_YESNO | MB_ICONQUESTION) == IDYES) {
             std::string browser_download_url = asset["browser_download_url"];
@@ -74,6 +85,8 @@ auto loader_t::check_updates(const file_information_t& plugin) -> void {
 
                 return;
             }
+
+            log::info("succesfuly updated the plugin. saving release information...");
 
             std::string date_created = release_information["created_at"];
             std::replace(date_created.begin(), date_created.end(), 'T', ' ');
@@ -94,7 +107,8 @@ auto loader_t::check_updates(const file_information_t& plugin) -> void {
 
         return;
     }
-    
+
+    log::warn("could not find {} in release_information[\"assets\"]", plugin.original_filename);
     load_plugin(plugin);
 }
 
@@ -105,15 +119,18 @@ auto loader_t::update_plugin(const file_information_t& plugin, const std::string
         std::string filename = plugin.path.filename().string();
         std::filesystem::path temp_file_path = std::filesystem::temp_directory_path() / filename;
 
-        if (!common::network::download_file(download_url, temp_file_path))
+        if (!common::network::download_file(download_url, temp_file_path)) {
+            log::error("failed to common::network::download_file [with download_url = \"{}\", temp_file_path = \"{}\"]",
+                       download_url, temp_file_path);
             return false;
+        }
         
         MessageBoxW(nullptr, L"Обновление успешно загружено!", L"Обновление загружено", MB_ICONINFORMATION);
-
         std::filesystem::rename(temp_file_path, plugin.path);
 
         return true;
     } catch (const std::exception& e) {
+        log::error("exception occured during loader_t::update_plugin: {}", e.what());
         return false;
     }
 }
@@ -123,19 +140,24 @@ auto loader_t::save_release_information(const release_information_t& information
 
     try {
         std::filesystem::create_directory(game_path / "gadmin");
-    } catch (...) {
+    } catch (const std::exception& e) {
+        log::error("exception occured during std::filesystem::create_directory: {}", e.what());
         return;
     }
     
     std::filesystem::path path = game_path / "gadmin" / "release_information.mpk";
     std::ofstream file = std::ofstream(path, std::ios::out | std::ios::binary);
 
-    if (!file)
+    if (!file) {
+        log::error("failed to open {}. Reason: {}", path, std::strerror(errno));
         return;
+    }
 
     nlohmann::json output = information;
     std::vector<std::uint8_t> bytes = nlohmann::json::to_msgpack(output);
     file.write(reinterpret_cast<const char*>(bytes.data()), bytes.size());
+
+    log::info("release information succesfuly saved at {}", path);
 }
 
 auto loader_t::try_get_file_information(const std::filesystem::path& path) const
@@ -172,6 +194,11 @@ auto loader_t::try_get_file_information(const std::filesystem::path& path) const
 
 loader_t::loader_t() {
     DisableThreadLibraryCalls(reinterpret_cast<HMODULE>(&__ImageBase));
+
+    log_handler.set_prefix("loader");
+    log_handler.load_file(common::get_game_path() / "gadmin.c.log", true);
+    log::info("loader_t::log_handler initialized");
+
     for (const auto& entry : std::filesystem::directory_iterator(common::get_game_path())) {
         if (!entry.is_regular_file())
             continue;
@@ -181,10 +208,13 @@ loader_t::loader_t() {
         if (!file_information.has_value() || file_information->original_filename != ORIGINAL_FILENAME_TO_SEARCH)
             continue;
 
+        log::info("found the plugin. trying to check any available updates");
         thread = std::jthread(std::bind_front(&loader_t::check_updates, this, *file_information));
     
         return;
     }
+
+    log::fatal_without_unload("failed to locate the plugin");
 }
 
 loader_t::~loader_t() noexcept {

@@ -1,6 +1,6 @@
 #include "plugin/misc/features/nickname_colors.h"
 #include "plugin/common_utils.h"
-#include "plugin/log.h"
+#include <common/log.h>
 #include "plugin/plugin.h"
 #include <common/network.h>
 #include <functional>

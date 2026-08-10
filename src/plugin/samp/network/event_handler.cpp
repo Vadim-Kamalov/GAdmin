@@ -21,7 +21,7 @@
 #include "plugin/samp/events/event.h"
 #include "plugin/samp/network/bit_stream.h"
 #include "plugin/samp/samp.h"
-#include "plugin/log.h"
+#include <common/log.h>
 #include <cstdint>
 
 plugin::types::versioned_address_container<std::uintptr_t>

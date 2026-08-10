@@ -17,7 +17,7 @@
 /// SPDX-License-Identifier: GPL-3.0-only
 
 #include "plugin/exception_handler.h"
-#include "plugin/log.h"
+#include <common/log.h>
 #include <errhandlingapi.h>
 #include <exception>
 #include <psapi.h>

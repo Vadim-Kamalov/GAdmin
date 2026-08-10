@@ -21,7 +21,7 @@
 
 #include "plugin/cheats/initializer.h"
 #include "plugin/configuration.h"
-#include "plugin/log.h"
+#include <common/log.h>
 #include "plugin/gui/gui.h"
 #include "plugin/misc/misc.h"
 #include "plugin/samp/network/event_handler.h"

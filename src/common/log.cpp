@@ -16,32 +16,40 @@
 ///
 /// SPDX-License-Identifier: GPL-3.0-only
 
-#include "plugin/log.h"
+#include "common/log.h"
 #include <libloaderapi.h>
 #include <windows.h>
 #include <chrono>
 
-extern "C" IMAGE_DOS_HEADER __ImageBase;
+auto common::log_handler::set_prefix(const std::string_view new_prefix) -> void {
+    prefix = new_prefix;
+}
 
-auto plugin::log_handler::load_file(const std::filesystem::path& path) -> void {
+auto common::log_handler::load_file(const std::filesystem::path& path, bool truncate_file) -> void {
     using namespace std::placeholders;
 
     // Unfortunately, we can't open the log file stream immediately with both
     // appending and truncate modes (e.g., `std::ios::trunc | std::ios::app`).
     //
     // We can combine these modes using the pipe operator, but it will have no effect.
-    std::ofstream(path, std::ios::trunc).close();
+    if (truncate_file)
+        std::ofstream(path, std::ios::trunc).close();
+
     log_file_stream.open(path, std::ios::app);
     log::set_write_callback(std::bind(&log_handler::write_callback, this, _1, _2));
 }
 
-auto plugin::log_handler::write_callback(const std::string_view& text, const message_severity& severity) -> void {
+auto common::log_handler::close_file() -> void {
+    log_file_stream.close();
+}
+
+auto common::log_handler::write_callback(const std::string_view& text, const common::message_severity& severity) -> void {
     std::lock_guard<std::mutex> lock(log_mutex);
-    log_file_stream << std::format("{} [{}] {}\n", get_full_iso_8601_timestamp(), severity, text);
+    log_file_stream << std::format("{} [{}] [{}] {}\n", get_full_iso_8601_timestamp(), severity, prefix, text);
     log_file_stream.flush();
 }
 
-auto plugin::log_handler::get_full_iso_8601_timestamp() const -> std::string {
+auto common::log_handler::get_full_iso_8601_timestamp() const -> std::string {
     auto now = std::chrono::system_clock::now();
 
     std::time_t now_time_t = std::chrono::system_clock::to_time_t(now);

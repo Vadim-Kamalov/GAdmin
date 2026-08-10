@@ -30,7 +30,7 @@
 #include "plugin/cheats/wallhack.h"
 #include "plugin/server/user.h"
 #include "plugin/plugin.h"
-#include "plugin/log.h"
+#include <common/log.h>
 #include "common/common.h"
 #include <misc/cpp/imgui_stdlib.h>
 #include <algorithm>

@@ -21,7 +21,7 @@
 #include "plugin/gui/animation.h"
 #include "plugin/game/game.h"
 #include "plugin/gui/widgets/markdown.h"
-#include "plugin/log.h"
+#include <common/log.h>
 #include <common/common.h>
 #include <fstream>
 #include <ranges>
