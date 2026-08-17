@@ -20,6 +20,7 @@
 #include "plugin/types/address.h"
 
 static plugin::types::address<plugin::signatures::calc_screen_coords> calc_screen_coords = 0x71DAB0;
+static plugin::types::address<plugin::signatures::calc_screen_coords_ex> calc_screen_coords_ex = 0x70CE30;
 
 auto plugin::game::get_screen_resolution() noexcept -> std::pair<float, float> {
     static types::address<int> resolution_x = 0xC9C040;
@@ -35,6 +36,21 @@ auto plugin::game::convert_3d_coords_to_screen(const types::vector_3d& coords)
 
     if (!calc_screen_coords(const_cast<types::vector_3d*>(&coords), &result))
         return { 0, 0, 0 };
+
+    return result;
+}
+
+auto plugin::game::convert_3d_coords_to_screen_ex(const types::vector_3d& coords)
+    noexcept -> types::vector_3d
+{
+    types::vector_3d result;
+    float w, h;
+
+    if (!calc_screen_coords_ex(const_cast<types::vector_3d*>(&coords), &result,
+                               &w, &h, false, false))
+    {
+        return { 0, 0, 0 };
+    }
 
     return result;
 }

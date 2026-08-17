@@ -85,18 +85,27 @@ struct event<event_id::passenger_synchronization, event_type::incoming_packet> f
 
 template<>
 struct event<event_id::bullet_synchronization, event_type::incoming_packet> final {
-    std::uint16_t player_id; ///< Player's ID.
-    std::uint8_t hit_type;   ///< Bullet's hit type.
-    std::uint16_t hit_id;    ///< Bullet's hit of player's ID if present.
-    types::vector_3d origin; ///< Bullet's start coordinates.
-    types::vector_3d hit;    ///< Bullet's end coordinates.
-    types::vector_3d offset; ///< Bullet's offset coordinates.
-    std::uint8_t weapon_id;  ///< Weapon's ID from which the bullet was fired.
+    std::uint16_t player_id = 0;                    ///< Player's ID.
+    std::uint8_t hit_type = 0;                      ///< Bullet's hit type.
+    std::uint16_t hit_id = 0;                       ///< Bullet's hit of player's ID if present.
+    types::vector_3d origin = { 0.0f, 0.0f, 0.0f }; ///< Bullet's start coordinates.
+    types::vector_3d hit = { 0.0f, 0.0f, 0.0f };    ///< Bullet's end coordinates.
+    types::vector_3d offset = { 0.0f, 0.0f, 0.0f }; ///< Bullet's offset coordinates.
+    std::uint8_t weapon_id = 0;                     ///< Weapon's ID from which the bullet was fired.
 
     /// Construct an event.
     ///
     /// @param bit_stream[in] Bit stream with the event parameters.
     explicit event(bit_stream* stream);
+
+#ifndef NDEBUG
+    /// Construct an event with the bullet's `origin` and `hit` coordinates for debugging.
+    ///
+    /// @param origin[in] Bullet's start coordinates.
+    /// @param hit[in]    Bullet's end coordinates.
+    explicit event(const types::vector_3d& origin, const types::vector_3d& hit)
+        : origin(origin), hit(hit) {}
+#endif // NDEBUG
 }; // struct event<event_id::bullet_synchronization, event_type::incoming_packet> final
 
 } // namespace plugin::samp

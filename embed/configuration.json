@@ -169,8 +169,7 @@
         "tracers": {
             "use": true,
             "only_from_spectator": false,
-            "seconds_to_hide": 15,
-            "limit": 15
+            "seconds_to_hide": 15
         },
                 
         "clickwarp": true

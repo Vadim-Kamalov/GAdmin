@@ -97,7 +97,7 @@ auto plugin::gui::windows::main::initializer::on_send_command(const samp::out_ev
 
     std::transform(command.begin(), command.end(), command.begin(), ::tolower);
 
-    if (command.starts_with("/gadmin")) {
+    if (command == "/gadmin") {
         switch_window();
         return false;
     }

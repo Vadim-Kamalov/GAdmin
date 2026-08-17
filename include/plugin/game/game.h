@@ -20,13 +20,16 @@
 #define GADMIN_PLUGIN_GAME_H
 
 #include "plugin/types/simple.h"
+#include "plugin/types/signatures.h"
 #include <utility>
 #include <windef.h>
 
 namespace plugin {
 namespace signatures {
 
-using calc_screen_coords = bool(__cdecl*)(types::vector_3d*, types::vector_3d*);
+using calc_screen_coords_ex = types::signatures::cdecl_t<bool, types::vector_3d*, types::vector_3d*,
+                                                         float*, float*, bool, bool>;
+using calc_screen_coords = types::signatures::cdecl_t<bool, types::vector_3d*, types::vector_3d*>;
 
 } // namespace signatures
 
@@ -58,6 +61,15 @@ auto get_screen_resolution() noexcept -> std::pair<float, float>;
 /// @param coords[in] The 3D coordinates to convert.
 /// @return           The corresponding screen coordinates.
 auto convert_3d_coords_to_screen(const types::vector_3d& coords) noexcept -> types::vector_3d;
+
+/// Convert 3D coordinates into screen coordinates (3D => 2D).
+///
+/// Use this function when `coords` is outside of the camera view.
+///
+/// @see              plugin::cheats::tracers::tracer_information::get_screen_points
+/// @note             If the Z-coordinate returns a value below `0.0f`, then the conversion has failed.
+/// @param coords[in] The 3D coordinates to convert.
+auto convert_3d_coords_to_screen_ex(const types::vector_3d& coords) noexcept -> types::vector_3d;
 
 } // namespace game
 } // namespace plugin
