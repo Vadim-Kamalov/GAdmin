@@ -43,27 +43,27 @@ auto plugin::configuration_initializer::write(const std::filesystem::path& path,
 
 auto plugin::configuration_initializer::get(const std::filesystem::path& path) const -> nlohmann::json {
     std::ifstream file(path, std::ios::binary | std::ios::ate);
-    std::ifstream::pos_type pos = file.tellg();
 
     if (!file) {
         log::fatal("failed to get plugin configuration from \"{}\"", path.string());
         return nullptr;
     }
     
+    std::ifstream::pos_type pos = file.tellg();
     std::vector<char> bytes(pos);
 
     file.seekg(0, std::ios::beg);
-    file.read(&bytes[0], pos);
+    file.read(bytes.data(), pos);
 
-    auto file_json = nlohmann::json::from_msgpack(bytes);
-
-    if (file_json.is_null()) {
-        log::error("plugin configuration is corrupted in \"{}\"; default configuration is written", path.string());
+    try {
+        return nlohmann::json::from_msgpack(bytes);
+    } catch (const std::exception& e) {
+        log::error("configuration file is corrupted ({}). restoring default configuration...", e.what());
+        file.close();
         write(path, main_json);
-        return nullptr;
     }
 
-    return file_json;
+    return nullptr;
 }
 
 auto plugin::configuration_initializer::operator[](const std::string_view& key) const -> nlohmann::json::reference {

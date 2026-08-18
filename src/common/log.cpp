@@ -44,6 +44,9 @@ auto common::log_handler::close_file() -> void {
 }
 
 auto common::log_handler::write_callback(const std::string_view& text, const common::message_severity& severity) -> void {
+    if (!log_file_stream)
+        return;
+
     std::lock_guard<std::mutex> lock(log_mutex);
     log_file_stream << std::format("{} [{}] [{}] {}\n", get_full_iso_8601_timestamp(), severity, prefix, text);
     log_file_stream.flush();

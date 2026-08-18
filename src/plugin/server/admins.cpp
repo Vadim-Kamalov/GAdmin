@@ -19,12 +19,14 @@
 #include "plugin/server/admins.h"
 #include "plugin/server/user.h"
 #include "plugin/samp/core/user.h"
-#include <common/log.h>
 #include "plugin/plugin.h"
 #include "plugin/string_utils.h"
 #include "plugin/types/u8regex.h"
 #include "plugin/gui/icon.h"
 #include "plugin/gui/notify.h"
+#include <common/log.h>
+#include <common/common.h>
+#include "plugin/plugin.h"
 #include <algorithm>
 #include <spanstream>
 
@@ -75,8 +77,10 @@ auto plugin::server::admins::on_show_dialog(const samp::event<samp::event_id::sh
         
         log::info("user is on /alogin; admins::list is not empty and available now");
         user::set_alogin_state(true);
-        handle_sponsorship_notification();
         dialog.send_response(samp::dialog::button::right, 0);
+
+        handle_sponsorship_notification();
+        handle_update_notification();
 
         return false;
     }
@@ -192,6 +196,19 @@ auto plugin::server::admins::handle_sponsorship_notification() -> void {
     }
 
     alogins_until_sponshorship_notification--;
+}
+
+auto plugin::server::admins::handle_update_notification() -> void {
+    std::error_code ec;
+
+    if (!std::filesystem::exists(common::get_game_path() / "gadmin" / "available_update.mpk"))
+        return;
+    
+    static constexpr types::zstring_t notification_description =
+        "Новое обновление плагина уже доступно! Перезайдите в игру для установки.";
+
+    gui::notify::send(gui::notification("Доступно обновление", notification_description, ICON_GLOBE)
+            .with_duration(15s));
 }
 
 auto plugin::server::admins::get_admin(std::uint16_t id) -> std::optional<admin> {

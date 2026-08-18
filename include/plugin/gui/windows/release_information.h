@@ -44,6 +44,7 @@ private:
     static std::filesystem::path file_path;
 
     struct parsed_information_t final {
+        std::string url;
         std::string date_created;
         std::string old_tag_name;
         std::string tag_name;
@@ -52,8 +53,8 @@ private:
         std::size_t file_size;
         std::size_t download_count;
 
-        NLOHMANN_DEFINE_TYPE_INTRUSIVE(parsed_information_t, date_created, tag_name,
-                                       old_tag_name, name, body, file_size, download_count);
+        NLOHMANN_DEFINE_TYPE_INTRUSIVE_WITH_DEFAULT(parsed_information_t, url, date_created, tag_name,
+                                                    old_tag_name, name, body, file_size, download_count);
     }; // struct parsed_information_t final
 
     std::uint8_t window_alpha = 255, background_alpha = 128;

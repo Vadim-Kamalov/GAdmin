@@ -134,19 +134,29 @@ plugin::gui::windows::release_information::release_information(types::not_null<g
         return;
 
     std::ifstream file(file_path, std::ios::binary | std::ios::ate);
-    std::ifstream::pos_type pos = file.tellg();
 
     if (!file) {
-        log::warn("failed to get relase information from \"{}\"", file_path.string());
+        log::warn("could not open {}", file_path);
+        return;
+    }
+
+    std::ifstream::pos_type pos = file.tellg();
+    std::vector<char> bytes(pos);
+
+    file.seekg(0, std::ios::beg);
+    file.read(bytes.data(), pos);
+
+    try {
+        parsed_information = nlohmann::json::from_msgpack(bytes);
+    } catch (const std::exception& e) {
+        log::error("file with the release information is corrupted ({}). deleting...", e.what());
+        file.close();
+
+        std::error_code ec;
+        std::filesystem::remove(file_path);
+
         return;
     }
 
     child->enable_cursor();
-
-    std::vector<char> bytes(pos);
-
-    file.seekg(0, std::ios::beg);
-    file.read(&bytes[0], pos);
-
-    parsed_information = nlohmann::json::from_msgpack(bytes);
 }

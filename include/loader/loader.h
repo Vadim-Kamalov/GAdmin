@@ -41,6 +41,7 @@ struct file_information_t final {
 
 /// Release information stored after successful update.
 struct release_information_t final {
+    std::string url;            ///< URL to download the `gadmin.dll` file.
     std::string date_created;   ///< Date when release was created.
     std::string old_tag_name;   ///< Previous release tag name.
     std::string tag_name;       ///< Current release tag name.
@@ -49,7 +50,7 @@ struct release_information_t final {
     std::size_t file_size;      ///< Size of the downloaded file in bytes.
     std::size_t download_count; ///< Total number of downloads for this release.
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(release_information_t, date_created, tag_name,
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(release_information_t, url, date_created, tag_name,
                                    old_tag_name, name, body, file_size, download_count);
 }; // struct release_information_t final
 
@@ -72,9 +73,13 @@ private:
     
     auto load_plugin(const file_information_t& plugin) -> void;
     auto check_updates(const file_information_t& plugin) -> void;
-    auto update_plugin(const file_information_t& plugin, const std::string_view& download_url) const -> bool;
-    auto save_release_information(const release_information_t& information) const -> void;
+    auto update_plugin(const file_information_t& plugin, const std::string_view download_url) const -> bool;
+
     auto try_get_file_information(const std::filesystem::path& path) const -> std::optional<file_information_t>;
+    auto try_get_available_update(const std::filesystem::path& path) const -> std::optional<release_information_t>;
+
+    auto suggest_update_to_user(const file_information_t& plugin,
+                                const std::filesystem::path& update_file_path) -> void;
 public:
     /// Construct the loader.
     explicit loader_t();
