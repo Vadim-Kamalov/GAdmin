@@ -17,6 +17,7 @@
 /// SPDX-License-Identifier: GPL-3.0-only
 
 #include "plugin/loader.h"
+#include "plugin/memory.h"
 #include "plugin/game/game.h"
 #include "plugin/samp/samp.h"
 #include "plugin/samp/core/net_game.h"
@@ -77,6 +78,10 @@ auto plugin::loader::try_install_wndproc_hook() -> void {
 }
 
 auto plugin::loader::initialize_imgui_render(IDirect3DDevice9* device) -> void {
+    // #54 - <A-S> while editing text causes the player character to jump
+    // See: https://github.com/Vadim-Kamalov/GAdmin/issues/54#issuecomment-5334801253
+    memory::nop(0x531155, 5);
+
     ImGui_ImplWin32_EnableDpiAwareness();
     ImGui::CreateContext();
     
