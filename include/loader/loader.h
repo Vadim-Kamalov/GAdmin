@@ -80,6 +80,10 @@ private:
 
     auto suggest_update_to_user(const file_information_t& plugin,
                                 const std::filesystem::path& update_file_path) -> void;
+
+    static auto is_release_information_outdated(const file_information_t& plugin,
+                                                const release_information_t& information)
+        noexcept -> bool;
 public:
     /// Construct the loader.
     explicit loader_t();

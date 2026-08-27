@@ -153,7 +153,7 @@ plugin::gui::windows::release_information::release_information(types::not_null<g
         file.close();
 
         std::error_code ec;
-        std::filesystem::remove(file_path);
+        std::filesystem::remove(file_path, ec);
 
         return;
     }

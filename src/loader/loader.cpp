@@ -167,7 +167,7 @@ auto loader_t::loader_t::try_get_available_update(const std::filesystem::path& p
         file.close();
 
         std::error_code ec;
-        std::filesystem::remove(path);
+        std::filesystem::remove(path, ec);
     }
 
     return {};
@@ -181,6 +181,16 @@ auto loader_t::loader_t::suggest_update_to_user(const file_information_t& plugin
 
     if (!update_information.has_value()) {
         load_plugin(plugin);
+        return;
+    }
+
+    if (is_release_information_outdated(plugin, *update_information)) {
+        std::error_code ec;
+
+        log::info("update information is outdated. deleting...");
+        std::filesystem::remove(update_file_path, ec);
+        load_plugin(plugin);
+
         return;
     }
 
@@ -214,6 +224,14 @@ auto loader_t::loader_t::suggest_update_to_user(const file_information_t& plugin
     }
 
     load_plugin(plugin);
+}
+
+auto loader_t::is_release_information_outdated(const file_information_t& plugin,
+                                               const release_information_t& information)
+    noexcept -> bool
+{
+    std::string tag_name_with_prefix = "v" + plugin.file_version;
+    return tag_name_with_prefix == information.tag_name;
 }
 
 loader_t::loader_t() {
