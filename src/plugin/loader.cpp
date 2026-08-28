@@ -197,7 +197,7 @@ plugin::loader::loader() {
     log::info("plugin::log_handler initialized");
    
     if (!plugin_initializer::is_connected_to_valid_server()) {
-        log::fatal("plugin works only on \"sa.gambit-rp.ru:7777\" server");
+        log::fatal("GAdmin does not support the server to which you are connected");
         return;
     }
 

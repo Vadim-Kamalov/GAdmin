@@ -1,0 +1,21 @@
+name: Update embed/allowed_ips.txt
+on:
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch:
+jobs:
+  update-allowed-ips:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Run scripts/update_ips.sh
+        continue-on-error: true
+        run: |
+          export GIT_AUTHOR_NAME="GitHub Actions"
+          export GIT_AUTHOR_EMAIL="actions@github.com"
+          export GIT_COMMITTER_NAME="GitHub Actions"
+          export GIT_COMMITTER_EMAIL="actions@github.com"
+          ./scripts/update_ips.sh

@@ -53,10 +53,6 @@ inline std::unique_ptr<misc::initializer> misc_initializer;
 /// Plugin can be unloaded manually when reached no-return point.
 class plugin_initializer final {
 private:
-    /// FIXME: #59 - plugin_initializer::allowed_ip_addresses must be computed at build time
-    static constexpr auto allowed_ip_addresses = std::to_array<std::string_view>({ "111.88.251.235",
-                                                                                   "85.234.65.36" });
-
     std::unique_ptr<gui_initializer> gui;
 
     auto on_samp_initialize() -> void;
