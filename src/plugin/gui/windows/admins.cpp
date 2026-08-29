@@ -110,7 +110,7 @@ auto plugin::gui::windows::admins::render() -> void {
 
     ImGui::SetNextWindowPos({ size_x / 1.11953f, size_y / 2.35664f }, ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize({ window_information.window_width, 0 });
-    ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::Begin(window_id, nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize);
     {
         if (!window_information.title.empty())
             widgets::text(title_font, title_font_size, border_size, "{}", window_information.title);

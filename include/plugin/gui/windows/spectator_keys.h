@@ -37,6 +37,8 @@ namespace plugin::gui::windows {
 /// Provides visual representation of pressed keys with keycaps.
 class spectator_keys final : public window {
 private:
+    static constexpr auto window_id = "windows::spectator_keys";
+
     template<samp::synchronization_key key>
     static constexpr auto make_keycap(const ImVec2& size = {
         ImGui::GetFrameHeight() * 1.3f,
@@ -60,13 +62,13 @@ public:
     ///
     /// @param child[in] Valid pointer to the GUI initializer.
     explicit spectator_keys(types::not_null<gui_initializer*> child)
-        : window(child, get_id()) {}
+        : window(child, window_id) {}
 }; // class spectator_keys : public window
 
 } // namespace plugin::gui::windows
 
 inline auto plugin::gui::windows::spectator_keys::get_id() const -> types::zstring_t {
-    return "windows::spectator_keys";
+    return window_id;
 }
 
 inline auto plugin::gui::windows::spectator_keys::get_name() const -> types::zstring_t {

@@ -39,6 +39,7 @@ class release_information final : public window {
 private:
     static constexpr float bold_font_size = 24;
     static constexpr float regular_font_size = 18;
+    static constexpr auto window_id = "windows::release_information";
 
     static constexpr std::chrono::milliseconds animation_duration = 500ms;
     static std::filesystem::path file_path;
@@ -87,7 +88,7 @@ public:
 } // namespace plugin::gui::windows
 
 inline auto plugin::gui::windows::release_information::get_id() const -> types::zstring_t {
-    return "windows::release_information";
+    return window_id;
 }
 
 inline auto plugin::gui::windows::release_information::get_name() const -> types::zstring_t {

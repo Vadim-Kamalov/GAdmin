@@ -117,7 +117,7 @@ auto plugin::gui::windows::report::initializer::render() -> void {
     ImGui::SetNextWindowSize({ frame_height * 28, frame_height * 13 });
     ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, controls_details.window_alpha / 255.0f);
-    ImGui::Begin(get_id(), nullptr, flags );
+    ImGui::Begin(window_id, nullptr, flags );
     {
         render_menu();
         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, controls_details.switch_info.get_alpha() * ImGui::GetStyle().Alpha);
@@ -131,7 +131,7 @@ auto plugin::gui::windows::report::initializer::render() -> void {
 }
 
 plugin::gui::windows::report::initializer::initializer(types::not_null<gui_initializer*> child)
-    : window(child, get_id()),
+    : window(child, window_id),
       controls(this),
       network(this)
 {

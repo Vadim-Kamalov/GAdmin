@@ -90,7 +90,7 @@ auto plugin::gui::windows::far_chat::render() -> void {
     auto flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize;
 
     ImGui::SetNextWindowSize({ window_width * ImGui::GetStyle().FontScaleDpi, 0 });
-    ImGui::Begin(get_id(), nullptr, flags);
+    ImGui::Begin(window_id, nullptr, flags);
     {
         if (show_title)
             widgets::text(bold_font, title_font_size, text_border_size, title_text);

@@ -73,6 +73,7 @@ private:
     }; // struct request_t final
 
     static constexpr float fonts_size = 18;
+    static constexpr auto window_id = "windows::command_requester";
     static const std::vector<command_t> commands;
 
     std::chrono::steady_clock::time_point time_request_sent;
@@ -118,7 +119,7 @@ public:
 } // namespace plugin::gui::windows
 
 inline auto plugin::gui::windows::command_requester::get_id() const -> types::zstring_t {
-    return "windows::command_requester";
+    return window_id;
 }
 
 inline auto plugin::gui::windows::command_requester::get_name() const -> types::zstring_t {

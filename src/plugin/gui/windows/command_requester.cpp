@@ -299,7 +299,7 @@ auto plugin::gui::windows::command_requester::render() -> void {
     ImGui::SetNextWindowBgAlpha(0.5);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
-    ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
+    ImGui::Begin(window_id, nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
     {
         ImGui::PushFont(regular_font, fonts_size);
         {
@@ -342,7 +342,7 @@ auto plugin::gui::windows::command_requester::create(types::not_null<gui_initial
 }
 
 plugin::gui::windows::command_requester::command_requester(types::not_null<gui_initializer*> child)
-    : window(child, get_id()),
+    : window(child, window_id),
       regular_font(child->fonts->regular),
       bold_font(child->fonts->bold)
 {

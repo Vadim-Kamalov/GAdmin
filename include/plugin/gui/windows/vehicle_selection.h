@@ -36,6 +36,7 @@ namespace plugin::gui::windows {
 /// Supports filtering, command handling and animated display.
 class vehicle_selection final : public window {
 private:
+    static constexpr auto window_id = "windows::vehicle_selection";
     static constexpr std::chrono::milliseconds animation_duration = 500ms;
     static constexpr float create_button_height = 30;
 
@@ -75,13 +76,13 @@ public:
     ///
     /// @param child[in] Valid pointer to the GUI initializer.
     explicit vehicle_selection(types::not_null<gui_initializer*> child)
-        : window(child, get_id()) {}
+        : window(child, window_id) {}
 }; // class vehicle_selection final : public window
 
 } // namespace plugin::gui::windows
 
 inline auto plugin::gui::windows::vehicle_selection::get_id() const -> types::zstring_t {
-    return "windows::vehicle_selection";
+    return window_id;
 }
 
 inline auto plugin::gui::windows::vehicle_selection::get_name() const -> types::zstring_t {

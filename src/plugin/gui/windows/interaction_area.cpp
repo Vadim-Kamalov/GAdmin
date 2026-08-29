@@ -323,7 +323,7 @@ auto plugin::gui::windows::interaction_area::create(types::not_null<gui_initiali
 }
 
 plugin::gui::windows::interaction_area::interaction_area(types::not_null<gui_initializer*> child)
-    : window(child, get_id()),
+    : window(child, window_id),
       bold_font(child->fonts->bold),
       regular_font(child->fonts->regular)
 {

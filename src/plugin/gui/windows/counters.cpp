@@ -71,7 +71,7 @@ auto plugin::gui::windows::counters::render() -> void {
 
     ImGui::SetNextWindowPos({ window_padding.x, size_y - window_height - window_padding.y }, ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize({ window_information->width, window_height });
-    ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoDecoration);
+    ImGui::Begin(window_id, nullptr, ImGuiWindowFlags_NoDecoration);
     {
         for (const auto& [ index, metric ] : window_information->metrics | std::views::enumerate) {
             if (index > 0)

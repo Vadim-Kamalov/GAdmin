@@ -63,7 +63,7 @@ auto plugin::gui::windows::spectator_actions::render() -> void {
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 2, 2 });
     ImGui::SetNextWindowSize({ frame_height * 25, frame_height * 4.3f });
     ImGui::SetNextWindowPos({ size_x / 83.47826f, size_y / 1.15543f }, ImGuiCond_FirstUseEver);
-    ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
+    ImGui::Begin(window_id, nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
     {
         ImGui::BeginGroup();
         {

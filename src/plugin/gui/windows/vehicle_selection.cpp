@@ -109,7 +109,7 @@ auto plugin::gui::windows::vehicle_selection::render() -> void {
     ImGui::SetNextWindowSize({ frame_height * 14, frame_height * 21 });
     ImGui::SetNextWindowPos({ size_x / 2, size_y / 2 }, ImGuiCond_FirstUseEver, { 0.5, 0.5 });
     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, window_alpha / 255.f);
-    ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
+    ImGui::Begin(window_id, nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
     {
         widgets::text(child->fonts->bold, 24, 0, "Выберите машину для спавна");
         ImGui::BeginGroup();

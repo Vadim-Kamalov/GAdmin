@@ -104,7 +104,7 @@ auto plugin::gui::windows::release_information::render() -> void {
     ImGui::SetNextWindowSize({ frame_height * 28, 0 });
     ImGui::SetNextWindowPos({ size_x / 2, size_y / 2 }, ImGuiCond_Always, { 0.5, 0.5 });
     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, window_alpha / 255.f);
-    ImGui::Begin(get_id(), nullptr, window_flags);
+    ImGui::Begin(window_id, nullptr, window_flags);
     {
         render_title();
         widgets::markdown(parsed_information->body, child->fonts->bold).render();
@@ -126,7 +126,7 @@ auto plugin::gui::windows::release_information::create(types::not_null<gui_initi
 }
 
 plugin::gui::windows::release_information::release_information(types::not_null<gui_initializer*> child)
-    : window(child, get_id()),
+    : window(child, window_id),
       bold_font(child->fonts->bold),
       regular_font(child->fonts->regular)
 {

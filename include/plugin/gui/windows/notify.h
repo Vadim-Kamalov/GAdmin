@@ -36,6 +36,7 @@ private:
     static constexpr float icon_font_size = 24;
     static constexpr float bold_font_size = 18;
     static constexpr float regular_font_size = 16;
+    static constexpr auto window_id = "windows::notify";
 
     float height = 0;
 
@@ -69,7 +70,7 @@ public:
 } // namespace plugin::gui::windows
 
 inline auto plugin::gui::windows::notify::get_id() const -> types::zstring_t {
-    return "windows::notify";
+    return window_id;
 }
 
 inline auto plugin::gui::windows::notify::get_name() const -> types::zstring_t {

@@ -389,7 +389,7 @@ auto plugin::gui::windows::autocompletion::render() -> void {
     auto [ _, size_y ] = samp::input::get_size();
 
     ImGui::SetNextWindowPos({ static_cast<float>(pos_x), pos_y + size_y + ImGui::GetStyle().WindowPadding.y });
-    ImGui::Begin(get_id(), nullptr, flags);
+    ImGui::Begin(window_id, nullptr, flags);
     {
         float item_width = ImGui::GetFrameHeight() * 17;
 
@@ -423,7 +423,7 @@ auto plugin::gui::windows::autocompletion::create(types::not_null<gui_initialize
 }
 
 plugin::gui::windows::autocompletion::autocompletion(types::not_null<gui_initializer*> child)
-    : window(child, get_id()),
+    : window(child, window_id),
       bold_font(child->fonts->bold),
       regular_font(child->fonts->regular)
 {

@@ -191,7 +191,7 @@ auto plugin::gui::windows::player_checker::render() -> void {
     auto flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration;
 
     ImGui::SetNextWindowSize({ window_information.width, 0.0f });
-    ImGui::Begin(get_id(), nullptr, flags);
+    ImGui::Begin(window_id, nullptr, flags);
     {
         if (window_information.render_configuration.show_title) {
             window_information.title_aligner.align_next_item();

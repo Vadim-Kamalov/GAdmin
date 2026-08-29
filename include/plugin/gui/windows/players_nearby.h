@@ -38,6 +38,7 @@ public:
     /// Sorting options for player list.
     enum class sort_option_t { disabled, length, distance, id };
 private:
+    static constexpr auto window_id = "windows::players_nearby";
     static constexpr float title_font_size = 18;
     static constexpr float entry_font_size = 16;
 
@@ -75,7 +76,7 @@ public:
     ///
     /// @param child[in] Valid pointer to the GUI initializer.
     explicit players_nearby(types::not_null<gui_initializer*> child)
-        : window(child, get_id()),
+        : window(child, window_id),
           title_font(child->fonts->bold),
           entry_font(child->fonts->regular) {}
 private:
@@ -93,7 +94,7 @@ NLOHMANN_JSON_SERIALIZE_ENUM(players_nearby::sort_option_t, {
 } // namespace plugin::gui::windows
 
 inline auto plugin::gui::windows::players_nearby::get_id() const -> types::zstring_t {
-    return "windows::players_nearby";
+    return window_id;
 }
 
 inline auto plugin::gui::windows::players_nearby::get_name() const -> types::zstring_t {

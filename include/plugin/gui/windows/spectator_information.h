@@ -36,6 +36,7 @@ namespace plugin::gui::windows {
 /// for different types of information.
 class spectator_information final : public window {
 private:
+    static constexpr auto window_id = "windows::spectator_information";
     static constexpr float min_wrap_width = 80;
     static constexpr float fonts_size = 16;
 
@@ -96,7 +97,7 @@ public:
     ///
     /// @param child[in] Valid pointer to the GUI initializer.
     explicit spectator_information(types::not_null<gui_initializer*> child)
-        : window(child, get_id()),
+        : window(child, window_id),
           bold_font(child->fonts->bold),
           regular_font(child->fonts->regular) {}
 }; // class spectator_information final : public window
@@ -104,7 +105,7 @@ public:
 } // namespace plugin::gui::windows
 
 inline auto plugin::gui::windows::spectator_information::get_id() const -> types::zstring_t {
-    return "windows::spectator_information";
+    return window_id;
 }
 
 inline auto plugin::gui::windows::spectator_information::get_name() const -> types::zstring_t {

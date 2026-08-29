@@ -22,6 +22,7 @@
 #include "plugin/samp/events/player_death_notification.h"
 #include "plugin/gui/base/window.h"
 #include "plugin/gui/gui.h"
+#include "plugin/gui/fonts.h"
 #include "plugin/samp/player.h"
 #include "plugin/types/color.h"
 #include "plugin/types/not_null.h"
@@ -41,6 +42,7 @@ private:
     static constexpr float common_font_size = 18;
     static constexpr float text_border_size = 1;
     static constexpr types::zstring_t title_text = "Килл-лист";
+    static constexpr auto window_id = "windows::kill_list";
 
     struct player_t final {
         std::string nickname;
@@ -92,7 +94,7 @@ public:
     ///
     /// @param child[in] Valid pointer to the GUI initializer.
     explicit kill_list(types::not_null<gui_initializer*> child)
-        : window(child, get_id()),
+        : window(child, window_id),
           bold_font(child->fonts->bold),
           regular_font(child->fonts->regular) {}
 }; // class kill_list : public window
@@ -100,7 +102,7 @@ public:
 } // namespace plugin::gui::windows
 
 inline auto plugin::gui::windows::kill_list::get_id() const -> types::zstring_t {
-    return "windows::kill_list";
+    return window_id;
 }
 
 inline auto plugin::gui::windows::kill_list::get_name() const -> types::zstring_t {

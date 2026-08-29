@@ -72,7 +72,7 @@ auto plugin::gui::windows::main::initializer::handle_window_moving() -> void {
     window_pos.x += mouse_delta.x;
     window_pos.y += mouse_delta.y;
 
-    ImGui::SetWindowPos(get_id(), window_pos);
+    ImGui::SetWindowPos(window_id, window_pos);
 }
 
 auto plugin::gui::windows::main::initializer::switch_window() -> void {
@@ -157,7 +157,7 @@ auto plugin::gui::windows::main::initializer::render() -> void {
 
     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, window_alpha / 255.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, 0 });
-    ImGui::Begin(get_id(), nullptr, window_flags);
+    ImGui::Begin(window_id, nullptr, window_flags);
     {
         window_size = ImGui::GetWindowSize();
         window_pos = ImGui::GetWindowPos();
@@ -185,7 +185,7 @@ auto plugin::gui::windows::main::initializer::render() -> void {
 }
 
 plugin::gui::windows::main::initializer::initializer(types::not_null<gui_initializer*> child)
-    : window(child, get_id()),
+    : window(child, window_id),
       active_frame((*configuration)["internal"]["main_window_frame"])
 {
     switch_hotkey = hotkey("Открыть/закрыть это окно", key_bind({ 'X', 0 }, bind_condition::always))
