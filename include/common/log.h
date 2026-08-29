@@ -179,15 +179,4 @@ inline auto log::fatal(std::format_string<Args...> fmt, Args&&... args) noexcept
     unload_callback();
 }
 
-#ifndef __cpp_lib_format_path
-// Just a workaround for me (i686-w64-mingw32-g++ (GCC) 15.2.0). Can be removed later, when newer
-// versions of MinGW are getting released, as 16.1.0 has a linkage bug that breaks the compilation.
-template<>
-struct std::formatter<std::filesystem::path> : std::formatter<std::string_view> {
-    auto format(const std::filesystem::path& path, std::format_context& ctx) const {
-        return std::format_to(ctx.out(), "{}", path.generic_string());
-    }
-}; // std::formatter<std::filesystem::path> : std::formatter<std::string_view>
-#endif // __cpp_lib_format_path
-
 #endif // GADMIN_COMMON_LOG_H

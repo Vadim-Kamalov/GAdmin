@@ -45,7 +45,9 @@ consteval auto get_allowed_ips() -> std::array<std::string_view, 2> {
 
     result[0] = allowed_ips.substr(0, pos);
     result[1] = allowed_ips.substr(pos + 1);
-    result[1].remove_suffix(1);
+    
+    if (result[1].back() == '\n')
+        result[1].remove_suffix(1);
 
     return result;
 }
