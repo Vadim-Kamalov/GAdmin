@@ -200,6 +200,8 @@ auto loader_t::loader_t::suggest_update_to_user(const file_information_t& plugin
     std::wstring message_text = L"Доступна новая версия GAdmin: " + wide_tag_name + L". Желаете установить сейчас?";
 
     if (MessageBoxW(nullptr, message_text.c_str(), L"Доступно обновление", MB_YESNO | MB_ICONQUESTION) != IDYES) {
+        std::error_code ec;
+        std::filesystem::remove(update_file_path, ec);
         load_plugin(plugin);
         return;
     }
