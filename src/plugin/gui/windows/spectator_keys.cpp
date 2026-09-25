@@ -118,7 +118,7 @@ auto plugin::gui::windows::spectator_keys::render() -> void {
     ImGui::SetNextWindowBgAlpha(0);
     ImGui::PushStyleColor(ImGuiCol_FrameBg, *types::color(ImGui::GetColorU32(ImGuiCol_FrameBg), 160));
     ImGui::PushStyleColor(ImGuiCol_Border, 0);
-    ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::Begin(window_id, nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
     {
         if (server::spectator::platform == server::spectator::platform_t::mobile) {
             server::spectator::joystick.render();

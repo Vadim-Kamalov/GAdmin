@@ -21,7 +21,7 @@
 #include "plugin/gui/animation.h"
 #include "plugin/game/game.h"
 #include "plugin/gui/widgets/markdown.h"
-#include "plugin/log.h"
+#include <common/log.h>
 #include <common/common.h>
 #include <fstream>
 #include <ranges>
@@ -104,7 +104,7 @@ auto plugin::gui::windows::release_information::render() -> void {
     ImGui::SetNextWindowSize({ frame_height * 28, 0 });
     ImGui::SetNextWindowPos({ size_x / 2, size_y / 2 }, ImGuiCond_Always, { 0.5, 0.5 });
     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, window_alpha / 255.f);
-    ImGui::Begin(get_id(), nullptr, window_flags);
+    ImGui::Begin(window_id, nullptr, window_flags);
     {
         render_title();
         widgets::markdown(parsed_information->body, child->fonts->bold).render();
@@ -126,7 +126,7 @@ auto plugin::gui::windows::release_information::create(types::not_null<gui_initi
 }
 
 plugin::gui::windows::release_information::release_information(types::not_null<gui_initializer*> child)
-    : window(child, get_id()),
+    : window(child, window_id),
       bold_font(child->fonts->bold),
       regular_font(child->fonts->regular)
 {
@@ -134,19 +134,29 @@ plugin::gui::windows::release_information::release_information(types::not_null<g
         return;
 
     std::ifstream file(file_path, std::ios::binary | std::ios::ate);
-    std::ifstream::pos_type pos = file.tellg();
 
     if (!file) {
-        log::warn("failed to get relase information from \"{}\"", file_path.string());
+        log::warn("could not open {}", file_path);
+        return;
+    }
+
+    std::ifstream::pos_type pos = file.tellg();
+    std::vector<char> bytes(pos);
+
+    file.seekg(0, std::ios::beg);
+    file.read(bytes.data(), pos);
+
+    try {
+        parsed_information = nlohmann::json::from_msgpack(bytes);
+    } catch (const std::exception& e) {
+        log::error("file with the release information is corrupted ({}). deleting...", e.what());
+        file.close();
+
+        std::error_code ec;
+        std::filesystem::remove(file_path, ec);
+
         return;
     }
 
     child->enable_cursor();
-
-    std::vector<char> bytes(pos);
-
-    file.seekg(0, std::ios::beg);
-    file.read(&bytes[0], pos);
-
-    parsed_information = nlohmann::json::from_msgpack(bytes);
 }

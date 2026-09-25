@@ -17,6 +17,7 @@
 /// SPDX-License-Identifier: GPL-3.0-only
 
 #include "plugin/loader.h"
+#include "plugin/memory.h"
 #include "plugin/game/game.h"
 #include "plugin/samp/samp.h"
 #include "plugin/samp/core/net_game.h"
@@ -77,6 +78,10 @@ auto plugin::loader::try_install_wndproc_hook() -> void {
 }
 
 auto plugin::loader::initialize_imgui_render(IDirect3DDevice9* device) -> void {
+    // #54 - <A-S> while editing text causes the player character to jump
+    // See: https://github.com/Vadim-Kamalov/GAdmin/issues/54#issuecomment-5334801253
+    memory::nop(0x531155, 5);
+
     ImGui_ImplWin32_EnableDpiAwareness();
     ImGui::CreateContext();
     
@@ -129,7 +134,7 @@ auto plugin::loader::d3d9_present_hooked(const decltype(d3d9_present_hook)&, IDi
                                          const RECT*, const RECT*, HWND, const RGNDATA*)
     -> std::optional<HRESULT>
 {
-    if (core == nullptr || !core->can_initialize_render())
+    if (core == nullptr)
         return {};
 
     if (!initialized_imgui_render) {
@@ -170,12 +175,29 @@ plugin::loader::loader() {
     using namespace std::placeholders;
 
     DisableThreadLibraryCalls(reinterpret_cast<HMODULE>(&__ImageBase));
+    log_handler.set_prefix("plugin");
 
-    log_handler.load_file(common::get_game_path() / "gadmin.log");
+    try {
+        std::filesystem::path game_path = common::get_game_path();
+        std::filesystem::path common_log_file_path = game_path / "gadmin.c.log";
+
+        if (std::filesystem::exists(common_log_file_path)) {
+            // `.c.` means the log file is common for both loader
+            // and plugin. No truncate as it was done previously.
+            log_handler.load_file(game_path / "gadmin.c.log", false);
+        } else {
+            // if we here, then user have decided to remove gadmin-loader.asi
+            // and rename gadmin.dll to gadmin.asi.
+            log_handler.load_file(game_path / "gadmin.log", true);
+        }
+    } catch (const std::exception&) {
+        // no return. just let the game to crash
+    }
+
     log::info("plugin::log_handler initialized");
    
     if (!plugin_initializer::is_connected_to_valid_server()) {
-        log::fatal("plugin works only on \"sa.gambit-rp.ru:7777\" server");
+        log::fatal("GAdmin does not support the server to which you are connected");
         return;
     }
 

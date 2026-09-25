@@ -34,6 +34,24 @@
 
 using namespace std::chrono_literals;
 
+consteval auto get_allowed_ips() -> std::array<std::string_view, 2> {
+    constexpr static char allowed_ips_cstr[] = {
+#embed "../../embed/allowed_ips.txt"
+    }; // constexpr static char allowed_ips_cstr[]
+
+    std::string_view allowed_ips(allowed_ips_cstr, sizeof(allowed_ips_cstr));
+    std::size_t pos = std::ranges::find(allowed_ips, '\n') - allowed_ips.begin();
+    std::array<std::string_view, 2> result;
+
+    result[0] = allowed_ips.substr(0, pos);
+    result[1] = allowed_ips.substr(pos + 1);
+    
+    if (result[1].back() == '\n')
+        result[1].remove_suffix(1);
+
+    return result;
+}
+
 auto plugin::plugin_initializer::on_event(const samp::event_info& event) -> bool {
     if (!server::admins::on_event(event))
         return false;
@@ -66,10 +84,6 @@ auto plugin::plugin_initializer::on_event(const samp::event_info& event) -> bool
     return true;
 }
 
-auto plugin::plugin_initializer::can_initialize_render() const -> bool {
-    return gui->can_initialize_render();
-}
-
 auto plugin::plugin_initializer::on_render_initialize() -> void {
     gui->on_initialize();
 }
@@ -97,13 +111,8 @@ auto plugin::plugin_initializer::on_samp_initialize() -> void {
     log::info("SA:MP {} initialized", samp::get_version());
 
     if (!is_connected_to_valid_server()) {
-        log::fatal_without_unload("GAdmin does not support the server to which you are connected. Supported servers are listed below:");
-
-        for (const auto& address : allowed_ip_addresses)
-            log::fatal_without_unload("| {}", address);
-
+        log::fatal_without_unload("GAdmin does not support the server to which you are connected");
         log::fatal("unloading the plugin");
-
         return;
     }
 
@@ -160,15 +169,17 @@ auto plugin::plugin_initializer::create_and_initialize_files() -> void {
 }
 
 auto plugin::plugin_initializer::is_connected_to_valid_server() noexcept -> bool {
+    constexpr auto allowed_ips = get_allowed_ips();
+
     if (samp::net_game::instance_container->read() == 0) {
         std::string command_line = GetCommandLineA();
-        return std::ranges::any_of(allowed_ip_addresses,
+        return std::ranges::any_of(allowed_ips,
             [&command_line](const std::string_view& ip_address) {
                 return command_line.contains(ip_address);
             });
     }
 
-    return std::ranges::contains(allowed_ip_addresses, samp::net_game::get_host_address());
+    return std::ranges::contains(allowed_ips, samp::net_game::get_host_address());
 }
 
 plugin::plugin_initializer::plugin_initializer() {

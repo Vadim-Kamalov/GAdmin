@@ -27,6 +27,50 @@
 #include "plugin/server/user.h"
 #include "plugin/types/color.h"
 
+#ifndef NDEBUG
+#include "plugin/game/ped.h"
+#include "plugin/samp/events/send_command.h" // IWYU pragma: keep
+#endif // NDEBUG
+
+static auto get_fixed_screen_position(const plugin::types::vector_3d& a, const plugin::types::vector_3d& b,
+                                      float distance) noexcept -> plugin::types::vector_3d
+{
+    distance = std::abs(distance);
+
+    plugin::types::vector_3d direct = { b.x - a.x, b.y - a.y, b.z - a.z };
+    float magnitude = direct.magnitude();
+
+    direct.x /= magnitude;
+    direct.y /= magnitude;
+    direct.z /= magnitude;
+
+    return {
+        a.x + direct.x * distance,
+        a.y + direct.y * distance,
+        a.z + direct.z * distance
+    };
+}
+
+auto plugin::cheats::tracers::tracer_information::get_screen_points() const -> std::optional<ImVec4> {
+    auto [ ox, oy, oz ] = game::convert_3d_coords_to_screen_ex(origin);
+    auto [ tx, ty, tz ] = game::convert_3d_coords_to_screen_ex(target);
+
+    if (oz <= 0.0f && tz <= 0.0f)
+        return {};
+
+    if (tz <= 0.0f) {
+        auto position = get_fixed_screen_position(origin, target, oz);
+        auto screen = game::convert_3d_coords_to_screen_ex(position);
+        return ImVec4 { ox, oy, screen.x, screen.y };
+    } else if (oz <= 0.0f) {
+        auto position = get_fixed_screen_position(target, origin, tz);
+        auto screen = game::convert_3d_coords_to_screen_ex(position);
+        return ImVec4 { screen.x, screen.y, tx, ty };
+    }
+
+    return ImVec4 { ox, oy, tx, ty };
+}
+
 auto plugin::cheats::tracers::hotkey_callback(gui::hotkey&) -> void {
     current_tracers.clear();
     gui::notify::send(gui::notification("Трассера удалены", "Трассера на экране успешно удалены!", ICON_INFO));
@@ -46,9 +90,6 @@ auto plugin::cheats::tracers::on_bullet_synchronization(const samp::packet<samp:
         return true;
     }
 
-    if (current_tracers.size() == cheat_configuration["limit"])
-        current_tracers.pop_back();
-
     current_tracers.push_back({
         .miss = synchronization.hit_type == 0 || synchronization.hit_type == 3,
         .origin = synchronization.origin,
@@ -62,6 +103,21 @@ auto plugin::cheats::tracers::on_bullet_synchronization(const samp::packet<samp:
 auto plugin::cheats::tracers::on_event(const samp::event_info& event) -> bool {
     if (event == samp::event_type::incoming_packet && event == samp::event_id::bullet_synchronization)
         return on_bullet_synchronization(event.create<samp::event_id::bullet_synchronization, samp::event_type::incoming_packet>());
+
+#ifndef NDEBUG
+    if (event != samp::event_type::outgoing_rpc || event != samp::event_id::send_command)
+        return true;
+
+    auto it = event.create<samp::event_id::send_command, samp::event_type::outgoing_rpc>();
+
+    if (it.command != "/gadmin:spawn_tracer")
+        return true;
+
+    types::vector_3d origin = game::ped::get_player().get_position();
+    types::vector_3d hit = { origin.x + 10.0f, origin.y, origin.z };
+
+    return on_bullet_synchronization(samp::packet<samp::event_id::bullet_synchronization>(origin, hit));
+#endif // NDEBUG
 
     return true;
 }
@@ -80,10 +136,9 @@ auto plugin::cheats::tracers::render(types::not_null<gui_initializer*>) -> void 
             continue;
         }
 
-        auto [ origin_screen_x, origin_screen_y, origin_screen_z ] = game::convert_3d_coords_to_screen(it->origin);
-        auto [ target_screen_x, target_screen_y, target_screen_z ] = game::convert_3d_coords_to_screen(it->target);
+        auto points = it->get_screen_points();
 
-        if (origin_screen_z <= 0.0f || target_screen_z <= 0.0f) {
+        if (!points.has_value()) {
             it++;
             continue;
         }
@@ -92,8 +147,8 @@ auto plugin::cheats::tracers::render(types::not_null<gui_initializer*>) -> void 
             ? gui::style::get_current_accent_colors().red
             : gui::style::get_current_accent_colors().green;
 
-        draw_list->AddLine({ origin_screen_x, origin_screen_y }, { target_screen_x, target_screen_y }, *color, 1);
-        draw_list->AddCircleFilled({ target_screen_x + 1.5f, target_screen_y + 1.5f }, 3, *color, 16);
+        draw_list->AddLine({ points->x, points->y }, { points->z, points->w }, *color, 1);
+        draw_list->AddCircleFilled({ points->z + 1.5f, points->w + 1.5f }, 3, *color, 16);
 
         it++;
     } 

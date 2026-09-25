@@ -66,6 +66,7 @@ private:
     static auto remove_disconnected_admin(std::uint16_t id) -> void;
 
     static auto handle_sponsorship_notification() -> void;
+    static auto handle_update_notification() -> void;
 public:
     /// Current connected (and logged-in) administrators' on the server.
     inline static std::vector<admin> list;

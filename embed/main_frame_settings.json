@@ -258,15 +258,11 @@
         "tracers": {
             "_type": "subsection",
             "_name": "Трассера",
+            "only_from_spectator": { "_type": "bool", "_name": "Отображать только от игрока /sp" },
             "seconds_to_hide": {
                 "_type": "intrange",
                 "_name": "Секунды до исчезновения",
                 "_config": [ 1, 300 ]
-            },
-            "limit": {
-                "_type": "intrange",
-                "_name": "Максимальное количество трассеров",
-                "_config": [ 1, 255 ]
             }
         },
         "clickwarp": { "_type": "bool", "_name": "ClickWarp" }

@@ -93,11 +93,6 @@ public:
     /// Process SA:MP initializing. Can be called only once since the plugin initialization.
     auto on_samp_initialize() -> void;
     
-    /// Check if can initializer render ensuring fonts availability.
-    ///
-    /// @return True if can initialize render.
-    auto can_initialize_render() const -> bool;
-
     /// Initialize render-related components.
     auto on_initialize() -> void;
 

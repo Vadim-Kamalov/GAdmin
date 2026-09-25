@@ -266,7 +266,7 @@ auto plugin::gui::windows::spectator_information::render() -> void {
     ImGui::SetNextWindowPos({ size_x / 83.47826f, size_y / 2.17888f }, ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize({ ImGui::GetStyle().FontScaleDpi * 320, 0 });
     ImGui::PushStyleVarX(ImGuiStyleVar_WindowPadding, 0);
-    ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::Begin(window_id, nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
     {
         ImGui::SetCursorPos({ 0, 0 });
         {

@@ -32,6 +32,8 @@ namespace plugin::gui::windows {
 /// Provides interface for configuring actions available in spectator mode.
 /// Supports customizable buttons with different action types.
 class spectator_actions final : public window {
+private:
+    static constexpr auto window_id = "windows::spectator_actions";
 public:
     /// Button configuration structure for the JSON interface.
     struct button final {
@@ -60,7 +62,7 @@ public:
     ///
     /// @param child[in] Valid pointer to the GUI initializer.
     explicit spectator_actions(types::not_null<gui_initializer*> child)
-        : window(child, get_id()) {}
+        : window(child, window_id) {}
 }; // class spectator_actions final : public window
 
 auto to_json(nlohmann::json& json, const spectator_actions::button& button) -> void;
@@ -69,7 +71,7 @@ auto from_json(const nlohmann::json& json, spectator_actions::button& button) ->
 } // namespace plugin::gui::windows
 
 inline auto plugin::gui::windows::spectator_actions::get_id() const -> types::zstring_t {
-    return "windows::spectator_actions";
+    return window_id;
 }
 
 inline auto plugin::gui::windows::spectator_actions::get_name() const -> types::zstring_t {

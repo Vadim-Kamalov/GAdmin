@@ -17,7 +17,7 @@
 /// SPDX-License-Identifier: GPL-3.0-only
 
 #include "plugin/game/ped.h"
-#include "plugin/log.h"
+#include <common/log.h>
 #include <cmath>
 
 auto plugin::game::ped::is_in_the_air() const -> bool {

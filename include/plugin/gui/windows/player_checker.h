@@ -40,6 +40,7 @@ public:
         right
     }; // enum class align_t : std::uint8_t
 private:
+    static constexpr auto window_id = "windows::player_checker";
     static constexpr float title_font_size = 20;
     static constexpr float common_font_size = 18;
     static constexpr float text_border_size = 1;
@@ -103,7 +104,7 @@ public:
     ///
     /// @param child[in] Valid pointer to the GUI initializer.
     explicit player_checker(types::not_null<gui_initializer*> child)
-        : window(child, get_id()),
+        : window(child, window_id),
           bold_font(child->fonts->bold),
           regular_font(child->fonts->regular) {}
 }; // class player_checker final : public window
@@ -111,7 +112,7 @@ public:
 } // namespace plugin::gui::windows
 
 inline auto plugin::gui::windows::player_checker::get_id() const -> types::zstring_t {
-    return "windows::player_checker";
+    return window_id;
 }
 
 inline auto plugin::gui::windows::player_checker::get_name() const -> types::zstring_t {

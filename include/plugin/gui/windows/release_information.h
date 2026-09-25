@@ -39,11 +39,13 @@ class release_information final : public window {
 private:
     static constexpr float bold_font_size = 24;
     static constexpr float regular_font_size = 18;
+    static constexpr auto window_id = "windows::release_information";
 
     static constexpr std::chrono::milliseconds animation_duration = 500ms;
     static std::filesystem::path file_path;
 
     struct parsed_information_t final {
+        std::string url;
         std::string date_created;
         std::string old_tag_name;
         std::string tag_name;
@@ -52,8 +54,8 @@ private:
         std::size_t file_size;
         std::size_t download_count;
 
-        NLOHMANN_DEFINE_TYPE_INTRUSIVE(parsed_information_t, date_created, tag_name,
-                                       old_tag_name, name, body, file_size, download_count);
+        NLOHMANN_DEFINE_TYPE_INTRUSIVE_WITH_DEFAULT(parsed_information_t, url, date_created, tag_name,
+                                                    old_tag_name, name, body, file_size, download_count);
     }; // struct parsed_information_t final
 
     std::uint8_t window_alpha = 255, background_alpha = 128;
@@ -86,7 +88,7 @@ public:
 } // namespace plugin::gui::windows
 
 inline auto plugin::gui::windows::release_information::get_id() const -> types::zstring_t {
-    return "windows::release_information";
+    return window_id;
 }
 
 inline auto plugin::gui::windows::release_information::get_name() const -> types::zstring_t {

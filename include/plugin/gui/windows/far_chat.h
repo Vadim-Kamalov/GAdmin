@@ -41,7 +41,9 @@ private:
     static constexpr float title_font_size = 20;
     static constexpr float common_font_size = 18;
     static constexpr std::size_t text_border_size = 1;
+
     static constexpr types::zstring_t title_text = "Дальний чат";
+    static constexpr auto window_id = "windows::far_chat";
 
     struct entry_t final {
         samp::player player;
@@ -76,7 +78,7 @@ public:
     ///
     /// @param child[in] Valid pointer to the GUI initializer.
     explicit far_chat(types::not_null<gui_initializer*> child)
-        : window(child, get_id()),
+        : window(child, window_id),
           regular_font(child->fonts->regular),
           bold_font(child->fonts->bold) {}
 }; // class far_chat final : public window
@@ -84,7 +86,7 @@ public:
 } // namespace plugin::gui::windows
 
 inline auto plugin::gui::windows::far_chat::get_id() const -> types::zstring_t {
-    return "windows::far_chat";
+    return window_id;
 }
 
 inline auto plugin::gui::windows::far_chat::get_name() const -> types::zstring_t {

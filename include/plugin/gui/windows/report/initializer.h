@@ -85,6 +85,8 @@ public:
 // the rendering selected frame and sending events to `report::network`.
 class initializer final : public window {
 private:
+    static constexpr auto window_id = "windows::report::initializer";
+
     std::array<basic_frame_ptr_t, frame_count> frames;
 
     auto render_menu() -> void;
@@ -115,7 +117,7 @@ auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
 } // namespace plugin::gui::windows::report
 
 inline auto plugin::gui::windows::report::initializer::get_id() const -> types::zstring_t {
-    return "windows::report::initializer";
+    return window_id;
 }
 
 inline auto plugin::gui::windows::report::initializer::get_name() const -> types::zstring_t {

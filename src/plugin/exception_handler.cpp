@@ -17,7 +17,7 @@
 /// SPDX-License-Identifier: GPL-3.0-only
 
 #include "plugin/exception_handler.h"
-#include "plugin/log.h"
+#include <common/log.h>
 #include <errhandlingapi.h>
 #include <exception>
 #include <psapi.h>
@@ -83,7 +83,7 @@ auto plugin::exception_handler::log_call_stack(HANDLE process, EXCEPTION_POINTER
 
     log::fatal_without_unload("| call stack:");
 
-    for (unsigned int frame = 0; ; frame++) {
+    while (true) {
         if (!StackWalk64(IMAGE_FILE_MACHINE_I386, process, GetCurrentThread(), &stack_frame, exception_pointers->ContextRecord,
                          nullptr, SymFunctionTableAccess64, SymGetModuleBase64, nullptr) || stack_frame.AddrPC.Offset == 0)
         {

@@ -165,7 +165,7 @@ auto plugin::gui::windows::kill_list::render() -> void {
 
     ImGui::SetNextWindowPos({ size_x / 1.29730f, size_y / 3.84411f }, ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize(get_window_size(show_title));
-    ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoDecoration);
+    ImGui::Begin(window_id, nullptr, ImGuiWindowFlags_NoDecoration);
     {
         if (show_title) {
             widgets::aligner(align_mode, bold_font->CalcTextSizeA(title_font_size * ImGui::GetStyle().FontScaleDpi, FLT_MAX, 0.0f, title_text).x)

@@ -21,7 +21,7 @@
 
 #include "plugin/cheats/initializer.h"
 #include "plugin/configuration.h"
-#include "plugin/log.h"
+#include <common/log.h>
 #include "plugin/gui/gui.h"
 #include "plugin/misc/misc.h"
 #include "plugin/samp/network/event_handler.h"
@@ -53,9 +53,6 @@ inline std::unique_ptr<misc::initializer> misc_initializer;
 /// Plugin can be unloaded manually when reached no-return point.
 class plugin_initializer final {
 private:
-    static constexpr auto allowed_ip_addresses = std::to_array<std::string_view>({ "5.188.224.221",
-                                                                                   "85.234.65.36" });
-
     std::unique_ptr<gui_initializer> gui;
 
     auto on_samp_initialize() -> void;
@@ -86,12 +83,6 @@ public:
     /// @param event[in] SA-MP event information.
     /// @return          Whether the event should continue processing.
     auto on_event(const samp::event_info& event) -> bool;
-
-    /// Check if `gui_initializer` can initialize interface
-    /// without further problems, e.g. fonts availability.
-    ///
-    /// @return True if can initialize interface.
-    auto can_initialize_render() const -> bool;
 
     /// Process SA:MP initializing. Can be called only once since the plugin initialization.
     auto on_render_initialize() -> void;

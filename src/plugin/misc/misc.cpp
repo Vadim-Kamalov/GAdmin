@@ -35,7 +35,7 @@
 #include "plugin/misc/features/short_commands.h"
 #include "plugin/misc/features/statistics.h"
 #include "plugin/misc/features/message_hider.h"
-#include "plugin/log.h"
+#include <common/log.h>
 #include <memory>
 
 auto plugin::misc::initializer::on_event(const samp::event_info& event) -> bool {

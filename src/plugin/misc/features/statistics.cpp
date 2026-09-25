@@ -24,7 +24,7 @@
 #include "plugin/samp/core/user.h"
 #include "plugin/game/game.h"
 #include "plugin/plugin.h"
-#include "plugin/log.h"
+#include <common/log.h>
 #include <common/common.h>
 #include <fstream>
 

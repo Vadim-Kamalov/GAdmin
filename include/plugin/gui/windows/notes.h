@@ -48,6 +48,7 @@ public:
                                        title_size, visible);
     }; // struct note_t final
 private:
+    static constexpr auto window_id = "windows::notes";
     static constexpr float text_border_size = 1;
 
     struct note_information_t final {
@@ -79,7 +80,7 @@ public:
     ///
     /// @param child[in] Valid pointer to the GUI initializer.
     explicit notes(types::not_null<gui_initializer*> child)
-        : window(child, get_id()),
+        : window(child, window_id),
           bold_font(child->fonts->bold),
           regular_font(child->fonts->regular) {}
 }; // class notes final : public window
@@ -87,7 +88,7 @@ public:
 } // namespace plugin::gui::windows
 
 inline auto plugin::gui::windows::notes::get_id() const -> types::zstring_t {
-    return "windows::notes";
+    return window_id;
 }
 
 inline auto plugin::gui::windows::notes::get_name() const -> types::zstring_t {

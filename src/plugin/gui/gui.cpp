@@ -192,10 +192,6 @@ auto plugin::gui_initializer::on_samp_initialize() -> void {
         window->on_samp_initialize();
 }
 
-auto plugin::gui_initializer::can_initialize_render() const -> bool {
-    return fonts->can_assign_fonts();
-}
-
 auto plugin::gui_initializer::on_initialize() -> void {
     using namespace gui;
 

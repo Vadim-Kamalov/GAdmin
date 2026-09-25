@@ -39,6 +39,7 @@ namespace plugin::gui::windows::main {
 class initializer final : public window {
 private:
     static constexpr std::chrono::milliseconds animation_duration = 500ms;
+    static constexpr auto window_id = "windows::main::initializer";
 
     std::array<frame_ptr_t, frames_count> frames;
     hotkey switch_hotkey;
@@ -105,7 +106,7 @@ auto create(types::not_null<gui_initializer*> child) noexcept -> window_ptr_t;
 } // namespace plugin::gui::windows::main
 
 inline auto plugin::gui::windows::main::initializer::get_id() const -> types::zstring_t {
-    return "windows::main::initializer";
+    return window_id;
 }
 
 inline auto plugin::gui::windows::main::initializer::get_name() const -> types::zstring_t {

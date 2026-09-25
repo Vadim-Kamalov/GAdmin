@@ -167,7 +167,7 @@ auto plugin::gui::windows::notify::render() -> void {
 
     ImGui::SetNextWindowBgAlpha(0);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
-    ImGui::Begin(get_id(), nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::Begin(window_id, nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
     {
         std::list<notification>& notifications = gui::notify::get_notifications();
         for (auto it = notifications.rbegin(); it != notifications.rend();) {
@@ -214,6 +214,6 @@ auto plugin::gui::windows::notify::create(types::not_null<gui_initializer*> chil
     return std::make_unique<notify>(child);
 }
 
-plugin::gui::windows::notify::notify(types::not_null<gui_initializer*> child) : window(child, get_id()) {
+plugin::gui::windows::notify::notify(types::not_null<gui_initializer*> child) : window(child, window_id) {
     gui::notify::set_callback(std::bind(&notify::on_send_notification, this, std::placeholders::_1));
 }

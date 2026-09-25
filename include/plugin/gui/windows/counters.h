@@ -33,6 +33,8 @@ private:
     using metric_t = std::pair<std::string, std::string>;
     using metrics_t = std::deque<metric_t>;
 
+    static constexpr auto window_id = "windows::counters";
+
     struct window_information_t final {
         float width = 0.0f;
         metrics_t metrics;
@@ -60,7 +62,7 @@ public:
     ///
     /// @param child[in] Valid pointer to the GUI initializer.
     explicit counters(types::not_null<gui_initializer*> child)
-        : window(child, get_id()),
+        : window(child, window_id),
           bold_font(child->fonts->bold),
           regular_font(child->fonts->regular) {}
 }; // class counters final : public window
@@ -68,7 +70,7 @@ public:
 } // namespace plugin::gui::windows
 
 inline auto plugin::gui::windows::counters::get_id() const -> types::zstring_t {
-    return "windows::counters";
+    return window_id;
 }
 
 inline auto plugin::gui::windows::counters::get_name() const -> types::zstring_t {

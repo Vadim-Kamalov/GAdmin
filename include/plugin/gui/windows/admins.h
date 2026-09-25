@@ -37,6 +37,7 @@ private:
     static constexpr float title_font_size = 20;
     static constexpr float entry_font_size = 18;
     static constexpr float border_size = 1;
+    static constexpr auto window_id = "windows::admins";
 
     ImFont* title_font = nullptr;
     ImFont* entry_font = nullptr;
@@ -73,7 +74,7 @@ public:
     ///
     /// @param child[in] Valid pointer to the GUI initializer.
     explicit admins(types::not_null<gui_initializer*> child)
-        : window(child, get_id()),
+        : window(child, window_id),
           title_font(child->fonts->bold),
           entry_font(child->fonts->regular) {}
 }; // class admins final : public window
@@ -81,7 +82,7 @@ public:
 } // namespace plugin::gui::windows
 
 inline auto plugin::gui::windows::admins::get_id() const -> types::zstring_t {
-    return "windows::admins";
+    return window_id;
 }
 
 inline auto plugin::gui::windows::admins::get_name() const -> types::zstring_t {

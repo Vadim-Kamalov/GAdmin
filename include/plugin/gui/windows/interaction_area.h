@@ -60,6 +60,7 @@ private:
     static constexpr std::uint8_t response_player_offset = std::to_underlying(search_response::player_spectate);
     static constexpr std::uint8_t response_vehicle_offset = std::to_underlying(search_response::vehicle_repair);
     static constexpr std::chrono::milliseconds animation_duration = 100ms;
+    static constexpr auto window_id = "windows::interaction_area";
 
     struct search_result final {
         ImVec2 point = { 0, 0 };
@@ -148,7 +149,7 @@ consteval auto plugin::gui::windows::interaction_area::get_longest_action_descri
 }
 
 inline auto plugin::gui::windows::interaction_area::get_id() const -> types::zstring_t {
-    return "windows::interaction_area";
+    return window_id;
 }
 
 inline auto plugin::gui::windows::interaction_area::get_name() const -> types::zstring_t {

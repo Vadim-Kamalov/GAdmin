@@ -32,6 +32,7 @@ namespace plugin::gui::windows {
 class autocompletion final : public window {
 private:
     static constexpr std::size_t max_suggestions_to_render = 10;
+    static constexpr auto window_id = "windows::autocompletion";
 
     struct player_argument_suggestion_t final {
         std::uint16_t id;
@@ -102,7 +103,7 @@ public:
 }; // class autocompletion final : public window
 
 inline auto plugin::gui::windows::autocompletion::get_id() const -> types::zstring_t {
-    return "windows::autocompletion";
+    return window_id;
 }
 
 inline auto plugin::gui::windows::autocompletion::get_name() const -> types::zstring_t {

@@ -21,7 +21,7 @@
 #include "plugin/server/spectator.h"
 #include "plugin/server/user.h"
 #include "plugin/game/ped.h"
-#include "plugin/log.h"
+#include <common/log.h>
 
 #define GET_NOT_AVAILABLE_LABEL_EX(PARAMS, DEFAULT) ((PARAMS.empty()) ? DEFAULT : PARAMS[0])
 #define GET_NOT_AVAILABLE_LABEL(PARAMS) GET_NOT_AVAILABLE_LABEL_EX(PARAMS, "N/A")
@@ -67,7 +67,6 @@
     }}
 
 static auto select_variable_callback(const std::vector<std::string>& params) noexcept -> std::string {
-    using log = plugin::log;
     using binder = plugin::server::binder;
 
     if (params.empty() || binder::select_parameters.empty())

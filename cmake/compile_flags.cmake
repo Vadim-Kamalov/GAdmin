@@ -57,4 +57,8 @@ target_compile_options(${PROJECT_NAME} PRIVATE
     # Bug 110572 - ld.lld: error: duplicate symbol: std::type_info::operator==(std::type_info const&) const
     # See: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=110572
     -fno-rtti
+
+    # Bug 125151 - C++26: strong symbol emitted for std::runtime_error copy ctor on MinGW (ODR v...
+    # See: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=125151
+    -D__cpp_lib_constexpr_exceptions=0
 )

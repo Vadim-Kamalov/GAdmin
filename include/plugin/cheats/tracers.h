@@ -41,6 +41,8 @@ private:
         types::vector_3d origin;
         types::vector_3d target;
         std::chrono::steady_clock::time_point time;
+
+        auto get_screen_points() const -> std::optional<ImVec4>;
     }; // struct tracer_information final
 
     gui::hotkey hotkey;
