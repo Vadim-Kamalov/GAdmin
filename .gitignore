@@ -7,6 +7,10 @@ build/
 .cache/
 web-installer/build/
 
+# All symlinks with extension ".symlink" because there is no
+# way to specify symlink by some kind of pattern in .gitignore
+*.symlink
+
 # Files produced from converting JSON files to MessagePack format
 # when `USE_EMBEDDED_MESSAGE_PACK` options is enabled in CMake.
 embed/*.mpk
