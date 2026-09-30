@@ -40,10 +40,11 @@ auto plugin::gui::widgets::hint::render_hint(float alpha) const -> void {
         pos.y -= size.y + spacing.y;
     }
     ImVec2 center = { pos.x - size.x / 2, pos.y + size.y / 2 - alpha * 4 + 10 };
+    float scale = ImGui::GetStyle().FontScaleDpi;
     
     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 8, 8 });
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 6);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 8 * scale, 8 * scale }); // TODO: why?
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 6 * scale);               // TODO: why? x2
     ImGui::PushStyleColor(ImGuiCol_PopupBg, *color);
     ImGui::PushStyleColor(ImGuiCol_Text, animation::get_contrast_color(ImGui::ColorConvertU32ToFloat4(*color)));
     {

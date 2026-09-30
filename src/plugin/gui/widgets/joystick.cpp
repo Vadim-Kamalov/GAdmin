@@ -35,17 +35,17 @@ auto plugin::gui::widgets::joystick::update(std::uint16_t x, std::uint16_t y) ->
 }
 
 auto plugin::gui::widgets::joystick::render() const -> void {
+    float x = 0, y = 0;
+    float scale = ImGui::GetStyle().FontScaleDpi;
+
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
     types::color color = ImGui::GetColorU32(ImGuiCol_FrameBg);
     types::color background = types::color(color, 76);
 
     ImVec2 pos = ImGui::GetCursorScreenPos();
-    ImVec2 center = { pos.x + radius, pos.y + radius };
+    ImVec2 center = { pos.x + radius * scale, pos.y + radius * scale };
     
-    float x = 0, y = 0;
-    float scale = ImGui::GetStyle().FontScaleDpi;
-
     draw_list->AddCircleFilled(center, radius * scale, *background, 0x30);
     draw_list->AddCircle(center, radius * scale, *color, 0x30, ImGui::GetStyle().FrameBorderSize);
 

@@ -198,5 +198,8 @@ auto plugin::gui::style::apply() -> void {
     style.ButtonTextAlign = { 0.5f, 0.5f };
     style.SelectableTextAlign = { 0.5f, 0.5f };
 
+    style._MainScale = 1; // who said we can't modify internal values?
+    style.ScaleAllSizes(style.FontScaleDpi);
+
     apply_theme(style, get_saved_theme());
 }

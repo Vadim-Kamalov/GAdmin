@@ -86,9 +86,8 @@ auto plugin::loader::initialize_imgui_render(IDirect3DDevice9* device) -> void {
     ImGui::CreateContext();
     
     ImGuiStyle& style = ImGui::GetStyle();
-    float main_scale = ImGui_ImplWin32_GetDpiScaleForMonitor(MonitorFromPoint({ 0, 0 }, MONITOR_DEFAULTTOPRIMARY));
 
-    style.ScaleAllSizes(main_scale);
+    float main_scale = ImGui_ImplWin32_GetDpiScaleForMonitor(MonitorFromPoint({ 0, 0 }, MONITOR_DEFAULTTOPRIMARY));
     style.FontScaleDpi = main_scale;
 
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;

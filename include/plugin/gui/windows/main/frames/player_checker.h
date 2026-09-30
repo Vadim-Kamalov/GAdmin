@@ -32,7 +32,6 @@ namespace plugin::gui::windows::main::frames {
 /// Represents the player checker frame in the main window.
 class player_checker final : public basic_frame {
 private:
-    static constexpr float bottom_button_height = 30;
     static constexpr float title_font_size = 24;
     static constexpr float common_font_size = 18;
     static constexpr std::uint16_t id_none = 0xFFFF;

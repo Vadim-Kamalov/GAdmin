@@ -53,6 +53,8 @@ plugin::types::versioned_address_container<std::uintptr_t>
 plugin::gui_initializer::set_cursor_mode_address = { 0x9BD30, 0x9FFE0, 0xA06F0, 0xA0530 };
 
 #ifndef NDEBUG
+#include <backends/imgui_impl_win32.h>
+// TODO: move to another file
 auto plugin::gui_initializer::show_debug_window() const -> void {
     static std::string selected_window = "";
     static int selected_window_size[2] = { 0, 0 };
@@ -84,6 +86,19 @@ auto plugin::gui_initializer::show_debug_window() const -> void {
                                                                 selected_window_size[1] * frame_height });
 
             ImGui::DragFloat("font_scale_dpi", &ImGui::GetStyle().FontScaleDpi, 0.02f, 0.5f, 4.0f);
+
+            if (ImGui::Button("Copy DPI")) {
+                float scale = ImGui_ImplWin32_GetDpiScaleForMonitor(MonitorFromPoint({ 0, 0 }, MONITOR_DEFAULTTOPRIMARY));
+                std::string scale_str = std::to_string(scale);
+                ImGui::SetClipboardText(scale_str.c_str());
+            }
+
+            if (ImGui::Button("Apply DPI to all styles from the copied one")) {
+                float scale = std::stof(ImGui::GetClipboardText());
+                ImGuiStyle& style = ImGui::GetStyle();
+                style.ScaleAllSizes(scale);
+                style.FontScaleDpi = scale;
+            }
 
             ImGui::TextUnformatted(std::format("is_cursor_active(): {}", is_cursor_active()).c_str());
         }

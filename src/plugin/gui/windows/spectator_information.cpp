@@ -50,11 +50,12 @@ auto plugin::gui::windows::spectator_information::vehicles_custom_renderer(const
         std::string vehicle_id;
     
         float current_pos_x = start.x;
-        float space_width = regular_font->CalcTextSizeA(fonts_size, FLT_MAX, 0, " ").x;
+        float scale = ImGui::GetStyle().FontScaleDpi;
+        float space_width = regular_font->CalcTextSizeA(fonts_size, FLT_MAX, 0, " ").x * scale;
 
         while (std::getline(stream, vehicle_id, ' ')) {
-            ImVec2 size = regular_font->CalcTextSizeA(fonts_size, FLT_MAX, 0, vehicle_id.c_str());
-            ImVec2 line_start = { current_pos_x, end.y }, line_end = { current_pos_x + size.x, end.y + 2 };
+            float size_x = regular_font->CalcTextSizeA(fonts_size, FLT_MAX, 0, vehicle_id.c_str()).x * scale;
+            ImVec2 line_start = { current_pos_x, end.y }, line_end = { current_pos_x + size_x, end.y + 2 };
 
             if (ImGui::IsMouseHoveringRect({ line_start.x, start.y }, line_end)) {
                 draw_list->AddRectFilled(line_start, line_end, *color);
@@ -62,7 +63,7 @@ auto plugin::gui::windows::spectator_information::vehicles_custom_renderer(const
                     samp::input::send_command("/getbuycar {}", vehicle_id);
             } 
 
-            current_pos_x += size.x + space_width;
+            current_pos_x += size_x + space_width;
         }
     }
     ImGui::EndGroup();

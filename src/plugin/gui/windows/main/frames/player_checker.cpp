@@ -92,8 +92,9 @@ auto plugin::gui::windows::main::frames::player_checker::render_left_group(float
     ImGui::EndChild();
     search.render(width, "Никнейм игрока");
 
+    float frame_height = ImGui::GetFrameHeight();
     ImVec2 input_size = { width, ImGui::GetContentRegionAvail().y
-        - bottom_button_height - ImGui::GetStyle().ItemSpacing.y };
+        - frame_height - ImGui::GetStyle().ItemSpacing.y };
 
     if (ImGui::InputTextMultiline("##description_input", &description_text, input_size) && search.empty()) {
         nlohmann::json& added_players = get_added_players_json();
@@ -103,7 +104,7 @@ auto plugin::gui::windows::main::frames::player_checker::render_left_group(float
 
     render_description_hint(input_size);
         
-    if (gui::widgets::button("Добавить в чекер##frames::player_checker", { width, bottom_button_height })
+    if (gui::widgets::button("Добавить в чекер##frames::player_checker", { width, frame_height })
             .render() && !search.empty())
     {
         nlohmann::json& added_players = get_added_players_json();
@@ -117,7 +118,7 @@ auto plugin::gui::windows::main::frames::player_checker::render_left_group(float
 }
 
 auto plugin::gui::windows::main::frames::player_checker::render_right_group(float width) -> void {
-    float child_height = ImGui::GetContentRegionAvail().y - ImGui::GetStyle().ItemSpacing.y - bottom_button_height;
+    float child_height = ImGui::GetContentRegionAvail().y - ImGui::GetStyle().ItemSpacing.y - ImGui::GetFrameHeight();
 
     ImGui::BeginChild("players_added", { width, child_height }, ImGuiChildFlags_AlwaysUseWindowPadding, child->window_flags);
     {
@@ -148,7 +149,7 @@ auto plugin::gui::windows::main::frames::player_checker::render_right_group(floa
     }
     ImGui::EndChild();
 
-    if (gui::widgets::button("Удалить##frames::player_checker", { width, bottom_button_height }).render()) {
+    if (gui::widgets::button("Удалить##frames::player_checker", { width, ImGui::GetFrameHeight() }).render()) {
         nlohmann::json& added_players = get_added_players_json();
         if (selected_player_index < added_players.size()) {
             added_players.erase(selected_player_index);
