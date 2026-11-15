@@ -161,6 +161,7 @@ auto plugin::server::spectator::on_show_dialog(const samp::event<samp::event_id:
     if (auto result = parse_player_statistics(text)) {
         auto matches = *result;
 
+        nickname = dialog_start.get_string<1>();
         information.money_bank = matches[0];
         information.fraction = convert_possible_absence_text(matches[1]);
         information.rank = convert_possible_absence_text(matches[2]);
